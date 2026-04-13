@@ -2,574 +2,666 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Heat Seeker Dashboard</title>
-  <link rel="stylesheet" href="/heat.css" />
-  <style>
-    :root {
-      --bg: #0b1020;
-      --panel: #11182d;
-      --panel-2: #17213b;
-      --border: rgba(255, 255, 255, 0.08);
-      --text: #eef3ff;
-      --muted: #93a0bd;
-      --accent: #5f8cff;
-      --green: #1cc88a;
-      --red: #ff5a6f;
-      --yellow: #f4c95d;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      --radius: 18px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      min-height: 100%;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Inter, Arial, sans-serif;
-    }
-
-    body {
-      overflow: hidden;
-    }
-
-    button,
-    select,
-    input {
-      font: inherit;
-    }
-
-    .secondary-btn {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 11px 16px;
-  cursor: pointer;
-}
-
-    .app-shell {
-      display: grid;
-      grid-template-columns: 270px 1fr;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      background: linear-gradient(180deg, #0c1222 0%, #0d1427 100%);
-      border-right: 1px solid var(--border);
-      padding: 20px 16px;
-      overflow-y: auto;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .brand-mark {
-      width: 44px;
-      height: 44px;
-      display: grid;
-      place-items: center;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #4c78ff, #7ea2ff);
-      color: white;
-      font-weight: 800;
-    }
-
-    .brand-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .brand-subtitle {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .side-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .nav-group-label {
-      margin-top: 14px;
-      margin-bottom: 6px;
-      padding: 0 10px;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--muted);
-    }
-
-    .nav-item {
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      color: var(--text);
-      border: 1px solid transparent;
-      border-radius: 12px;
-      padding: 11px 12px;
-      cursor: pointer;
-      transition: 0.18s ease;
-    }
-
-    .nav-item:hover {
-      background: rgba(255, 255, 255, 0.04);
-      border-color: var(--border);
-    }
-
-    .nav-item.active {
-      background: rgba(95, 140, 255, 0.18);
-      border-color: rgba(95, 140, 255, 0.4);
-    }
-
-    .main {
-      overflow-y: auto;
-      padding: 22px;
-    }
-
-    .topbar {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    .topbar h1 {
-      margin: 0 0 6px;
-      font-size: 28px;
-    }
-
-    .subtitle {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    .topbar-controls {
-      display: flex;
-      align-items: end;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .control {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .control span {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .control select,
-    .control input {
-      min-width: 120px;
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 12px;
-    }
-
-    .primary-btn {
-      background: linear-gradient(135deg, #4c78ff, #7ea2ff);
-      color: white;
-      border: 0;
-      border-radius: 12px;
-      padding: 11px 16px;
-      cursor: pointer;
-      box-shadow: var(--shadow);
-    }
-
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      margin-bottom: 16px;
-    }
-
-    .two-col {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .heat-layout {
-      align-items: start;
-    }
-
-    .card {
-      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: var(--shadow);
-    }
-
-    .card-label {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-
-    .card-value {
-      font-size: 32px;
-      font-weight: 700;
-      line-height: 1.1;
-    }
-
-    .card-meta {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .mini-stat {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 12px;
-    }
-
-    .mini-label {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .mini-value {
-      font-size: 22px;
-      font-weight: 700;
-    }
-
-    .status-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .status-list div,
-    .level-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .status-list div:last-child,
-    .level-row:last-child {
-      border-bottom: 0;
-    }
-
-    .status-list span,
-    .level-row span {
-      color: var(--muted);
-    }
-
-    .heat-grid {
-      display: grid;
-      gap: 10px;
-    }
-
-    .heat-row {
-      display: grid;
-      grid-template-columns: 80px 1fr 120px;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .heat-strike {
-      font-weight: 700;
-    }
-
-    .heat-bar-wrap {
-      height: 22px;
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: 999px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    .heat-bar {
-      height: 100%;
-      border-radius: 999px;
-    }
-
-    .heat-bar.pos {
-      background: linear-gradient(90deg, rgba(28, 200, 138, 0.25), rgba(28, 200, 138, 0.95));
-    }
-
-    .heat-bar.neg {
-      background: linear-gradient(90deg, rgba(255, 90, 111, 0.25), rgba(255, 90, 111, 0.95));
-    }
-
-    .heat-value {
-      text-align: right;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .data-table th,
-    .data-table td {
-      text-align: right;
-      padding: 12px 10px;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-
-    .data-table th:first-child,
-    .data-table td:first-child {
-      text-align: left;
-    }
-
-    .placeholder-card p {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: rgba(0, 0, 0, 0.18);
-      border-radius: 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .positive {
-      color: var(--green);
-    }
-
-    .negative {
-      color: var(--red);
-    }
-
-    .neutral {
-      color: var(--yellow);
-    }
-
-    @media (max-width: 1200px) {
-      .cards-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .two-col {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 920px) {
-      body {
-        overflow: auto;
-      }
-
-      .app-shell {
-        grid-template-columns: 1fr;
-      }
-
-      .sidebar {
-        border-right: 0;
-        border-bottom: 1px solid var(--border);
-      }
-
-      .topbar {
-        flex-direction: column;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .heat-row {
-        grid-template-columns: 70px 1fr;
-      }
-
-      .heat-value {
-        grid-column: 1 / -1;
-        text-align: left;
-      }
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heat Seeker Dashboard</title>
+    <style>
+        :root {
+            --bg: #020816;
+            --panel: #06101f;
+            --panel-2: #081427;
+            --panel-3: #0a1830;
+            --border: rgba(255, 255, 255, 0.08);
+            --border-strong: rgba(255, 255, 255, 0.16);
+            --text: #eef6ff;
+            --muted: #8b9bb7;
+            --muted-2: #6f7d99;
+            --positive: #dcff1e;
+            --negative: #b423f0;
+            --blue-accent: #1aa7ff;
+            --king: #dcff1e;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            background: var(--bg);
+            color: var(--text);
+            font-family: "SFMono-Regular", Menlo, Consolas, Monaco, monospace;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        button,
+        select,
+        input {
+            font: inherit;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #050b18 0%, #071122 100%);
+            border-right: 1px solid var(--border);
+            padding: 18px 14px;
+            overflow-y: auto;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            display: grid;
+            place-items: center;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #1aa7ff, #5c7dff);
+            color: white;
+            font-weight: 800;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .brand-subtitle {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .side-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .nav-group-label {
+            margin-top: 12px;
+            margin-bottom: 6px;
+            padding: 0 8px;
+            color: var(--muted-2);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+        }
+
+        .nav-item {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 10px 10px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: var(--border);
+        }
+
+        .nav-item.active {
+            background: rgba(26, 167, 255, 0.12);
+            border-color: rgba(26, 167, 255, 0.4);
+        }
+
+        .main {
+            overflow-y: auto;
+            padding: 18px;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .heat-top-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .mini-tab {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 8px 14px;
+            cursor: default;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+
+        .mini-tab.active {
+            color: #dff4ff;
+            border-color: rgba(26, 167, 255, 0.4);
+            background: rgba(26, 167, 255, 0.1);
+        }
+
+        .heat-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+            border: 1px solid var(--border);
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .symbol-pills {
+            display: flex;
+            gap: 0;
+            border: 1px solid var(--border);
+        }
+
+        .symbol-pill {
+            background: #081122;
+            color: var(--muted);
+            border: 0;
+            border-right: 1px solid var(--border);
+            padding: 8px 16px;
+            cursor: pointer;
+        }
+
+        .symbol-pill:last-child {
+            border-right: 0;
+        }
+
+        .symbol-pill.active {
+            background: rgba(26, 167, 255, 0.18);
+            color: #eaf8ff;
+        }
+
+        .toolbar-select select {
+            min-width: 250px;
+            background: #0b1528;
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar-label {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .dte-pill {
+            background: #0b1528;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .dte-pill.active {
+            background: rgba(180, 35, 240, 0.22);
+            border-color: rgba(180, 35, 240, 0.45);
+            color: #f3dbff;
+        }
+
+        .toolbar-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-btn {
+            border: 1px solid var(--border);
+            padding: 9px 14px;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .toolbar-btn.primary {
+            background: rgba(26, 167, 255, 0.15);
+            border-color: rgba(26, 167, 255, 0.35);
+        }
+
+        .toolbar-btn.secondary {
+            background: transparent;
+        }
+
+        .status-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 12px;
+        }
+
+        .status-strip strong {
+            color: var(--text);
+        }
+
+        .overview-strip {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .overview-box {
+            background: linear-gradient(180deg, #071122 0%, #09162b 100%);
+            border: 1px solid var(--border);
+            padding: 12px;
+            min-height: 86px;
+        }
+
+        .overview-label {
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 10px;
+        }
+
+        .overview-value {
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .overview-sub {
+            margin-top: 8px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .king-box {
+            border-color: rgba(220, 255, 30, 0.45);
+            box-shadow: inset 0 0 0 1px rgba(220, 255, 30, 0.18);
+        }
+
+        .heatmap-card {
+            background: linear-gradient(180deg, #041021 0%, #071224 100%);
+            border: 1px solid var(--border);
+            padding: 12px;
+        }
+
+        .heatmap-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .heatmap-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #d9efff;
+        }
+
+        .heatmap-subtitle {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .heatmap-frame {
+            display: grid;
+            grid-template-columns: 1fr 28px;
+            gap: 10px;
+            align-items: start;
+        }
+
+        .heatmap-scroll {
+            overflow: auto;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: #020a16;
+            max-height: 72vh;
+        }
+
+        .heatmap-table {
+            border-collapse: collapse;
+            min-width: 1300px;
+            width: max-content;
+        }
+
+        .heatmap-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 4;
+            background: #05101f;
+            color: #d9efff;
+            font-weight: 600;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-strong);
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+            font-size: 12px;
+        }
+
+        .heatmap-table thead th:first-child {
+            left: 0;
+            z-index: 5;
+            position: sticky;
+            min-width: 82px;
+            text-align: left;
+        }
+
+        .heatmap-table tbody td {
+            padding: 0;
+            border-right: 1px solid rgba(255, 255, 255, 0.035);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.035);
+        }
+
+        .strike-cell {
+            position: sticky;
+            left: 0;
+            z-index: 3;
+            min-width: 82px;
+            background: #071122;
+            color: #ddeaff;
+            font-size: 13px;
+            padding: 10px 10px !important;
+            text-align: right;
+        }
+
+        .strike-cell.king-strike {
+            color: var(--king);
+            box-shadow: inset 3px 0 0 0 var(--king);
+            font-weight: 700;
+        }
+
+        .gex-cell {
+            min-width: 108px;
+            height: 38px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 12px;
+            color: #e9f3ff;
+            position: relative;
+        }
+
+        .gex-cell-inner {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            place-items: center;
+            padding: 6px;
+        }
+
+        .gex-cell.king-cell {
+            outline: 2px solid var(--king);
+            outline-offset: -2px;
+            box-shadow: inset 0 0 0 1px rgba(220, 255, 30, 0.25);
+        }
+
+        .gex-cell.current-strike {
+            box-shadow: inset 0 0 0 1px rgba(220, 255, 30, 0.18);
+        }
+
+        .heatmap-legend {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding-top: 2px;
+        }
+
+        .legend-top,
+        .legend-mid,
+        .legend-bot {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .legend-bar {
+            width: 22px;
+            height: 100%;
+            min-height: 420px;
+            background: linear-gradient(180deg,
+                    #dcff1e 0%,
+                    #6f8420 30%,
+                    #08111f 50%,
+                    #51107a 72%,
+                    #b423f0 100%);
+            border: 1px solid var(--border);
+        }
+
+        .debug-card {
+            margin-top: 14px;
+            background: linear-gradient(180deg, #071122 0%, #09162b 100%);
+            border: 1px solid var(--border);
+            padding: 12px;
+        }
+
+        .debug-title {
+            margin-bottom: 8px;
+            color: var(--muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.05em;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: #bdd0ea;
+            font-size: 11px;
+        }
+
+        .positive {
+            color: #dcff1e !important;
+        }
+
+        .negative {
+            color: #d28cff !important;
+        }
+
+        .neutral {
+            color: #d2d8e4 !important;
+        }
+
+        @media (max-width: 1100px) {
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .overview-strip {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 720px) {
+            .overview-strip {
+                grid-template-columns: 1fr;
+            }
+
+            .heatmap-frame {
+                grid-template-columns: 1fr;
+            }
+
+            .legend-bar {
+                width: 100%;
+                height: 18px;
+                min-height: 18px;
+                background: linear-gradient(90deg,
+                        #b423f0 0%,
+                        #51107a 24%,
+                        #08111f 50%,
+                        #6f8420 72%,
+                        #dcff1e 100%);
+            }
+
+            .heatmap-legend {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+    </style>
 </head>
 
 
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">HS</div>
-        <div>
-          <div class="brand-title">Heat Seeker</div>
-          <div class="brand-subtitle">Gamma Dashboard</div>
-        </div>
-      </div>
-
-      <nav class="side-nav">
-        <button class="nav-item" data-view="market-overview">Market Overview</button>
-        <button class="nav-item" data-view="strategy-tester">Strategy Tester</button>
-        <button class="nav-item" data-view="agents">Agents</button>
-
-        <div class="nav-group-label">Signals & Intelligence</div>
-        <button class="nav-item active" data-view="heat-seeker">Heat Seeker</button>
-        <button class="nav-item" data-view="options-flow">Options Flow</button>
-        <button class="nav-item" data-view="smart-money">Smart Money</button>
-        <button class="nav-item" data-view="dark-pool">Dark Pool</button>
-        <button class="nav-item" data-view="mag7">Mag 7</button>
-        <button class="nav-item" data-view="futures">Futures</button>
-        <button class="nav-item" data-view="commodities">Commodities & Metals</button>
-        <button class="nav-item" data-view="fx">FX Markets</button>
-        <button class="nav-item" data-view="penny-scanner">Penny Scanner</button>
-        <button class="nav-item" data-view="earnings-vol">Earnings Vol</button>
-        <button class="nav-item" data-view="sentiment">Sentiment</button>
-
-        <div class="nav-group-label">Macro</div>
-        <button class="nav-item" data-view="treasury-risks">Treasury & Risks</button>
-      </nav>
-    </aside>
-
-    <main class="main">
-      <section class="view active" id="view-heat-seeker">
-        <div class="heat-top-tabs">
-          <button class="mini-tab">Dealer Positioning</button>
-          <button class="mini-tab active">GEX by Expiry</button>
-        </div>
-
-        <div class="heat-toolbar">
-          <div class="symbol-pills">
-            <button class="symbol-pill" data-symbol="SPX">SPX</button>
-            <button class="symbol-pill active" data-symbol="SPY">SPY</button>
-            <button class="symbol-pill" data-symbol="QQQ">QQQ</button>
-            <button class="symbol-pill" data-symbol="IWM">IWM</button>
-          </div>
-
-          <div class="toolbar-group toolbar-select">
-            <select id="symbolSelect">
-              <option value="SPY">SPY — S&amp;P 500 ETF</option>
-              <option value="SPX">SPX — S&amp;P 500 Index</option>
-              <option value="VIX">VIX — Volatility Index</option>
-            </select>
-          </div>
-
-          <div class="toolbar-group">
-            <span class="toolbar-label">DTE:</span>
-            <button class="dte-pill" data-days="7">7d</button>
-            <button class="dte-pill" data-days="14">14d</button>
-            <button class="dte-pill active" data-days="30">30d</button>
-            <button class="dte-pill" data-days="45">45d</button>
-          </div>
-
-          <div class="toolbar-actions">
-            <button id="connectBtn" class="toolbar-btn secondary">Connect Schwab</button>
-            <button id="refreshBtn" class="toolbar-btn primary">Refresh</button>
-          </div>
-        </div>
-
-        <div class="status-strip">
-          <div>Status: <strong id="status-auth">--</strong></div>
-          <div>Quotes: <strong id="status-quotes">--</strong></div>
-          <div>Heat: <strong id="status-heat">--</strong></div>
-          <div>Updated: <strong id="status-updated">--</strong></div>
-        </div>
-
-        <div class="overview-strip">
-          <div class="overview-box">
-            <div class="overview-label">Underlying</div>
-            <div class="overview-value" id="heat-underlying-price">--</div>
-            <div class="overview-sub" id="heat-underlying-symbol">--</div>
-          </div>
-          <div class="overview-box">
-            <div class="overview-label">Call Wall</div>
-            <div class="overview-value" id="heat-call-wall">--</div>
-            <div class="overview-sub" id="heat-call-wall-oi">--</div>
-          </div>
-          <div class="overview-box">
-            <div class="overview-label">Put Wall</div>
-            <div class="overview-value" id="heat-put-wall">--</div>
-            <div class="overview-sub" id="heat-put-wall-oi">--</div>
-          </div>
-          <div class="overview-box king-box">
-            <div class="overview-label">King Strike</div>
-            <div class="overview-value" id="king-strike-value">--</div>
-            <div class="overview-sub" id="king-strike-meta">--</div>
-          </div>
-        </div>
-
-        <div class="heatmap-card">
-          <div class="heatmap-header">
-            <div class="heatmap-title">GEX by Expiry</div>
-            <div class="heatmap-subtitle" id="heatmapSubtitle">Loading...</div>
-          </div>
-
-          <div class="heatmap-frame">
-            <div class="heatmap-scroll">
-              <table class="heatmap-table" id="heatmapTable">
-                <thead id="heatmapHead"></thead>
-                <tbody id="heatmapBody"></tbody>
-              </table>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-mark">HS</div>
+                <div>
+                    <div class="brand-title">Heat Seeker</div>
+                    <div class="brand-subtitle">Gamma Dashboard</div>
+                </div>
             </div>
 
-            <div class="heatmap-legend">
-              <div class="legend-top">+</div>
-              <div class="legend-bar"></div>
-              <div class="legend-mid">0</div>
-              <div class="legend-bot">−</div>
-            </div>
-          </div>
-        </div>
+            <nav class="side-nav">
+                <button class="nav-item" data-view="market-overview">Market Overview</button>
+                <button class="nav-item" data-view="strategy-tester">Strategy Tester</button>
+                <button class="nav-item" data-view="agents">Agents</button>
 
-        <div class="debug-card">
-          <div class="debug-title">Debug</div>
-          <pre id="debugOutput">Waiting for data...</pre>
-        </div>
-      </section>
-    </main>
-  </div>
+                <div class="nav-group-label">Signals & Intelligence</div>
+                <button class="nav-item active" data-view="heat-seeker">Heat Seeker</button>
+                <button class="nav-item" data-view="options-flow">Options Flow</button>
+                <button class="nav-item" data-view="smart-money">Smart Money</button>
+                <button class="nav-item" data-view="dark-pool">Dark Pool</button>
+                <button class="nav-item" data-view="mag7">Mag 7</button>
+                <button class="nav-item" data-view="futures">Futures</button>
+                <button class="nav-item" data-view="commodities">Commodities & Metals</button>
+                <button class="nav-item" data-view="fx">FX Markets</button>
+                <button class="nav-item" data-view="penny-scanner">Penny Scanner</button>
+                <button class="nav-item" data-view="earnings-vol">Earnings Vol</button>
+                <button class="nav-item" data-view="sentiment">Sentiment</button>
 
-  <script src="/heat.js"></script>
+                <div class="nav-group-label">Macro</div>
+                <button class="nav-item" data-view="treasury-risks">Treasury & Risks</button>
+            </nav>
+        </aside>
+
+        <main class="main">
+            <section class="view active" id="view-heat-seeker">
+                <div class="heat-top-tabs">
+                    <button class="mini-tab">Dealer Positioning</button>
+                    <button class="mini-tab active">GEX by Expiry</button>
+                </div>
+
+                <div class="heat-toolbar">
+                    <div class="symbol-pills">
+                        <button class="symbol-pill" data-symbol="SPX">SPX</button>
+                        <button class="symbol-pill active" data-symbol="SPY">SPY</button>
+                        <button class="symbol-pill" data-symbol="QQQ">QQQ</button>
+                        <button class="symbol-pill" data-symbol="IWM">IWM</button>
+                    </div>
+
+                    <div class="toolbar-group toolbar-select">
+                        <select id="symbolSelect">
+                            <option value="SPY">SPY — S&amp;P 500 ETF</option>
+                            <option value="SPX">SPX — S&amp;P 500 Index</option>
+                            <option value="VIX">VIX — Volatility Index</option>
+                        </select>
+                    </div>
+
+                    <div class="toolbar-group">
+                        <span class="toolbar-label">DTE:</span>
+                        <button class="dte-pill" data-days="7">7d</button>
+                        <button class="dte-pill" data-days="14">14d</button>
+                        <button class="dte-pill active" data-days="30">30d</button>
+                        <button class="dte-pill" data-days="45">45d</button>
+                    </div>
+
+                    <div class="toolbar-actions">
+                        <button id="connectBtn" class="toolbar-btn secondary">Connect Schwab</button>
+                        <button id="refreshBtn" class="toolbar-btn primary">Refresh</button>
+                    </div>
+                </div>
+
+                <div class="status-strip">
+                    <div>Status: <strong id="status-auth">--</strong></div>
+                    <div>Quotes: <strong id="status-quotes">--</strong></div>
+                    <div>Heat: <strong id="status-heat">--</strong></div>
+                    <div>Updated: <strong id="status-updated">--</strong></div>
+                </div>
+
+                <div class="overview-strip">
+                    <div class="overview-box">
+                        <div class="overview-label">Underlying</div>
+                        <div class="overview-value" id="heat-underlying-price">--</div>
+                        <div class="overview-sub" id="heat-underlying-symbol">--</div>
+                    </div>
+                    <div class="overview-box">
+                        <div class="overview-label">Call Wall</div>
+                        <div class="overview-value" id="heat-call-wall">--</div>
+                        <div class="overview-sub" id="heat-call-wall-oi">--</div>
+                    </div>
+                    <div class="overview-box">
+                        <div class="overview-label">Put Wall</div>
+                        <div class="overview-value" id="heat-put-wall">--</div>
+                        <div class="overview-sub" id="heat-put-wall-oi">--</div>
+                    </div>
+                    <div class="overview-box king-box">
+                        <div class="overview-label">King Strike</div>
+                        <div class="overview-value" id="king-strike-value">--</div>
+                        <div class="overview-sub" id="king-strike-meta">--</div>
+                    </div>
+                </div>
+
+                <div class="heatmap-card">
+                    <div class="heatmap-header">
+                        <div class="heatmap-title">GEX by Expiry</div>
+                        <div class="heatmap-subtitle" id="heatmapSubtitle">Loading...</div>
+                    </div>
+
+                    <div class="heatmap-frame">
+                        <div class="heatmap-scroll">
+                            <table class="heatmap-table" id="heatmapTable">
+                                <thead id="heatmapHead"></thead>
+                                <tbody id="heatmapBody"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="heatmap-legend">
+                            <div class="legend-top">+</div>
+                            <div class="legend-bar"></div>
+                            <div class="legend-mid">0</div>
+                            <div class="legend-bot">−</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="debug-card">
+                    <div class="debug-title">Debug</div>
+                    <pre id="debugOutput">Waiting for data...</pre>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/heat.js"></script>
 </body>
+
 </html>
