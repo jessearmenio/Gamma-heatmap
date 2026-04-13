@@ -147,8 +147,17 @@ function getFutureISO(daysAhead) {
   return d.toISOString().slice(0, 10);
 }
 
+function mapChainSymbol(rawSymbol) {
+  const normalized = String(rawSymbol || "").trim().toUpperCase();
+
+  if (normalized === "SPX") return "$SPX";
+  if (normalized === "VIX") return "$VIX";
+
+  return normalized;
+}
+
 async function fetchChain(symbol, accessToken, overrides = {}) {
-  const normalizedSymbol = String(symbol || "").trim().toUpperCase();
+  const normalizedSymbol = mapChainSymbol(symbol);
 
   // Keep the default request intentionally narrow to avoid huge payloads.
   const params = {
@@ -188,9 +197,10 @@ app.get("/api/chain", async (req, res) => {
       });
     }
 
-    const symbol = (req.query.symbol || "SPY").toUpperCase();
+    const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
+    const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const response = await fetchChain(symbol, schwabTokens.access_token, {
+    const response = await fetchChain(requestedSymbol, schwabTokens.access_token, {
       contractType: req.query.contractType,
       strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : undefined,
       includeUnderlyingQuote:
@@ -209,7 +219,8 @@ app.get("/api/chain", async (req, res) => {
 
     res.json({
       ok: true,
-      symbol,
+      requestedSymbol,
+      actualSymbol,
       request: response.config?.params || null,
       data: response.data
     });
@@ -248,6 +259,8 @@ app.get("/api/chains", async (req, res) => {
 
     for (const symbol of symbols) {
       try {
+        const actualSymbol = mapChainSymbol(symbol);
+
         const response = await fetchChain(symbol, schwabTokens.access_token, {
           contractType: req.query.contractType,
           strikeCount,
@@ -266,6 +279,8 @@ app.get("/api/chains", async (req, res) => {
         });
 
         results[symbol] = {
+          requestedSymbol: symbol,
+          actualSymbol,
           request: response.config?.params || null,
           data: response.data
         };
@@ -274,6 +289,8 @@ app.get("/api/chains", async (req, res) => {
         console.error(err.response?.data || err.message);
 
         errors[symbol] = {
+          requestedSymbol: symbol,
+          actualSymbol: mapChainSymbol(symbol),
           status: err.response?.status || 500,
           details: err.response?.data || err.message
         };
@@ -293,6 +310,149 @@ app.get("/api/chains", async (req, res) => {
     res.status(500).json({
       ok: false,
       error: "Failed to fetch options chains."
+    });
+  }
+});
+
+function flattenExpDateMap(expDateMap, side) {
+  const rows = [];
+
+  if (!expDateMap || typeof expDateMap !== "object") {
+    return rows;
+  }
+
+  for (const expKey of Object.keys(expDateMap)) {
+    const strikesObj = expDateMap[expKey];
+    if (!strikesObj || typeof strikesObj !== "object") continue;
+
+    for (const strikeKey of Object.keys(strikesObj)) {
+      const contracts = strikesObj[strikeKey];
+      if (!Array.isArray(contracts)) continue;
+
+      for (const contract of contracts) {
+        const strike = Number(contract.strikePrice ?? strikeKey);
+        const gamma = Number(contract.gamma ?? 0);
+        const openInterest = Number(contract.openInterest ?? 0);
+        const daysToExpiration = Number(contract.daysToExpiration ?? 0);
+
+        rows.push({
+          side,
+          expKey,
+          strike,
+          gamma,
+          openInterest,
+          daysToExpiration,
+          symbol: contract.symbol,
+          inTheMoney: !!contract.inTheMoney
+        });
+      }
+    }
+  }
+
+  return rows;
+}
+
+app.get("/api/heat", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({
+        ok: false,
+        error: "No access token yet. Connect Schwab first."
+      });
+    }
+
+    const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
+    const actualSymbol = mapChainSymbol(requestedSymbol);
+
+    const response = await fetchChain(requestedSymbol, schwabTokens.access_token, {
+      contractType: req.query.contractType,
+      strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 8,
+      includeUnderlyingQuote: false,
+      fromDate: req.query.fromDate,
+      toDate: req.query.toDate,
+      range: req.query.range,
+      expMonth: req.query.expMonth,
+      optionType: req.query.optionType,
+      strike: req.query.strike
+    });
+
+    const chain = response.data || {};
+    const underlyingPrice = Number(chain.underlyingPrice ?? 0);
+
+    const calls = flattenExpDateMap(chain.callExpDateMap, "CALL");
+    const puts = flattenExpDateMap(chain.putExpDateMap, "PUT");
+    const allRows = [...calls, ...puts];
+
+    const byStrike = new Map();
+
+    for (const row of allRows) {
+      if (!byStrike.has(row.strike)) {
+        byStrike.set(row.strike, {
+          strike: row.strike,
+          callOpenInterest: 0,
+          putOpenInterest: 0,
+          callGammaSum: 0,
+          putGammaSum: 0,
+          callGex: 0,
+          putGex: 0,
+          netGex: 0
+        });
+      }
+
+      const bucket = byStrike.get(row.strike);
+      const gex = row.gamma * row.openInterest * 100;
+
+      if (row.side === "CALL") {
+        bucket.callOpenInterest += row.openInterest;
+        bucket.callGammaSum += row.gamma;
+        bucket.callGex += gex;
+      } else {
+        bucket.putOpenInterest += row.openInterest;
+        bucket.putGammaSum += row.gamma;
+        bucket.putGex -= gex;
+      }
+
+      bucket.netGex = bucket.callGex + bucket.putGex;
+    }
+
+    const strikes = Array.from(byStrike.values()).sort((a, b) => a.strike - b.strike);
+
+    const strongestCallWall =
+      [...strikes].sort((a, b) => b.callOpenInterest - a.callOpenInterest)[0] || null;
+    const strongestPutWall =
+      [...strikes].sort((a, b) => b.putOpenInterest - a.putOpenInterest)[0] || null;
+    const strongestPositiveGex =
+      [...strikes].sort((a, b) => b.netGex - a.netGex)[0] || null;
+    const strongestNegativeGex =
+      [...strikes].sort((a, b) => a.netGex - b.netGex)[0] || null;
+
+    res.json({
+      ok: true,
+      requestedSymbol,
+      actualSymbol,
+      request: response.config?.params || null,
+      underlyingPrice,
+      contractCount: allRows.length,
+      expirations: {
+        calls: Object.keys(chain.callExpDateMap || {}),
+        puts: Object.keys(chain.putExpDateMap || {})
+      },
+      summary: {
+        strongestCallWall,
+        strongestPutWall,
+        strongestPositiveGex,
+        strongestNegativeGex
+      },
+      strikes
+    });
+  } catch (error) {
+    console.error("HEAT ERROR:");
+    console.error(error.response?.data || error.message);
+
+    res.status(error.response?.status || 500).json({
+      ok: false,
+      error: "Failed to build heat data.",
+      details: error.response?.data || error.message
     });
   }
 });
