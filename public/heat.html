@@ -437,6 +437,7 @@
   </style>
 </head>
 
+
 <body>
   <div class="app-shell">
     <aside class="sidebar">
@@ -444,17 +445,17 @@
         <div class="brand-mark">HS</div>
         <div>
           <div class="brand-title">Heat Seeker</div>
-          <div class="brand-subtitle">Market Structure Dashboard</div>
+          <div class="brand-subtitle">Gamma Dashboard</div>
         </div>
       </div>
 
       <nav class="side-nav">
-        <button class="nav-item active" data-view="market-overview">Market Overview</button>
+        <button class="nav-item" data-view="market-overview">Market Overview</button>
         <button class="nav-item" data-view="strategy-tester">Strategy Tester</button>
         <button class="nav-item" data-view="agents">Agents</button>
 
         <div class="nav-group-label">Signals & Intelligence</div>
-        <button class="nav-item" data-view="heat-seeker">Heat Seeker</button>
+        <button class="nav-item active" data-view="heat-seeker">Heat Seeker</button>
         <button class="nav-item" data-view="options-flow">Options Flow</button>
         <button class="nav-item" data-view="smart-money">Smart Money</button>
         <button class="nav-item" data-view="dark-pool">Dark Pool</button>
@@ -472,290 +473,103 @@
     </aside>
 
     <main class="main">
-      <header class="topbar">
-        <div>
-          <h1 id="pageTitle">Market Overview</h1>
-          <p class="subtitle" id="pageSubtitle">Live market structure and options positioning</p>
+      <section class="view active" id="view-heat-seeker">
+        <div class="heat-top-tabs">
+          <button class="mini-tab">Dealer Positioning</button>
+          <button class="mini-tab active">GEX by Expiry</button>
         </div>
 
-        <div class="topbar-controls">
-          <label class="control">
-            <span>Symbol</span>
-            <select id="symbolSelect">
-              <option value="SPY">SPY</option>
-              <option value="SPX">SPX</option>
-              <option value="VIX">VIX</option>
-            </select>
-          </label>
-
-          <label class="control">
-            <span>Strike Count</span>
-            <select id="strikeCountSelect">
-              <option value="8">8</option>
-              <option value="12" selected>12</option>
-              <option value="16">16</option>
-              <option value="20">20</option>
-            </select>
-          </label>
-
-          <label class="control">
-            <span>From</span>
-            <input id="fromDateInput" type="date" />
-          </label>
-
-          <label class="control">
-            <span>To</span>
-            <input id="toDateInput" type="date" />
-          </label>
-
-          <button id="connectBtn" class="secondary-btn">Connect Schwab</button>
-          <button id="refreshBtn" class="primary-btn">Refresh</button>
-        </div>
-      </header>
-
-      <section class="view active" id="view-market-overview">
-        <div class="cards-grid">
-          <article class="card">
-            <div class="card-label">SPY</div>
-            <div class="card-value" id="ov-spy-price">--</div>
-            <div class="card-meta" id="ov-spy-change">--</div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">SPX</div>
-            <div class="card-value" id="ov-spx-price">--</div>
-            <div class="card-meta" id="ov-spx-change">--</div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">VIX</div>
-            <div class="card-value" id="ov-vix-price">--</div>
-            <div class="card-meta" id="ov-vix-change">--</div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Selected Symbol</div>
-            <div class="card-value" id="ov-selected-symbol">--</div>
-            <div class="card-meta" id="ov-selected-price">--</div>
-          </article>
-        </div>
-
-        <div class="two-col">
-          <article class="card">
-            <div class="section-title">Positioning Summary</div>
-            <div class="summary-grid">
-              <div class="mini-stat">
-                <div class="mini-label">Call Wall</div>
-                <div class="mini-value" id="sum-call-wall">--</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-label">Put Wall</div>
-                <div class="mini-value" id="sum-put-wall">--</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-label">Positive GEX</div>
-                <div class="mini-value" id="sum-pos-gex">--</div>
-              </div>
-              <div class="mini-stat">
-                <div class="mini-label">Negative GEX</div>
-                <div class="mini-value" id="sum-neg-gex">--</div>
-              </div>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="section-title">System Status</div>
-            <div class="status-list">
-              <div><span>Auth</span><strong id="status-auth">--</strong></div>
-              <div><span>Quotes</span><strong id="status-quotes">--</strong></div>
-              <div><span>Heat</span><strong id="status-heat">--</strong></div>
-              <div><span>Updated</span><strong id="status-updated">--</strong></div>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="view" id="view-heat-seeker">
-        <div class="cards-grid">
-          <article class="card">
-            <div class="card-label">Underlying</div>
-            <div class="card-value" id="heat-underlying-price">--</div>
-            <div class="card-meta" id="heat-underlying-symbol">--</div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Strongest Call Wall</div>
-            <div class="card-value" id="heat-call-wall">--</div>
-            <div class="card-meta" id="heat-call-wall-oi">--</div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Strongest Put Wall</div>
-            <div class="card-value" id="heat-put-wall">--</div>
-            <div class="card-meta" id="heat-put-wall-oi">--</div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Net Gamma Bias</div>
-            <div class="card-value" id="heat-bias">--</div>
-            <div class="card-meta" id="heat-contract-count">--</div>
-          </article>
-        </div>
-
-        <div class="two-col heat-layout">
-          <article class="card">
-            <div class="section-title">Strike Heat</div>
-            <div id="heatGrid" class="heat-grid"></div>
-          </article>
-
-          <article class="card">
-            <div class="section-title">Key Levels</div>
-            <div class="levels-panel">
-              <div class="level-row">
-                <span>Spot</span>
-                <strong id="level-spot">--</strong>
-              </div>
-              <div class="level-row">
-                <span>Call Wall</span>
-                <strong id="level-call-wall">--</strong>
-              </div>
-              <div class="level-row">
-                <span>Put Wall</span>
-                <strong id="level-put-wall">--</strong>
-              </div>
-              <div class="level-row">
-                <span>Top Positive GEX</span>
-                <strong id="level-pos-gex">--</strong>
-              </div>
-              <div class="level-row">
-                <span>Top Negative GEX</span>
-                <strong id="level-neg-gex">--</strong>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <article class="card">
-          <div class="section-title">Strike Table</div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Strike</th>
-                  <th>Call OI</th>
-                  <th>Put OI</th>
-                  <th>Call GEX</th>
-                  <th>Put GEX</th>
-                  <th>Net GEX</th>
-                </tr>
-              </thead>
-              <tbody id="strikeTableBody"></tbody>
-            </table>
+        <div class="heat-toolbar">
+          <div class="symbol-pills">
+            <button class="symbol-pill" data-symbol="SPX">SPX</button>
+            <button class="symbol-pill active" data-symbol="SPY">SPY</button>
+            <button class="symbol-pill" data-symbol="QQQ">QQQ</button>
+            <button class="symbol-pill" data-symbol="IWM">IWM</button>
           </div>
-        </article>
-      </section>
 
-      <section class="view" id="view-strategy-tester">
-        <article class="card placeholder-card">
-          <div class="section-title">Strategy Tester</div>
-          <p>Reserved for scenario testing, level reaction analysis, and historical positioning playback.</p>
-        </article>
-      </section>
+          <div class="toolbar-group toolbar-select">
+            <select id="symbolSelect">
+              <option value="SPY">SPY — S&amp;P 500 ETF</option>
+              <option value="SPX">SPX — S&amp;P 500 Index</option>
+              <option value="VIX">VIX — Volatility Index</option>
+            </select>
+          </div>
 
-      <section class="view" id="view-agents">
-        <article class="card placeholder-card">
-          <div class="section-title">Agents</div>
-          <p>Reserved for alerting, automated reads, and market state assistants.</p>
-        </article>
-      </section>
+          <div class="toolbar-group">
+            <span class="toolbar-label">DTE:</span>
+            <button class="dte-pill" data-days="7">7d</button>
+            <button class="dte-pill" data-days="14">14d</button>
+            <button class="dte-pill active" data-days="30">30d</button>
+            <button class="dte-pill" data-days="45">45d</button>
+          </div>
 
-      <section class="view" id="view-options-flow">
-        <article class="card placeholder-card">
-          <div class="section-title">Options Flow</div>
-          <p>UI ready. Data source still needed beyond Schwab chain/quote endpoints.</p>
-        </article>
-      </section>
+          <div class="toolbar-actions">
+            <button id="connectBtn" class="toolbar-btn secondary">Connect Schwab</button>
+            <button id="refreshBtn" class="toolbar-btn primary">Refresh</button>
+          </div>
+        </div>
 
-      <section class="view" id="view-smart-money">
-        <article class="card placeholder-card">
-          <div class="section-title">Smart Money</div>
-          <p>Reserved for block activity, unusual sweeps, and directional concentration.</p>
-        </article>
-      </section>
+        <div class="status-strip">
+          <div>Status: <strong id="status-auth">--</strong></div>
+          <div>Quotes: <strong id="status-quotes">--</strong></div>
+          <div>Heat: <strong id="status-heat">--</strong></div>
+          <div>Updated: <strong id="status-updated">--</strong></div>
+        </div>
 
-      <section class="view" id="view-dark-pool">
-        <article class="card placeholder-card">
-          <div class="section-title">Dark Pool</div>
-          <p>Reserved for off-exchange prints and liquidity concentration.</p>
-        </article>
-      </section>
+        <div class="overview-strip">
+          <div class="overview-box">
+            <div class="overview-label">Underlying</div>
+            <div class="overview-value" id="heat-underlying-price">--</div>
+            <div class="overview-sub" id="heat-underlying-symbol">--</div>
+          </div>
+          <div class="overview-box">
+            <div class="overview-label">Call Wall</div>
+            <div class="overview-value" id="heat-call-wall">--</div>
+            <div class="overview-sub" id="heat-call-wall-oi">--</div>
+          </div>
+          <div class="overview-box">
+            <div class="overview-label">Put Wall</div>
+            <div class="overview-value" id="heat-put-wall">--</div>
+            <div class="overview-sub" id="heat-put-wall-oi">--</div>
+          </div>
+          <div class="overview-box king-box">
+            <div class="overview-label">King Strike</div>
+            <div class="overview-value" id="king-strike-value">--</div>
+            <div class="overview-sub" id="king-strike-meta">--</div>
+          </div>
+        </div>
 
-      <section class="view" id="view-mag7">
-        <article class="card placeholder-card">
-          <div class="section-title">Mag 7</div>
-          <p>Reserved for a basket overview of the major large-cap tech names.</p>
-        </article>
-      </section>
+        <div class="heatmap-card">
+          <div class="heatmap-header">
+            <div class="heatmap-title">GEX by Expiry</div>
+            <div class="heatmap-subtitle" id="heatmapSubtitle">Loading...</div>
+          </div>
 
-      <section class="view" id="view-futures">
-        <article class="card placeholder-card">
-          <div class="section-title">Futures</div>
-          <p>Reserved for ES, NQ, RTY, CL, GC, and related positioning views.</p>
-        </article>
-      </section>
+          <div class="heatmap-frame">
+            <div class="heatmap-scroll">
+              <table class="heatmap-table" id="heatmapTable">
+                <thead id="heatmapHead"></thead>
+                <tbody id="heatmapBody"></tbody>
+              </table>
+            </div>
 
-      <section class="view" id="view-commodities">
-        <article class="card placeholder-card">
-          <div class="section-title">Commodities & Metals</div>
-          <p>Reserved for gold, silver, crude, copper, and related risk views.</p>
-        </article>
-      </section>
+            <div class="heatmap-legend">
+              <div class="legend-top">+</div>
+              <div class="legend-bar"></div>
+              <div class="legend-mid">0</div>
+              <div class="legend-bot">−</div>
+            </div>
+          </div>
+        </div>
 
-      <section class="view" id="view-fx">
-        <article class="card placeholder-card">
-          <div class="section-title">FX Markets</div>
-          <p>Reserved for dollar, major pairs, and macro pressure mapping.</p>
-        </article>
-      </section>
-
-      <section class="view" id="view-penny-scanner">
-        <article class="card placeholder-card">
-          <div class="section-title">Penny Scanner</div>
-          <p>Reserved for speculative low-float and momentum scanning.</p>
-        </article>
-      </section>
-
-      <section class="view" id="view-earnings-vol">
-        <article class="card placeholder-card">
-          <div class="section-title">Earnings Vol</div>
-          <p>Reserved for earnings IV expansion, crush, and expected move views.</p>
-        </article>
-      </section>
-
-      <section class="view" id="view-sentiment">
-        <article class="card placeholder-card">
-          <div class="section-title">Sentiment</div>
-          <p>Reserved for breadth, fear/greed, positioning tone, and regime signals.</p>
-        </article>
-      </section>
-
-      <section class="view" id="view-treasury-risks">
-        <article class="card placeholder-card">
-          <div class="section-title">Treasury & Risks</div>
-          <p>Reserved for rates, duration pressure, macro instability, and risk triggers.</p>
-        </article>
-      </section>
-
-      <section class="view" id="view-market-overview-debug">
-        <article class="card">
-          <div class="section-title">Debug Output</div>
+        <div class="debug-card">
+          <div class="debug-title">Debug</div>
           <pre id="debugOutput">Waiting for data...</pre>
-        </article>
+        </div>
       </section>
     </main>
   </div>
 
   <script src="/heat.js"></script>
 </body>
-
 </html>

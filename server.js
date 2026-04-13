@@ -99,7 +99,7 @@ app.get("/api/token-status", (_req, res) => {
   });
 });
 
-// Basic quote endpoint test
+// Quotes
 app.get("/api/quotes", async (req, res) => {
   try {
     if (!schwabTokens?.access_token) {
@@ -234,84 +234,6 @@ app.get("/api/chain", async (req, res) => {
   }
 });
 
-// Multi-symbol chain loader for dashboard use
-app.get("/api/chains", async (req, res) => {
-  try {
-    if (!schwabTokens?.access_token) {
-      return res.status(401).json({
-        ok: false,
-        error: "No access token yet. Connect Schwab first."
-      });
-    }
-
-    const rawSymbols = req.query.symbols || "SPY,SPX,VIX";
-    const symbols = rawSymbols
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean);
-
-    const strikeCount = req.query.strikeCount ? Number(req.query.strikeCount) : undefined;
-
-    const results = {};
-    const errors = {};
-
-    for (const symbol of symbols) {
-      try {
-        const actualSymbol = mapChainSymbol(symbol);
-
-        const response = await fetchChain(symbol, schwabTokens.access_token, {
-          contractType: req.query.contractType,
-          strikeCount,
-          includeUnderlyingQuote:
-            req.query.includeUnderlyingQuote === "true"
-              ? true
-              : req.query.includeUnderlyingQuote === "false"
-                ? false
-                : undefined,
-          fromDate: req.query.fromDate,
-          toDate: req.query.toDate,
-          range: req.query.range,
-          expMonth: req.query.expMonth,
-          optionType: req.query.optionType,
-          strike: req.query.strike
-        });
-
-        results[symbol] = {
-          requestedSymbol: symbol,
-          actualSymbol,
-          request: response.config?.params || null,
-          data: response.data
-        };
-      } catch (err) {
-        console.error(`CHAIN ERROR FOR ${symbol}:`);
-        console.error(err.response?.data || err.message);
-
-        errors[symbol] = {
-          requestedSymbol: symbol,
-          actualSymbol: mapChainSymbol(symbol),
-          status: err.response?.status || 500,
-          details: err.response?.data || err.message
-        };
-      }
-    }
-
-    res.json({
-      ok: true,
-      symbols,
-      results,
-      errors
-    });
-  } catch (error) {
-    console.error("CHAINS ERROR:");
-    console.error(error.response?.data || error.message);
-
-    res.status(500).json({
-      ok: false,
-      error: "Failed to fetch options chains."
-    });
-  }
-});
-
 function flattenExpDateMap(expDateMap, side) {
   const rows = [];
 
@@ -350,6 +272,14 @@ function flattenExpDateMap(expDateMap, side) {
   return rows;
 }
 
+function sortExpKeys(expKeys) {
+  return [...expKeys].sort((a, b) => {
+    const aDate = a.split(":")[0];
+    const bDate = b.split(":")[0];
+    return new Date(aDate) - new Date(bDate);
+  });
+}
+
 function buildHeatFromChain(chain) {
   const underlyingPrice = Number(chain.underlyingPrice ?? 0);
 
@@ -358,8 +288,12 @@ function buildHeatFromChain(chain) {
   const allRows = [...calls, ...puts];
 
   const byStrike = new Map();
+  const byCell = new Map();
+  const expSet = new Set();
 
   for (const row of allRows) {
+    expSet.add(row.expKey);
+
     if (!byStrike.has(row.strike)) {
       byStrike.set(row.strike, {
         strike: row.strike,
@@ -373,23 +307,61 @@ function buildHeatFromChain(chain) {
       });
     }
 
-    const bucket = byStrike.get(row.strike);
+    const strikeBucket = byStrike.get(row.strike);
+    const cellKey = `${row.expKey}|${row.strike}`;
+
+    if (!byCell.has(cellKey)) {
+      byCell.set(cellKey, {
+        expKey: row.expKey,
+        strike: row.strike,
+        callGex: 0,
+        putGex: 0,
+        netGex: 0
+      });
+    }
+
+    const cell = byCell.get(cellKey);
     const gex = row.gamma * row.openInterest * 100;
 
     if (row.side === "CALL") {
-      bucket.callOpenInterest += row.openInterest;
-      bucket.callGammaSum += row.gamma;
-      bucket.callGex += gex;
+      strikeBucket.callOpenInterest += row.openInterest;
+      strikeBucket.callGammaSum += row.gamma;
+      strikeBucket.callGex += gex;
+
+      cell.callGex += gex;
     } else {
-      bucket.putOpenInterest += row.openInterest;
-      bucket.putGammaSum += row.gamma;
-      bucket.putGex -= gex;
+      strikeBucket.putOpenInterest += row.openInterest;
+      strikeBucket.putGammaSum += row.gamma;
+      strikeBucket.putGex -= gex;
+
+      cell.putGex -= gex;
     }
 
-    bucket.netGex = bucket.callGex + bucket.putGex;
+    strikeBucket.netGex = strikeBucket.callGex + strikeBucket.putGex;
+    cell.netGex = cell.callGex + cell.putGex;
   }
 
-  const strikes = Array.from(byStrike.values()).sort((a, b) => a.strike - b.strike);
+  const expirations = sortExpKeys([...expSet]);
+  const strikes = Array.from(byStrike.values()).sort((a, b) => b.strike - a.strike);
+
+  const matrix = strikes.map((strikeRow) => {
+    const cells = expirations.map((expKey) => {
+      const found = byCell.get(`${expKey}|${strikeRow.strike}`);
+      return found || {
+        expKey,
+        strike: strikeRow.strike,
+        callGex: 0,
+        putGex: 0,
+        netGex: 0
+      };
+    });
+
+    return {
+      strike: strikeRow.strike,
+      rowNetGex: strikeRow.netGex,
+      cells
+    };
+  });
 
   const strongestCallWall =
     [...strikes].sort((a, b) => b.callOpenInterest - a.callOpenInterest)[0] || null;
@@ -400,20 +372,28 @@ function buildHeatFromChain(chain) {
   const strongestNegativeGex =
     [...strikes].sort((a, b) => a.netGex - b.netGex)[0] || null;
 
+  const allCells = matrix.flatMap((row) => row.cells);
+  const kingCell =
+    [...allCells].sort((a, b) => Math.abs(b.netGex) - Math.abs(a.netGex))[0] || null;
+
+  const kingStrike = kingCell
+    ? strikes.find((row) => row.strike === kingCell.strike) || null
+    : null;
+
   return {
     underlyingPrice,
     contractCount: allRows.length,
-    expirations: {
-      calls: Object.keys(chain.callExpDateMap || {}),
-      puts: Object.keys(chain.putExpDateMap || {})
-    },
+    expirations,
     summary: {
       strongestCallWall,
       strongestPutWall,
       strongestPositiveGex,
-      strongestNegativeGex
+      strongestNegativeGex,
+      kingStrike,
+      kingCell
     },
-    strikes
+    strikes,
+    matrix
   };
 }
 
@@ -431,7 +411,7 @@ app.get("/api/heat", async (req, res) => {
 
     const response = await fetchChain(requestedSymbol, schwabTokens.access_token, {
       contractType: req.query.contractType,
-      strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 8,
+      strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
       includeUnderlyingQuote: false,
       fromDate: req.query.fromDate,
       toDate: req.query.toDate,
@@ -475,7 +455,7 @@ app.get("/api/dashboard", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const strikeCount = req.query.strikeCount ? Number(req.query.strikeCount) : 12;
     const fromDate = req.query.fromDate || getTodayISO();
-    const toDate = req.query.toDate || getFutureISO(7);
+    const toDate = req.query.toDate || getFutureISO(10);
 
     const [quotesResponse, chainResponse] = await Promise.all([
       axios.get("https://api.schwabapi.com/marketdata/v1/quotes", {

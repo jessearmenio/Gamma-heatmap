@@ -1,22 +1,20 @@
 const state = {
   quotes: null,
   heat: null,
-  symbol: "SPY"
+  symbol: "SPY",
+  dteDays: 30
 };
 
 const navButtons = document.querySelectorAll(".nav-item");
 const views = document.querySelectorAll(".view");
-const pageTitle = document.getElementById("pageTitle");
-const pageSubtitle = document.getElementById("pageSubtitle");
 
 const symbolSelect = document.getElementById("symbolSelect");
-const strikeCountSelect = document.getElementById("strikeCountSelect");
-const fromDateInput = document.getElementById("fromDateInput");
-const toDateInput = document.getElementById("toDateInput");
 const refreshBtn = document.getElementById("refreshBtn");
 const connectBtn = document.getElementById("connectBtn");
-
 const debugOutput = document.getElementById("debugOutput");
+
+const symbolPills = document.querySelectorAll(".symbol-pill");
+const dtePills = document.querySelectorAll(".dte-pill");
 
 function formatNumber(value, digits = 2) {
   if (value == null || Number.isNaN(Number(value))) return "--";
@@ -35,10 +33,10 @@ function formatCompact(value) {
   if (value == null || Number.isNaN(Number(value))) return "--";
 
   const abs = Math.abs(Number(value));
-  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(2)}B`;
-  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
-  if (abs >= 1_000) return `${(value / 1_000).toFixed(2)}K`;
-  return Number(value).toFixed(2);
+  if (abs >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}B`;
+  if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
+  return Number(value).toFixed(1);
 }
 
 function formatChange(num) {
@@ -58,11 +56,6 @@ function getFutureISO(daysAhead) {
   return d.toISOString().slice(0, 10);
 }
 
-function setDefaultDates() {
-  fromDateInput.value = getTodayISO();
-  toDateInput.value = getFutureISO(7);
-}
-
 function setStatus(id, text, className = "") {
   const el = document.getElementById(id);
   if (!el) return;
@@ -75,47 +68,9 @@ function activateView(viewName) {
     btn.classList.toggle("active", btn.dataset.view === viewName);
   });
 
-  views.forEach((view) => {
-    view.classList.remove("active");
-  });
-
+  views.forEach((view) => view.classList.remove("active"));
   const target = document.getElementById(`view-${viewName}`);
   if (target) target.classList.add("active");
-
-  pageTitle.textContent = navLabel(viewName);
-  pageSubtitle.textContent = navSubtitle(viewName);
-}
-
-function navLabel(viewName) {
-  const labels = {
-    "market-overview": "Market Overview",
-    "strategy-tester": "Strategy Tester",
-    agents: "Agents",
-    "heat-seeker": "Heat Seeker",
-    "options-flow": "Options Flow",
-    "smart-money": "Smart Money",
-    "dark-pool": "Dark Pool",
-    mag7: "Mag 7",
-    futures: "Futures",
-    commodities: "Commodities & Metals",
-    fx: "FX Markets",
-    "penny-scanner": "Penny Scanner",
-    "earnings-vol": "Earnings Vol",
-    sentiment: "Sentiment",
-    "treasury-risks": "Treasury & Risks"
-  };
-
-  return labels[viewName] || "Dashboard";
-}
-
-function navSubtitle(viewName) {
-  if (viewName === "heat-seeker") {
-    return "Strike-level gamma and open interest positioning";
-  }
-  if (viewName === "market-overview") {
-    return "Live market structure and options positioning";
-  }
-  return "Dashboard section";
 }
 
 async function fetchJson(url) {
@@ -137,23 +92,19 @@ async function loadTokenStatus() {
     connected ? "positive" : "negative"
   );
 
-  if (connectBtn) {
-    connectBtn.style.display = connected ? "none" : "inline-block";
-  }
-
+  connectBtn.style.display = connected ? "none" : "inline-block";
   return connected;
 }
 
 async function loadDashboard() {
   const symbol = symbolSelect.value;
-  const strikeCount = strikeCountSelect.value;
-  const fromDate = fromDateInput.value;
-  const toDate = toDateInput.value;
+  const today = getTodayISO();
+  const toDate = getFutureISO(state.dteDays);
 
   const params = new URLSearchParams({
     symbol,
-    strikeCount,
-    fromDate,
+    strikeCount: symbol === "SPX" ? "12" : "12",
+    fromDate: today,
     toDate
   });
 
@@ -162,68 +113,24 @@ async function loadDashboard() {
   state.heat = data.heat || null;
   state.symbol = symbol;
 
-  renderQuotes();
-  renderHeat();
+  renderOverview();
+  renderHeatmap();
 
   setStatus("status-quotes", "Ready", "positive");
   setStatus("status-heat", "Ready", "positive");
+  setStatus("status-updated", new Date().toLocaleTimeString(), "neutral");
 }
 
 function pickQuote(symbol) {
   return state.quotes?.[symbol] || null;
 }
 
-function renderQuotes() {
-  const spy = pickQuote("SPY");
-  const spx = pickQuote("SPX");
-  const vix = pickQuote("VIX");
-  const selected = pickQuote(state.symbol);
-
-  updateQuoteCard("ov-spy-price", "ov-spy-change", spy);
-  updateQuoteCard("ov-spx-price", "ov-spx-change", spx);
-  updateQuoteCard("ov-vix-price", "ov-vix-change", vix);
-
-  document.getElementById("ov-selected-symbol").textContent = state.symbol;
-  document.getElementById("ov-selected-price").textContent = selected?.quote?.lastPrice != null
-    ? formatNumber(selected.quote.lastPrice, 2)
-    : "--";
-}
-
-function updateQuoteCard(priceId, changeId, quoteObj) {
-  const priceEl = document.getElementById(priceId);
-  const changeEl = document.getElementById(changeId);
-
-  if (!quoteObj?.quote) {
-    priceEl.textContent = "--";
-    changeEl.textContent = "--";
-    changeEl.className = "card-meta";
-    return;
-  }
-
-  const price = quoteObj.quote.lastPrice ?? quoteObj.quote.mark ?? null;
-  const change = quoteObj.quote.netChange ?? null;
-  const pct = quoteObj.quote.netPercentChange ?? null;
-
-  priceEl.textContent = formatNumber(price, 2);
-  changeEl.textContent = `${formatChange(change)} (${formatChange(pct)}%)`;
-  changeEl.className = `card-meta ${change > 0 ? "positive" : change < 0 ? "negative" : "neutral"}`;
-}
-
-function renderHeat() {
+function renderOverview() {
   const heat = state.heat;
   if (!heat) return;
 
-  const underlyingPrice = heat.underlyingPrice ?? null;
   const summary = heat.summary || {};
-  const strikes = Array.isArray(heat.strikes) ? heat.strikes : [];
-
-  document.getElementById("ov-selected-symbol").textContent = heat.requestedSymbol || state.symbol;
-  document.getElementById("ov-selected-price").textContent = formatNumber(underlyingPrice, 2);
-
-  document.getElementById("sum-call-wall").textContent = summary.strongestCallWall?.strike ?? "--";
-  document.getElementById("sum-put-wall").textContent = summary.strongestPutWall?.strike ?? "--";
-  document.getElementById("sum-pos-gex").textContent = summary.strongestPositiveGex?.strike ?? "--";
-  document.getElementById("sum-neg-gex").textContent = summary.strongestNegativeGex?.strike ?? "--";
+  const underlyingPrice = heat.underlyingPrice ?? null;
 
   document.getElementById("heat-underlying-price").textContent = formatNumber(underlyingPrice, 2);
   document.getElementById("heat-underlying-symbol").textContent =
@@ -231,75 +138,152 @@ function renderHeat() {
 
   document.getElementById("heat-call-wall").textContent = summary.strongestCallWall?.strike ?? "--";
   document.getElementById("heat-call-wall-oi").textContent =
-    summary.strongestCallWall ? `OI ${formatInteger(summary.strongestCallWall.callOpenInterest)}` : "--";
+    summary.strongestCallWall
+      ? `OI ${formatInteger(summary.strongestCallWall.callOpenInterest)}`
+      : "--";
 
   document.getElementById("heat-put-wall").textContent = summary.strongestPutWall?.strike ?? "--";
   document.getElementById("heat-put-wall-oi").textContent =
-    summary.strongestPutWall ? `OI ${formatInteger(summary.strongestPutWall.putOpenInterest)}` : "--";
+    summary.strongestPutWall
+      ? `OI ${formatInteger(summary.strongestPutWall.putOpenInterest)}`
+      : "--";
 
-  const totalNet = strikes.reduce((sum, row) => sum + (Number(row.netGex) || 0), 0);
-  document.getElementById("heat-bias").textContent =
-    totalNet > 0 ? "Positive Gamma" : totalNet < 0 ? "Negative Gamma" : "Neutral";
-  document.getElementById("heat-contract-count").textContent =
-    `${formatInteger(heat.contractCount)} contracts`;
+  document.getElementById("king-strike-value").textContent =
+    summary.kingStrike?.strike ?? "--";
 
-  document.getElementById("level-spot").textContent = formatNumber(underlyingPrice, 2);
-  document.getElementById("level-call-wall").textContent = summary.strongestCallWall?.strike ?? "--";
-  document.getElementById("level-put-wall").textContent = summary.strongestPutWall?.strike ?? "--";
-  document.getElementById("level-pos-gex").textContent = summary.strongestPositiveGex?.strike ?? "--";
-  document.getElementById("level-neg-gex").textContent = summary.strongestNegativeGex?.strike ?? "--";
+  document.getElementById("king-strike-meta").textContent =
+    summary.kingCell
+      ? `${summary.kingCell.expKey.split(":")[0]} · ${formatCompact(summary.kingCell.netGex)}`
+      : "--";
 
-  renderHeatGrid(strikes);
-  renderStrikeTable(strikes);
-
-  debugOutput.textContent = JSON.stringify(heat, null, 2);
-  setStatus("status-updated", new Date().toLocaleTimeString(), "neutral");
+  const subtitle = document.getElementById("heatmapSubtitle");
+  subtitle.textContent = `${heat.requestedSymbol} · Spot ${formatNumber(
+    underlyingPrice,
+    2
+  )} · ${heat.contractCount.toLocaleString()} contracts`;
 }
 
-function renderHeatGrid(strikes) {
-  const heatGrid = document.getElementById("heatGrid");
-  heatGrid.innerHTML = "";
+function mixColor(hex1, hex2, t) {
+  const c1 = hexToRgb(hex1);
+  const c2 = hexToRgb(hex2);
 
-  const maxAbs = Math.max(...strikes.map((row) => Math.abs(Number(row.netGex) || 0)), 1);
+  const r = Math.round(c1.r + (c2.r - c1.r) * t);
+  const g = Math.round(c1.g + (c2.g - c1.g) * t);
+  const b = Math.round(c1.b + (c2.b - c1.b) * t);
 
-  strikes.forEach((row) => {
-    const abs = Math.abs(Number(row.netGex) || 0);
-    const widthPct = Math.max((abs / maxAbs) * 100, 2);
-    const positive = Number(row.netGex) >= 0;
+  return `rgb(${r}, ${g}, ${b})`;
+}
 
-    const wrap = document.createElement("div");
-    wrap.className = "heat-row";
+function hexToRgb(hex) {
+  const h = hex.replace("#", "");
+  return {
+    r: parseInt(h.substring(0, 2), 16),
+    g: parseInt(h.substring(2, 4), 16),
+    b: parseInt(h.substring(4, 6), 16)
+  };
+}
 
-    wrap.innerHTML = `
-      <div class="heat-strike">${formatNumber(row.strike, 2)}</div>
-      <div class="heat-bar-wrap">
-        <div class="heat-bar ${positive ? "pos" : "neg"}" style="width:${widthPct}%"></div>
-      </div>
-      <div class="heat-value ${positive ? "positive" : "negative"}">${formatCompact(row.netGex)}</div>
-    `;
+function getHeatCellColor(value, maxAbs) {
+  const neutral = "#071122";
+  const positive = "#DCFF1E";
+  const negative = "#B423F0";
 
-    heatGrid.appendChild(wrap);
+  const abs = Math.abs(Number(value) || 0);
+  const tRaw = maxAbs > 0 ? abs / maxAbs : 0;
+  const t = Math.min(Math.max(tRaw, 0), 1);
+
+  const eased = Math.pow(t, 0.7);
+
+  if (value > 0) {
+    return mixColor(neutral, positive, eased);
+  }
+
+  if (value < 0) {
+    return mixColor(neutral, negative, eased);
+  }
+
+  return neutral;
+}
+
+function getTextColor(value, maxAbs) {
+  const abs = Math.abs(Number(value) || 0);
+  const t = maxAbs > 0 ? abs / maxAbs : 0;
+  return t > 0.55 ? "#031019" : "#eaf3ff";
+}
+
+function renderHeatmap() {
+  const heat = state.heat;
+  if (!heat) return;
+
+  const head = document.getElementById("heatmapHead");
+  const body = document.getElementById("heatmapBody");
+
+  head.innerHTML = "";
+  body.innerHTML = "";
+
+  const matrix = Array.isArray(heat.matrix) ? heat.matrix : [];
+  const expirations = Array.isArray(heat.expirations) ? heat.expirations : [];
+  const spot = Number(heat.underlyingPrice ?? 0);
+  const kingCell = heat.summary?.kingCell || null;
+  const kingStrike = heat.summary?.kingStrike?.strike ?? null;
+
+  const allValues = matrix.flatMap((row) => row.cells.map((cell) => Number(cell.netGex) || 0));
+  const maxAbs = Math.max(...allValues.map((v) => Math.abs(v)), 1);
+
+  const trHead = document.createElement("tr");
+  const strikeTh = document.createElement("th");
+  strikeTh.textContent = "STRIKE";
+  trHead.appendChild(strikeTh);
+
+  expirations.forEach((expKey) => {
+    const th = document.createElement("th");
+    th.textContent = expKey.split(":")[0];
+    trHead.appendChild(th);
   });
-}
 
-function renderStrikeTable(strikes) {
-  const tbody = document.getElementById("strikeTableBody");
-  tbody.innerHTML = "";
+  head.appendChild(trHead);
 
-  strikes.forEach((row) => {
+  matrix.forEach((row) => {
     const tr = document.createElement("tr");
 
-    tr.innerHTML = `
-      <td>${formatNumber(row.strike, 2)}</td>
-      <td>${formatInteger(row.callOpenInterest)}</td>
-      <td>${formatInteger(row.putOpenInterest)}</td>
-      <td class="positive">${formatCompact(row.callGex)}</td>
-      <td class="negative">${formatCompact(row.putGex)}</td>
-      <td class="${Number(row.netGex) >= 0 ? "positive" : "negative"}">${formatCompact(row.netGex)}</td>
-    `;
+    const strikeTd = document.createElement("td");
+    strikeTd.className = "strike-cell";
+    if (row.strike === kingStrike) {
+      strikeTd.classList.add("king-strike");
+    }
+    strikeTd.textContent = formatNumber(row.strike, 1);
+    tr.appendChild(strikeTd);
 
-    tbody.appendChild(tr);
+    row.cells.forEach((cell) => {
+      const td = document.createElement("td");
+      td.className = "gex-cell";
+
+      if (
+        kingCell &&
+        cell.expKey === kingCell.expKey &&
+        cell.strike === kingCell.strike
+      ) {
+        td.classList.add("king-cell");
+      }
+
+      if (Math.abs(cell.strike - spot) <= 0.01 || Math.abs(cell.strike - spot) < 0.6) {
+        td.classList.add("current-strike");
+      }
+
+      const bg = getHeatCellColor(cell.netGex, maxAbs);
+      const fg = getTextColor(cell.netGex, maxAbs);
+
+      td.innerHTML = `<div class="gex-cell-inner">${formatCompact(cell.netGex)}</div>`;
+      td.style.background = bg;
+      td.style.color = fg;
+
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
   });
+
+  debugOutput.textContent = JSON.stringify(heat, null, 2);
 }
 
 async function refreshAll() {
@@ -341,17 +325,38 @@ navButtons.forEach((btn) => {
   });
 });
 
+symbolPills.forEach((pill) => {
+  pill.addEventListener("click", () => {
+    symbolPills.forEach((p) => p.classList.remove("active"));
+    pill.classList.add("active");
+
+    const symbol = pill.dataset.symbol;
+    symbolSelect.value = symbol === "QQQ" || symbol === "IWM" ? "SPY" : symbol;
+    state.symbol = symbolSelect.value;
+    refreshAll();
+  });
+});
+
+dtePills.forEach((pill) => {
+  pill.addEventListener("click", () => {
+    dtePills.forEach((p) => p.classList.remove("active"));
+    pill.classList.add("active");
+    state.dteDays = Number(pill.dataset.days || 30);
+    refreshAll();
+  });
+});
+
 symbolSelect.addEventListener("change", () => {
   state.symbol = symbolSelect.value;
+
+  symbolPills.forEach((p) => {
+    p.classList.toggle("active", p.dataset.symbol === symbolSelect.value);
+  });
+
   refreshAll();
 });
 
-strikeCountSelect.addEventListener("change", refreshAll);
-fromDateInput.addEventListener("change", refreshAll);
-toDateInput.addEventListener("change", refreshAll);
-
 refreshBtn.addEventListener("click", refreshAll);
 
-setDefaultDates();
-activateView("market-overview");
+activateView("heat-seeker");
 refreshAll();
