@@ -117,7 +117,8 @@ app.get("/api/quotes", async (req, res) => {
         params: { symbols },
         headers: {
           Authorization: `Bearer ${schwabTokens.access_token}`
-        }
+        },
+        timeout: 30000
       }
     );
 
@@ -136,6 +137,47 @@ app.get("/api/quotes", async (req, res) => {
   }
 });
 
+function getTodayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function getFutureISO(daysAhead) {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d.toISOString().slice(0, 10);
+}
+
+async function fetchChain(symbol, accessToken, overrides = {}) {
+  const normalizedSymbol = String(symbol || "").trim().toUpperCase();
+
+  // Keep the default request intentionally narrow to avoid huge payloads.
+  const params = {
+    symbol: normalizedSymbol,
+    contractType: overrides.contractType || "ALL",
+    strikeCount: overrides.strikeCount ?? 12,
+    includeUnderlyingQuote: overrides.includeUnderlyingQuote ?? false,
+    strategy: overrides.strategy || "SINGLE",
+    fromDate: overrides.fromDate || getTodayISO(),
+    toDate: overrides.toDate || getFutureISO(14)
+  };
+
+  // Optional extra filters
+  if (overrides.range) params.range = overrides.range;
+  if (overrides.expMonth) params.expMonth = overrides.expMonth;
+  if (overrides.optionType) params.optionType = overrides.optionType;
+  if (overrides.strike != null && overrides.strike !== "") {
+    params.strike = overrides.strike;
+  }
+
+  return axios.get("https://api.schwabapi.com/marketdata/v1/chains", {
+    params,
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    timeout: 30000
+  });
+}
+
 // Single-symbol options chain endpoint
 app.get("/api/chain", async (req, res) => {
   try {
@@ -148,28 +190,37 @@ app.get("/api/chain", async (req, res) => {
 
     const symbol = (req.query.symbol || "SPY").toUpperCase();
 
-    const response = await axios.get(
-      "https://api.schwabapi.com/marketdata/v1/chains",
-      {
-        params: { symbol },
-        headers: {
-          Authorization: `Bearer ${schwabTokens.access_token}`
-        }
-      }
-    );
+    const response = await fetchChain(symbol, schwabTokens.access_token, {
+      contractType: req.query.contractType,
+      strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : undefined,
+      includeUnderlyingQuote:
+        req.query.includeUnderlyingQuote === "true"
+          ? true
+          : req.query.includeUnderlyingQuote === "false"
+            ? false
+            : undefined,
+      fromDate: req.query.fromDate,
+      toDate: req.query.toDate,
+      range: req.query.range,
+      expMonth: req.query.expMonth,
+      optionType: req.query.optionType,
+      strike: req.query.strike
+    });
 
     res.json({
       ok: true,
       symbol,
+      request: response.config?.params || null,
       data: response.data
     });
   } catch (error) {
     console.error("CHAIN ERROR:");
     console.error(error.response?.data || error.message);
 
-    res.status(500).json({
+    res.status(error.response?.status || 500).json({
       ok: false,
-      error: "Failed to fetch options chain."
+      error: "Failed to fetch options chain.",
+      details: error.response?.data || error.message
     });
   }
 });
@@ -190,26 +241,42 @@ app.get("/api/chains", async (req, res) => {
       .map((s) => s.trim().toUpperCase())
       .filter(Boolean);
 
+    const strikeCount = req.query.strikeCount ? Number(req.query.strikeCount) : undefined;
+
     const results = {};
     const errors = {};
 
     for (const symbol of symbols) {
       try {
-        const response = await axios.get(
-          "https://api.schwabapi.com/marketdata/v1/chains",
-          {
-            params: { symbol },
-            headers: {
-              Authorization: `Bearer ${schwabTokens.access_token}`
-            }
-          }
-        );
+        const response = await fetchChain(symbol, schwabTokens.access_token, {
+          contractType: req.query.contractType,
+          strikeCount,
+          includeUnderlyingQuote:
+            req.query.includeUnderlyingQuote === "true"
+              ? true
+              : req.query.includeUnderlyingQuote === "false"
+                ? false
+                : undefined,
+          fromDate: req.query.fromDate,
+          toDate: req.query.toDate,
+          range: req.query.range,
+          expMonth: req.query.expMonth,
+          optionType: req.query.optionType,
+          strike: req.query.strike
+        });
 
-        results[symbol] = response.data;
+        results[symbol] = {
+          request: response.config?.params || null,
+          data: response.data
+        };
       } catch (err) {
         console.error(`CHAIN ERROR FOR ${symbol}:`);
         console.error(err.response?.data || err.message);
-        errors[symbol] = err.response?.data || err.message;
+
+        errors[symbol] = {
+          status: err.response?.status || 500,
+          details: err.response?.data || err.message
+        };
       }
     }
 
