@@ -109,7 +109,7 @@ app.get("/api/quotes", async (req, res) => {
       });
     }
 
-    const symbols = req.query.symbols || "SPY,QQQ,IWM";
+    const symbols = req.query.symbols || "SPY,SPX,VIX";
 
     const response = await axios.get(
       "https://api.schwabapi.com/marketdata/v1/quotes",
@@ -132,6 +132,100 @@ app.get("/api/quotes", async (req, res) => {
     res.status(500).json({
       ok: false,
       error: "Failed to fetch quotes."
+    });
+  }
+});
+
+// Single-symbol options chain endpoint
+app.get("/api/chain", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({
+        ok: false,
+        error: "No access token yet. Connect Schwab first."
+      });
+    }
+
+    const symbol = (req.query.symbol || "SPY").toUpperCase();
+
+    const response = await axios.get(
+      "https://api.schwabapi.com/marketdata/v1/chains",
+      {
+        params: { symbol },
+        headers: {
+          Authorization: `Bearer ${schwabTokens.access_token}`
+        }
+      }
+    );
+
+    res.json({
+      ok: true,
+      symbol,
+      data: response.data
+    });
+  } catch (error) {
+    console.error("CHAIN ERROR:");
+    console.error(error.response?.data || error.message);
+
+    res.status(500).json({
+      ok: false,
+      error: "Failed to fetch options chain."
+    });
+  }
+});
+
+// Multi-symbol chain loader for dashboard use
+app.get("/api/chains", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({
+        ok: false,
+        error: "No access token yet. Connect Schwab first."
+      });
+    }
+
+    const rawSymbols = req.query.symbols || "SPY,SPX,VIX";
+    const symbols = rawSymbols
+      .split(",")
+      .map((s) => s.trim().toUpperCase())
+      .filter(Boolean);
+
+    const results = {};
+    const errors = {};
+
+    for (const symbol of symbols) {
+      try {
+        const response = await axios.get(
+          "https://api.schwabapi.com/marketdata/v1/chains",
+          {
+            params: { symbol },
+            headers: {
+              Authorization: `Bearer ${schwabTokens.access_token}`
+            }
+          }
+        );
+
+        results[symbol] = response.data;
+      } catch (err) {
+        console.error(`CHAIN ERROR FOR ${symbol}:`);
+        console.error(err.response?.data || err.message);
+        errors[symbol] = err.response?.data || err.message;
+      }
+    }
+
+    res.json({
+      ok: true,
+      symbols,
+      results,
+      errors
+    });
+  } catch (error) {
+    console.error("CHAINS ERROR:");
+    console.error(error.response?.data || error.message);
+
+    res.status(500).json({
+      ok: false,
+      error: "Failed to fetch options chains."
     });
   }
 });
