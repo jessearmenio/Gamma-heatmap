@@ -1,13 +1,761 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gamma Heat Seeker</title>
+  <title>Heat Seeker Dashboard</title>
+  <link rel="stylesheet" href="/heat.css" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #11182d;
+      --panel-2: #17213b;
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #eef3ff;
+      --muted: #93a0bd;
+      --accent: #5f8cff;
+      --green: #1cc88a;
+      --red: #ff5a6f;
+      --yellow: #f4c95d;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    body {
+      overflow: hidden;
+    }
+
+    button,
+    select,
+    input {
+      font: inherit;
+    }
+
+    .secondary-btn {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+}
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 270px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, #0c1222 0%, #0d1427 100%);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #4c78ff, #7ea2ff);
+      color: white;
+      font-weight: 800;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .side-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-group-label {
+      margin-top: 14px;
+      margin-bottom: 6px;
+      padding: 0 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .nav-item {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 11px 12px;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border);
+    }
+
+    .nav-item.active {
+      background: rgba(95, 140, 255, 0.18);
+      border-color: rgba(95, 140, 255, 0.4);
+    }
+
+    .main {
+      overflow-y: auto;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .topbar h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .topbar-controls {
+      display: flex;
+      align-items: end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .control {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .control select,
+    .control input {
+      min-width: 120px;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, #4c78ff, #7ea2ff);
+      color: white;
+      border: 0;
+      border-radius: 12px;
+      padding: 11px 16px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .heat-layout {
+      align-items: start;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .card-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .mini-stat {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .mini-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .mini-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .status-list div,
+    .level-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .status-list div:last-child,
+    .level-row:last-child {
+      border-bottom: 0;
+    }
+
+    .status-list span,
+    .level-row span {
+      color: var(--muted);
+    }
+
+    .heat-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .heat-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .heat-strike {
+      font-weight: 700;
+    }
+
+    .heat-bar-wrap {
+      height: 22px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .heat-bar {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .heat-bar.pos {
+      background: linear-gradient(90deg, rgba(28, 200, 138, 0.25), rgba(28, 200, 138, 0.95));
+    }
+
+    .heat-bar.neg {
+      background: linear-gradient(90deg, rgba(255, 90, 111, 0.25), rgba(255, 90, 111, 0.95));
+    }
+
+    .heat-value {
+      text-align: right;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th,
+    .data-table td {
+      text-align: right;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .data-table th:first-child,
+    .data-table td:first-child {
+      text-align: left;
+    }
+
+    .placeholder-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: rgba(0, 0, 0, 0.18);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .positive {
+      color: var(--green);
+    }
+
+    .negative {
+      color: var(--red);
+    }
+
+    .neutral {
+      color: var(--yellow);
+    }
+
+    @media (max-width: 1200px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 920px) {
+      body {
+        overflow: auto;
+      }
+
+      .app-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .topbar {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .heat-row {
+        grid-template-columns: 70px 1fr;
+      }
+
+      .heat-value {
+        grid-column: 1 / -1;
+        text-align: left;
+      }
+    }
+  </style>
 </head>
+
 <body>
-  <h1>Gamma Heat Seeker</h1>
-  <p>Placeholder page is live.</p>
-  <a href="/login">Connect Schwab</a>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">HS</div>
+        <div>
+          <div class="brand-title">Heat Seeker</div>
+          <div class="brand-subtitle">Market Structure Dashboard</div>
+        </div>
+      </div>
+
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="market-overview">Market Overview</button>
+        <button class="nav-item" data-view="strategy-tester">Strategy Tester</button>
+        <button class="nav-item" data-view="agents">Agents</button>
+
+        <div class="nav-group-label">Signals & Intelligence</div>
+        <button class="nav-item" data-view="heat-seeker">Heat Seeker</button>
+        <button class="nav-item" data-view="options-flow">Options Flow</button>
+        <button class="nav-item" data-view="smart-money">Smart Money</button>
+        <button class="nav-item" data-view="dark-pool">Dark Pool</button>
+        <button class="nav-item" data-view="mag7">Mag 7</button>
+        <button class="nav-item" data-view="futures">Futures</button>
+        <button class="nav-item" data-view="commodities">Commodities & Metals</button>
+        <button class="nav-item" data-view="fx">FX Markets</button>
+        <button class="nav-item" data-view="penny-scanner">Penny Scanner</button>
+        <button class="nav-item" data-view="earnings-vol">Earnings Vol</button>
+        <button class="nav-item" data-view="sentiment">Sentiment</button>
+
+        <div class="nav-group-label">Macro</div>
+        <button class="nav-item" data-view="treasury-risks">Treasury & Risks</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1 id="pageTitle">Market Overview</h1>
+          <p class="subtitle" id="pageSubtitle">Live market structure and options positioning</p>
+        </div>
+
+        <div class="topbar-controls">
+          <label class="control">
+            <span>Symbol</span>
+            <select id="symbolSelect">
+              <option value="SPY">SPY</option>
+              <option value="SPX">SPX</option>
+              <option value="VIX">VIX</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span>Strike Count</span>
+            <select id="strikeCountSelect">
+              <option value="8">8</option>
+              <option value="12" selected>12</option>
+              <option value="16">16</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+
+          <label class="control">
+            <span>From</span>
+            <input id="fromDateInput" type="date" />
+          </label>
+
+          <label class="control">
+            <span>To</span>
+            <input id="toDateInput" type="date" />
+          </label>
+
+          <button id="connectBtn" class="secondary-btn">Connect Schwab</button>
+          <button id="refreshBtn" class="primary-btn">Refresh</button>
+        </div>
+      </header>
+
+      <section class="view active" id="view-market-overview">
+        <div class="cards-grid">
+          <article class="card">
+            <div class="card-label">SPY</div>
+            <div class="card-value" id="ov-spy-price">--</div>
+            <div class="card-meta" id="ov-spy-change">--</div>
+          </article>
+
+          <article class="card">
+            <div class="card-label">SPX</div>
+            <div class="card-value" id="ov-spx-price">--</div>
+            <div class="card-meta" id="ov-spx-change">--</div>
+          </article>
+
+          <article class="card">
+            <div class="card-label">VIX</div>
+            <div class="card-value" id="ov-vix-price">--</div>
+            <div class="card-meta" id="ov-vix-change">--</div>
+          </article>
+
+          <article class="card">
+            <div class="card-label">Selected Symbol</div>
+            <div class="card-value" id="ov-selected-symbol">--</div>
+            <div class="card-meta" id="ov-selected-price">--</div>
+          </article>
+        </div>
+
+        <div class="two-col">
+          <article class="card">
+            <div class="section-title">Positioning Summary</div>
+            <div class="summary-grid">
+              <div class="mini-stat">
+                <div class="mini-label">Call Wall</div>
+                <div class="mini-value" id="sum-call-wall">--</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-label">Put Wall</div>
+                <div class="mini-value" id="sum-put-wall">--</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-label">Positive GEX</div>
+                <div class="mini-value" id="sum-pos-gex">--</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-label">Negative GEX</div>
+                <div class="mini-value" id="sum-neg-gex">--</div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="section-title">System Status</div>
+            <div class="status-list">
+              <div><span>Auth</span><strong id="status-auth">--</strong></div>
+              <div><span>Quotes</span><strong id="status-quotes">--</strong></div>
+              <div><span>Heat</span><strong id="status-heat">--</strong></div>
+              <div><span>Updated</span><strong id="status-updated">--</strong></div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view" id="view-heat-seeker">
+        <div class="cards-grid">
+          <article class="card">
+            <div class="card-label">Underlying</div>
+            <div class="card-value" id="heat-underlying-price">--</div>
+            <div class="card-meta" id="heat-underlying-symbol">--</div>
+          </article>
+
+          <article class="card">
+            <div class="card-label">Strongest Call Wall</div>
+            <div class="card-value" id="heat-call-wall">--</div>
+            <div class="card-meta" id="heat-call-wall-oi">--</div>
+          </article>
+
+          <article class="card">
+            <div class="card-label">Strongest Put Wall</div>
+            <div class="card-value" id="heat-put-wall">--</div>
+            <div class="card-meta" id="heat-put-wall-oi">--</div>
+          </article>
+
+          <article class="card">
+            <div class="card-label">Net Gamma Bias</div>
+            <div class="card-value" id="heat-bias">--</div>
+            <div class="card-meta" id="heat-contract-count">--</div>
+          </article>
+        </div>
+
+        <div class="two-col heat-layout">
+          <article class="card">
+            <div class="section-title">Strike Heat</div>
+            <div id="heatGrid" class="heat-grid"></div>
+          </article>
+
+          <article class="card">
+            <div class="section-title">Key Levels</div>
+            <div class="levels-panel">
+              <div class="level-row">
+                <span>Spot</span>
+                <strong id="level-spot">--</strong>
+              </div>
+              <div class="level-row">
+                <span>Call Wall</span>
+                <strong id="level-call-wall">--</strong>
+              </div>
+              <div class="level-row">
+                <span>Put Wall</span>
+                <strong id="level-put-wall">--</strong>
+              </div>
+              <div class="level-row">
+                <span>Top Positive GEX</span>
+                <strong id="level-pos-gex">--</strong>
+              </div>
+              <div class="level-row">
+                <span>Top Negative GEX</span>
+                <strong id="level-neg-gex">--</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <article class="card">
+          <div class="section-title">Strike Table</div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Strike</th>
+                  <th>Call OI</th>
+                  <th>Put OI</th>
+                  <th>Call GEX</th>
+                  <th>Put GEX</th>
+                  <th>Net GEX</th>
+                </tr>
+              </thead>
+              <tbody id="strikeTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="view" id="view-strategy-tester">
+        <article class="card placeholder-card">
+          <div class="section-title">Strategy Tester</div>
+          <p>Reserved for scenario testing, level reaction analysis, and historical positioning playback.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-agents">
+        <article class="card placeholder-card">
+          <div class="section-title">Agents</div>
+          <p>Reserved for alerting, automated reads, and market state assistants.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-options-flow">
+        <article class="card placeholder-card">
+          <div class="section-title">Options Flow</div>
+          <p>UI ready. Data source still needed beyond Schwab chain/quote endpoints.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-smart-money">
+        <article class="card placeholder-card">
+          <div class="section-title">Smart Money</div>
+          <p>Reserved for block activity, unusual sweeps, and directional concentration.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-dark-pool">
+        <article class="card placeholder-card">
+          <div class="section-title">Dark Pool</div>
+          <p>Reserved for off-exchange prints and liquidity concentration.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-mag7">
+        <article class="card placeholder-card">
+          <div class="section-title">Mag 7</div>
+          <p>Reserved for a basket overview of the major large-cap tech names.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-futures">
+        <article class="card placeholder-card">
+          <div class="section-title">Futures</div>
+          <p>Reserved for ES, NQ, RTY, CL, GC, and related positioning views.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-commodities">
+        <article class="card placeholder-card">
+          <div class="section-title">Commodities & Metals</div>
+          <p>Reserved for gold, silver, crude, copper, and related risk views.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-fx">
+        <article class="card placeholder-card">
+          <div class="section-title">FX Markets</div>
+          <p>Reserved for dollar, major pairs, and macro pressure mapping.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-penny-scanner">
+        <article class="card placeholder-card">
+          <div class="section-title">Penny Scanner</div>
+          <p>Reserved for speculative low-float and momentum scanning.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-earnings-vol">
+        <article class="card placeholder-card">
+          <div class="section-title">Earnings Vol</div>
+          <p>Reserved for earnings IV expansion, crush, and expected move views.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-sentiment">
+        <article class="card placeholder-card">
+          <div class="section-title">Sentiment</div>
+          <p>Reserved for breadth, fear/greed, positioning tone, and regime signals.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-treasury-risks">
+        <article class="card placeholder-card">
+          <div class="section-title">Treasury & Risks</div>
+          <p>Reserved for rates, duration pressure, macro instability, and risk triggers.</p>
+        </article>
+      </section>
+
+      <section class="view" id="view-market-overview-debug">
+        <article class="card">
+          <div class="section-title">Debug Output</div>
+          <pre id="debugOutput">Waiting for data...</pre>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="/heat.js"></script>
 </body>
+
 </html>
