@@ -13,32 +13,42 @@ const SCHWAB_APP_KEY = process.env.SCHWAB_APP_KEY;
 const SCHWAB_APP_SECRET = process.env.SCHWAB_APP_SECRET;
 const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI;
 
-// In-memory token storage for starter version.
-// Fine for testing. Not fine for serious production persistence.
+// Starter-only memory storage.
+// Fine for initial testing, not for long-term production.
 let schwabTokens = null;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Basic health check
 app.get("/ping", (_req, res) => {
   res.json({ ok: true, message: "Server is running" });
 });
 
+// Send user to Schwab OAuth
 app.get("/login", (_req, res) => {
+  if (!SCHWAB_APP_KEY || !SCHWAB_REDIRECT_URI) {
+    return res.status(500).send("Missing Schwab environment variables.");
+  }
+
   const authUrl =
-    `https://api.schwabapi.com/v1/oauth/authorize?` +
-    `client_id=${encodeURIComponent(SCHWAB_APP_KEY)}` +
+    `https://api.schwabapi.com/v1/oauth/authorize?client_id=${encodeURIComponent(SCHWAB_APP_KEY)}` +
     `&redirect_uri=${encodeURIComponent(SCHWAB_REDIRECT_URI)}`;
 
   res.redirect(authUrl);
 });
 
+// Schwab redirects here after approval
 app.get("/callback", async (req, res) => {
   const code = req.query.code;
 
   if (!code) {
     return res.status(400).send("Missing authorization code.");
+  }
+
+  if (!SCHWAB_APP_KEY || !SCHWAB_APP_SECRET || !SCHWAB_REDIRECT_URI) {
+    return res.status(500).send("Missing Schwab environment variables.");
   }
 
   try {
@@ -50,7 +60,7 @@ app.get("/callback", async (req, res) => {
       "https://api.schwabapi.com/v1/oauth/token",
       new URLSearchParams({
         grant_type: "authorization_code",
-        code: code,
+        code,
         redirect_uri: SCHWAB_REDIRECT_URI
       }).toString(),
       {
@@ -65,21 +75,22 @@ app.get("/callback", async (req, res) => {
 
     res.send(`
       <html>
-        <body style="font-family: Arial; padding: 2rem;">
+        <body style="font-family: Arial, sans-serif; padding: 24px;">
           <h2>Schwab connected successfully.</h2>
-          <p>You can close this tab and go back to the app.</p>
-          <a href="/">Return Home</a>
+          <p>Access token received.</p>
+          <p><a href="/heat.html">Go to Heat App</a></p>
         </body>
       </html>
     `);
   } catch (error) {
-    console.error("OAuth token exchange error:");
+    console.error("TOKEN EXCHANGE ERROR:");
     console.error(error.response?.data || error.message);
 
     res.status(500).send("Failed to exchange authorization code for token.");
   }
 });
 
+// Simple token status check
 app.get("/api/token-status", (_req, res) => {
   res.json({
     connected: !!schwabTokens,
@@ -88,18 +99,19 @@ app.get("/api/token-status", (_req, res) => {
   });
 });
 
+// Basic quote endpoint test
 app.get("/api/quotes", async (req, res) => {
   try {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({
         ok: false,
-        error: "No Schwab access token. Connect first through /login."
+        error: "No access token yet. Connect Schwab first."
       });
     }
 
     const symbols = req.query.symbols || "SPY,QQQ,IWM";
 
-    const quoteResponse = await axios.get(
+    const response = await axios.get(
       "https://api.schwabapi.com/marketdata/v1/quotes",
       {
         params: { symbols },
@@ -111,23 +123,29 @@ app.get("/api/quotes", async (req, res) => {
 
     res.json({
       ok: true,
-      data: quoteResponse.data
+      data: response.data
     });
   } catch (error) {
-    console.error("Quote request error:");
+    console.error("QUOTES ERROR:");
     console.error(error.response?.data || error.message);
 
     res.status(500).json({
       ok: false,
-      error: "Failed to fetch quotes from Schwab."
+      error: "Failed to fetch quotes."
     });
   }
 });
 
+// Root route should serve heat.html
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "heat.html"));
+});
+
+// Catch-all fallback should also serve heat.html
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(__dirname, "public", "heat.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
