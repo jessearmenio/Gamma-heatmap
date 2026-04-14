@@ -84,6 +84,43 @@
       flex-direction: column;
       overflow: hidden;
       z-index: 100;
+      transition: width 0.25s ease, min-width 0.25s ease;
+    }
+    #sidebar.collapsed {
+      width: 0;
+      min-width: 0;
+      border-right: none;
+    }
+    #sidebar.collapsed .logo-text,
+    #sidebar.collapsed .nav-label,
+    #sidebar.collapsed .nav-section-label,
+    #sidebar.collapsed .nav-badge,
+    #sidebar.collapsed #connect-area {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ── Hamburger ── */
+    #nav-toggle {
+      width: 30px;
+      height: 30px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      color: var(--text2);
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+      line-height: 1;
+    }
+    #nav-toggle:hover {
+      background: rgba(220,255,30,0.08);
+      color: var(--accent);
+      border-color: rgba(220,255,30,0.3);
     }
 
     #sidebar-logo {
@@ -932,15 +969,42 @@
     #ov-macro-alert-icon { font-size: 14px; flex-shrink: 0; }
     #ov-macro-alert-text { flex: 1; line-height: 1.5; }
 
-    /* ── Overview: Main grid ── */
-    .ov-main-grid {
+    /* ── Overview: Row 1 – Score Ring + Chart ── */
+    .ov-row1 {
       display: grid;
       grid-template-columns: 280px 1fr;
       gap: 12px;
       margin-bottom: 12px;
     }
     @media (max-width: 1100px) {
-      .ov-main-grid { grid-template-columns: 1fr; }
+      .ov-row1 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Overview: Row 3 – Key Levels + Movers ── */
+    .ov-row3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 1100px) {
+      .ov-row3 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Overview: Row 4 – Exec + Sector ── */
+    .ov-row4 {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 1100px) {
+      .ov-row4 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Overview: Row 5 – Terminal full-width ── */
+    .ov-row5 {
+      margin-bottom: 12px;
     }
 
     /* ── Overview: Score Ring Panel ── */
@@ -1057,11 +1121,18 @@
     .tone-neg { color: var(--red); }
     .tone-neutral { color: var(--text3); }
 
-    /* ── Overview: Panel cards grid ── */
+    /* ── Overview: Panel cards grid (Row 2 – 5 across) ── */
     .ov-panels-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(5, 1fr);
       gap: 10px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 1300px) {
+      .ov-panels-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .ov-panels-grid { grid-template-columns: repeat(2, 1fr); }
     }
     .ov-panel-card {
       background: var(--panel);
@@ -1116,7 +1187,7 @@
     .ov-metric-tag.caution { background: rgba(255,140,59,0.12); color: var(--orange); }
     .ov-metric-tag.neutral { background: rgba(122,128,153,0.12); color: var(--text3); }
 
-    /* ── Overview: Bottom row ── */
+    /* ── Overview: Bottom row (legacy kept for backward compat) ── */
     .ov-bottom-row {
       display: grid;
       grid-template-columns: 1fr 260px;
@@ -1217,15 +1288,9 @@
     .ov-sector-val.up { color: var(--green); }
     .ov-sector-val.dn { color: var(--red); }
 
-    /* ── Overview: Chart ── */
+    /* ── Overview: Chart (now in row1 alongside score panel) ── */
     #ov-chart-row {
-      display: grid;
-      grid-template-columns: 1fr 320px;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    @media (max-width: 1100px) {
-      #ov-chart-row { grid-template-columns: 1fr; }
+      display: contents; /* flattened – children handled by .ov-row1 */
     }
     #ov-chart-card {
       background: var(--panel);
@@ -2312,6 +2377,7 @@
     <div id="main">
       <!-- topbar -->
       <div id="topbar">
+        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
         <div id="topbar-title" id="page-title">Market Overview</div>
         <div id="ticker-strip">
           <div class="ticker-item" id="tick-SPY">
@@ -2385,9 +2451,10 @@
             <span id="ov-macro-alert-text"></span>
           </div>
 
-          <!-- Main scoring grid: ring + panels -->
-          <div class="ov-main-grid">
-            <!-- Left: Score Ring -->
+          <!-- ── ROW 1: Score Ring (left) + SPY Chart (right) ── -->
+          <div class="ov-row1">
+
+            <!-- Score Ring Panel -->
             <div id="ov-score-panel">
               <div class="ov-mode-btns">
                 <button class="ov-mode-btn" id="ovmode-scalp" onclick="ovSetMode('scalp')">SCALP</button>
@@ -2439,199 +2506,240 @@
               </div>
             </div>
 
-            <!-- Right: 5 Panel Cards -->
-            <div class="ov-panels-grid">
-
-              <!-- Volatility Card -->
-              <div class="ov-panel-card">
-                <div class="ov-panel-header">
-                  <span class="ov-panel-title">&#9889; Volatility</span>
-                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-vol-score">--</span>
-                </div>
-                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-vol-bar" style="width:0%;"></div></div>
-                <div class="ov-panel-body">
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">VIX Level</span>
-                    <span class="ov-metric-value" id="ovm-vix">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-vix">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">VIX Slope 5D</span>
-                    <span class="ov-metric-value" id="ovm-vix-slope">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-vix-slope">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">VIX / 20SMA</span>
-                    <span class="ov-metric-value" id="ovm-vix-term">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-vix-term">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">VIX Pctile 1Y</span>
-                    <span class="ov-metric-value" id="ovm-vix-pct">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Est P/C Ratio</span>
-                    <span class="ov-metric-value" id="ovm-pc">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
-                  </div>
+            <!-- SPY Chart -->
+            <div id="ov-chart-card">
+              <div id="ov-chart-header">
+                <span class="card-title">SPY Price Chart</span>
+                <div id="ov-spy-chart-tf">
+                  <button class="ov-chart-tf-btn active" data-ovctf="1d" onclick="ovSetChartTf('1d',this)">1D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5d" onclick="ovSetChartTf('5d',this)">5D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1m" onclick="ovSetChartTf('1m',this)">1M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">3M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="ytd" onclick="ovSetChartTf('ytd',this)">YTD</button>
                 </div>
               </div>
+              <div id="ov-spy-chart"></div>
+            </div>
 
-              <!-- Trend Card -->
-              <div class="ov-panel-card">
-                <div class="ov-panel-header">
-                  <span class="ov-panel-title">&#128200; Trend</span>
-                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-trend-score">--</span>
+          </div><!-- end ov-row1 -->
+
+          <!-- ── ROW 2: 5 Panel Cards (Volatility, Trend, Breadth, Momentum, Macro) ── -->
+          <div class="ov-panels-grid">
+
+            <!-- Volatility Card -->
+            <div class="ov-panel-card">
+              <div class="ov-panel-header">
+                <span class="ov-panel-title">&#9889; Volatility</span>
+                <span class="ov-panel-score-badge tone-neutral" id="ovpanel-vol-score">--</span>
+              </div>
+              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-vol-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-body">
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">VIX Level</span>
+                  <span class="ov-metric-value" id="ovm-vix">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-vix">--</span>
                 </div>
-                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-trend-bar" style="width:0%;"></div></div>
-                <div class="ov-panel-body">
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Regime</span>
-                    <span class="ov-metric-value" id="ovm-regime">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-regime">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">SPY vs 20MA</span>
-                    <span class="ov-metric-value" id="ovm-spy20">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-spy20">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">SPY vs 50MA</span>
-                    <span class="ov-metric-value" id="ovm-spy50">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-spy50">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">SPY vs 200MA</span>
-                    <span class="ov-metric-value" id="ovm-spy200">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-spy200">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">QQQ vs 20MA</span>
-                    <span class="ov-metric-value" id="ovm-qqq20">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-qqq20">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">20/50MA Cross</span>
-                    <span class="ov-metric-value" id="ovm-cross">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-cross">--</span>
-                  </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">VIX Slope 5D</span>
+                  <span class="ov-metric-value" id="ovm-vix-slope">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-vix-slope">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">VIX / 20SMA</span>
+                  <span class="ov-metric-value" id="ovm-vix-term">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-vix-term">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">VIX Pctile 1Y</span>
+                  <span class="ov-metric-value" id="ovm-vix-pct">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Est P/C Ratio</span>
+                  <span class="ov-metric-value" id="ovm-pc">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
                 </div>
               </div>
+            </div>
 
-              <!-- Breadth Card -->
-              <div class="ov-panel-card">
-                <div class="ov-panel-header">
-                  <span class="ov-panel-title">&#127754; Breadth</span>
-                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-breadth-score">--</span>
+            <!-- Trend Card -->
+            <div class="ov-panel-card">
+              <div class="ov-panel-header">
+                <span class="ov-panel-title">&#128200; Trend</span>
+                <span class="ov-panel-score-badge tone-neutral" id="ovpanel-trend-score">--</span>
+              </div>
+              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-trend-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-body">
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Regime</span>
+                  <span class="ov-metric-value" id="ovm-regime">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-regime">--</span>
                 </div>
-                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-breadth-bar" style="width:0%;"></div></div>
-                <div class="ov-panel-body">
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Sectors &gt; 20MA</span>
-                    <span class="ov-metric-value" id="ovm-above20">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-above20">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Sectors &gt; 50MA</span>
-                    <span class="ov-metric-value" id="ovm-above50">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-above50">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Sectors &gt; 200MA</span>
-                    <span class="ov-metric-value" id="ovm-above200">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-above200">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Breadth Thrust</span>
-                    <span class="ov-metric-value" id="ovm-thrust">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-thrust">--</span>
-                  </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">SPY vs 20MA</span>
+                  <span class="ov-metric-value" id="ovm-spy20">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-spy20">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">SPY vs 50MA</span>
+                  <span class="ov-metric-value" id="ovm-spy50">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-spy50">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">SPY vs 200MA</span>
+                  <span class="ov-metric-value" id="ovm-spy200">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-spy200">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">QQQ vs 20MA</span>
+                  <span class="ov-metric-value" id="ovm-qqq20">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-qqq20">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">20/50MA Cross</span>
+                  <span class="ov-metric-value" id="ovm-cross">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-cross">--</span>
                 </div>
               </div>
+            </div>
 
-              <!-- Momentum Card -->
-              <div class="ov-panel-card">
-                <div class="ov-panel-header">
-                  <span class="ov-panel-title">&#128640; Momentum</span>
-                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-mom-score">--</span>
+            <!-- Breadth Card -->
+            <div class="ov-panel-card">
+              <div class="ov-panel-header">
+                <span class="ov-panel-title">&#127754; Breadth</span>
+                <span class="ov-panel-score-badge tone-neutral" id="ovpanel-breadth-score">--</span>
+              </div>
+              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-breadth-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-body">
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Sectors &gt; 20MA</span>
+                  <span class="ov-metric-value" id="ovm-above20">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-above20">--</span>
                 </div>
-                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-mom-bar" style="width:0%;"></div></div>
-                <div class="ov-panel-body">
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">SPY RSI-14</span>
-                    <span class="ov-metric-value" id="ovm-rsi">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-rsi">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">MACD Signal</span>
-                    <span class="ov-metric-value" id="ovm-macd">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-macd">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Stochastic K</span>
-                    <span class="ov-metric-value" id="ovm-stoch">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-stoch">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Leader Sector</span>
-                    <span class="ov-metric-value" id="ovm-leader">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-leader">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Sector Spread</span>
-                    <span class="ov-metric-value" id="ovm-spread">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-spread">--</span>
-                  </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Sectors &gt; 50MA</span>
+                  <span class="ov-metric-value" id="ovm-above50">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-above50">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Sectors &gt; 200MA</span>
+                  <span class="ov-metric-value" id="ovm-above200">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-above200">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Breadth Thrust</span>
+                  <span class="ov-metric-value" id="ovm-thrust">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-thrust">--</span>
                 </div>
               </div>
+            </div>
 
-              <!-- Macro Card -->
-              <div class="ov-panel-card">
-                <div class="ov-panel-header">
-                  <span class="ov-panel-title">&#127760; Macro</span>
-                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-macro-score">--</span>
+            <!-- Momentum Card -->
+            <div class="ov-panel-card">
+              <div class="ov-panel-header">
+                <span class="ov-panel-title">&#128640; Momentum</span>
+                <span class="ov-panel-score-badge tone-neutral" id="ovpanel-mom-score">--</span>
+              </div>
+              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-mom-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-body">
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">SPY RSI-14</span>
+                  <span class="ov-metric-value" id="ovm-rsi">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-rsi">--</span>
                 </div>
-                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-macro-bar" style="width:0%;"></div></div>
-                <div class="ov-panel-body">
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">10Y Yield &#916;</span>
-                    <span class="ov-metric-value" id="ovm-tnx">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-tnx">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">USD (UUP) &#916;</span>
-                    <span class="ov-metric-value" id="ovm-uup">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-uup">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Bonds (TLT) &#916;</span>
-                    <span class="ov-metric-value" id="ovm-tlt">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-tlt">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">FOMC Proximity</span>
-                    <span class="ov-metric-value" id="ovm-fomc">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-fomc">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">CPI Proximity</span>
-                    <span class="ov-metric-value" id="ovm-cpi">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-cpi">--</span>
-                  </div>
-                  <div class="ov-metric-row">
-                    <span class="ov-metric-label">Geo Risk</span>
-                    <span class="ov-metric-value" id="ovm-geo">--</span>
-                    <span class="ov-metric-tag neutral" id="ovt-geo">--</span>
-                  </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">MACD Signal</span>
+                  <span class="ov-metric-value" id="ovm-macd">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-macd">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Stochastic K</span>
+                  <span class="ov-metric-value" id="ovm-stoch">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-stoch">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Leader Sector</span>
+                  <span class="ov-metric-value" id="ovm-leader">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-leader">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Sector Spread</span>
+                  <span class="ov-metric-value" id="ovm-spread">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-spread">--</span>
                 </div>
               </div>
+            </div>
 
-            </div><!-- end ov-panels-grid -->
-          </div><!-- end ov-main-grid -->
+            <!-- Macro Card -->
+            <div class="ov-panel-card">
+              <div class="ov-panel-header">
+                <span class="ov-panel-title">&#127760; Macro</span>
+                <span class="ov-panel-score-badge tone-neutral" id="ovpanel-macro-score">--</span>
+              </div>
+              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-macro-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-body">
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">10Y Yield &#916;</span>
+                  <span class="ov-metric-value" id="ovm-tnx">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-tnx">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">USD (UUP) &#916;</span>
+                  <span class="ov-metric-value" id="ovm-uup">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-uup">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Bonds (TLT) &#916;</span>
+                  <span class="ov-metric-value" id="ovm-tlt">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-tlt">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">FOMC Proximity</span>
+                  <span class="ov-metric-value" id="ovm-fomc">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-fomc">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">CPI Proximity</span>
+                  <span class="ov-metric-value" id="ovm-cpi">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-cpi">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Geo Risk</span>
+                  <span class="ov-metric-value" id="ovm-geo">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-geo">--</span>
+                </div>
+              </div>
+            </div>
 
-          <!-- Bottom row: Execution + Sector Perf -->
-          <div class="ov-bottom-row">
+          </div><!-- end ov-panels-grid (row 2) -->
+
+          <!-- ── ROW 3: Options Key Levels + Market Movers ── -->
+          <div class="ov-row3">
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Options Key Levels &#8212; SPY</span>
+                <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: &#8212;</span>
+              </div>
+              <div class="card-body">
+                <div class="kl-row" id="ov-key-levels">
+                  <span class="kl-pill spot">Connect Schwab</span>
+                </div>
+                <hr class="sep">
+                <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">Waiting for data&#8230;</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Market Movers &#8212; $SPX</span></div>
+              <div class="card-body" id="ov-movers-body" style="padding:0;">
+                <div class="connect-overlay" style="min-height:150px;">
+                  <div class="loading-ring"></div>
+                </div>
+              </div>
+            </div>
+          </div><!-- end ov-row3 -->
+
+          <!-- ── ROW 4: Execution Window + Sector Performance ── -->
+          <div class="ov-row4">
 
             <!-- Execution Window -->
             <div id="ov-exec-card">
@@ -2682,25 +2790,26 @@
                 <div style="color:var(--text3);font-size:10px;padding:8px 0;">Loading sectors&#8230;</div>
               </div>
             </div>
-          </div><!-- end ov-bottom-row -->
 
-          <!-- Chart Row: SPY Chart + Geo Risk -->
-          <div id="ov-chart-row">
-            <div id="ov-chart-card">
-              <div id="ov-chart-header">
-                <span class="card-title">SPY Price Chart</span>
-                <div id="ov-spy-chart-tf">
-                  <button class="ov-chart-tf-btn active" data-ovctf="1d" onclick="ovSetChartTf('1d',this)">1D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="5d" onclick="ovSetChartTf('5d',this)">5D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1m" onclick="ovSetChartTf('1m',this)">1M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">3M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="ytd" onclick="ovSetChartTf('ytd',this)">YTD</button>
-                </div>
+          </div><!-- end ov-row4 -->
+
+          <!-- ── ROW 5: Terminal Analysis (full width) ── -->
+          <div class="ov-row5">
+            <div id="ov-terminal-card">
+              <div id="ov-terminal-header">
+                <span class="card-title">&#11035; Terminal Analysis</span>
+                <span id="ov-terminal-updated" style="font-size:9px;color:var(--text3);">--</span>
               </div>
-              <div id="ov-spy-chart"></div>
+              <div id="ov-terminal-body">
+                <div id="ov-terminal-summary" class="analysis-emphasis">Connect Schwab to begin analysis.</div>
+                <div class="ov-terminal-detail" id="ov-terminal-detail1">Awaiting market data&#8230;</div>
+                <div class="ov-terminal-detail" id="ov-terminal-detail2">Playbook will appear once connected.</div>
+              </div>
             </div>
+          </div><!-- end ov-row5 -->
 
-            <!-- Geo Risk Stories -->
+          <!-- ── ROW 6: Geo Risk Intel (full width) ── -->
+          <div style="margin-bottom:12px;">
             <div id="ov-geo-card">
               <div id="ov-geo-header">
                 <span class="card-title">&#127757; Geo Risk Intel</span>
@@ -2710,45 +2819,7 @@
                 <div style="padding:14px;font-size:10px;color:var(--text3);">Loading geo risk data&#8230;</div>
               </div>
             </div>
-          </div><!-- end ov-chart-row -->
-
-          <!-- Terminal Analysis -->
-          <div id="ov-terminal-card">
-            <div id="ov-terminal-header">
-              <span class="card-title">&#11035; Terminal Analysis</span>
-              <span id="ov-terminal-updated" style="font-size:9px;color:var(--text3);">--</span>
-            </div>
-            <div id="ov-terminal-body">
-              <div id="ov-terminal-summary" class="analysis-emphasis">Connect Schwab to begin analysis.</div>
-              <div class="ov-terminal-detail" id="ov-terminal-detail1">Awaiting market data&#8230;</div>
-              <div class="ov-terminal-detail" id="ov-terminal-detail2">Playbook will appear once connected.</div>
-            </div>
-          </div>
-
-          <!-- Keep original overview cards for Options Key Levels + Movers -->
-          <div class="grid-2 mb12">
-            <div class="card">
-              <div class="card-header">
-                <span class="card-title">Options Key Levels &#8212; SPY</span>
-                <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: &#8212;</span>
-              </div>
-              <div class="card-body">
-                <div class="kl-row" id="ov-key-levels">
-                  <span class="kl-pill spot">Connect Schwab</span>
-                </div>
-                <hr class="sep">
-                <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">Waiting for data&#8230;</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">Market Movers &#8212; $SPX</span></div>
-              <div class="card-body" id="ov-movers-body" style="padding:0;">
-                <div class="connect-overlay" style="min-height:150px;">
-                  <div class="loading-ring"></div>
-                </div>
-              </div>
-            </div>
-          </div>
+          </div><!-- end geo risk row -->
 
         </div><!-- end #overview-page -->
 
@@ -3301,6 +3372,20 @@
     function connectSchwab() {
       // Opens Schwab OAuth in same window; server handles redirect
       window.location.href = `${API_BASE}/login`;
+    }
+
+    // ── Sidebar hamburger toggle ──
+    function toggleNav() {
+      const sidebar = document.getElementById('sidebar');
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      const btn = document.getElementById('nav-toggle');
+      btn.title = isCollapsed ? 'Open sidebar' : 'Close sidebar';
+      // Re-render SVG chart after transition so it fills the new width
+      setTimeout(() => {
+        if (typeof ovState !== 'undefined' && ovState.snapshot && ovState.snapshot.scores) {
+          try { ovRenderChart(ovState.snapshot.scores.spyCandles); } catch(e){}
+        }
+      }, 280);
     }
 
     // ═══════════════════════════════════════════════════════
