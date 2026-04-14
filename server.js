@@ -640,6 +640,57 @@ app.get("/api/expirationchain", async (req, res) => {
   }
 });
 
+
+// ─── Market Overview (Scoring Engine) ──────────────────────────────────────
+// GET /api/marketoverview
+// Fetches: quotes for SPY,QQQ,$VIX.X,$TNX,UUP,TLT + all 11 sector ETFs
+// Fetches: pricehistory (1yr daily) for SPY, QQQ, $VIX.X, $TNX, UUP, TLT + 11 sectors
+// Fetches: movers for $SPX
+// All via Schwab. No Polygon or Twelve Data.
+app.get("/api/marketoverview", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token yet. Connect Schwab first." });
+    }
+    const token = schwabTokens.access_token;
+    const headers = { Authorization: `Bearer ${token}` };
+    const timeout = 30000;
+    const base = "https://api.schwabapi.com/marketdata/v1";
+
+    // Symbols needed
+    const quoteSymbols = "SPY,QQQ,$VIX.X,$TNX,UUP,TLT,XLE,XLF,XLK,XLI,XLC,XLY,XLV,XLRE,XLP,XLB,XLU";
+    const histSymbols = ["SPY","QQQ","$VIX.X","$TNX","UUP","TLT","XLE","XLF","XLK","XLI","XLC","XLY","XLV","XLRE","XLP","XLB","XLU"];
+
+    // Fetch all in parallel
+    const [quotesRes, moversRes, ...histResponses] = await Promise.all([
+      axios.get(`${base}/quotes`, { params: { symbols: quoteSymbols }, headers, timeout }),
+      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, { params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, headers, timeout }).catch(() => ({ data: [] })),
+      ...histSymbols.map(sym =>
+        axios.get(`${base}/pricehistory`, {
+          params: { symbol: sym, periodType: "year", period: "1", frequencyType: "daily", frequency: "1" },
+          headers, timeout
+        }).then(r => ({ sym, candles: r.data?.candles || [] }))
+         .catch(() => ({ sym, candles: [] }))
+      )
+    ]);
+
+    const quotes = quotesRes.data || {};
+    const movers = Array.isArray(moversRes.data) ? moversRes.data : (moversRes.data?.screeners || []);
+
+    // Build history map: sym -> candles[]
+    const histMap = {};
+    histResponses.forEach(({ sym, candles }) => { histMap[sym] = candles; });
+
+    res.json({ ok: true, quotes, movers, histMap });
+  } catch (error) {
+    console.error("MARKETOVERVIEW ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to load market overview.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
 // Root route — serve dashboard
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "heat.html"));

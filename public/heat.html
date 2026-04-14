@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Market Engine — Schwab Dashboard</title>
+  <title>Market Engine Dashboard</title>
   <style>
     /* ── Reset & Base ── */
     *,
@@ -864,6 +864,484 @@
    MARKET OVERVIEW PAGE
 ───────────────────────────────────────────── */
     #overview-page {}
+
+    /* ── Overview: Ticker Marquee ── */
+    #ov-ticker-wrap {
+      overflow: hidden;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+      cursor: default;
+      position: relative;
+    }
+    #ov-ticker-wrap::before, #ov-ticker-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 40px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    #ov-ticker-wrap::before { left: 0; background: linear-gradient(90deg, var(--bg2), transparent); }
+    #ov-ticker-wrap::after { right: 0; background: linear-gradient(-90deg, var(--bg2), transparent); }
+    #ov-ticker-track {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      white-space: nowrap;
+      will-change: transform;
+    }
+    .ov-tick-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 16px;
+      font-size: 11px;
+      border-right: 1px solid var(--border);
+    }
+    .ov-tick-item .ov-tick-sym { color: var(--text2); font-weight: 700; font-size: 10px; letter-spacing: 0.04em; }
+    .ov-tick-item .ov-tick-price { color: var(--text); font-weight: 700; }
+    .ov-tick-item .ov-tick-chg { font-size: 10px; font-weight: 600; }
+    .ov-tick-item .ov-tick-chg.up { color: var(--green); }
+    .ov-tick-item .ov-tick-chg.dn { color: var(--red); }
+    .ov-tick-item .ov-tick-chg.flat { color: var(--text3); }
+
+    /* ── Overview: Macro Alert Banner ── */
+    #ov-macro-alert {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      background: rgba(255, 140, 59, 0.1);
+      border: 1px solid rgba(255, 140, 59, 0.3);
+      border-radius: 7px;
+      margin-bottom: 12px;
+      font-size: 11px;
+      color: var(--orange);
+      font-weight: 600;
+    }
+    #ov-macro-alert.danger {
+      background: rgba(255, 59, 92, 0.1);
+      border-color: rgba(255, 59, 92, 0.3);
+      color: var(--red);
+    }
+    #ov-macro-alert-icon { font-size: 14px; flex-shrink: 0; }
+    #ov-macro-alert-text { flex: 1; line-height: 1.5; }
+
+    /* ── Overview: Main grid ── */
+    .ov-main-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 1100px) {
+      .ov-main-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Overview: Score Ring Panel ── */
+    #ov-score-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .ov-mode-btns {
+      display: flex;
+      gap: 4px;
+    }
+    .ov-mode-btn {
+      flex: 1;
+      padding: 5px 0;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      background: var(--bg3);
+      color: var(--text3);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+    .ov-mode-btn.active {
+      background: rgba(220,255,30,0.1);
+      color: var(--accent);
+      border-color: rgba(220,255,30,0.35);
+    }
+    #ov-ring-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    #ov-ring-svg { display: block; }
+    .ov-ring-score-group {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+    }
+    #ov-ring-container {
+      position: relative;
+      width: 140px;
+      height: 140px;
+    }
+    #ov-ring-score {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+      display: block;
+    }
+    #ov-ring-verdict {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 2px;
+      display: block;
+    }
+    #ov-ring-mode {
+      font-size: 8px;
+      color: var(--text3);
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-top: 1px;
+      display: block;
+    }
+    .ov-ring-verdict.YES { color: var(--green); }
+    .ov-ring-verdict.SELECTIVE { color: var(--accent); }
+    .ov-ring-verdict.CAUTION { color: var(--orange); }
+    .ov-ring-verdict.REDUCE { color: var(--orange); }
+    .ov-ring-verdict.SITOUT { color: var(--red); }
+
+    /* ── Overview: Weight bars ── */
+    .ov-weight-bars { display: flex; flex-direction: column; gap: 5px; }
+    .ov-weight-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 28px;
+      align-items: center;
+      gap: 6px;
+    }
+    .ov-weight-label { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+    .ov-weight-bar-track {
+      height: 5px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .ov-weight-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    .ov-weight-score {
+      font-size: 10px;
+      font-weight: 700;
+      text-align: right;
+    }
+    .tone-pos { color: var(--green); }
+    .tone-caution { color: var(--orange); }
+    .tone-neg { color: var(--red); }
+    .tone-neutral { color: var(--text3); }
+
+    /* ── Overview: Panel cards grid ── */
+    .ov-panels-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+    }
+    .ov-panel-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .ov-panel-header {
+      padding: 9px 12px 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+    }
+    .ov-panel-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text2);
+    }
+    .ov-panel-score-badge {
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .ov-panel-bar { height: 3px; background: var(--bg3); }
+    .ov-panel-bar-fill { height: 100%; transition: width 0.5s ease; }
+    .ov-panel-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .ov-metric-row {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      align-items: center;
+      gap: 6px;
+      min-height: 18px;
+    }
+    .ov-metric-label { font-size: 9px; color: var(--text3); font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ov-metric-value { font-size: 10px; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .ov-metric-tag {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+    .ov-metric-tag.positive { background: rgba(34,221,136,0.12); color: var(--green); }
+    .ov-metric-tag.danger { background: rgba(255,59,92,0.12); color: var(--red); }
+    .ov-metric-tag.caution { background: rgba(255,140,59,0.12); color: var(--orange); }
+    .ov-metric-tag.neutral { background: rgba(122,128,153,0.12); color: var(--text3); }
+
+    /* ── Overview: Bottom row ── */
+    .ov-bottom-row {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 1100px) {
+      .ov-bottom-row { grid-template-columns: 1fr; }
+    }
+
+    /* ── Overview: Execution Window ── */
+    #ov-exec-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .ov-exec-header {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ov-exec-body { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ov-exec-main { display: flex; flex-direction: column; gap: 8px; }
+    .ov-exec-verdict {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      line-height: 1;
+    }
+    .ov-exec-verdict.long { color: var(--green); }
+    .ov-exec-verdict.short { color: var(--red); }
+    .ov-exec-verdict.caution { color: var(--orange); }
+    .ov-exec-verdict.sit-out { color: var(--text3); }
+    .ov-exec-conf-row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+    .ov-exec-conf { font-weight: 700; font-size: 11px; }
+    .ov-exec-conf.high { color: var(--green); }
+    .ov-exec-conf.medium { color: var(--orange); }
+    .ov-exec-conf.low { color: var(--text3); }
+    .ov-exec-signals { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; }
+    .ov-exec-signals li { font-size: 10px; color: var(--text2); padding: 2px 0; border-bottom: 1px solid var(--border); }
+    .ov-exec-signals li:last-child { border-bottom: none; }
+    .ov-exec-side { display: flex; flex-direction: column; gap: 8px; }
+    .ov-exec-kv { display: flex; flex-direction: column; gap: 2px; }
+    .ov-exec-kv-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
+    .ov-exec-kv-val { font-size: 14px; font-weight: 800; }
+    .ov-exec-bias.long-bias { color: var(--green); }
+    .ov-exec-bias.short-bias { color: var(--red); }
+    .ov-exec-bias.neutral { color: var(--text3); }
+    .ov-exec-risks { display: flex; flex-direction: column; gap: 3px; }
+    .ov-exec-risk-note { font-size: 9px; color: var(--text2); padding: 2px 0; border-bottom: 1px solid var(--border); }
+    .ov-exec-risk-note:last-child { border-bottom: none; }
+
+    /* ── Overview: Sector Performance ── */
+    #ov-sector-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .ov-sector-header {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .ov-sector-tf-btns { display: flex; gap: 3px; }
+    .ov-sector-tf-btn {
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--bg3);
+      color: var(--text3);
+      border: 1px solid var(--border2);
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+    }
+    .ov-sector-tf-btn.active {
+      background: rgba(220,255,30,0.1);
+      color: var(--accent);
+      border-color: rgba(220,255,30,0.35);
+    }
+    .ov-sector-body { padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
+    .ov-sector-row { display: grid; grid-template-columns: 42px 1fr 44px; align-items: center; gap: 6px; }
+    .ov-sector-sym { font-size: 9px; font-weight: 700; color: var(--text2); letter-spacing: 0.04em; }
+    .ov-sector-bar-track { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+    .ov-sector-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+    .ov-sector-bar-fill.pos { background: var(--green); }
+    .ov-sector-bar-fill.neg { background: var(--red); }
+    .ov-sector-val { font-size: 9px; font-weight: 700; text-align: right; }
+    .ov-sector-val.up { color: var(--green); }
+    .ov-sector-val.dn { color: var(--red); }
+
+    /* ── Overview: Chart ── */
+    #ov-chart-row {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    @media (max-width: 1100px) {
+      #ov-chart-row { grid-template-columns: 1fr; }
+    }
+    #ov-chart-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #ov-chart-header {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #ov-spy-chart { height: 220px; }
+    #ov-spy-chart-tf { display: flex; gap: 3px; }
+    .ov-chart-tf-btn {
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--bg3);
+      color: var(--text3);
+      border: 1px solid var(--border2);
+      border-radius: 3px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s;
+      letter-spacing: 0.04em;
+    }
+    .ov-chart-tf-btn.active {
+      background: rgba(220,255,30,0.1);
+      color: var(--accent);
+      border-color: rgba(220,255,30,0.35);
+    }
+
+    /* ── Overview: Geo Risk stories ── */
+    #ov-geo-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    #ov-geo-header {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #ov-geo-stories { padding: 0; max-height: 340px; overflow-y: auto; }
+    .ov-geo-card {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: background 0.12s;
+    }
+    .ov-geo-card:last-child { border-bottom: none; }
+    .ov-geo-card:hover { background: rgba(255,255,255,0.02); }
+    a.ov-geo-card { text-decoration: none; color: inherit; }
+    .ov-geo-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .ov-geo-sev { font-size: 8px; font-weight: 700; letter-spacing: 0.07em; display: flex; align-items: center; gap: 4px; }
+    .ov-geo-sev.high { color: var(--red); }
+    .ov-geo-sev.medium { color: var(--orange); }
+    .ov-geo-sev.low { color: var(--text3); }
+    .ov-geo-date { font-size: 9px; color: var(--text3); }
+    .ov-geo-headline { font-size: 10px; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .ov-geo-desc { font-size: 9px; color: var(--text2); line-height: 1.5; }
+
+    /* ── Overview: Terminal Analysis ── */
+    #ov-terminal-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    #ov-terminal-header {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #ov-terminal-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #ov-terminal-summary {
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--text);
+      font-weight: 600;
+    }
+    .ov-terminal-detail {
+      font-size: 10px;
+      color: var(--text2);
+      line-height: 1.6;
+      padding: 6px 10px;
+      background: var(--bg3);
+      border-radius: 5px;
+      border-left: 3px solid var(--border2);
+    }
+    #ov-terminal-updated { font-size: 9px; color: var(--text3); }
+    .analysis-emphasis { font-weight: 800; }
+    .analysis-emphasis.positive { color: var(--green); }
+    .analysis-emphasis.caution { color: var(--orange); }
+    .analysis-emphasis.danger { color: var(--red); }
+
+    /* ── Existing Overview tiles keep working ── */
 
     .mini-chart-wrap {
       height: 60px;
@@ -1873,52 +2351,397 @@
            1. MARKET OVERVIEW
       ════════════════════════════════════ -->
         <div id="overview-page" class="page active">
-          <div id="overview-error" style="display:none;"></div>
+          <div id="overview-error" class="error-banner" style="display:none;"></div>
 
-          <!-- Key Index Tiles -->
-          <div class="grid-4 mb12" id="index-tiles">
-            <div class="stat-tile">
-              <div class="st-label">S&amp;P 500 ETF</div>
-              <div class="st-value" id="ov-spy-price">—</div>
-              <div class="st-sub"><span class="st-chg flat" id="ov-spy-chg">—</span></div>
-            </div>
-            <div class="stat-tile">
-              <div class="st-label">S&amp;P 500 Index</div>
-              <div class="st-value" id="ov-spx-price">—</div>
-              <div class="st-sub"><span class="st-chg flat" id="ov-spx-chg">—</span></div>
-            </div>
-            <div class="stat-tile">
-              <div class="st-label">Volatility (VIX)</div>
-              <div class="st-value" id="ov-vix-price">—</div>
-              <div class="st-sub"><span class="st-chg flat" id="ov-vix-chg">—</span> <span
-                  style="font-size:9px;color:var(--text3)">Fear Index</span></div>
-            </div>
-            <div class="stat-tile">
-              <div class="st-label">NASDAQ 100</div>
-              <div class="st-value" id="ov-qqq-price">—</div>
-              <div class="st-sub"><span class="st-chg flat" id="ov-qqq-chg">—</span></div>
+          <!-- Ticker Marquee -->
+          <div id="ov-ticker-wrap">
+            <div id="ov-ticker-track">
+              <div id="ov-ticker-group-primary" style="display:flex;align-items:center;">
+                <!-- SPY -->
+                <div class="ov-tick-item" data-ovsym="SPY"><span class="ov-tick-sym">SPY</span><span class="ov-tick-price" id="ovt-SPY-price">--</span><span class="ov-tick-chg flat" id="ovt-SPY-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="QQQ"><span class="ov-tick-sym">QQQ</span><span class="ov-tick-price" id="ovt-QQQ-price">--</span><span class="ov-tick-chg flat" id="ovt-QQQ-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="$VIX.X"><span class="ov-tick-sym">VIX</span><span class="ov-tick-price" id="ovt-VIX-price">--</span><span class="ov-tick-chg flat" id="ovt-VIX-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="$TNX"><span class="ov-tick-sym">TNX</span><span class="ov-tick-price" id="ovt-TNX-price">--</span><span class="ov-tick-chg flat" id="ovt-TNX-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="UUP"><span class="ov-tick-sym">UUP</span><span class="ov-tick-price" id="ovt-UUP-price">--</span><span class="ov-tick-chg flat" id="ovt-UUP-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="TLT"><span class="ov-tick-sym">TLT</span><span class="ov-tick-price" id="ovt-TLT-price">--</span><span class="ov-tick-chg flat" id="ovt-TLT-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLE"><span class="ov-tick-sym">XLE</span><span class="ov-tick-price" id="ovt-XLE-price">--</span><span class="ov-tick-chg flat" id="ovt-XLE-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLF"><span class="ov-tick-sym">XLF</span><span class="ov-tick-price" id="ovt-XLF-price">--</span><span class="ov-tick-chg flat" id="ovt-XLF-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLK"><span class="ov-tick-sym">XLK</span><span class="ov-tick-price" id="ovt-XLK-price">--</span><span class="ov-tick-chg flat" id="ovt-XLK-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLI"><span class="ov-tick-sym">XLI</span><span class="ov-tick-price" id="ovt-XLI-price">--</span><span class="ov-tick-chg flat" id="ovt-XLI-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLC"><span class="ov-tick-sym">XLC</span><span class="ov-tick-price" id="ovt-XLC-price">--</span><span class="ov-tick-chg flat" id="ovt-XLC-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLY"><span class="ov-tick-sym">XLY</span><span class="ov-tick-price" id="ovt-XLY-price">--</span><span class="ov-tick-chg flat" id="ovt-XLY-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLV"><span class="ov-tick-sym">XLV</span><span class="ov-tick-price" id="ovt-XLV-price">--</span><span class="ov-tick-chg flat" id="ovt-XLV-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLRE"><span class="ov-tick-sym">XLRE</span><span class="ov-tick-price" id="ovt-XLRE-price">--</span><span class="ov-tick-chg flat" id="ovt-XLRE-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLP"><span class="ov-tick-sym">XLP</span><span class="ov-tick-price" id="ovt-XLP-price">--</span><span class="ov-tick-chg flat" id="ovt-XLP-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLB"><span class="ov-tick-sym">XLB</span><span class="ov-tick-price" id="ovt-XLB-price">--</span><span class="ov-tick-chg flat" id="ovt-XLB-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLU"><span class="ov-tick-sym">XLU</span><span class="ov-tick-price" id="ovt-XLU-price">--</span><span class="ov-tick-chg flat" id="ovt-XLU-chg">--</span></div>
+              </div>
             </div>
           </div>
 
-          <!-- Options-driven key levels + movers -->
-          <div class="grid-2 mb12">
-            <div class="card">
-              <div class="card-header">
-                <span class="card-title">Options Key Levels — SPY</span>
-                <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: —</span>
+          <!-- Macro Alert Banner -->
+          <div id="ov-macro-alert">
+            <span id="ov-macro-alert-icon">&#9889;</span>
+            <span id="ov-macro-alert-text"></span>
+          </div>
+
+          <!-- Main scoring grid: ring + panels -->
+          <div class="ov-main-grid">
+            <!-- Left: Score Ring -->
+            <div id="ov-score-panel">
+              <div class="ov-mode-btns">
+                <button class="ov-mode-btn" id="ovmode-scalp" onclick="ovSetMode('scalp')">SCALP</button>
+                <button class="ov-mode-btn active" id="ovmode-swing" onclick="ovSetMode('swing')">SWING</button>
+                <button class="ov-mode-btn" id="ovmode-position" onclick="ovSetMode('position')">POSITION</button>
               </div>
-              <div class="card-body">
-                <div class="kl-row" id="ov-key-levels">
-                  <span class="kl-pill spot">Loading…</span>
+              <div id="ov-ring-wrap">
+                <div id="ov-ring-container">
+                  <svg id="ov-ring-svg" width="140" height="140" viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+                    <circle id="ov-ring-arc" cx="70" cy="70" r="56" fill="none" stroke="var(--accent)" stroke-width="10"
+                      stroke-linecap="round" stroke-dasharray="351.858" stroke-dashoffset="351.858"
+                      transform="rotate(-90 70 70)" style="transition:stroke-dashoffset 0.7s ease,stroke 0.4s;"/>
+                  </svg>
+                  <div class="ov-ring-score-group">
+                    <span id="ov-ring-score">--</span>
+                    <span id="ov-ring-verdict" class="ov-ring-verdict SITOUT">--</span>
+                    <span id="ov-ring-mode">SWING</span>
+                  </div>
                 </div>
-                <hr class="sep">
-                <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">
-                  Waiting for data…
+              </div>
+              <!-- Weight Bars -->
+              <div class="ov-weight-bars">
+                <div class="ov-weight-row">
+                  <span class="ov-weight-label">Volatility</span>
+                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-vol" style="width:0%;background:var(--text3);"></div></div>
+                  <span class="ov-weight-score tone-neutral" id="ovscore-vol">--</span>
+                </div>
+                <div class="ov-weight-row">
+                  <span class="ov-weight-label">Trend</span>
+                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);"></div></div>
+                  <span class="ov-weight-score tone-neutral" id="ovscore-trend">--</span>
+                </div>
+                <div class="ov-weight-row">
+                  <span class="ov-weight-label">Breadth</span>
+                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-breadth" style="width:0%;background:var(--text3);"></div></div>
+                  <span class="ov-weight-score tone-neutral" id="ovscore-breadth">--</span>
+                </div>
+                <div class="ov-weight-row">
+                  <span class="ov-weight-label">Momentum</span>
+                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-mom" style="width:0%;background:var(--text3);"></div></div>
+                  <span class="ov-weight-score tone-neutral" id="ovscore-mom">--</span>
+                </div>
+                <div class="ov-weight-row">
+                  <span class="ov-weight-label">Macro</span>
+                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);"></div></div>
+                  <span class="ov-weight-score tone-neutral" id="ovscore-macro">--</span>
                 </div>
               </div>
             </div>
+
+            <!-- Right: 5 Panel Cards -->
+            <div class="ov-panels-grid">
+
+              <!-- Volatility Card -->
+              <div class="ov-panel-card">
+                <div class="ov-panel-header">
+                  <span class="ov-panel-title">&#9889; Volatility</span>
+                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-vol-score">--</span>
+                </div>
+                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-vol-bar" style="width:0%;"></div></div>
+                <div class="ov-panel-body">
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">VIX Level</span>
+                    <span class="ov-metric-value" id="ovm-vix">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-vix">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">VIX Slope 5D</span>
+                    <span class="ov-metric-value" id="ovm-vix-slope">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-vix-slope">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">VIX / 20SMA</span>
+                    <span class="ov-metric-value" id="ovm-vix-term">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-vix-term">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">VIX Pctile 1Y</span>
+                    <span class="ov-metric-value" id="ovm-vix-pct">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Est P/C Ratio</span>
+                    <span class="ov-metric-value" id="ovm-pc">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Trend Card -->
+              <div class="ov-panel-card">
+                <div class="ov-panel-header">
+                  <span class="ov-panel-title">&#128200; Trend</span>
+                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-trend-score">--</span>
+                </div>
+                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-trend-bar" style="width:0%;"></div></div>
+                <div class="ov-panel-body">
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Regime</span>
+                    <span class="ov-metric-value" id="ovm-regime">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-regime">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">SPY vs 20MA</span>
+                    <span class="ov-metric-value" id="ovm-spy20">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-spy20">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">SPY vs 50MA</span>
+                    <span class="ov-metric-value" id="ovm-spy50">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-spy50">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">SPY vs 200MA</span>
+                    <span class="ov-metric-value" id="ovm-spy200">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-spy200">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">QQQ vs 20MA</span>
+                    <span class="ov-metric-value" id="ovm-qqq20">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-qqq20">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">20/50MA Cross</span>
+                    <span class="ov-metric-value" id="ovm-cross">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-cross">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Breadth Card -->
+              <div class="ov-panel-card">
+                <div class="ov-panel-header">
+                  <span class="ov-panel-title">&#127754; Breadth</span>
+                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-breadth-score">--</span>
+                </div>
+                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-breadth-bar" style="width:0%;"></div></div>
+                <div class="ov-panel-body">
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Sectors &gt; 20MA</span>
+                    <span class="ov-metric-value" id="ovm-above20">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-above20">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Sectors &gt; 50MA</span>
+                    <span class="ov-metric-value" id="ovm-above50">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-above50">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Sectors &gt; 200MA</span>
+                    <span class="ov-metric-value" id="ovm-above200">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-above200">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Breadth Thrust</span>
+                    <span class="ov-metric-value" id="ovm-thrust">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-thrust">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Momentum Card -->
+              <div class="ov-panel-card">
+                <div class="ov-panel-header">
+                  <span class="ov-panel-title">&#128640; Momentum</span>
+                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-mom-score">--</span>
+                </div>
+                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-mom-bar" style="width:0%;"></div></div>
+                <div class="ov-panel-body">
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">SPY RSI-14</span>
+                    <span class="ov-metric-value" id="ovm-rsi">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-rsi">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">MACD Signal</span>
+                    <span class="ov-metric-value" id="ovm-macd">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-macd">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Stochastic K</span>
+                    <span class="ov-metric-value" id="ovm-stoch">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-stoch">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Leader Sector</span>
+                    <span class="ov-metric-value" id="ovm-leader">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-leader">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Sector Spread</span>
+                    <span class="ov-metric-value" id="ovm-spread">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-spread">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Macro Card -->
+              <div class="ov-panel-card">
+                <div class="ov-panel-header">
+                  <span class="ov-panel-title">&#127760; Macro</span>
+                  <span class="ov-panel-score-badge tone-neutral" id="ovpanel-macro-score">--</span>
+                </div>
+                <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-macro-bar" style="width:0%;"></div></div>
+                <div class="ov-panel-body">
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">10Y Yield &#916;</span>
+                    <span class="ov-metric-value" id="ovm-tnx">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-tnx">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">USD (UUP) &#916;</span>
+                    <span class="ov-metric-value" id="ovm-uup">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-uup">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Bonds (TLT) &#916;</span>
+                    <span class="ov-metric-value" id="ovm-tlt">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-tlt">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">FOMC Proximity</span>
+                    <span class="ov-metric-value" id="ovm-fomc">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-fomc">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">CPI Proximity</span>
+                    <span class="ov-metric-value" id="ovm-cpi">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-cpi">--</span>
+                  </div>
+                  <div class="ov-metric-row">
+                    <span class="ov-metric-label">Geo Risk</span>
+                    <span class="ov-metric-value" id="ovm-geo">--</span>
+                    <span class="ov-metric-tag neutral" id="ovt-geo">--</span>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- end ov-panels-grid -->
+          </div><!-- end ov-main-grid -->
+
+          <!-- Bottom row: Execution + Sector Perf -->
+          <div class="ov-bottom-row">
+
+            <!-- Execution Window -->
+            <div id="ov-exec-card">
+              <div class="ov-exec-header">
+                <span class="card-title">&#9881; Execution Window</span>
+                <span style="font-size:10px;color:var(--text3);">Score: <b id="ov-exec-score" style="color:var(--text);">--</b></span>
+              </div>
+              <div class="ov-exec-body">
+                <div class="ov-exec-main">
+                  <div class="ov-exec-verdict sit-out" id="ov-exec-verdict">SIT OUT</div>
+                  <div class="ov-exec-conf-row">
+                    <span style="color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Confidence:</span>
+                    <span class="ov-exec-conf medium" id="ov-exec-conf">MEDIUM</span>
+                  </div>
+                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Active Signals</div>
+                  <ul class="ov-exec-signals" id="ov-exec-signals">
+                    <li>Waiting for data...</li>
+                  </ul>
+                </div>
+                <div class="ov-exec-side">
+                  <div class="ov-exec-kv">
+                    <span class="ov-exec-kv-label">Position Size</span>
+                    <span class="ov-exec-kv-val" id="ov-exec-size">--</span>
+                  </div>
+                  <div class="ov-exec-kv">
+                    <span class="ov-exec-kv-label">Bias</span>
+                    <span class="ov-exec-kv-val ov-exec-bias neutral" id="ov-exec-bias">NEUTRAL</span>
+                  </div>
+                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Risk Notes</div>
+                  <div class="ov-exec-risks" id="ov-exec-risks">
+                    <div class="ov-exec-risk-note">--</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sector Performance -->
+            <div id="ov-sector-card">
+              <div class="ov-sector-header">
+                <span class="card-title" style="font-size:10px;">Sector Performance</span>
+                <div class="ov-sector-tf-btns" id="ov-sector-tfs">
+                  <button class="ov-sector-tf-btn active" data-ovtf="1d" onclick="ovSetSectorTf('1d',this)">1D</button>
+                  <button class="ov-sector-tf-btn" data-ovtf="5d" onclick="ovSetSectorTf('5d',this)">5D</button>
+                  <button class="ov-sector-tf-btn" data-ovtf="1m" onclick="ovSetSectorTf('1m',this)">1M</button>
+                </div>
+              </div>
+              <div class="ov-sector-body" id="ov-sector-list">
+                <div style="color:var(--text3);font-size:10px;padding:8px 0;">Loading sectors&#8230;</div>
+              </div>
+            </div>
+          </div><!-- end ov-bottom-row -->
+
+          <!-- Chart Row: SPY Chart + Geo Risk -->
+          <div id="ov-chart-row">
+            <div id="ov-chart-card">
+              <div id="ov-chart-header">
+                <span class="card-title">SPY Price Chart</span>
+                <div id="ov-spy-chart-tf">
+                  <button class="ov-chart-tf-btn active" data-ovctf="1d" onclick="ovSetChartTf('1d',this)">1D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5d" onclick="ovSetChartTf('5d',this)">5D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1m" onclick="ovSetChartTf('1m',this)">1M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">3M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="ytd" onclick="ovSetChartTf('ytd',this)">YTD</button>
+                </div>
+              </div>
+              <div id="ov-spy-chart"></div>
+            </div>
+
+            <!-- Geo Risk Stories -->
+            <div id="ov-geo-card">
+              <div id="ov-geo-header">
+                <span class="card-title">&#127757; Geo Risk Intel</span>
+                <span id="ov-geo-risk-badge" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(122,128,153,0.15);color:var(--text3);">--</span>
+              </div>
+              <div id="ov-geo-stories">
+                <div style="padding:14px;font-size:10px;color:var(--text3);">Loading geo risk data&#8230;</div>
+              </div>
+            </div>
+          </div><!-- end ov-chart-row -->
+
+          <!-- Terminal Analysis -->
+          <div id="ov-terminal-card">
+            <div id="ov-terminal-header">
+              <span class="card-title">&#11035; Terminal Analysis</span>
+              <span id="ov-terminal-updated" style="font-size:9px;color:var(--text3);">--</span>
+            </div>
+            <div id="ov-terminal-body">
+              <div id="ov-terminal-summary" class="analysis-emphasis">Connect Schwab to begin analysis.</div>
+              <div class="ov-terminal-detail" id="ov-terminal-detail1">Awaiting market data&#8230;</div>
+              <div class="ov-terminal-detail" id="ov-terminal-detail2">Playbook will appear once connected.</div>
+            </div>
+          </div>
+
+          <!-- Keep original overview cards for Options Key Levels + Movers -->
+          <div class="grid-2 mb12">
             <div class="card">
-              <div class="card-header"><span class="card-title">Market Movers — $SPX</span></div>
+              <div class="card-header">
+                <span class="card-title">Options Key Levels &#8212; SPY</span>
+                <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: &#8212;</span>
+              </div>
+              <div class="card-body">
+                <div class="kl-row" id="ov-key-levels">
+                  <span class="kl-pill spot">Connect Schwab</span>
+                </div>
+                <hr class="sep">
+                <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">Waiting for data&#8230;</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Market Movers &#8212; $SPX</span></div>
               <div class="card-body" id="ov-movers-body" style="padding:0;">
                 <div class="connect-overlay" style="min-height:150px;">
                   <div class="loading-ring"></div>
@@ -1927,31 +2750,11 @@
             </div>
           </div>
 
-          <!-- Broad market details -->
-          <div class="grid-3 mb12">
-            <div class="card">
-              <div class="card-header"><span class="card-title">SPY Quote Detail</span></div>
-              <div class="card-body" id="ov-spy-detail">
-                <div class="text-muted fs10">Connect Schwab to view detailed quote data.</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">Market Hours Status</span></div>
-              <div class="card-body" id="ov-market-hours">
-                <div class="text-muted fs10">Loading market hours…</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">GEX Summary</span></div>
-              <div class="card-body" id="ov-gex-summary">
-                <div class="text-muted fs10">GEX data loads after Heat Seeker refresh.</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        </div><!-- end #overview-page -->
 
         <!-- ════════════════════════════════════
            3. HEAT SEEKER (GEX Heatmap)
+
       ════════════════════════════════════ -->
         <div id="heat-page" class="page"
           style="height: calc(100vh - 84px); display:none; flex-direction:column; gap:10px;">
@@ -2573,107 +3376,1009 @@
     }
 
     // ═══════════════════════════════════════════════════════
-    //  1. MARKET OVERVIEW
+    //  MARKET OVERVIEW — scoring engine state
     // ═══════════════════════════════════════════════════════
+    let ovState = {
+      mode: sessionStorage.getItem('ovMode') || 'swing',
+      sectorTf: '1d',
+      chartTf: '1d',
+      snapshot: null,
+      spyCandles: [],
+      tickerRafId: null,
+      tickerOffset: 0,
+      tickerGroupWidth: 0,
+      tickerLastTs: 0,
+      tickerPaused: false
+    };
+
+    const OV_TRADE_WEIGHTS = {
+      scalp:    { volatility:30, trend:15, breadth:10, momentum:35, macro:10 },
+      swing:    { volatility:20, trend:25, breadth:20, momentum:20, macro:15 },
+      position: { volatility:15, trend:30, breadth:25, momentum:10, macro:20 }
+    };
+
+    const FOMC_DATES = ["2026-04-20","2026-06-17","2026-07-29","2026-09-16","2026-10-28","2026-12-09"];
+    const CPI_EVENTS = [
+      {releaseDate:"2026-04-10",labelMonth:"Mar"},
+      {releaseDate:"2026-05-12",labelMonth:"Apr"},
+      {releaseDate:"2026-06-10",labelMonth:"May"},
+      {releaseDate:"2026-07-14",labelMonth:"Jun"},
+      {releaseDate:"2026-08-12",labelMonth:"Jul"},
+      {releaseDate:"2026-09-10",labelMonth:"Aug"},
+      {releaseDate:"2026-10-13",labelMonth:"Sep"},
+      {releaseDate:"2026-11-12",labelMonth:"Oct"},
+      {releaseDate:"2026-12-10",labelMonth:"Nov"}
+    ];
+    const JOLTS_EVENTS = [
+      {releaseDate:"2026-04-01",labelMonth:"Feb"},
+      {releaseDate:"2026-05-05",labelMonth:"Mar"},
+      {releaseDate:"2026-06-02",labelMonth:"Apr"},
+      {releaseDate:"2026-07-07",labelMonth:"May"},
+      {releaseDate:"2026-08-04",labelMonth:"Jun"},
+      {releaseDate:"2026-09-01",labelMonth:"Jul"},
+      {releaseDate:"2026-10-06",labelMonth:"Aug"},
+      {releaseDate:"2026-11-03",labelMonth:"Sep"},
+      {releaseDate:"2026-12-01",labelMonth:"Oct"}
+    ];
+    const GEO_RISK_API_URL = "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php";
+    const GEO_RISK_API_HOST = "world-conflict-intelligence-api.p.rapidapi.com";
+    const GEO_RISK_API_KEY = "64de0721dfmsh16b88a238670039p180561jsne239188deb55";
+
+    const SECTOR_ORDER = ["XLE","XLF","XLK","XLI","XLC","XLY","XLV","XLRE","XLP","XLB","XLU"];
+
+    // ── Tiny math helpers ──
+    function ovSma(arr, period) {
+      if (!arr || arr.length < period) return null;
+      const slice = arr.slice(-period);
+      return slice.reduce((s,v)=>s+v,0) / period;
+    }
+    function ovRsi(closes, period=14) {
+      if (!closes || closes.length < period+1) return null;
+      let gains=0, losses=0;
+      for(let i=closes.length-period; i<closes.length; i++) {
+        const d = closes[i]-closes[i-1];
+        if(d>0) gains+=d; else losses+=Math.abs(d);
+      }
+      const ag=gains/period, al=losses/period;
+      if(al===0) return 100;
+      return 100 - (100/(1+(ag/al)));
+    }
+    function ovMacd(closes, fast=12, slow=26, sig=9) {
+      function ema(arr, p) {
+        if(arr.length<p) return null;
+        let e = arr.slice(0,p).reduce((s,v)=>s+v,0)/p;
+        const k=2/(p+1);
+        for(let i=p;i<arr.length;i++) e=arr[i]*k+e*(1-k);
+        return e;
+      }
+      if(closes.length<slow+sig) return null;
+      const fastEma = ema(closes,fast);
+      const slowEma = ema(closes,slow);
+      if(fastEma==null||slowEma==null) return null;
+      const macdLine = fastEma-slowEma;
+      // approximate signal from last `sig` macd values
+      const recent = closes.slice(-(slow+sig));
+      const macdSeries = [];
+      for(let i=slow-1;i<recent.length;i++){
+        const f=ema(recent.slice(0,i+1),fast);
+        const s=ema(recent.slice(0,i+1),slow);
+        if(f!=null&&s!=null) macdSeries.push(f-s);
+      }
+      const signal=ema(macdSeries,sig);
+      const hist=signal!=null?macdLine-signal:null;
+      return {macd:macdLine, signal, hist};
+    }
+    function ovStoch(candles, kPeriod=14, dPeriod=3) {
+      if(!candles||candles.length<kPeriod) return null;
+      const kValues=[];
+      for(let i=kPeriod-1;i<candles.length;i++){
+        const slice=candles.slice(i-kPeriod+1,i+1);
+        const h=Math.max(...slice.map(c=>c.high||c.h||0));
+        const l=Math.min(...slice.map(c=>c.low||c.l||9999));
+        const c=candles[i].close||candles[i].c||0;
+        kValues.push(h===l?50:((c-l)/(h-l))*100);
+      }
+      const d=kValues.length>=dPeriod?kValues.slice(-dPeriod).reduce((s,v)=>s+v,0)/dPeriod:null;
+      return {k:kValues[kValues.length-1], d};
+    }
+    function ovSlope5(arr) {
+      if(!arr||arr.length<2) return 0;
+      const s=arr.slice(-5);
+      if(s.length<2) return 0;
+      return (s[s.length-1]-s[0])/(s.length-1);
+    }
+    function ovPctDiff(a,b) {
+      if(!Number.isFinite(a)||!Number.isFinite(b)||b===0) return null;
+      return ((a-b)/b)*100;
+    }
+    function ovPctileRank(arr, val) {
+      if(!arr||arr.length===0) return null;
+      const below=arr.filter(v=>v<val).length;
+      return (below/arr.length)*100;
+    }
+    function ovClamp(v,mn=0,mx=100){return Math.max(mn,Math.min(mx,v));}
+    function ovFmtPct(v,d=2,showSign=false){
+      if(v==null||isNaN(v)) return '--';
+      const s=(showSign&&v>0)?'+':'';
+      return s+Number(v).toFixed(d)+'%';
+    }
+    function ovN(v,def=null){const n=Number(v);return Number.isFinite(n)?n:def;}
+
+    function ovStartOfDay(d){const r=new Date(d);r.setHours(0,0,0,0);return r;}
+    function ovParseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+    function ovDaysUntil(dateStr){
+      const today=ovStartOfDay(new Date());
+      const target=ovStartOfDay(ovParseDate(dateStr));
+      return Math.round((target-today)/(1000*60*60*24));
+    }
+    function ovNextEvent(dates){
+      const today=ovStartOfDay(new Date());
+      const upcoming=dates.map(d=>({d,days:ovDaysUntil(d)})).filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);
+      return upcoming[0]||null;
+    }
+    function ovNextCpi(){
+      const today=ovStartOfDay(new Date());
+      const upcoming=CPI_EVENTS.map(e=>({...e,days:ovDaysUntil(e.releaseDate)})).filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);
+      return upcoming[0]||null;
+    }
+    function ovNextJolts(){
+      const today=ovStartOfDay(new Date());
+      const upcoming=JOLTS_EVENTS.map(e=>({...e,days:ovDaysUntil(e.releaseDate)})).filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);
+      return upcoming[0]||null;
+    }
+    function ovEventTone(days){
+      if(days===0||days===1) return 'danger';
+      if(days<=4) return 'caution';
+      if(days<=9) return 'caution';
+      return 'positive';
+    }
+
+    // ── Tone helpers ──
+    function ovScoreTone(s){
+      if(s>=60) return 'positive';
+      if(s>=40) return 'caution';
+      return 'danger';
+    }
+    function ovBarColor(s){
+      if(s>=60) return 'linear-gradient(90deg,var(--green),rgba(34,221,136,0.5))';
+      if(s>=40) return 'linear-gradient(90deg,var(--orange),rgba(255,140,59,0.5))';
+      return 'linear-gradient(90deg,var(--red),rgba(255,59,92,0.5))';
+    }
+    function ovSetMetric(valId, tagId, value, tag, tone){
+      const vEl=document.getElementById(valId);
+      const tEl=document.getElementById(tagId);
+      if(vEl) vEl.textContent=value;
+      if(tEl){tEl.textContent=tag;tEl.className='ov-metric-tag '+tone;}
+    }
+    function ovSetScore(scoreId, barId, score){
+      const sEl=document.getElementById(scoreId);
+      const bEl=document.getElementById(barId);
+      const tone=ovScoreTone(score);
+      const colorCls=tone==='positive'?'tone-pos':tone==='caution'?'tone-caution':'tone-neg';
+      if(sEl){sEl.textContent=Math.round(score);sEl.className='ov-panel-score-badge '+colorCls;}
+      if(bEl){bEl.style.width=score+'%';bEl.style.background=ovBarColor(score);}
+    }
+    function ovSetWeightBar(scoreId,barId,score){
+      const sEl=document.getElementById(scoreId);
+      const bEl=document.getElementById(barId);
+      const tone=ovScoreTone(score);
+      const colorCls=tone==='positive'?'tone-pos':tone==='caution'?'tone-caution':'tone-neg';
+      if(sEl){sEl.textContent=Math.round(score);sEl.className='ov-weight-score '+colorCls;}
+      if(bEl){bEl.style.width=score+'%';bEl.style.background=tone==='positive'?'var(--green)':tone==='caution'?'var(--orange)':'var(--red)';}
+    }
+
+    // ── Core scoring (Schwab data) ──
+    function ovComputeScores(quotes, histMap) {
+      const get = (sym) => {
+        const q = quotes[sym];
+        if(!q) return {};
+        return q.quote || q;
+      };
+      function closes(sym) {
+        return (histMap[sym]||[]).map(c=>ovN(c.close)).filter(Number.isFinite);
+      }
+      function allCandles(sym) {
+        return (histMap[sym]||[]).filter(c=>ovN(c.close)!=null);
+      }
+      function lastClose(sym){ const a=closes(sym); return a.length?a[a.length-1]:null; }
+      function pctChg1d(sym){ const a=closes(sym); if(a.length<2) return null; return ovPctDiff(a[a.length-1],a[a.length-2]); }
+      function perf5d(sym){ const a=closes(sym); if(a.length<6) return null; return ovPctDiff(a[a.length-1],a[a.length-6]); }
+      function perf1m(sym){ const a=closes(sym); if(a.length<22) return null; return ovPctDiff(a[a.length-1],a[a.length-22]); }
+
+      // Core prices
+      const spyQ = get('SPY');
+      const SPY = ovN(spyQ.lastPrice) || lastClose('SPY');
+      const QQQ = ovN(get('QQQ').lastPrice) || lastClose('QQQ');
+      const vixQ = get('$VIX.X');
+      const VIX = ovN(vixQ.lastPrice) || ovN(vixQ.mark) || lastClose('$VIX.X') || 20;
+      const TNX = ovN(get('$TNX').lastPrice) || lastClose('$TNX');
+      const UUP = ovN(get('UUP').lastPrice) || lastClose('UUP');
+      const TLT = ovN(get('TLT').lastPrice) || lastClose('TLT');
+
+      // Closes arrays
+      const spyCloses = closes('SPY');
+      const qqqCloses = closes('QQQ');
+      const vixCloses = closes('$VIX.X');
+      const tnxCloses = closes('$TNX');
+      const uupCloses = closes('UUP');
+      const tltCloses = closes('TLT');
+
+      // Moving averages
+      const spy20=ovSma(spyCloses,20), spy50=ovSma(spyCloses,50), spy200=ovSma(spyCloses,200);
+      const qqq20=ovSma(qqqCloses,20), qqq50=ovSma(qqqCloses,50), qqq200=ovSma(qqqCloses,200);
+
+      // Regime
+      function classifyRegime(s,s20,s50,s200,q,q20,q50,q200){
+        let sc=0;
+        if(s>s20)sc+=1;else sc-=1;
+        if(s>s50)sc+=2;else sc-=2;
+        if(s>s200)sc+=3;else sc-=3;
+        if(s20>s50)sc+=2;else sc-=2;
+        if(s50>s200)sc+=3;else sc-=3;
+        if(s>s20&&s20>s50&&s50>s200)sc+=2;
+        if(s<s20&&s20<s50&&s50<s200)sc-=2;
+        if(q>q20)sc+=1;else sc-=1;
+        if(q>q50)sc+=2;else sc-=2;
+        if(q>q200)sc+=3;else sc-=3;
+        if(q20>q50)sc+=2;else sc-=2;
+        if(q50>q200)sc+=3;else sc-=3;
+        if(q>q20&&q20>q50&&q50>q200)sc+=2;
+        if(q<q20&&q20<q50&&q50<q200)sc-=2;
+        if(sc>=16)return'strong_uptrend';
+        if(sc>=7)return'uptrend';
+        if(sc<=-16)return'strong_downtrend';
+        if(sc<=-7)return'downtrend';
+        return'chop';
+      }
+      const validRegime = [SPY,spy20,spy50,spy200,QQQ,qqq20,qqq50,qqq200].every(Number.isFinite);
+      const regime = validRegime ? classifyRegime(SPY,spy20,spy50,spy200,QQQ,qqq20,qqq50,qqq200) : 'chop';
+
+      // VIX indicators
+      const vixSlope=ovSlope5(vixCloses);
+      const vixPct=ovPctileRank(vixCloses.slice(-252),VIX)||50;
+      const vix20sma=ovSma(vixCloses,20);
+      const vixTermRatio=(VIX&&vix20sma)?VIX/vix20sma:null;
+
+      // SMA cross
+      const sma2050Diff=ovPctDiff(spy20,spy50);
+
+      // 20D trend direction
+      const closesFor20d=spyCloses.slice(-25);
+      const sma20series=closesFor20d.map((_,i)=>i>=19?closesFor20d.slice(i-19,i+1).reduce((s,v)=>s+v,0)/20:null).filter(v=>v!=null);
+      const latestSma20=sma20series[sma20series.length-1]||null;
+      const prev5Sma20=sma20series.length>=6?sma20series[sma20series.length-6]:null;
+      const trendDir20d=(latestSma20&&prev5Sma20&&prev5Sma20!==0)?ovPctDiff(latestSma20,prev5Sma20):null;
+
+      // RSI
+      const spyRsi=ovRsi(spyCloses);
+
+      // MACD
+      const macdResult=ovMacd(spyCloses);
+
+      // Stochastic
+      const stochResult=ovStoch(allCandles('SPY'));
+
+      // Sector data
+      const sectors=SECTOR_ORDER.map(sym=>{
+        const c=closes(sym);
+        const last=lastClose(sym)||ovN(get(sym).lastPrice);
+        const ma20=ovSma(c,20),ma50=ovSma(c,50),ma200=ovSma(c,200);
+        return {
+          symbol:sym, price:last,
+          dayChangePct:pctChg1d(sym)||ovN(get(sym).netPercentChange),
+          perf5d:perf5d(sym), perf1m:perf1m(sym),
+          above20:Number.isFinite(last)&&Number.isFinite(ma20)&&last>ma20,
+          above50:Number.isFinite(last)&&Number.isFinite(ma50)&&last>ma50,
+          above200:Number.isFinite(last)&&Number.isFinite(ma200)&&last>ma200
+        };
+      });
+      const sectorsWithPerf=[...sectors].sort((a,b)=>ovN(b.perf5d,-999)-ovN(a.perf5d,-999));
+      const leader=sectorsWithPerf[0]||{};
+      const laggard=sectorsWithPerf[sectorsWithPerf.length-1]||{};
+      const n=Math.max(1,sectors.length);
+      const pctAbove20=Math.round((sectors.filter(s=>s.above20).length/n)*100);
+      const pctAbove50=Math.round((sectors.filter(s=>s.above50).length/n)*100);
+      const pctAbove200=Math.round((sectors.filter(s=>s.above200).length/n)*100);
+      const perfSpread=ovN(leader.perf5d,0)-ovN(laggard.perf5d,0);
+      const higherHighsPct=Math.round((sectors.filter(s=>ovN(s.dayChangePct,0)>0&&ovN(s.perf5d,0)>0).length/n)*100);
+
+      // ── Scoring ──
+      // Volatility
+      let volScore=100;
+      volScore-=Math.max(0,Math.min(60,(VIX-14)*3));
+      if(vixSlope>0) volScore-=Math.min(15,vixSlope*2);
+      if(vixPct>70) volScore-=Math.min(20,(vixPct-70)*0.4);
+      volScore=ovClamp(volScore);
+
+      // Trend
+      function scoreVsMA(price,ma,full,near){
+        const d=ovPctDiff(price,ma);
+        if(d==null) return 0;
+        if(d>=0) return full;
+        if(d>=-1.5) return near;
+        if(d>=-3.5) return Math.round(near*0.5);
+        return 0;
+      }
+      let trendScore=0;
+      trendScore+=scoreVsMA(SPY,spy20,15,8);
+      let s2050=7;
+      if(sma2050Diff!=null){
+        if(sma2050Diff>2)s2050=15;
+        else if(sma2050Diff>0.5)s2050=12;
+        else if(sma2050Diff>-0.5)s2050=7;
+        else if(sma2050Diff>-2)s2050=3;
+        else s2050=0;
+      }
+      trendScore+=s2050;
+      trendScore+=scoreVsMA(SPY,spy200,22,12);
+      let td20=6;
+      if(trendDir20d!=null){
+        if(trendDir20d>1.5)td20=13;
+        else if(trendDir20d>0.5)td20=10;
+        else if(trendDir20d>-0.5)td20=6;
+        else if(trendDir20d>-1.5)td20=2;
+        else td20=0;
+      }
+      trendScore+=td20;
+      trendScore+=scoreVsMA(QQQ,qqq20,10,5);
+      trendScore+=scoreVsMA(QQQ,qqq200,15,8);
+      const regimeMap={strong_uptrend:10,uptrend:7,chop:4,downtrend:2,strong_downtrend:0};
+      trendScore+=regimeMap[regime]??4;
+      trendScore=ovClamp(trendScore);
+
+      // Breadth
+      let breadthScore=0;
+      breadthScore+=pctAbove20*0.20;
+      breadthScore+=pctAbove50*0.20;
+      breadthScore+=pctAbove200*0.15;
+      // approximated adPercent from sectors (proxy since no full market breadth)
+      const sectorAdPct=(sectors.filter(s=>ovN(s.dayChangePct,0)>0).length/n)*100;
+      breadthScore+=Math.min(25,sectorAdPct*0.25);
+      breadthScore+=Math.min(10,sectorAdPct*0.10);
+      const thrustBull=pctAbove20>70&&sectorAdPct>60;
+      const thrustBear=pctAbove20<30&&sectorAdPct<40;
+      breadthScore+=thrustBull?5:thrustBear?0:2;
+      breadthScore+=ovN(leader.perf5d,0)>0&&ovN(laggard.perf5d,0)>-3?5:2;
+      breadthScore=ovClamp(breadthScore);
+
+      // Momentum
+      const sectorSpreadScore=Math.min(25,Math.max(0,perfSpread*4+10));
+      const breadthParticScore=Math.min(20,Math.max(0,pctAbove20*0.20));
+      const leaderStrScore=Math.min(15,Math.max(0,(ovN(leader.perf5d,0)+2)*3));
+      const sectorPartScore=Math.min(10,Math.max(0,higherHighsPct*0.10));
+
+      let rsiScore=50;
+      if(spyRsi!=null){
+        if(spyRsi<30)rsiScore=35;else if(spyRsi<40)rsiScore=45;else if(spyRsi<50)rsiScore=50;
+        else if(spyRsi<60)rsiScore=60;else if(spyRsi<70)rsiScore=75;else if(spyRsi<80)rsiScore=65;
+        else rsiScore=35;
+      }
+      let macdScore=50;
+      if(macdResult){
+        const {macd:m,signal:sg,hist:h}=macdResult;
+        if(m>sg&&h>0){macdScore=h>Math.abs(m)*0.1?85:70;}
+        else if(m>sg){macdScore=60;}
+        else if(m<sg&&h<0){macdScore=Math.abs(h)>Math.abs(m)*0.1?15:30;}
+        else{macdScore=40;}
+      }
+      let stochScore=50;
+      if(stochResult){
+        const{k,d}=stochResult;
+        if(k<20&&k>d)stochScore=70;
+        else if(k<20)stochScore=30;
+        else if(k>80&&k<d)stochScore=30;
+        else if(k>80)stochScore=45;
+        else if(k>d)stochScore=65;
+        else stochScore=40;
+      }
+      let momentumScore=sectorSpreadScore+breadthParticScore+leaderStrScore+sectorPartScore+
+        rsiScore*0.10+macdScore*0.10+stochScore*0.05;
+      momentumScore=ovClamp(momentumScore);
+
+      // Macro
+      const tenYearTrend=ovSlope5(tnxCloses);
+      const uupTrend=ovSlope5(uupCloses);
+      const fomc=ovNextEvent(FOMC_DATES);
+      const cpi=ovNextCpi();
+      const jolts=ovNextJolts();
+      let macroScore=60;
+      if(tenYearTrend>0) macroScore-=Math.min(15,tenYearTrend*1.5);
+      if(tenYearTrend>2) macroScore-=6;
+      if(uupTrend>0) macroScore-=Math.min(8,uupTrend*2);
+      if(uupTrend<0) macroScore+=Math.min(4,Math.abs(uupTrend)*1.25);
+      if(fomc){
+        if(fomc.days===0||fomc.days===1)macroScore-=15;
+        else if(fomc.days<=4)macroScore-=5;
+        else if(fomc.days<=9)macroScore-=2;
+      }
+      if(cpi){
+        if(cpi.days===0||cpi.days===1)macroScore-=12;
+        else if(cpi.days<=4)macroScore-=4;
+        else if(cpi.days<=9)macroScore-=2;
+      }
+      if(jolts){
+        if(jolts.days===0||jolts.days===1)macroScore-=8;
+        else if(jolts.days<=4)macroScore-=2;
+        else if(jolts.days<=9)macroScore-=1;
+      }
+      macroScore=ovClamp(macroScore);
+
+      const tnxDayChg=pctChg1d('$TNX')||ovN(get('$TNX').netPercentChange);
+      const uupDayChg=pctChg1d('UUP')||ovN(get('UUP').netPercentChange);
+      const tltDayChg=pctChg1d('TLT')||ovN(get('TLT').netPercentChange);
+
+      return {
+        volScore,trendScore,breadthScore,momentumScore,macroScore,
+        VIX,SPY,QQQ,TNX,UUP,TLT,
+        spy20,spy50,spy200,qqq20,qqq50,qqq200,
+        regime,vixSlope,vixPct,vixTermRatio,sma2050Diff,trendDir20d,
+        spyRsi,macdResult,stochResult,
+        pctAbove20,pctAbove50,pctAbove200,sectorAdPct,
+        thrustBull,thrustBear,leader,laggard,perfSpread,
+        tnxDayChg,uupDayChg,tltDayChg,tenYearTrend,uupTrend,
+        fomc,cpi,jolts,
+        sectors:sectorsWithPerf,
+        spyCandles:(histMap['SPY']||[])
+      };
+    }
+
+    function ovCompositeScore(scores) {
+      const w=OV_TRADE_WEIGHTS[ovState.mode]||OV_TRADE_WEIGHTS.swing;
+      const total=w.volatility+w.trend+w.breadth+w.momentum+w.macro;
+      return (
+        scores.volScore*w.volatility+
+        scores.trendScore*w.trend+
+        scores.breadthScore*w.breadth+
+        scores.momentumScore*w.momentum+
+        scores.macroScore*w.macro
+      )/total;
+    }
+
+    function ovVerdict(composite){
+      if(composite>=70)return{text:'YES \u2014 TRADE',cls:'YES'};
+      if(composite>=55)return{text:'SELECTIVE',cls:'SELECTIVE'};
+      if(composite>=40)return{text:'CAUTION',cls:'CAUTION'};
+      if(composite>=25)return{text:'REDUCE',cls:'REDUCE'};
+      return{text:'SIT OUT',cls:'SITOUT'};
+    }
+
+    // ── Render functions ──
+    function ovRenderRing(composite,scores){
+      const circumference=2*Math.PI*56;
+      const offset=circumference-(composite/100)*circumference;
+      const arc=document.getElementById('ov-ring-arc');
+      if(arc){
+        arc.style.strokeDashoffset=offset;
+        arc.style.stroke=composite>=60?'var(--green)':composite>=40?'var(--orange)':'var(--red)';
+      }
+      const scoreEl=document.getElementById('ov-ring-score');
+      if(scoreEl) scoreEl.textContent=Math.round(composite);
+      const verdictEl=document.getElementById('ov-ring-verdict');
+      const v=ovVerdict(composite);
+      if(verdictEl){verdictEl.textContent=v.text;verdictEl.className='ov-ring-verdict '+v.cls;}
+      const modeEl=document.getElementById('ov-ring-mode');
+      if(modeEl) modeEl.textContent=ovState.mode.toUpperCase();
+
+      // Weight bars
+      ovSetWeightBar('ovscore-vol','ovbar-vol',scores.volScore);
+      ovSetWeightBar('ovscore-trend','ovbar-trend',scores.trendScore);
+      ovSetWeightBar('ovscore-breadth','ovbar-breadth',scores.breadthScore);
+      ovSetWeightBar('ovscore-mom','ovbar-mom',scores.momentumScore);
+      ovSetWeightBar('ovscore-macro','ovbar-macro',scores.macroScore);
+    }
+
+    function ovRenderVolatility(sc){
+      ovSetScore('ovpanel-vol-score','ovpanel-vol-bar',sc.volScore);
+      // VIX level
+      const vixTone=sc.VIX<20?'positive':sc.VIX<25?'caution':sc.VIX<30?'danger':'danger';
+      const vixTag=sc.VIX<20?'Normal':sc.VIX<25?'Elevated':sc.VIX<30?'High':'Extreme';
+      ovSetMetric('ovm-vix','ovt-vix',sc.VIX!=null?sc.VIX.toFixed(2):'--',vixTag,vixTone);
+      // VIX slope
+      const slopeTag=sc.vixSlope>0?'Rising':'Falling';
+      const slopeTone=sc.vixSlope>0?'danger':'positive';
+      ovSetMetric('ovm-vix-slope','ovt-vix-slope',sc.vixSlope!=null?sc.vixSlope.toFixed(3):'--',slopeTag,slopeTone);
+      // VIX term ratio
+      const termTone=sc.vixTermRatio&&sc.vixTermRatio>1.1?'danger':sc.vixTermRatio&&sc.vixTermRatio<0.9?'positive':'neutral';
+      const termTag=sc.vixTermRatio&&sc.vixTermRatio>1.1?'Contango':sc.vixTermRatio&&sc.vixTermRatio<0.9?'Backwardation':'Normal';
+      ovSetMetric('ovm-vix-term','ovt-vix-term',sc.vixTermRatio!=null?sc.vixTermRatio.toFixed(2):'--',termTag,termTone);
+      // VIX percentile
+      const pctTone=sc.vixPct>70?'danger':sc.vixPct>50?'caution':'positive';
+      const pctTag=sc.vixPct>70?'High Pctile':sc.vixPct>50?'Mid':'Low Pctile';
+      ovSetMetric('ovm-vix-pct','ovt-vix-pct',sc.vixPct!=null?Math.round(sc.vixPct)+'%':'--',pctTag,pctTone);
+      // Est P/C
+      const pc=sc.VIX!=null?(sc.VIX/15).toFixed(2):null;
+      const pcTone=sc.VIX>25?'danger':sc.VIX>18?'caution':'positive';
+      ovSetMetric('ovm-pc','ovt-pc',pc||'--',sc.VIX>25?'Fear':'Moderate',pcTone);
+    }
+
+    function ovRenderTrend(sc){
+      ovSetScore('ovpanel-trend-score','ovpanel-trend-bar',sc.trendScore);
+      const regimeLabels={strong_uptrend:'Str Uptrend',uptrend:'Uptrend',chop:'Chop',downtrend:'Downtrend',strong_downtrend:'Str Downtrend'};
+      const regimeTones={strong_uptrend:'positive',uptrend:'positive',chop:'caution',downtrend:'danger',strong_downtrend:'danger'};
+      ovSetMetric('ovm-regime','ovt-regime',regimeLabels[sc.regime]||sc.regime,sc.regime?'Active':'--',regimeTones[sc.regime]||'neutral');
+      function trendRow(valId,tagId,price,ma){
+        const d=ovPctDiff(price,ma);
+        const txt=d!=null?(d>0?'+':'')+d.toFixed(1)+'%':'--';
+        const tone=d==null?'neutral':Math.abs(d)<=0.5?'caution':d>0?'positive':'danger';
+        const tag=d==null?'--':Math.abs(d)<=0.5?'At MA':d>0?'Above':'Below';
+        ovSetMetric(valId,tagId,txt,tag,tone);
+      }
+      trendRow('ovm-spy20','ovt-spy20',sc.SPY,sc.spy20);
+      trendRow('ovm-spy50','ovt-spy50',sc.SPY,sc.spy50);
+      trendRow('ovm-spy200','ovt-spy200',sc.SPY,sc.spy200);
+      trendRow('ovm-qqq20','ovt-qqq20',sc.QQQ,sc.qqq20);
+      // 20/50 cross
+      const crossTxt=sc.sma2050Diff!=null?(sc.sma2050Diff>0?'+':'')+sc.sma2050Diff.toFixed(1)+'%':'--';
+      const crossTone=sc.sma2050Diff==null?'neutral':sc.sma2050Diff>2?'positive':sc.sma2050Diff>-0.5?'caution':'danger';
+      const crossTag=sc.sma2050Diff==null?'--':sc.sma2050Diff>2?'Golden X':sc.sma2050Diff>0?'Above':sc.sma2050Diff>-2?'Below':'Death X';
+      ovSetMetric('ovm-cross','ovt-cross',crossTxt,crossTag,crossTone);
+    }
+
+    function ovRenderBreadth(sc){
+      ovSetScore('ovpanel-breadth-score','ovpanel-breadth-bar',sc.breadthScore);
+      function bRow(valId,tagId,pct){
+        const tone=pct>60?'positive':pct>40?'caution':'danger';
+        const tag=pct>60?'Bullish':pct>40?'Mixed':'Bearish';
+        ovSetMetric(valId,tagId,Math.round(pct)+'%',tag,tone);
+      }
+      bRow('ovm-above20','ovt-above20',sc.pctAbove20);
+      bRow('ovm-above50','ovt-above50',sc.pctAbove50);
+      bRow('ovm-above200','ovt-above200',sc.pctAbove200);
+      const thrustTag=sc.thrustBull?'Bullish Thrust':sc.thrustBear?'Washout':'Neutral';
+      const thrustTone=sc.thrustBull?'positive':sc.thrustBear?'danger':'neutral';
+      ovSetMetric('ovm-thrust','ovt-thrust',thrustTag,thrustTag,thrustTone);
+    }
+
+    function ovRenderMomentum(sc){
+      ovSetScore('ovpanel-mom-score','ovpanel-mom-bar',sc.momentumScore);
+      const rsi=sc.spyRsi;
+      const rsiTone=rsi==null?'neutral':rsi>70?'danger':rsi>55?'positive':rsi<30?'danger':'caution';
+      const rsiTag=rsi==null?'--':rsi>70?'Overbought':rsi>55?'Bullish':rsi<30?'Oversold':'Neutral';
+      ovSetMetric('ovm-rsi','ovt-rsi',rsi!=null?rsi.toFixed(0):'--',rsiTag,rsiTone);
+      // MACD
+      const mr=sc.macdResult;
+      const macdTxt=mr?mr.macd.toFixed(2):'--';
+      const macdTone=mr&&mr.macd>mr.signal&&mr.hist>0?'positive':mr&&mr.macd<mr.signal&&mr.hist<0?'danger':'caution';
+      const macdTag=mr&&mr.macd>mr.signal?'Bullish':mr&&mr.macd<mr.signal?'Bearish':'Neutral';
+      ovSetMetric('ovm-macd','ovt-macd',macdTxt,macdTag,macdTone);
+      // Stoch
+      const sr=sc.stochResult;
+      const stochTxt=sr?Math.round(sr.k):'--';
+      const stochTone=sr&&sr.k<20?'positive':sr&&sr.k>80?'danger':'caution';
+      const stochTag=sr&&sr.k<20?'Oversold':sr&&sr.k>80?'Overbought':'Neutral';
+      ovSetMetric('ovm-stoch','ovt-stoch',stochTxt,stochTag,stochTone);
+      // Leader
+      const lp=ovN(sc.leader?.perf5d);
+      const lTone=lp>1?'positive':lp>-1?'caution':'danger';
+      ovSetMetric('ovm-leader','ovt-leader',sc.leader?.symbol||'--',lp!=null?ovFmtPct(lp,1,true):'--',lTone);
+      // Spread
+      const spTone=sc.perfSpread>5?'positive':sc.perfSpread>2?'caution':'danger';
+      ovSetMetric('ovm-spread','ovt-spread',sc.perfSpread!=null?sc.perfSpread.toFixed(1)+'%':'--',sc.perfSpread>3?'Rotation':'Tight',spTone);
+    }
+
+    function ovRenderMacro(sc){
+      ovSetScore('ovpanel-macro-score','ovpanel-macro-bar',sc.macroScore);
+      // TNX
+      const tnxTone=sc.tnxDayChg==null?'neutral':sc.tnxDayChg>0?'danger':'positive';
+      ovSetMetric('ovm-tnx','ovt-tnx',sc.tnxDayChg!=null?ovFmtPct(sc.tnxDayChg,2,true):'--',sc.tnxDayChg>0?'Rising':'Falling',tnxTone);
+      // UUP
+      const uupTone=sc.uupDayChg==null?'neutral':sc.uupDayChg>0?'danger':'positive';
+      ovSetMetric('ovm-uup','ovt-uup',sc.uupDayChg!=null?ovFmtPct(sc.uupDayChg,2,true):'--',sc.uupDayChg>0?'USD Up':'USD Down',uupTone);
+      // TLT
+      const tltTone=sc.tltDayChg==null?'neutral':sc.tltDayChg>0?'positive':'danger';
+      ovSetMetric('ovm-tlt','ovt-tlt',sc.tltDayChg!=null?ovFmtPct(sc.tltDayChg,2,true):'--',sc.tltDayChg>0?'Rising':'Falling',tltTone);
+      // FOMC
+      const fomc=sc.fomc;
+      if(fomc){
+        const fTone=ovEventTone(fomc.days);
+        ovSetMetric('ovm-fomc','ovt-fomc',fomc.days+'d',fomc.days<=1?'Tomorrow':fomc.days<=4?'This Week':'Approaching',fTone);
+      } else { ovSetMetric('ovm-fomc','ovt-fomc','--','No Event','neutral'); }
+      // CPI
+      const cpi=sc.cpi;
+      if(cpi){
+        const cTone=ovEventTone(cpi.days);
+        ovSetMetric('ovm-cpi','ovt-cpi',cpi.days+'d',cpi.labelMonth+' CPI',cTone);
+      } else { ovSetMetric('ovm-cpi','ovt-cpi','--','No Event','neutral'); }
+      // Geo handled separately
+    }
+
+    function ovRenderMacroAlert(sc,geoRisk){
+      const banner=document.getElementById('ov-macro-alert');
+      const textEl=document.getElementById('ov-macro-alert-text');
+      if(!banner||!textEl) return;
+      const parts=[];
+      if(geoRisk&&geoRisk.topic&&geoRisk.topic!=='Normal'){
+        parts.push('Geo Risk: '+geoRisk.topic);
+      }
+      if(sc.fomc&&sc.fomc.days<=7) parts.push('FOMC in '+sc.fomc.days+'d');
+      if(sc.cpi&&sc.cpi.days<=7) parts.push((sc.cpi.labelMonth||'')+(sc.cpi.labelMonth?' ':'')+'CPI in '+sc.cpi.days+'d');
+      if(sc.jolts&&sc.jolts.days<=7) parts.push('JOLTS in '+sc.jolts.days+'d');
+      if(parts.length>0){
+        banner.style.display='flex';
+        banner.className=sc.VIX>30?'danger':'';
+        textEl.textContent='\u26a1 '+parts.join('  |  ');
+        document.getElementById('ov-macro-alert').id='ov-macro-alert';
+      } else {
+        banner.style.display='none';
+      }
+    }
+
+    function ovRenderExecution(composite,scores){
+      const panelScores={volatility:scores.volScore,trend:scores.trendScore,breadth:scores.breadthScore,momentum:scores.momentumScore,macro:scores.macroScore};
+      let verdict,verdictCls;
+      if(composite>=70){verdict='TRADE LONG';verdictCls='long';}
+      else if(composite>=55){verdict='SELECTIVE LONG';verdictCls='long';}
+      else if(composite>=40){verdict='REDUCED SIZE';verdictCls='caution';}
+      else if(composite>=25){verdict='CAUTION \u2014 HEDGE';verdictCls='caution';}
+      else{verdict='SIT OUT';verdictCls='sit-out';}
+      if(scores.trendScore<30&&scores.momentumScore<35&&composite<40){verdict='TRADE SHORT';verdictCls='short';}
+      const svals=Object.values(panelScores);
+      const bull=svals.filter(s=>s>60).length,bear=svals.filter(s=>s<40).length;
+      let conf='MEDIUM',confCls='medium';
+      if(bull>=4||bear>=4){conf='HIGH';confCls='high';}
+      else if(bull<=1&&bear<=1){conf='LOW';confCls='low';}
+      const VIX=scores.VIX||20;
+      let baseSize=VIX<15?100:VIX<20?85:VIX<25?70:VIX<30?50:VIX<35?35:20;
+      let posSize=Math.max(5,Math.min(100,Math.round(baseSize*(composite/100))));
+      let bias='NEUTRAL',biasCls='neutral';
+      if(scores.trendScore>60&&scores.momentumScore>55){bias='LONG BIAS';biasCls='long-bias';}
+      else if(scores.trendScore<40&&scores.momentumScore<45){bias='SHORT BIAS';biasCls='short-bias';}
+      const sigs=Object.entries(panelScores)
+        .map(([k,s])=>({label:k.charAt(0).toUpperCase()+k.slice(1),score:s}))
+        .sort((a,b)=>Math.abs(b.score-50)-Math.abs(a.score-50))
+        .slice(0,4)
+        .map(({label,score})=>{
+          const icon=score>60?'\u25b2':score<40?'\u25bc':'\u25cf';
+          const tone=score>60?'Bullish':score<40?'Bearish':'Neutral';
+          return `${icon} ${label}: ${Math.round(score)}/100 \u2014 ${tone}`;
+        });
+      const riskNotes=[];
+      if(scores.fomc&&scores.fomc.days<=3) riskNotes.push(`FOMC in ${scores.fomc.days}d \u2014 expect volatility`);
+      if(scores.cpi&&scores.cpi.days<=3) riskNotes.push(`CPI in ${scores.cpi.days}d \u2014 potential whipsaw`);
+      if(VIX>30) riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} \u2014 reduce all`);
+      else if(VIX>25) riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} \u2014 reduce size`);
+      if(scores.spyRsi&&scores.spyRsi>75) riskNotes.push(`RSI overbought at ${Math.round(scores.spyRsi)}`);
+      if(scores.spyRsi&&scores.spyRsi<25) riskNotes.push(`RSI oversold at ${Math.round(scores.spyRsi)}`);
+      if(!riskNotes.length) riskNotes.push('No major risk flags');
+
+      const vEl=document.getElementById('ov-exec-verdict');
+      if(vEl){vEl.textContent=verdict;vEl.className='ov-exec-verdict '+verdictCls;}
+      const cEl=document.getElementById('ov-exec-conf');
+      if(cEl){cEl.textContent=conf;cEl.className='ov-exec-conf '+confCls;}
+      const sigEl=document.getElementById('ov-exec-signals');
+      if(sigEl) sigEl.innerHTML=sigs.map(s=>`<li>${s}</li>`).join('');
+      const szEl=document.getElementById('ov-exec-size');
+      if(szEl) szEl.textContent=posSize+'%';
+      const bEl=document.getElementById('ov-exec-bias');
+      if(bEl){bEl.textContent=bias;bEl.className='ov-exec-kv-val ov-exec-bias '+biasCls;}
+      const rEl=document.getElementById('ov-exec-risks');
+      if(rEl) rEl.innerHTML=riskNotes.map(n=>`<div class="ov-exec-risk-note">${n}</div>`).join('');
+      const scoreEl=document.getElementById('ov-exec-score');
+      if(scoreEl) scoreEl.textContent=Math.round(composite);
+    }
+
+    function ovRenderSectors(scores){
+      const container=document.getElementById('ov-sector-list');
+      if(!container) return;
+      const sectors=scores.sectors||[];
+      if(!sectors.length){container.innerHTML='<div style="color:var(--text3);font-size:10px;padding:4px 0;">No sector data</div>';return;}
+      const perfFn=(s)=>{
+        if(ovState.sectorTf==='5d') return ovN(s.perf5d,0);
+        if(ovState.sectorTf==='1m') return ovN(s.perf1m,0);
+        return ovN(s.dayChangePct,0);
+      };
+      const perfs=sectors.map(s=>Math.abs(perfFn(s)));
+      const maxAbs=Math.max(1,...perfs);
+      container.innerHTML=sectors.map(s=>{
+        const p=perfFn(s);
+        const w=Math.max(8,Math.round((Math.abs(p)/maxAbs)*100));
+        const cls=p>=0?'pos':'neg';
+        const valCls=p>=0?'up':'dn';
+        return `<div class="ov-sector-row">
+          <span class="ov-sector-sym">${s.symbol}</span>
+          <div class="ov-sector-bar-track"><div class="ov-sector-bar-fill ${cls}" style="width:${w}%;"></div></div>
+          <span class="ov-sector-val ${valCls}">${ovFmtPct(p,2,true)}</span>
+        </div>`;
+      }).join('');
+    }
+
+    function ovRenderTerminal(composite,scores,geoRisk){
+      const v=ovVerdict(composite);
+      const regimeMap={strong_uptrend:'strong uptrend',uptrend:'uptrend',chop:'choppy',downtrend:'downtrend',strong_downtrend:'strong downtrend'};
+      const regimeText=regimeMap[scores.regime]||'mixed';
+      const lead=composite>=70?'GREEN LIGHT.':composite>=55?'SELECTIVE TAPE.':composite>=40?'CAUTION.':composite>=25?'REDUCE RISK.':'STAND DOWN.';
+      const summaryTone=composite>=55?'positive':composite>=40?'caution':'danger';
+      const summary=composite>=55?
+        `Trend is ${regimeText} with score ${Math.round(composite)}/100. VIX at ${scores.VIX?.toFixed(1)||'--'}. Sectors: ${Math.round(scores.pctAbove20)}% above 20MA. Leader: ${scores.leader?.symbol||'--'}.`:
+        `Mixed environment \u2014 score ${Math.round(composite)}/100. Regime: ${regimeText}. VIX: ${scores.VIX?.toFixed(1)||'--'}. ${Math.round(scores.pctAbove20)}% of sectors above 20MA.`;
+
+      const detail1=`Desk read: ${regimeText} | VIX ${scores.VIX?.toFixed(1)||'--'} | ${Math.round(scores.pctAbove20)}% above 20MA | ${Math.round(scores.pctAbove50)}% above 50MA | Leader: ${scores.leader?.symbol||'--'} (${ovFmtPct(scores.leader?.perf5d,1,true)} 5D) | Laggard: ${scores.laggard?.symbol||'--'}`;
+      const playbook=composite>=70?`Playbook: Lean with the ${regimeText}. Prioritize leaders, buy pullbacks, use normal ${ovState.mode} size.`:
+        composite>=55?`Playbook: Stay selective. Trade only the strongest names, tighten entries, moderate size.`:
+        composite>=40?`Playbook: Trade smaller, demand confirmation, avoid chasing late setups.`:
+        composite>=25?`Playbook: Cut exposure, tighten risk, only take exceptional ${ovState.mode} setups.`:
+        `Playbook: No new risk unless tape materially improves. Preserve capital.`;
+
+      const sumEl=document.getElementById('ov-terminal-summary');
+      if(sumEl) sumEl.innerHTML=`<span class="analysis-emphasis ${summaryTone}">${lead}</span> ${summary}`;
+      const d1=document.getElementById('ov-terminal-detail1');
+      if(d1) d1.textContent=detail1;
+      const d2=document.getElementById('ov-terminal-detail2');
+      if(d2) d2.textContent=playbook;
+      const upd=document.getElementById('ov-terminal-updated');
+      if(upd) upd.textContent='Updated '+new Date().toLocaleTimeString();
+    }
+
+    function ovRenderGeoRisk(geoRisk){
+      const badgeEl=document.getElementById('ov-geo-risk-badge');
+      const storiesEl=document.getElementById('ov-geo-stories');
+
+      const lvl=geoRisk?.overallRiskLevel||'unknown';
+      const lvlColor=lvl==='high'||lvl==='critical'?'var(--red)':lvl==='medium'?'var(--orange)':'var(--text3)';
+      const lvlBg=lvl==='high'||lvl==='critical'?'rgba(255,59,92,0.12)':lvl==='medium'?'rgba(255,140,59,0.12)':'rgba(122,128,153,0.12)';
+      if(badgeEl){badgeEl.style.color=lvlColor;badgeEl.style.background=lvlBg;badgeEl.textContent=lvl.toUpperCase();}
+
+      // Also update macro geo metric
+      const geoVal=geoRisk?.topic||'--';
+      const geoTag=geoRisk?.overallRiskLevel?geoRisk.overallRiskLevel.charAt(0).toUpperCase()+geoRisk.overallRiskLevel.slice(1):'No read';
+      const geoTone=lvl==='high'||lvl==='critical'?'danger':lvl==='medium'?'caution':'neutral';
+      ovSetMetric('ovm-geo','ovt-geo',geoVal,geoTag,geoTone);
+
+      if(!storiesEl) return;
+      const stories=geoRisk?.stories||[];
+      if(!stories.length){storiesEl.innerHTML='<div style="padding:12px 14px;font-size:10px;color:var(--text3);">No conflict stories available.</div>';return;}
+      storiesEl.innerHTML=stories.slice(0,6).map(story=>{
+        const sev=(story.riskLevel==='high'||story.riskLevel==='critical')?'high':story.riskLevel==='medium'?'medium':'low';
+        const dotColor=sev==='high'?'var(--red)':sev==='medium'?'var(--orange)':'var(--text3)';
+        const dateStr=story.publishedAt?new Date(story.publishedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'-';
+        const desc=(story.summary||story.domain||'').slice(0,200);
+        const href=(/^https?:\/\//i.test(story.url||''))?story.url:'';
+        const inner=`<div class="ov-geo-card-top">
+          <span class="ov-geo-sev ${sev}"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dotColor};margin-right:3px;"></span>${sev.toUpperCase()}</span>
+          <span class="ov-geo-date">${dateStr}</span>
+        </div>
+        <div class="ov-geo-headline">${(story.headline||'--').slice(0,120)}</div>
+        ${desc?`<div class="ov-geo-desc">${desc}</div>`:''}`;
+        if(href) return `<a class="ov-geo-card" href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
+        return `<div class="ov-geo-card">${inner}</div>`;
+      }).join('');
+    }
+
+    function ovRenderChart(candles){
+      const container=document.getElementById('ov-spy-chart');
+      if(!container) return;
+      if(!candles||!candles.length){container.innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);">No chart data</div>';return;}
+      // Filter by timeframe
+      const now=Date.now();
+      let fromMs;
+      const tf=ovState.chartTf;
+      if(tf==='1d')fromMs=now-1*24*60*60*1000*2;
+      else if(tf==='5d')fromMs=now-5*24*60*60*1000;
+      else if(tf==='1m')fromMs=now-30*24*60*60*1000;
+      else if(tf==='3m')fromMs=now-90*24*60*60*1000;
+      else if(tf==='ytd')fromMs=new Date(new Date().getFullYear(),0,1).getTime();
+      else fromMs=0;
+      const filtered=candles.filter(c=>c.datetime>=fromMs);
+      const display=filtered.length?filtered:candles.slice(-20);
+      if(display.length<2){container.innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);">Not enough data for timeframe</div>';return;}
+      const w=container.clientWidth||480,h=220;
+      const prices=display.map(c=>c.close);
+      const minP=Math.min(...prices),maxP=Math.max(...prices);
+      const range=maxP-minP||1;
+      const pad={t:10,r:10,b:24,l:52};
+      const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+      const px=(i)=>pad.l+i*(cw/(display.length-1));
+      const py=(p)=>pad.t+ch-(((p-minP)/range)*ch);
+      const pts=display.map((c,i)=>`${px(i)},${py(c.close)}`).join(' ');
+      const first=display[0].close,last=display[display.length-1].close;
+      const color=last>=first?'var(--green)':'var(--red)';
+      const fillPts=`${px(0)},${py(minP)} ${pts} ${px(display.length-1)},${py(minP)}`;
+      const fillColor=last>=first?'rgba(34,221,136,0.08)':'rgba(255,59,92,0.08)';
+      // Axis labels
+      const yLabels=[minP,(minP+maxP)/2,maxP].map(p=>`<text x="${pad.l-4}" y="${py(p)+4}" text-anchor="end" fill="var(--text3)" font-size="9">${p.toFixed(0)}</text>`).join('');
+      const xStep=Math.max(1,Math.floor(display.length/4));
+      const xLabels=display.filter((_,i)=>i%xStep===0||i===display.length-1).map((c,_,arr)=>{
+        const idx=display.indexOf(c);
+        const d=new Date(c.datetime);
+        const lbl=d.toLocaleDateString([],{month:'numeric',day:'numeric'});
+        return `<text x="${px(idx)}" y="${h-6}" text-anchor="middle" fill="var(--text3)" font-size="9">${lbl}</text>`;
+      }).join('');
+      container.innerHTML=`<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display:block;">
+        <polygon points="${fillPts}" fill="${fillColor}"/>
+        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="${px(display.length-1)}" cy="${py(last)}" r="3" fill="${color}"/>
+        ${yLabels}${xLabels}
+      </svg>`;
+    }
+
+    // ── Ticker marquee ──
+    function ovInitTicker(){
+      const wrap=document.getElementById('ov-ticker-wrap');
+      const track=document.getElementById('ov-ticker-track');
+      const primary=document.getElementById('ov-ticker-group-primary');
+      if(!track||!primary||track.dataset.ovReady==='true') return;
+      const clone=primary.cloneNode(true);
+      clone.id='ov-ticker-group-clone';
+      clone.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+      track.appendChild(clone);
+      track.dataset.ovReady='true';
+      ovState.tickerGroupWidth=primary.offsetWidth;
+      wrap.addEventListener('mouseenter',()=>ovState.tickerPaused=true);
+      wrap.addEventListener('mouseleave',()=>ovState.tickerPaused=false);
+      ovStartTickerAnimation();
+      window.addEventListener('resize',()=>{ovState.tickerGroupWidth=primary.offsetWidth;});
+    }
+    function ovStartTickerAnimation(){
+      if(ovState.tickerRafId) cancelAnimationFrame(ovState.tickerRafId);
+      ovState.tickerLastTs=0;
+      const step=(ts)=>{
+        const track=document.getElementById('ov-ticker-track');
+        if(!track||!ovState.tickerGroupWidth){ovState.tickerRafId=requestAnimationFrame(step);return;}
+        if(!ovState.tickerLastTs) ovState.tickerLastTs=ts;
+        const dt=ts-ovState.tickerLastTs;ovState.tickerLastTs=ts;
+        if(!ovState.tickerPaused){
+          ovState.tickerOffset+=(70*dt)/1000;
+          if(ovState.tickerOffset>=ovState.tickerGroupWidth) ovState.tickerOffset-=ovState.tickerGroupWidth;
+          track.style.transform=`translateX(${-ovState.tickerOffset}px)`;
+        }
+        ovState.tickerRafId=requestAnimationFrame(step);
+      };
+      ovState.tickerRafId=requestAnimationFrame(step);
+    }
+    function ovUpdateTicker(quotes){
+      const TICKER_SYMS=[
+        {sym:'SPY',key:'SPY'},{sym:'QQQ',key:'QQQ'},{sym:'VIX',key:'$VIX.X'},
+        {sym:'TNX',key:'$TNX'},{sym:'UUP',key:'UUP'},{sym:'TLT',key:'TLT'},
+        {sym:'XLE',key:'XLE'},{sym:'XLF',key:'XLF'},{sym:'XLK',key:'XLK'},
+        {sym:'XLI',key:'XLI'},{sym:'XLC',key:'XLC'},{sym:'XLY',key:'XLY'},
+        {sym:'XLV',key:'XLV'},{sym:'XLRE',key:'XLRE'},{sym:'XLP',key:'XLP'},
+        {sym:'XLB',key:'XLB'},{sym:'XLU',key:'XLU'}
+      ];
+      TICKER_SYMS.forEach(({sym,key})=>{
+        const q=quotes[key];
+        if(!q) return;
+        const qd=q.quote||q;
+        const price=ovN(qd.lastPrice)||ovN(qd.closePrice)||ovN(qd.mark);
+        const pct=ovN(qd.netPercentChange);
+        document.querySelectorAll(`[id^="ovt-${sym}-"]`).forEach(el=>{
+          const suffix=el.id.split('-').pop();
+          if(suffix==='price'&&price!=null) el.textContent=price.toFixed(2);
+          if(suffix==='chg'&&pct!=null){
+            el.textContent=(pct>0?'+':'')+pct.toFixed(2)+'%';
+            el.className='ov-tick-chg '+(pct>0?'up':pct<0?'dn':'flat');
+          }
+        });
+      });
+    }
+
+    // ── Mode + TF controls ──
+    function ovSetMode(mode){
+      ovState.mode=mode;
+      sessionStorage.setItem('ovMode',mode);
+      ['scalp','swing','position'].forEach(m=>{
+        const b=document.getElementById('ovmode-'+m);
+        if(b) b.className='ov-mode-btn'+(m===mode?' active':'');
+      });
+      if(ovState.snapshot) ovRerender(ovState.snapshot);
+    }
+    function ovSetSectorTf(tf,btn){
+      ovState.sectorTf=tf;
+      document.querySelectorAll('.ov-sector-tf-btn').forEach(b=>b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+      if(ovState.snapshot) ovRenderSectors(ovState.snapshot.scores);
+    }
+    function ovSetChartTf(tf,btn){
+      ovState.chartTf=tf;
+      document.querySelectorAll('.ov-chart-tf-btn').forEach(b=>b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+      if(ovState.snapshot) ovRenderChart(ovState.snapshot.scores.spyCandles);
+    }
+
+    function ovRerender(snapshot){
+      const {scores,geoRisk}=snapshot;
+      const composite=ovCompositeScore(scores);
+      ovRenderRing(composite,scores);
+      ovRenderVolatility(scores);
+      ovRenderTrend(scores);
+      ovRenderBreadth(scores);
+      ovRenderMomentum(scores);
+      ovRenderMacro(scores);
+      ovRenderMacroAlert(scores,geoRisk);
+      ovRenderExecution(composite,scores);
+      ovRenderSectors(scores);
+      ovRenderChart(scores.spyCandles);
+      ovRenderGeoRisk(geoRisk);
+      ovRenderTerminal(composite,scores,geoRisk);
+    }
+
+    async function fetchGeoRisk(){
+      try {
+        const r=await fetch(GEO_RISK_API_URL,{headers:{'x-rapidapi-host':GEO_RISK_API_HOST,'x-rapidapi-key':GEO_RISK_API_KEY}});
+        if(!r.ok) return null;
+        const d=await r.json();
+        const data=d.data||d;
+        const stories=Array.isArray(data.stories)?data.stories:Array.isArray(data)?data:[];
+        const levels=stories.map(s=>s.riskLevel||'low');
+        const hasHigh=levels.some(l=>l==='high'||l==='critical');
+        const hasMed=levels.some(l=>l==='medium');
+        return {
+          topic:data.topic||data.subject||stories[0]?.domain||'Geopolitical Risk',
+          overallRiskLevel:hasHigh?'high':hasMed?'medium':'low',
+          overallRiskLevelUi:hasHigh?'danger':hasMed?'caution':'neutral',
+          dominantTone:hasHigh?'elevated':hasMed?'moderate':'calm',
+          stories:stories.slice(0,6)
+        };
+      } catch { return null; }
+    }
+
     async function loadOverview() {
       if (!isConnected) return;
+      ovInitTicker();
+      try {
+        const [ovData, geoRiskResult] = await Promise.all([
+          apiGet('/api/marketoverview'),
+          fetchGeoRisk()
+        ]);
+
+        if (!ovData.ok) throw new Error(ovData.error || 'Overview load failed');
+        const { quotes, histMap } = ovData;
+
+        // Update ticker marquee with live quotes
+        ovUpdateTicker(quotes);
+
+        // Compute all scores from Schwab data
+        const scores = ovComputeScores(quotes, histMap);
+        const geoRisk = geoRiskResult || { overallRiskLevel: 'unknown', stories: [] };
+
+        // Store snapshot
+        ovState.snapshot = { scores, geoRisk };
+
+        // Render everything
+        ovRerender(ovState.snapshot);
+
+        // Also run old overview sections (options key levels + movers) using existing dashboard endpoint
+        loadOverviewLegacy();
+
+      } catch (e) {
+        const errEl = document.getElementById('overview-error');
+        if (errEl) { errEl.style.display = 'flex'; errEl.innerHTML = `<span>\u26a0</span> ${e.message}`; }
+        console.warn('loadOverview error:', e);
+      }
+    }
+
+    async function loadOverviewLegacy() {
       try {
         const d = await apiGet('/api/dashboard?symbol=SPY&strikeCount=20');
         if (!d.ok) return;
-
-        // Quotes section
         const q = d.quotes || {};
-        const spy = q['SPY']?.quote || {};
-        const spx = q['$SPX']?.quote || q['SPX']?.quote || {};
-        const vix = q['$VIX']?.quote || q['VIX']?.quote || {};
-        const qqq = q['QQQ']?.quote || {};
-
-        const setTile = (id, val, pct) => {
-          const el = document.getElementById(id);
-          if (!el) return;
-          el.textContent = fmt(val);
-        };
-        const setChg = (id, val, pct) => {
-          const el = document.getElementById(id);
-          if (!el) return;
-          el.textContent = `${chgPrefix(pct)}${fmt(pct)}%`;
-          el.className = `st-chg ${chgClass(pct)}`;
-        };
-
-        setTile('ov-spy-price', spy.lastPrice);
-        setChg('ov-spy-chg', spy.lastPrice, spy.netPercentChange);
-        setTile('ov-spx-price', spx.lastPrice);
-        setChg('ov-spx-chg', spx.lastPrice, spx.netPercentChange);
-        setTile('ov-vix-price', vix.lastPrice);
-        setChg('ov-vix-chg', vix.lastPrice, vix.netPercentChange);
-        setTile('ov-qqq-price', qqq.lastPrice);
-        setChg('ov-qqq-chg', qqq.lastPrice, qqq.netPercentChange);
-
-        // SPY detail
-        const spyRef = q['SPY']?.reference || {};
-        const spyFund = q['SPY']?.fundamental || {};
-        document.getElementById('ov-spy-detail').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;font-size:11px;">
-        ${detailRow('Open', fmt(spy.openPrice))}
-        ${detailRow('High', fmt(spy.highPrice))}
-        ${detailRow('Low', fmt(spy.lowPrice))}
-        ${detailRow('Close', fmt(spy.closePrice))}
-        ${detailRow('Bid', fmt(spy.bidPrice))}
-        ${detailRow('Ask', fmt(spy.askPrice))}
-        ${detailRow('Volume', fmtK(spy.totalVolume))}
-        ${detailRow('52W High', fmt(spy['52WeekHigh']))}
-        ${detailRow('52W Low', fmt(spy['52WeekLow']))}
-        ${detailRow('Volatility', fmt(spy.volatility))}
-        ${detailRow('Mark', fmt(spy.mark))}
-        ${detailRow('Mark Δ', fmt(spy.markChange))}
-      </div>`;
-
-        // Heat summary / key levels
         const heat = d.heat || {};
         const s = heat.summary || {};
-        document.getElementById('ov-underlying').textContent = `Underlying: ${fmt(heat.underlyingPrice)}`;
 
+        // Update underlying & key levels
+        document.getElementById('ov-underlying').textContent = `Underlying: ${fmt(heat.underlyingPrice)}`;
         const callWall = s.strongestCallWall?.strike;
         const putWall = s.strongestPutWall?.strike;
         const king = s.kingStrike?.strike;
         const posGex = s.strongestPositiveGex?.strike;
         const negGex = s.strongestNegativeGex?.strike;
-
         document.getElementById('ov-key-levels').innerHTML = `
-      <span class="kl-pill spot">Spot: ${fmt(heat.underlyingPrice)}</span>
-      ${callWall ? `<span class="kl-pill call">Call Wall: ${callWall}</span>` : ''}
-      ${putWall ? `<span class="kl-pill put">Put Wall: ${putWall}</span>` : ''}
-      ${king ? `<span class="kl-pill king">King: ${king}</span>` : ''}
-      ${posGex ? `<span class="kl-pill gex-pos">+GEX: ${posGex}</span>` : ''}
-      ${negGex ? `<span class="kl-pill gex-neg">−GEX: ${negGex}</span>` : ''}
-    `;
-
+          <span class="kl-pill spot">Spot: ${fmt(heat.underlyingPrice)}</span>
+          ${callWall ? `<span class="kl-pill call">Call Wall: ${callWall}</span>` : ''}
+          ${putWall ? `<span class="kl-pill put">Put Wall: ${putWall}</span>` : ''}
+          ${king ? `<span class="kl-pill king">King: ${king}</span>` : ''}
+          ${posGex ? `<span class="kl-pill gex-pos">+GEX: ${posGex}</span>` : ''}
+          ${negGex ? `<span class="kl-pill gex-neg">\u2212GEX: ${negGex}</span>` : ''}`;
         document.getElementById('ov-heat-summary').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;">
-        ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
-        ${detailRow('Call Wall OI', fmtK(s.strongestCallWall?.callOpenInterest))}
-        ${detailRow('Put Wall OI', fmtK(s.strongestPutWall?.putOpenInterest))}
-        ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
-        ${detailRow('Pos GEX Strike', fmt(posGex, 0))}
-        ${detailRow('Neg GEX Strike', fmt(negGex, 0))}
-      </div>`;
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;">
+            ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
+            ${detailRow('Call Wall OI', fmtK(s.strongestCallWall?.callOpenInterest))}
+            ${detailRow('Put Wall OI', fmtK(s.strongestPutWall?.putOpenInterest))}
+            ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
+          </div>`;
+        document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 
-        // GEX summary card
-        document.getElementById('ov-gex-summary').innerHTML = `
-      <div style="font-size:11px;line-height:2;">
-        <div style="margin-bottom:8px;color:var(--text2);">Gamma Exposure drives market maker hedging flows:</div>
-        ${gexBar('Call GEX', s.strongestCallWall?.callGex ?? 0)}
-        ${gexBar('Put GEX', s.strongestPutWall?.putGex ?? 0)}
-        ${gexBar('Net GEX', s.kingStrike?.netGex ?? 0)}
-      </div>`;
-
-        // Movers
         await loadMovers();
-
-      } catch (e) {
-        document.getElementById('overview-error').style.display = 'flex';
-        document.getElementById('overview-error').innerHTML = `<span>⚠</span> ${e.message}`;
-      }
+      } catch(e){ console.warn('loadOverviewLegacy:', e); }
     }
 
     function gexBar(label, val) {
@@ -2714,7 +4419,7 @@
       }
     }
 
-    // ═══════════════════════════════════════════════════════
+        // ═══════════════════════════════════════════════════════
     //  3. HEAT SEEKER
     // ═══════════════════════════════════════════════════════
     function setHeatSymbol(el, sym) {

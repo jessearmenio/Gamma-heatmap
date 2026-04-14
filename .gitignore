@@ -4,3 +4,6 @@ node_modules
 public/old-heat.html
 old-server.js
 public/heatv1.html
+serverV1.js
+.gitignore
+public/heatv2.html
