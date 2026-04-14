@@ -994,7 +994,7 @@
     /* ── Overview: Row 4 – Exec + Sector ── */
     .ov-row4 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 260px;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -1738,7 +1738,6 @@
     input[type="range"].strat-slider {
       flex: 1;
       -webkit-appearance: none;
-      appearance: none;
       height: 4px;
       border-radius: 2px;
       outline: none;
@@ -2479,7 +2478,7 @@
                 <!-- SPY -->
                 <div class="ov-tick-item" data-ovsym="SPY"><span class="ov-tick-sym">SPY</span><span class="ov-tick-price" id="ovt-SPY-price">--</span><span class="ov-tick-chg flat" id="ovt-SPY-chg">--</span></div>
                 <div class="ov-tick-item" data-ovsym="QQQ"><span class="ov-tick-sym">QQQ</span><span class="ov-tick-price" id="ovt-QQQ-price">--</span><span class="ov-tick-chg flat" id="ovt-QQQ-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="$VIX.X"><span class="ov-tick-sym">VIX</span><span class="ov-tick-price" id="ovt-VIX-price">--</span><span class="ov-tick-chg flat" id="ovt-VIX-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="$VIX"><span class="ov-tick-sym">VIX</span><span class="ov-tick-price" id="ovt-VIX-price">--</span><span class="ov-tick-chg flat" id="ovt-VIX-chg">--</span></div>
                 <div class="ov-tick-item" data-ovsym="$TNX"><span class="ov-tick-sym">TNX</span><span class="ov-tick-price" id="ovt-TNX-price">--</span><span class="ov-tick-chg flat" id="ovt-TNX-chg">--</span></div>
                 <div class="ov-tick-item" data-ovsym="UUP"><span class="ov-tick-sym">UUP</span><span class="ov-tick-price" id="ovt-UUP-price">--</span><span class="ov-tick-chg flat" id="ovt-UUP-chg">--</span></div>
                 <div class="ov-tick-item" data-ovsym="TLT"><span class="ov-tick-sym">TLT</span><span class="ov-tick-price" id="ovt-TLT-price">--</span><span class="ov-tick-chg flat" id="ovt-TLT-chg">--</span></div>
@@ -3769,8 +3768,8 @@
       const spyQ = get('SPY');
       const SPY = ovN(spyQ.lastPrice) || lastClose('SPY');
       const QQQ = ovN(get('QQQ').lastPrice) || lastClose('QQQ');
-      const vixQ = get('$VIX.X');
-      const VIX = ovN(vixQ.lastPrice) || ovN(vixQ.mark) || lastClose('$VIX.X') || 20;
+      const vixQ = get('$VIX');
+      const VIX = ovN(vixQ.lastPrice) || ovN(vixQ.mark) || lastClose('$VIX') || 20;
       const TNX = ovN(get('$TNX').lastPrice) || lastClose('$TNX');
       const UUP = ovN(get('UUP').lastPrice) || lastClose('UUP');
       const TLT = ovN(get('TLT').lastPrice) || lastClose('TLT');
@@ -3778,7 +3777,7 @@
       // Closes arrays
       const spyCloses = closes('SPY');
       const qqqCloses = closes('QQQ');
-      const vixCloses = closes('$VIX.X');
+      const vixCloses = closes('$VIX');
       const tnxCloses = closes('$TNX');
       const uupCloses = closes('UUP');
       const tltCloses = closes('TLT');
@@ -4407,7 +4406,7 @@
     }
     function ovUpdateTicker(quotes){
       const TICKER_SYMS=[
-        {sym:'SPY',key:'SPY'},{sym:'QQQ',key:'QQQ'},{sym:'VIX',key:'$VIX.X'},
+        {sym:'SPY',key:'SPY'},{sym:'QQQ',key:'QQQ'},{sym:'VIX',key:'$VIX'},
         {sym:'TNX',key:'$TNX'},{sym:'UUP',key:'UUP'},{sym:'TLT',key:'TLT'},
         {sym:'XLE',key:'XLE'},{sym:'XLF',key:'XLF'},{sym:'XLK',key:'XLK'},
         {sym:'XLI',key:'XLI'},{sym:'XLC',key:'XLC'},{sym:'XLY',key:'XLY'},
@@ -4515,7 +4514,7 @@
           ovLogTerminalError('QUOTES', 'Quote response returned no symbols. Schwab may have rejected the request.');
         } else {
           // Check for any expected symbols that are missing
-          const expected = ['SPY','QQQ','$VIX.X','$TNX','UUP','TLT'];
+          const expected = ['SPY','QQQ','$VIX','$TNX','UUP','TLT'];
           const missing = expected.filter(s => !quotes[s]);
           if (missing.length) ovLogTerminalError('QUOTES', `Missing symbols in quote response: ${missing.join(', ')}`);
         }

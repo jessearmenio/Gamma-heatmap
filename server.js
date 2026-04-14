@@ -643,8 +643,8 @@ app.get("/api/expirationchain", async (req, res) => {
 
 // ─── Market Overview (Scoring Engine) ──────────────────────────────────────
 // GET /api/marketoverview
-// Fetches: quotes for SPY,QQQ,$VIX.X,$TNX,UUP,TLT + all 11 sector ETFs
-// Fetches: pricehistory (1yr daily) for SPY, QQQ, $VIX.X, $TNX, UUP, TLT + 11 sectors
+// Fetches: quotes for SPY,QQQ,$VIX,$TNX,UUP,TLT + all 11 sector ETFs
+// Fetches: pricehistory (1yr daily) for SPY, QQQ, $VIX, $TNX, UUP, TLT + 11 sectors
 // Fetches: movers for $SPX
 // All via Schwab. No Polygon or Twelve Data.
 app.get("/api/marketoverview", async (req, res) => {
@@ -658,8 +658,8 @@ app.get("/api/marketoverview", async (req, res) => {
     const base = "https://api.schwabapi.com/marketdata/v1";
 
     // Symbols needed
-    const quoteSymbols = "SPY,QQQ,$VIX.X,$TNX,UUP,TLT,XLE,XLF,XLK,XLI,XLC,XLY,XLV,XLRE,XLP,XLB,XLU";
-    const histSymbols = ["SPY","QQQ","$VIX.X","$TNX","UUP","TLT","XLE","XLF","XLK","XLI","XLC","XLY","XLV","XLRE","XLP","XLB","XLU"];
+    const quoteSymbols = "SPY,QQQ,$VIX,$TNX,UUP,TLT,XLE,XLF,XLK,XLI,XLC,XLY,XLV,XLRE,XLP,XLB,XLU";
+    const histSymbols = ["SPY","QQQ","$VIX","$TNX","UUP","TLT","XLE","XLF","XLK","XLI","XLC","XLY","XLV","XLRE","XLP","XLB","XLU"];
 
     // Fetch all in parallel
     const [quotesRes, moversRes, ...histResponses] = await Promise.all([
