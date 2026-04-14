@@ -994,7 +994,7 @@
     /* ── Overview: Row 4 – Exec + Sector ── */
     .ov-row4 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 260px;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -1405,6 +1405,58 @@
     .analysis-emphasis.positive { color: var(--green); }
     .analysis-emphasis.caution { color: var(--orange); }
     .analysis-emphasis.danger { color: var(--red); }
+
+    /* ── Terminal error log ── */
+    #ov-terminal-errors {
+      display: none;
+      flex-direction: column;
+      gap: 3px;
+      margin-top: 4px;
+    }
+    #ov-terminal-errors.has-errors { display: flex; }
+    .ov-term-err-line {
+      font-family: 'Courier New', monospace;
+      font-size: 9.5px;
+      color: #ff6b84;
+      background: rgba(255, 59, 92, 0.07);
+      border-left: 2px solid rgba(255, 59, 92, 0.5);
+      padding: 4px 9px;
+      border-radius: 0 4px 4px 0;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .ov-term-err-line .err-ts {
+      color: rgba(255,107,132,0.5);
+      margin-right: 6px;
+      font-size: 9px;
+    }
+    .ov-term-err-line .err-src {
+      color: #ff9eb0;
+      font-weight: 700;
+      margin-right: 5px;
+    }
+    #ov-terminal-errors-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,59,92,0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 2px;
+    }
+    #ov-terminal-err-clear {
+      background: none;
+      border: none;
+      color: rgba(255,59,92,0.45);
+      cursor: pointer;
+      font-size: 9px;
+      padding: 0;
+      line-height: 1;
+    }
+    #ov-terminal-err-clear:hover { color: var(--red); }
 
     /* ── Existing Overview tiles keep working ── */
 
@@ -2804,6 +2856,14 @@
                 <div id="ov-terminal-summary" class="analysis-emphasis">Connect Schwab to begin analysis.</div>
                 <div class="ov-terminal-detail" id="ov-terminal-detail1">Awaiting market data&#8230;</div>
                 <div class="ov-terminal-detail" id="ov-terminal-detail2">Playbook will appear once connected.</div>
+                <!-- Error log: hidden until errors arrive -->
+                <div id="ov-terminal-errors">
+                  <div id="ov-terminal-errors-header">
+                    <span>&#9888; Data Load Errors</span>
+                    <button id="ov-terminal-err-clear" onclick="ovClearTerminalErrors()" title="Clear errors">CLEAR</button>
+                  </div>
+                  <div id="ov-terminal-err-list"></div>
+                </div>
               </div>
             </div>
           </div><!-- end ov-row5 -->
@@ -3372,6 +3432,40 @@
     function connectSchwab() {
       // Opens Schwab OAuth in same window; server handles redirect
       window.location.href = `${API_BASE}/login`;
+    }
+
+    // ── Terminal error log helpers ──
+    function ovLogTerminalError(source, message, detail) {
+      const errWrap = document.getElementById('ov-terminal-errors');
+      const errList = document.getElementById('ov-terminal-err-list');
+      if (!errWrap || !errList) return;
+
+      errWrap.classList.add('has-errors');
+
+      const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      // Truncate detail to keep readable
+      let detailStr = '';
+      if (detail) {
+        if (typeof detail === 'object') {
+          try { detailStr = JSON.stringify(detail).slice(0, 220); } catch(e) { detailStr = String(detail).slice(0, 220); }
+        } else {
+          detailStr = String(detail).slice(0, 220);
+        }
+      }
+      const line = document.createElement('div');
+      line.className = 'ov-term-err-line';
+      line.innerHTML = `<span class="err-ts">${ts}</span><span class="err-src">[${source}]</span>${message}${detailStr ? ' — ' + detailStr : ''}`;
+      errList.appendChild(line);
+
+      // Keep max 20 lines
+      while (errList.children.length > 20) errList.removeChild(errList.firstChild);
+    }
+
+    function ovClearTerminalErrors() {
+      const errWrap = document.getElementById('ov-terminal-errors');
+      const errList = document.getElementById('ov-terminal-err-list');
+      if (errWrap) errWrap.classList.remove('has-errors');
+      if (errList) errList.innerHTML = '';
     }
 
     // ── Sidebar hamburger toggle ──
@@ -4399,14 +4493,37 @@
     async function loadOverview() {
       if (!isConnected) return;
       ovInitTicker();
+      ovClearTerminalErrors(); // fresh load = clear old errors
       try {
         const [ovData, geoRiskResult] = await Promise.all([
           apiGet('/api/marketoverview'),
           fetchGeoRisk()
         ]);
 
-        if (!ovData.ok) throw new Error(ovData.error || 'Overview load failed');
+        if (!ovData.ok) {
+          const msg = ovData.error || 'Overview load failed';
+          ovLogTerminalError('QUOTES', msg, ovData.details);
+          throw new Error(msg);
+        }
+
         const { quotes, histMap } = ovData;
+
+        // Warn if quote symbols came back empty
+        const quotedSyms = Object.keys(quotes || {});
+        if (quotedSyms.length === 0) {
+          ovLogTerminalError('QUOTES', 'Quote response returned no symbols. Schwab may have rejected the request.');
+        } else {
+          // Check for any expected symbols that are missing
+          const expected = ['SPY','QQQ','$VIX.X','$TNX','UUP','TLT'];
+          const missing = expected.filter(s => !quotes[s]);
+          if (missing.length) ovLogTerminalError('QUOTES', `Missing symbols in quote response: ${missing.join(', ')}`);
+        }
+
+        // Warn about any history symbols that came back empty
+        const emptyHist = Object.entries(histMap || {}).filter(([,c]) => !c || c.length === 0).map(([s]) => s);
+        if (emptyHist.length) {
+          ovLogTerminalError('PRICEHISTORY', `No candle data returned for: ${emptyHist.join(', ')}`);
+        }
 
         // Update ticker marquee with live quotes
         ovUpdateTicker(quotes);
@@ -4427,6 +4544,7 @@
       } catch (e) {
         const errEl = document.getElementById('overview-error');
         if (errEl) { errEl.style.display = 'flex'; errEl.innerHTML = `<span>\u26a0</span> ${e.message}`; }
+        ovLogTerminalError('OVERVIEW', e.message);
         console.warn('loadOverview error:', e);
       }
     }
@@ -4434,10 +4552,18 @@
     async function loadOverviewLegacy() {
       try {
         const d = await apiGet('/api/dashboard?symbol=SPY&strikeCount=20');
-        if (!d.ok) return;
+        if (!d.ok) {
+          ovLogTerminalError('CHAIN', d.error || 'Options chain failed to load', d.details);
+          return;
+        }
         const q = d.quotes || {};
         const heat = d.heat || {};
         const s = heat.summary || {};
+
+        // Log if chain returned no contracts
+        if (!heat.contractCount || heat.contractCount === 0) {
+          ovLogTerminalError('CHAIN', 'Chain returned 0 contracts for SPY. Market may be closed or chain unavailable.');
+        }
 
         // Update underlying & key levels
         document.getElementById('ov-underlying').textContent = `Underlying: ${fmt(heat.underlyingPrice)}`;
@@ -4487,7 +4613,11 @@
     async function loadMovers() {
       try {
         const d = await apiGet('/api/movers?index=$SPX');
-        if (!d.ok || !d.data) return;
+        if (!d.ok || !d.data) {
+          ovLogTerminalError('MOVERS', d?.error || 'Movers endpoint returned no data', d?.details);
+          document.getElementById('ov-movers-body').innerHTML = `<div style="padding:12px;font-size:10px;color:var(--text3);">Movers unavailable</div>`;
+          return;
+        }
         const movers = Array.isArray(d.data) ? d.data : (d.data.screeners || []);
         const top = movers.slice(0, 8);
         document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => `
@@ -4500,6 +4630,7 @@
         <span class="mover-vol">${fmtK(m.totalVolume)}</span>
       </div>`).join('');
       } catch (e) {
+        ovLogTerminalError('MOVERS', e.message);
         document.getElementById('ov-movers-body').innerHTML = `<div style="padding:12px;font-size:10px;color:var(--text3);">Movers unavailable: ${e.message}</div>`;
       }
     }
