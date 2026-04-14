@@ -1306,7 +1306,24 @@
       align-items: center;
       justify-content: space-between;
     }
-    #ov-spy-chart { height: 220px; }
+    #ov-spy-chart { height: 300px; }
+    #ov-chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 14px 0;
+      font-size: 9px;
+      color: var(--text3);
+      font-family: inherit;
+    }
+    .ov-chart-leg-dot {
+      display: inline-block;
+      width: 18px;
+      height: 2px;
+      border-radius: 1px;
+      vertical-align: middle;
+      margin-right: 3px;
+    }
     #ov-spy-chart-tf { display: flex; gap: 3px; }
     .ov-chart-tf-btn {
       padding: 3px 8px;
@@ -2561,14 +2578,19 @@
             <!-- SPY Chart -->
             <div id="ov-chart-card">
               <div id="ov-chart-header">
-                <span class="card-title">SPY Price Chart</span>
+                <span class="card-title">SPY &#8212; S&amp;P 500 ETF</span>
                 <div id="ov-spy-chart-tf">
-                  <button class="ov-chart-tf-btn active" data-ovctf="1d" onclick="ovSetChartTf('1d',this)">1D</button>
                   <button class="ov-chart-tf-btn" data-ovctf="5d" onclick="ovSetChartTf('5d',this)">5D</button>
                   <button class="ov-chart-tf-btn" data-ovctf="1m" onclick="ovSetChartTf('1m',this)">1M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">3M</button>
+                  <button class="ov-chart-tf-btn active" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">3M</button>
                   <button class="ov-chart-tf-btn" data-ovctf="ytd" onclick="ovSetChartTf('ytd',this)">YTD</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1y" onclick="ovSetChartTf('1y',this)">1Y</button>
                 </div>
+              </div>
+              <div id="ov-chart-legend">
+                <span><span class="ov-chart-leg-dot" style="background:#5bc8f5;"></span>EMA 8</span>
+                <span><span class="ov-chart-leg-dot" style="background:#c084fc;"></span>EMA 21</span>
+                <span><span class="ov-chart-leg-dot" style="background:#22dd88;"></span>EMA 50</span>
               </div>
               <div id="ov-spy-chart"></div>
             </div>
@@ -3560,7 +3582,7 @@
     let ovState = {
       mode: sessionStorage.getItem('ovMode') || 'swing',
       sectorTf: '1d',
-      chartTf: '1d',
+      chartTf: '3m',
       snapshot: null,
       spyCandles: [],
       tickerRafId: null,
@@ -4323,50 +4345,167 @@
       }).join('');
     }
 
-    function ovRenderChart(candles){
-      const container=document.getElementById('ov-spy-chart');
-      if(!container) return;
-      if(!candles||!candles.length){container.innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);">No chart data</div>';return;}
-      // Filter by timeframe
-      const now=Date.now();
+    // ── EMA calculator ──
+    function calcEMA(closes, period) {
+      const k = 2 / (period + 1);
+      const result = new Array(closes.length).fill(null);
+      let ema = null;
+      for (let i = 0; i < closes.length; i++) {
+        if (ema === null) {
+          // seed with SMA of first `period` values
+          if (i >= period - 1) {
+            ema = closes.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0) / period;
+            result[i] = ema;
+          }
+        } else {
+          ema = closes[i] * k + ema * (1 - k);
+          result[i] = ema;
+        }
+      }
+      return result;
+    }
+
+    function ovRenderChart(candles) {
+      const container = document.getElementById('ov-spy-chart');
+      if (!container) return;
+      if (!candles || !candles.length) {
+        container.innerHTML = '<div style="padding:12px;font-size:10px;color:var(--text3);">No chart data</div>';
+        return;
+      }
+
+      // ── Filter by timeframe ──
+      const now = Date.now();
       let fromMs;
-      const tf=ovState.chartTf;
-      if(tf==='1d')fromMs=now-1*24*60*60*1000*2;
-      else if(tf==='5d')fromMs=now-5*24*60*60*1000;
-      else if(tf==='1m')fromMs=now-30*24*60*60*1000;
-      else if(tf==='3m')fromMs=now-90*24*60*60*1000;
-      else if(tf==='ytd')fromMs=new Date(new Date().getFullYear(),0,1).getTime();
-      else fromMs=0;
-      const filtered=candles.filter(c=>c.datetime>=fromMs);
-      const display=filtered.length?filtered:candles.slice(-20);
-      if(display.length<2){container.innerHTML='<div style="padding:12px;font-size:10px;color:var(--text3);">Not enough data for timeframe</div>';return;}
-      const w=container.clientWidth||480,h=220;
-      const prices=display.map(c=>c.close);
-      const minP=Math.min(...prices),maxP=Math.max(...prices);
-      const range=maxP-minP||1;
-      const pad={t:10,r:10,b:24,l:52};
-      const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
-      const px=(i)=>pad.l+i*(cw/(display.length-1));
-      const py=(p)=>pad.t+ch-(((p-minP)/range)*ch);
-      const pts=display.map((c,i)=>`${px(i)},${py(c.close)}`).join(' ');
-      const first=display[0].close,last=display[display.length-1].close;
-      const color=last>=first?'var(--green)':'var(--red)';
-      const fillPts=`${px(0)},${py(minP)} ${pts} ${px(display.length-1)},${py(minP)}`;
-      const fillColor=last>=first?'rgba(34,221,136,0.08)':'rgba(255,59,92,0.08)';
-      // Axis labels
-      const yLabels=[minP,(minP+maxP)/2,maxP].map(p=>`<text x="${pad.l-4}" y="${py(p)+4}" text-anchor="end" fill="var(--text3)" font-size="9">${p.toFixed(0)}</text>`).join('');
-      const xStep=Math.max(1,Math.floor(display.length/4));
-      const xLabels=display.filter((_,i)=>i%xStep===0||i===display.length-1).map((c,_,arr)=>{
-        const idx=display.indexOf(c);
-        const d=new Date(c.datetime);
-        const lbl=d.toLocaleDateString([],{month:'numeric',day:'numeric'});
-        return `<text x="${px(idx)}" y="${h-6}" text-anchor="middle" fill="var(--text3)" font-size="9">${lbl}</text>`;
-      }).join('');
-      container.innerHTML=`<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display:block;">
-        <polygon points="${fillPts}" fill="${fillColor}"/>
-        <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>
-        <circle cx="${px(display.length-1)}" cy="${py(last)}" r="3" fill="${color}"/>
-        ${yLabels}${xLabels}
+      const tf = ovState.chartTf;
+      if      (tf === '5d')  fromMs = now - 5  * 86400000;
+      else if (tf === '1m')  fromMs = now - 30 * 86400000;
+      else if (tf === '3m')  fromMs = now - 90 * 86400000;
+      else if (tf === 'ytd') fromMs = new Date(new Date().getFullYear(), 0, 1).getTime();
+      else if (tf === '1y')  fromMs = now - 365 * 86400000;
+      else                   fromMs = now - 90 * 86400000; // default 3m
+      const filtered = candles.filter(c => c.datetime >= fromMs);
+      const display  = filtered.length ? filtered : candles.slice(-60);
+      if (display.length < 2) {
+        container.innerHTML = '<div style="padding:12px;font-size:10px;color:var(--text3);">Not enough data</div>';
+        return;
+      }
+
+      // ── Dimensions ──
+      const W = container.clientWidth || 640;
+      const H = 288;           // total SVG height
+      const volH = 42;         // volume pane height
+      const pad = { t: 12, r: 58, b: 24, l: 8 };
+      const priceH = H - pad.t - pad.b - volH - 6; // candlestick area height
+      const n = display.length;
+      const barW = Math.max(1, Math.floor((W - pad.l - pad.r) / n * 0.7));
+      const barStep = (W - pad.l - pad.r) / n;
+
+      const cx = i => pad.l + i * barStep + barStep / 2;
+
+      // ── Price range (include wicks) ──
+      const highs  = display.map(c => c.high);
+      const lows   = display.map(c => c.low);
+      const closes = display.map(c => c.close);
+      const rawMin = Math.min(...lows);
+      const rawMax = Math.max(...highs);
+      const pricePad = (rawMax - rawMin) * 0.05;
+      const minP = rawMin - pricePad;
+      const maxP = rawMax + pricePad;
+      const priceRange = maxP - minP || 1;
+
+      const py = p => pad.t + priceH - ((p - minP) / priceRange) * priceH;
+
+      // ── Volume range ──
+      const vols   = display.map(c => c.volume || 0);
+      const maxVol = Math.max(...vols) || 1;
+      const volTop = pad.t + priceH + 6; // top of volume pane
+      const vy = v => volTop + volH - (v / maxVol) * volH;
+
+      // ── EMAs (computed on full candle set, sliced for display window) ──
+      const allCloses = candles.map(c => c.close);
+      const startIdx  = candles.indexOf(display[0]);
+      const ema8all   = calcEMA(allCloses, 8);
+      const ema21all  = calcEMA(allCloses, 21);
+      const ema50all  = calcEMA(allCloses, 50);
+      const ema8   = ema8all.slice(startIdx,  startIdx + n);
+      const ema21  = ema21all.slice(startIdx, startIdx + n);
+      const ema50  = ema50all.slice(startIdx, startIdx + n);
+
+      // Build EMA polyline points
+      const emaLine = (arr) => arr
+        .map((v, i) => v !== null ? `${cx(i).toFixed(1)},${py(v).toFixed(1)}` : null)
+        .filter(Boolean).join(' ');
+
+      // ── Grid lines ──
+      const yTicks = 5;
+      let gridLines = '', yLabels = '';
+      for (let i = 0; i <= yTicks; i++) {
+        const p = minP + (priceRange * i / yTicks);
+        const y = py(p);
+        gridLines += `<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${W - pad.r}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
+        yLabels   += `<text x="${W - pad.r + 4}" y="${(y + 3.5).toFixed(1)}" fill="rgba(122,128,153,0.8)" font-size="9">${p.toFixed(0)}</text>`;
+      }
+
+      // ── X-axis date labels ──
+      const xStep = Math.max(1, Math.floor(n / 5));
+      let xLabels = '';
+      for (let i = 0; i < n; i++) {
+        if (i % xStep === 0 || i === n - 1) {
+          const d = new Date(display[i].datetime);
+          const lbl = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+          xLabels += `<text x="${cx(i).toFixed(1)}" y="${H - 6}" text-anchor="middle" fill="rgba(122,128,153,0.7)" font-size="9">${lbl}</text>`;
+        }
+      }
+
+      // ── Candlesticks + wicks ──
+      let wicks = '', bodies = '', volBars = '';
+      for (let i = 0; i < n; i++) {
+        const c = display[i];
+        const up = c.close >= c.open;
+        const fillColor = up ? '#22dd88' : '#ff3b5c';
+        const wickColor = up ? '#22dd88' : '#ff3b5c';
+        const x = cx(i);
+        const openY  = py(c.open);
+        const closeY = py(c.close);
+        const highY  = py(c.high);
+        const lowY   = py(c.low);
+        const bodyTop    = Math.min(openY, closeY);
+        const bodyBottom = Math.max(openY, closeY);
+        const bodyHeight = Math.max(1, bodyBottom - bodyTop);
+        const hw = Math.max(1, Math.floor(barW / 2));
+
+        // Wick
+        wicks += `<line x1="${x.toFixed(1)}" y1="${highY.toFixed(1)}" x2="${x.toFixed(1)}" y2="${lowY.toFixed(1)}" stroke="${wickColor}" stroke-width="1" opacity="0.7"/>`;
+        // Body
+        bodies += `<rect x="${(x - hw).toFixed(1)}" y="${bodyTop.toFixed(1)}" width="${(hw * 2).toFixed(1)}" height="${bodyHeight.toFixed(1)}" fill="${fillColor}" opacity="0.9"/>`;
+
+        // Volume bar
+        const vol = c.volume || 0;
+        const vBarH = Math.max(1, (vol / maxVol) * volH);
+        const vBarY = volTop + volH - vBarH;
+        volBars += `<rect x="${(x - hw).toFixed(1)}" y="${vBarY.toFixed(1)}" width="${(hw * 2).toFixed(1)}" height="${vBarH.toFixed(1)}" fill="${fillColor}" opacity="0.35"/>`;
+      }
+
+      // ── Last price line + badge ──
+      const lastClose = closes[n - 1];
+      const lastY = py(lastClose).toFixed(1);
+      const lastColor = lastClose >= display[0].close ? '#22dd88' : '#ff3b5c';
+      const lastPriceLine = `<line x1="${pad.l}" y1="${lastY}" x2="${W - pad.r}" y2="${lastY}" stroke="${lastColor}" stroke-width="0.75" stroke-dasharray="3,3" opacity="0.6"/>`;
+      const lastBadge = `<rect x="${W - pad.r + 1}" y="${(parseFloat(lastY) - 7).toFixed(1)}" width="52" height="13" rx="2" fill="${lastColor}"/><text x="${W - pad.r + 27}" y="${(parseFloat(lastY) + 3).toFixed(1)}" text-anchor="middle" fill="#000" font-size="9" font-weight="700">${lastClose.toFixed(2)}</text>`;
+
+      // ── Assemble SVG ──
+      container.innerHTML = `<svg width="100%" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;overflow:visible;">
+        ${gridLines}
+        ${wicks}
+        ${bodies}
+        <polyline points="${emaLine(ema50)}" fill="none" stroke="#22dd88" stroke-width="1.2" opacity="0.7" stroke-linejoin="round"/>
+        <polyline points="${emaLine(ema21)}" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.8" stroke-linejoin="round"/>
+        <polyline points="${emaLine(ema8)}"  fill="none" stroke="#5bc8f5" stroke-width="1"   opacity="0.8" stroke-linejoin="round"/>
+        <line x1="${pad.l}" y1="${(volTop - 2).toFixed(1)}" x2="${W - pad.r}" y2="${(volTop - 2).toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        ${volBars}
+        ${lastPriceLine}${lastBadge}
+        ${yLabels}
+        ${xLabels}
       </svg>`;
     }
 
