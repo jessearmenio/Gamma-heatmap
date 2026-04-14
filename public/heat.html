@@ -86,11 +86,13 @@
       z-index: 100;
       transition: width 0.25s ease, min-width 0.25s ease;
     }
+
     #sidebar.collapsed {
       width: 0;
       min-width: 0;
       border-right: none;
     }
+
     #sidebar.collapsed .logo-text,
     #sidebar.collapsed .nav-label,
     #sidebar.collapsed .nav-section-label,
@@ -117,10 +119,11 @@
       transition: background 0.15s, color 0.15s;
       line-height: 1;
     }
+
     #nav-toggle:hover {
-      background: rgba(220,255,30,0.08);
+      background: rgba(220, 255, 30, 0.08);
       color: var(--accent);
-      border-color: rgba(220,255,30,0.3);
+      border-color: rgba(220, 255, 30, 0.3);
     }
 
     #sidebar-logo {
@@ -146,7 +149,7 @@
       box-shadow: inset 0 0 0 1px rgba(245, 166, 35, 0.15);
     }
 
-    spanb{
+    spanb {
       margin-bottom: 2px;
     }
 
@@ -257,8 +260,8 @@
     }
 
     .nav-item.active {
-      background: rgba(220, 255, 30, 0.08);
-      color: var(--accent);
+      background: linear-gradient(180deg, rgba(28, 18, 4, 0.9), rgba(15, 10, 4, 0.9));
+      color: #ffd98d;
       font-weight: 600;
     }
 
@@ -270,7 +273,7 @@
       bottom: 4px;
       width: 3px;
       border-radius: 0 2px 2px 0;
-      background: var(--accent);
+      background: #f5a623;
     }
 
     .nav-item .nav-icon {
@@ -915,16 +918,28 @@
       cursor: default;
       position: relative;
     }
-    #ov-ticker-wrap::before, #ov-ticker-wrap::after {
+
+    #ov-ticker-wrap::before,
+    #ov-ticker-wrap::after {
       content: '';
       position: absolute;
-      top: 0; bottom: 0;
+      top: 0;
+      bottom: 0;
       width: 40px;
       z-index: 2;
       pointer-events: none;
     }
-    #ov-ticker-wrap::before { left: 0; background: linear-gradient(90deg, var(--bg2), transparent); }
-    #ov-ticker-wrap::after { right: 0; background: linear-gradient(-90deg, var(--bg2), transparent); }
+
+    #ov-ticker-wrap::before {
+      left: 0;
+      background: linear-gradient(90deg, var(--bg2), transparent);
+    }
+
+    #ov-ticker-wrap::after {
+      right: 0;
+      background: linear-gradient(-90deg, var(--bg2), transparent);
+    }
+
     #ov-ticker-track {
       display: flex;
       align-items: center;
@@ -932,6 +947,7 @@
       white-space: nowrap;
       will-change: transform;
     }
+
     .ov-tick-item {
       display: inline-flex;
       align-items: center;
@@ -940,12 +956,35 @@
       font-size: 11px;
       border-right: 1px solid var(--border);
     }
-    .ov-tick-item .ov-tick-sym { color: var(--text2); font-weight: 700; font-size: 10px; letter-spacing: 0.04em; }
-    .ov-tick-item .ov-tick-price { color: var(--text); font-weight: 700; }
-    .ov-tick-item .ov-tick-chg { font-size: 10px; font-weight: 600; }
-    .ov-tick-item .ov-tick-chg.up { color: var(--green); }
-    .ov-tick-item .ov-tick-chg.dn { color: var(--red); }
-    .ov-tick-item .ov-tick-chg.flat { color: var(--text3); }
+
+    .ov-tick-item .ov-tick-sym {
+      color: var(--text2);
+      font-weight: 700;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .ov-tick-item .ov-tick-price {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .ov-tick-item .ov-tick-chg {
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .ov-tick-item .ov-tick-chg.up {
+      color: var(--green);
+    }
+
+    .ov-tick-item .ov-tick-chg.dn {
+      color: var(--red);
+    }
+
+    .ov-tick-item .ov-tick-chg.flat {
+      color: var(--text3);
+    }
 
     /* ── Overview: Macro Alert Banner ── */
     #ov-macro-alert {
@@ -961,13 +1000,22 @@
       color: #ffd98d;
       font-weight: 600;
     }
+
     #ov-macro-alert.danger {
       background: rgba(255, 59, 92, 0.1);
       border-color: rgba(255, 59, 92, 0.3);
       color: var(--red);
     }
-    #ov-macro-alert-icon { font-size: 14px; flex-shrink: 0; }
-    #ov-macro-alert-text { flex: 1; line-height: 1.5; }
+
+    #ov-macro-alert-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    #ov-macro-alert-text {
+      flex: 1;
+      line-height: 1.5;
+    }
 
     /* ── Overview: Row 1 – Score Ring + Chart ── */
     .ov-row1 {
@@ -976,8 +1024,11 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+
     @media (max-width: 1100px) {
-      .ov-row1 { grid-template-columns: 1fr; }
+      .ov-row1 {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Overview: Row 3 – Key Levels + Movers ── */
@@ -987,8 +1038,11 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+
     @media (max-width: 1100px) {
-      .ov-row3 { grid-template-columns: 1fr; }
+      .ov-row3 {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Overview: Row 4 – Exec + Sector ── */
@@ -998,8 +1052,11 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+
     @media (max-width: 1100px) {
-      .ov-row4 { grid-template-columns: 1fr; }
+      .ov-row4 {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Overview: Row 5 – Terminal full-width ── */
@@ -1017,10 +1074,12 @@
       flex-direction: column;
       gap: 12px;
     }
+
     .ov-mode-btns {
       display: flex;
       gap: 4px;
     }
+
     .ov-mode-btn {
       flex: 1;
       padding: 5px 0;
@@ -1036,18 +1095,24 @@
       font-family: inherit;
       transition: all 0.12s;
     }
+
     .ov-mode-btn.active {
-      background: rgba(220,255,30,0.1);
+      background: rgba(220, 255, 30, 0.1);
       color: var(--accent);
-      border-color: rgba(220,255,30,0.35);
+      border-color: rgba(220, 255, 30, 0.35);
     }
+
     #ov-ring-wrap {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 8px;
     }
-    #ov-ring-svg { display: block; }
+
+    #ov-ring-svg {
+      display: block;
+    }
+
     .ov-ring-score-group {
       position: absolute;
       top: 50%;
@@ -1056,11 +1121,13 @@
       text-align: center;
       pointer-events: none;
     }
+
     #ov-ring-container {
       position: relative;
       width: 140px;
       height: 140px;
     }
+
     #ov-ring-score {
       font-size: 36px;
       font-weight: 800;
@@ -1068,6 +1135,7 @@
       line-height: 1;
       display: block;
     }
+
     #ov-ring-verdict {
       font-size: 9px;
       font-weight: 700;
@@ -1076,6 +1144,7 @@
       margin-top: 2px;
       display: block;
     }
+
     #ov-ring-mode {
       font-size: 8px;
       color: var(--text3);
@@ -1085,41 +1154,83 @@
       margin-top: 1px;
       display: block;
     }
-    .ov-ring-verdict.YES { color: var(--green); }
-    .ov-ring-verdict.SELECTIVE { color: var(--accent); }
-    .ov-ring-verdict.CAUTION { color: var(--orange); }
-    .ov-ring-verdict.REDUCE { color: var(--orange); }
-    .ov-ring-verdict.SITOUT { color: var(--red); }
+
+    .ov-ring-verdict.YES {
+      color: var(--green);
+    }
+
+    .ov-ring-verdict.SELECTIVE {
+      color: var(--accent);
+    }
+
+    .ov-ring-verdict.CAUTION {
+      color: var(--orange);
+    }
+
+    .ov-ring-verdict.REDUCE {
+      color: var(--orange);
+    }
+
+    .ov-ring-verdict.SITOUT {
+      color: var(--red);
+    }
 
     /* ── Overview: Weight bars ── */
-    .ov-weight-bars { display: flex; flex-direction: column; gap: 5px; }
+    .ov-weight-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
     .ov-weight-row {
       display: grid;
       grid-template-columns: 72px 1fr 28px;
       align-items: center;
       gap: 6px;
     }
-    .ov-weight-label { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .ov-weight-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
     .ov-weight-bar-track {
       height: 5px;
       background: var(--bg3);
       border-radius: 3px;
       overflow: hidden;
     }
+
     .ov-weight-bar-fill {
       height: 100%;
       border-radius: 3px;
       transition: width 0.5s ease;
     }
+
     .ov-weight-score {
       font-size: 10px;
       font-weight: 700;
       text-align: right;
     }
-    .tone-pos { color: var(--green); }
-    .tone-caution { color: var(--orange); }
-    .tone-neg { color: var(--red); }
-    .tone-neutral { color: var(--text3); }
+
+    .tone-pos {
+      color: var(--green);
+    }
+
+    .tone-caution {
+      color: var(--orange);
+    }
+
+    .tone-neg {
+      color: var(--red);
+    }
+
+    .tone-neutral {
+      color: var(--text3);
+    }
 
     /* ── Overview: Panel cards grid (Row 2 – 5 across) ── */
     .ov-panels-grid {
@@ -1128,12 +1239,19 @@
       gap: 10px;
       margin-bottom: 12px;
     }
+
     @media (max-width: 1300px) {
-      .ov-panels-grid { grid-template-columns: repeat(3, 1fr); }
+      .ov-panels-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
     }
+
     @media (max-width: 900px) {
-      .ov-panels-grid { grid-template-columns: repeat(2, 1fr); }
+      .ov-panels-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
+
     .ov-panel-card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -1142,14 +1260,16 @@
       display: flex;
       flex-direction: column;
     }
+
     .ov-panel-header {
       padding: 9px 12px 7px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      background: rgba(255, 255, 255, 0.015);
     }
+
     .ov-panel-title {
       font-size: 10px;
       font-weight: 700;
@@ -1157,13 +1277,30 @@
       text-transform: uppercase;
       color: var(--text2);
     }
+
     .ov-panel-score-badge {
       font-size: 11px;
       font-weight: 800;
     }
-    .ov-panel-bar { height: 3px; background: var(--bg3); }
-    .ov-panel-bar-fill { height: 100%; transition: width 0.5s ease; }
-    .ov-panel-body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 5px; }
+
+    .ov-panel-bar {
+      height: 3px;
+      background: var(--bg3);
+    }
+
+    .ov-panel-bar-fill {
+      height: 100%;
+      transition: width 0.5s ease;
+    }
+
+    .ov-panel-body {
+      padding: 10px 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
     .ov-metric-row {
       display: grid;
       grid-template-columns: 1fr auto auto;
@@ -1171,8 +1308,24 @@
       gap: 6px;
       min-height: 18px;
     }
-    .ov-metric-label { font-size: 9px; color: var(--text3); font-weight: 600; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ov-metric-value { font-size: 10px; font-weight: 700; color: var(--text); white-space: nowrap; }
+
+    .ov-metric-label {
+      font-size: 9px;
+      color: var(--text3);
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ov-metric-value {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
     .ov-metric-tag {
       font-size: 8px;
       font-weight: 700;
@@ -1182,10 +1335,26 @@
       border-radius: 3px;
       white-space: nowrap;
     }
-    .ov-metric-tag.positive { background: rgba(34,221,136,0.12); color: var(--green); }
-    .ov-metric-tag.danger { background: rgba(255,59,92,0.12); color: var(--red); }
-    .ov-metric-tag.caution { background: rgba(255,140,59,0.12); color: var(--orange); }
-    .ov-metric-tag.neutral { background: rgba(122,128,153,0.12); color: var(--text3); }
+
+    .ov-metric-tag.positive {
+      background: rgba(34, 221, 136, 0.12);
+      color: var(--green);
+    }
+
+    .ov-metric-tag.danger {
+      background: rgba(255, 59, 92, 0.12);
+      color: var(--red);
+    }
+
+    .ov-metric-tag.caution {
+      background: rgba(255, 140, 59, 0.12);
+      color: var(--orange);
+    }
+
+    .ov-metric-tag.neutral {
+      background: rgba(122, 128, 153, 0.12);
+      color: var(--text3);
+    }
 
     /* ── Overview: Bottom row (legacy kept for backward compat) ── */
     .ov-bottom-row {
@@ -1194,8 +1363,11 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+
     @media (max-width: 1100px) {
-      .ov-bottom-row { grid-template-columns: 1fr; }
+      .ov-bottom-row {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Overview: Execution Window ── */
@@ -1205,44 +1377,149 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .ov-exec-header {
       padding: 9px 14px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      background: rgba(255, 255, 255, 0.015);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .ov-exec-body { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .ov-exec-main { display: flex; flex-direction: column; gap: 8px; }
+
+    .ov-exec-body {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .ov-exec-main {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
     .ov-exec-verdict {
       font-size: 22px;
       font-weight: 800;
       letter-spacing: 0.03em;
       line-height: 1;
     }
-    .ov-exec-verdict.long { color: var(--green); }
-    .ov-exec-verdict.short { color: var(--red); }
-    .ov-exec-verdict.caution { color: var(--orange); }
-    .ov-exec-verdict.sit-out { color: var(--text3); }
-    .ov-exec-conf-row { display: flex; align-items: center; gap: 8px; font-size: 10px; }
-    .ov-exec-conf { font-weight: 700; font-size: 11px; }
-    .ov-exec-conf.high { color: var(--green); }
-    .ov-exec-conf.medium { color: var(--orange); }
-    .ov-exec-conf.low { color: var(--text3); }
-    .ov-exec-signals { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; }
-    .ov-exec-signals li { font-size: 10px; color: var(--text2); padding: 2px 0; border-bottom: 1px solid var(--border); }
-    .ov-exec-signals li:last-child { border-bottom: none; }
-    .ov-exec-side { display: flex; flex-direction: column; gap: 8px; }
-    .ov-exec-kv { display: flex; flex-direction: column; gap: 2px; }
-    .ov-exec-kv-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; }
-    .ov-exec-kv-val { font-size: 14px; font-weight: 800; }
-    .ov-exec-bias.long-bias { color: var(--green); }
-    .ov-exec-bias.short-bias { color: var(--red); }
-    .ov-exec-bias.neutral { color: var(--text3); }
-    .ov-exec-risks { display: flex; flex-direction: column; gap: 3px; }
-    .ov-exec-risk-note { font-size: 9px; color: var(--text2); padding: 2px 0; border-bottom: 1px solid var(--border); }
-    .ov-exec-risk-note:last-child { border-bottom: none; }
+
+    .ov-exec-verdict.long {
+      color: var(--green);
+    }
+
+    .ov-exec-verdict.short {
+      color: var(--red);
+    }
+
+    .ov-exec-verdict.caution {
+      color: var(--orange);
+    }
+
+    .ov-exec-verdict.sit-out {
+      color: var(--text3);
+    }
+
+    .ov-exec-conf-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 10px;
+    }
+
+    .ov-exec-conf {
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .ov-exec-conf.high {
+      color: var(--green);
+    }
+
+    .ov-exec-conf.medium {
+      color: var(--orange);
+    }
+
+    .ov-exec-conf.low {
+      color: var(--text3);
+    }
+
+    .ov-exec-signals {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .ov-exec-signals li {
+      font-size: 10px;
+      color: var(--text2);
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ov-exec-signals li:last-child {
+      border-bottom: none;
+    }
+
+    .ov-exec-side {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .ov-exec-kv {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ov-exec-kv-label {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 700;
+    }
+
+    .ov-exec-kv-val {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .ov-exec-bias.long-bias {
+      color: var(--green);
+    }
+
+    .ov-exec-bias.short-bias {
+      color: var(--red);
+    }
+
+    .ov-exec-bias.neutral {
+      color: var(--text3);
+    }
+
+    .ov-exec-risks {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .ov-exec-risk-note {
+      font-size: 9px;
+      color: var(--text2);
+      padding: 2px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ov-exec-risk-note:last-child {
+      border-bottom: none;
+    }
 
     /* ── Overview: Sector Performance ── */
     #ov-sector-card {
@@ -1251,15 +1528,21 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .ov-sector-header {
       padding: 9px 12px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      background: rgba(255, 255, 255, 0.015);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    .ov-sector-tf-btns { display: flex; gap: 3px; }
+
+    .ov-sector-tf-btns {
+      display: flex;
+      gap: 3px;
+    }
+
     .ov-sector-tf-btn {
       padding: 3px 8px;
       font-size: 9px;
@@ -1272,41 +1555,95 @@
       font-family: inherit;
       transition: all 0.12s;
     }
+
     .ov-sector-tf-btn.active {
-      background: rgba(220,255,30,0.1);
+      background: rgba(220, 255, 30, 0.1);
       color: var(--accent);
-      border-color: rgba(220,255,30,0.35);
+      border-color: rgba(220, 255, 30, 0.35);
     }
-    .ov-sector-body { padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; }
-    .ov-sector-row { display: grid; grid-template-columns: 42px 1fr 44px; align-items: center; gap: 6px; }
-    .ov-sector-sym { font-size: 9px; font-weight: 700; color: var(--text2); letter-spacing: 0.04em; }
-    .ov-sector-bar-track { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
-    .ov-sector-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
-    .ov-sector-bar-fill.pos { background: var(--green); }
-    .ov-sector-bar-fill.neg { background: var(--red); }
-    .ov-sector-val { font-size: 9px; font-weight: 700; text-align: right; }
-    .ov-sector-val.up { color: var(--green); }
-    .ov-sector-val.dn { color: var(--red); }
+
+    .ov-sector-body {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .ov-sector-row {
+      display: grid;
+      grid-template-columns: 42px 1fr 44px;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ov-sector-sym {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text2);
+      letter-spacing: 0.04em;
+    }
+
+    .ov-sector-bar-track {
+      height: 5px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .ov-sector-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .ov-sector-bar-fill.pos {
+      background: var(--green);
+    }
+
+    .ov-sector-bar-fill.neg {
+      background: var(--red);
+    }
+
+    .ov-sector-val {
+      font-size: 9px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .ov-sector-val.up {
+      color: var(--green);
+    }
+
+    .ov-sector-val.dn {
+      color: var(--red);
+    }
 
     /* ── Overview: Chart (now in row1 alongside score panel) ── */
     #ov-chart-row {
-      display: contents; /* flattened – children handled by .ov-row1 */
+      display: contents;
+      /* flattened – children handled by .ov-row1 */
     }
+
     #ov-chart-card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
     }
+
     #ov-chart-header {
       padding: 9px 14px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      background: rgba(255, 255, 255, 0.015);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
-    #ov-spy-chart { height: 300px; }
+
+    #ov-spy-chart {
+      height: 300px;
+    }
+
     #ov-chart-legend {
       display: flex;
       align-items: center;
@@ -1316,6 +1653,7 @@
       color: var(--text3);
       font-family: inherit;
     }
+
     .ov-chart-leg-dot {
       display: inline-block;
       width: 18px;
@@ -1324,7 +1662,12 @@
       vertical-align: middle;
       margin-right: 3px;
     }
-    #ov-spy-chart-tf { display: flex; gap: 3px; }
+
+    #ov-spy-chart-tf {
+      display: flex;
+      gap: 3px;
+    }
+
     .ov-chart-tf-btn {
       padding: 3px 8px;
       font-size: 9px;
@@ -1338,10 +1681,11 @@
       transition: all 0.12s;
       letter-spacing: 0.04em;
     }
+
     .ov-chart-tf-btn.active {
-      background: rgba(220,255,30,0.1);
+      background: rgba(220, 255, 30, 0.1);
       color: var(--accent);
-      border-color: rgba(220,255,30,0.35);
+      border-color: rgba(220, 255, 30, 0.35);
     }
 
     /* ── Overview: Geo Risk stories ── */
@@ -1351,15 +1695,22 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     #ov-geo-header {
       padding: 9px 14px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      background: rgba(255, 255, 255, 0.015);
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    #ov-geo-stories { padding: 0; max-height: 340px; overflow-y: auto; }
+
+    #ov-geo-stories {
+      padding: 0;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+
     .ov-geo-card {
       padding: 10px 14px;
       border-bottom: 1px solid var(--border);
@@ -1368,17 +1719,65 @@
       gap: 4px;
       transition: background 0.12s;
     }
-    .ov-geo-card:last-child { border-bottom: none; }
-    .ov-geo-card:hover { background: rgba(255,255,255,0.02); }
-    a.ov-geo-card { text-decoration: none; color: inherit; }
-    .ov-geo-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .ov-geo-sev { font-size: 8px; font-weight: 700; letter-spacing: 0.07em; display: flex; align-items: center; gap: 4px; }
-    .ov-geo-sev.high { color: var(--red); }
-    .ov-geo-sev.medium { color: var(--orange); }
-    .ov-geo-sev.low { color: var(--text3); }
-    .ov-geo-date { font-size: 9px; color: var(--text3); }
-    .ov-geo-headline { font-size: 10px; font-weight: 700; color: var(--text); line-height: 1.4; }
-    .ov-geo-desc { font-size: 9px; color: var(--text2); line-height: 1.5; }
+
+    .ov-geo-card:last-child {
+      border-bottom: none;
+    }
+
+    .ov-geo-card:hover {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    a.ov-geo-card {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .ov-geo-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .ov-geo-sev {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .ov-geo-sev.high {
+      color: var(--red);
+    }
+
+    .ov-geo-sev.medium {
+      color: var(--orange);
+    }
+
+    .ov-geo-sev.low {
+      color: var(--text3);
+    }
+
+    .ov-geo-date {
+      font-size: 9px;
+      color: var(--text3);
+    }
+
+    .ov-geo-headline {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .ov-geo-desc {
+      font-size: 9px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
 
     /* ── Overview: Terminal Analysis ── */
     #ov-terminal-card {
@@ -1388,26 +1787,30 @@
       overflow: hidden;
       margin-bottom: 12px;
     }
+
     #ov-terminal-header {
       padding: 9px 14px;
       border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.015);
+      background: rgba(255, 255, 255, 0.015);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
+
     #ov-terminal-body {
       padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
+
     #ov-terminal-summary {
       font-size: 12px;
       line-height: 1.7;
       color: var(--text);
       font-weight: 600;
     }
+
     .ov-terminal-detail {
       font-size: 10px;
       color: var(--text2);
@@ -1417,11 +1820,27 @@
       border-radius: 5px;
       border-left: 3px solid var(--border2);
     }
-    #ov-terminal-updated { font-size: 9px; color: var(--text3); }
-    .analysis-emphasis { font-weight: 800; }
-    .analysis-emphasis.positive { color: var(--green); }
-    .analysis-emphasis.caution { color: var(--orange); }
-    .analysis-emphasis.danger { color: var(--red); }
+
+    #ov-terminal-updated {
+      font-size: 9px;
+      color: var(--text3);
+    }
+
+    .analysis-emphasis {
+      font-weight: 800;
+    }
+
+    .analysis-emphasis.positive {
+      color: var(--green);
+    }
+
+    .analysis-emphasis.caution {
+      color: var(--orange);
+    }
+
+    .analysis-emphasis.danger {
+      color: var(--red);
+    }
 
     /* ── Terminal error log ── */
     #ov-terminal-errors {
@@ -1430,7 +1849,11 @@
       gap: 3px;
       margin-top: 4px;
     }
-    #ov-terminal-errors.has-errors { display: flex; }
+
+    #ov-terminal-errors.has-errors {
+      display: flex;
+    }
+
     .ov-term-err-line {
       font-family: 'Courier New', monospace;
       font-size: 9.5px;
@@ -1443,37 +1866,44 @@
       white-space: pre-wrap;
       word-break: break-all;
     }
+
     .ov-term-err-line .err-ts {
-      color: rgba(255,107,132,0.5);
+      color: rgba(255, 107, 132, 0.5);
       margin-right: 6px;
       font-size: 9px;
     }
+
     .ov-term-err-line .err-src {
       color: #ff9eb0;
       font-weight: 700;
       margin-right: 5px;
     }
+
     #ov-terminal-errors-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       font-size: 9px;
       font-weight: 700;
-      color: rgba(255,59,92,0.7);
+      color: rgba(255, 59, 92, 0.7);
       text-transform: uppercase;
       letter-spacing: 0.08em;
       padding: 0 2px;
     }
+
     #ov-terminal-err-clear {
       background: none;
       border: none;
-      color: rgba(255,59,92,0.45);
+      color: rgba(255, 59, 92, 0.45);
       cursor: pointer;
       font-size: 9px;
       padding: 0;
       line-height: 1;
     }
-    #ov-terminal-err-clear:hover { color: var(--red); }
+
+    #ov-terminal-err-clear:hover {
+      color: var(--red);
+    }
 
     /* ── Existing Overview tiles keep working ── */
 
@@ -1494,118 +1924,298 @@
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
       flex-shrink: 0;
-      background: rgba(255,255,255,0.01);
+      background: rgba(255, 255, 255, 0.01);
     }
+
     #flow-sym-input {
-      background: var(--bg3); color: var(--text);
-      border: 1px solid var(--border2); border-radius: 5px;
-      padding: 5px 10px; font-size: 11px; font-family: inherit;
-      width: 75px; text-transform: uppercase;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      width: 75px;
+      text-transform: uppercase;
     }
-    #flow-sym-input:focus { outline: none; border-color: var(--accent); }
+
+    #flow-sym-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
     .flow-filter-btn {
-      padding: 4px 10px; border-radius: 5px; font-size: 10px;
-      font-weight: 700; cursor: pointer;
-      background: var(--bg3); color: var(--text2);
-      border: 1px solid var(--border2); font-family: inherit;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--bg3);
+      color: var(--text2);
+      border: 1px solid var(--border2);
+      font-family: inherit;
       transition: all 0.12s;
     }
-    .flow-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
-    .flow-filter-btn.active { background: rgba(220,255,30,0.1); color: var(--accent); border-color: rgba(220,255,30,0.4); }
-    .flow-filter-btn.put-active { background: rgba(180,35,240,0.12); color: #d470ff; border-color: rgba(180,35,240,0.35); }
 
-    #flow-table-wrap { overflow-x: auto; flex: 1; min-height: 0; }
+    .flow-filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .flow-filter-btn.active {
+      background: rgba(220, 255, 30, 0.1);
+      color: var(--accent);
+      border-color: rgba(220, 255, 30, 0.4);
+    }
+
+    .flow-filter-btn.put-active {
+      background: rgba(180, 35, 240, 0.12);
+      color: #d470ff;
+      border-color: rgba(180, 35, 240, 0.35);
+    }
+
+    #flow-table-wrap {
+      overflow-x: auto;
+      flex: 1;
+      min-height: 0;
+    }
 
     #flow-table {
-      width: 100%; border-collapse: collapse; font-size: 11px;
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
       min-width: 1100px;
     }
+
     #flow-table thead th {
-      position: sticky; top: 0; z-index: 2;
+      position: sticky;
+      top: 0;
+      z-index: 2;
       background: #0d1016;
       padding: 6px 9px;
-      text-align: left; color: var(--text2);
-      font-size: 9px; font-weight: 700;
-      letter-spacing: 0.07em; text-transform: uppercase;
+      text-align: left;
+      color: var(--text2);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
       border-bottom: 2px solid var(--border2);
-      white-space: nowrap; cursor: pointer;
+      white-space: nowrap;
+      cursor: pointer;
       user-select: none;
     }
-    #flow-table thead th:hover { color: var(--text); }
-    #flow-table thead th.sort-asc::after { content: ' ▲'; color: var(--accent); font-size: 8px; }
-    #flow-table thead th.sort-desc::after { content: ' ▼'; color: var(--accent); font-size: 8px; }
+
+    #flow-table thead th:hover {
+      color: var(--text);
+    }
+
+    #flow-table thead th.sort-asc::after {
+      content: ' ▲';
+      color: var(--accent);
+      font-size: 8px;
+    }
+
+    #flow-table thead th.sort-desc::after {
+      content: ' ▼';
+      color: var(--accent);
+      font-size: 8px;
+    }
+
     #flow-table tbody td {
       padding: 5px 9px;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-      white-space: nowrap; vertical-align: middle;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      white-space: nowrap;
+      vertical-align: middle;
     }
-    #flow-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
-    #flow-table tbody tr.flow-row-call { border-left: 2px solid rgba(220,255,30,0.35); }
-    #flow-table tbody tr.flow-row-put  { border-left: 2px solid rgba(180,35,240,0.4); }
 
-    .flow-call { color: var(--accent); }
-    .flow-put  { color: #d470ff; }
-    .flow-size-lg { color: var(--gold); font-weight: 700; }
+    #flow-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    #flow-table tbody tr.flow-row-call {
+      border-left: 2px solid rgba(220, 255, 30, 0.35);
+    }
+
+    #flow-table tbody tr.flow-row-put {
+      border-left: 2px solid rgba(180, 35, 240, 0.4);
+    }
+
+    .flow-call {
+      color: var(--accent);
+    }
+
+    .flow-put {
+      color: #d470ff;
+    }
+
+    .flow-size-lg {
+      color: var(--gold);
+      font-weight: 700;
+    }
 
     /* Side badge */
     .flow-side-badge {
-      display: inline-block; padding: 2px 8px; border-radius: 4px;
-      font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
     }
-    .flow-side-badge.call { background: rgba(220,255,30,0.15); color: var(--accent); border: 1px solid rgba(220,255,30,0.3); }
-    .flow-side-badge.put  { background: rgba(180,35,240,0.15); color: #d470ff; border: 1px solid rgba(180,35,240,0.3); }
+
+    .flow-side-badge.call {
+      background: rgba(220, 255, 30, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(220, 255, 30, 0.3);
+    }
+
+    .flow-side-badge.put {
+      background: rgba(180, 35, 240, 0.15);
+      color: #d470ff;
+      border: 1px solid rgba(180, 35, 240, 0.3);
+    }
 
     /* Sentiment / flag badges */
     .flow-flag {
-      display: inline-block; padding: 2px 7px; border-radius: 4px;
-      font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
       margin: 0 1px;
     }
-    .flow-flag.bullish  { background: rgba(34,221,136,0.15); color: var(--green); }
-    .flow-flag.bearish  { background: rgba(255,59,92,0.12); color: var(--red); }
-    .flow-flag.neutral  { background: rgba(120,130,160,0.15); color: var(--text2); }
-    .flow-flag.sweep    { background: rgba(255,140,59,0.15); color: var(--orange); }
-    .flow-flag.floor    { background: rgba(59,140,255,0.12); color: var(--blue); }
-    .flow-flag.unusual  { background: rgba(255,215,0,0.12); color: var(--gold); }
-    .flow-flag.earnings { background: rgba(180,35,240,0.12); color: #d470ff; }
+
+    .flow-flag.bullish {
+      background: rgba(34, 221, 136, 0.15);
+      color: var(--green);
+    }
+
+    .flow-flag.bearish {
+      background: rgba(255, 59, 92, 0.12);
+      color: var(--red);
+    }
+
+    .flow-flag.neutral {
+      background: rgba(120, 130, 160, 0.15);
+      color: var(--text2);
+    }
+
+    .flow-flag.sweep {
+      background: rgba(255, 140, 59, 0.15);
+      color: var(--orange);
+    }
+
+    .flow-flag.floor {
+      background: rgba(59, 140, 255, 0.12);
+      color: var(--blue);
+    }
+
+    .flow-flag.unusual {
+      background: rgba(255, 215, 0, 0.12);
+      color: var(--gold);
+    }
+
+    .flow-flag.earnings {
+      background: rgba(180, 35, 240, 0.12);
+      color: #d470ff;
+    }
 
     /* Chain fill bar (IV/OTM%) */
     .flow-bar-wrap {
-      display: flex; align-items: center; gap: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
       min-width: 70px;
     }
+
     .flow-bar-bg {
-      flex: 1; height: 6px; background: var(--bg3);
-      border-radius: 3px; overflow: hidden;
+      flex: 1;
+      height: 6px;
+      background: var(--bg3);
+      border-radius: 3px;
+      overflow: hidden;
     }
+
     .flow-bar-fill {
-      height: 100%; border-radius: 3px;
+      height: 100%;
+      border-radius: 3px;
       transition: width 0.3s;
     }
-    .flow-bar-fill.call-fill { background: var(--accent); }
-    .flow-bar-fill.put-fill  { background: #B423F0; }
-    .flow-bar-fill.iv-fill   { background: var(--orange); }
+
+    .flow-bar-fill.call-fill {
+      background: var(--accent);
+    }
+
+    .flow-bar-fill.put-fill {
+      background: #B423F0;
+    }
+
+    .flow-bar-fill.iv-fill {
+      background: var(--orange);
+    }
 
     /* Premium cell — big number */
     .flow-premium {
-      font-weight: 800; font-size: 12px;
+      font-weight: 800;
+      font-size: 12px;
     }
-    .flow-premium.lg { color: var(--gold); }
-    .flow-premium.md { color: var(--text); }
-    .flow-premium.sm { color: var(--text2); }
+
+    .flow-premium.lg {
+      color: var(--gold);
+    }
+
+    .flow-premium.md {
+      color: var(--text);
+    }
+
+    .flow-premium.sm {
+      color: var(--text2);
+    }
 
     /* Flow stats bar */
     #flow-stats-bar {
-      display: flex; gap: 16px; align-items: center;
-      padding: 8px 14px; border-bottom: 1px solid var(--border);
-      font-size: 10px; flex-shrink: 0; flex-wrap: wrap;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
     }
-    .flow-stat-item { display: flex; flex-direction: column; gap: 2px; }
-    .flow-stat-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
-    .flow-stat-val   { font-size: 13px; font-weight: 800; }
+
+    .flow-stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .flow-stat-label {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .flow-stat-val {
+      font-size: 13px;
+      font-weight: 800;
+    }
+
     /* alias classes used in HTML */
-    .flow-stat-cell { display: flex; flex-direction: column; gap: 2px; }
-    .flow-stat-lbl  { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+    .flow-stat-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .flow-stat-lbl {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
     /* ─────────────────────────────────────────────
    MOVERS PAGE
@@ -1686,22 +2296,47 @@
     /* ─────────────────────────────────────────────
    STRATEGY TESTER
 ───────────────────────────────────────────── */
-    #strat-page { overflow-y: auto; }
+    #strat-page {
+      overflow-y: auto;
+    }
 
     #strat-controls {
-      display: flex; gap: 10px; align-items: center;
-      flex-wrap: wrap; padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 12px 14px;
       border-bottom: 1px solid var(--border);
     }
-    .strat-input-group { display: flex; align-items: center; gap: 6px; }
-    .strat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
-    .strat-input {
-      background: var(--bg3); color: var(--text);
-      border: 1px solid var(--border2); border-radius: 4px;
-      padding: 5px 8px; width: 80px;
-      font-family: inherit; font-size: 11px;
+
+    .strat-input-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
-    .strat-input:focus { outline: none; border-color: var(--accent); }
+
+    .strat-label {
+      font-size: 10px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .strat-input {
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 5px 8px;
+      width: 80px;
+      font-family: inherit;
+      font-size: 11px;
+    }
+
+    .strat-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
 
     /* Builder layout */
     #strat-builder {
@@ -1710,14 +2345,20 @@
       gap: 0;
       min-height: 440px;
     }
+
     #strat-left {
       padding: 16px 14px;
       border-right: 1px solid var(--border);
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
+
     #strat-right {
       padding: 12px 14px;
-      display: flex; flex-direction: column; gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     /* Leg rows */
@@ -1726,32 +2367,70 @@
       border: 1px solid var(--border2);
       border-radius: 7px;
       padding: 10px 12px;
-      display: flex; align-items: center; gap: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
+
     .leg-badge {
-      font-size: 9px; font-weight: 800;
-      padding: 3px 8px; border-radius: 4px;
-      letter-spacing: 0.06em; flex-shrink: 0; min-width: 36px;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      min-width: 36px;
       text-align: center;
     }
-    .leg-badge.buy  { background: rgba(34,221,136,0.2); color: var(--green); border: 1px solid rgba(34,221,136,0.35); }
-    .leg-badge.sell { background: rgba(255,59,92,0.15); color: var(--red);   border: 1px solid rgba(255,59,92,0.3); }
-    .leg-name { font-size: 12px; font-weight: 700; flex: 1; }
-    .leg-price { font-size: 13px; font-weight: 800; min-width: 55px; text-align: right; }
+
+    .leg-badge.buy {
+      background: rgba(34, 221, 136, 0.2);
+      color: var(--green);
+      border: 1px solid rgba(34, 221, 136, 0.35);
+    }
+
+    .leg-badge.sell {
+      background: rgba(255, 59, 92, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(255, 59, 92, 0.3);
+    }
+
+    .leg-name {
+      font-size: 12px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .leg-price {
+      font-size: 13px;
+      font-weight: 800;
+      min-width: 55px;
+      text-align: right;
+    }
 
     /* Slider rows */
     .slider-row {
-      display: flex; align-items: center; gap: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       padding: 6px 0;
     }
+
     .slider-label {
-      font-size: 10px; font-weight: 700;
-      min-width: 130px; flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 130px;
+      flex-shrink: 0;
     }
+
     .slider-val {
-      font-size: 11px; font-weight: 800;
-      min-width: 55px; text-align: right; color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      min-width: 55px;
+      text-align: right;
+      color: var(--accent);
     }
+
     input[type="range"].strat-slider {
       flex: 1;
       -webkit-appearance: none;
@@ -1760,68 +2439,139 @@
       outline: none;
       cursor: pointer;
     }
-    input[type="range"].strat-slider.call-slider { background: linear-gradient(to right, var(--accent), var(--bg3)); }
+
+    input[type="range"].strat-slider.call-slider {
+      background: linear-gradient(to right, var(--accent), var(--bg3));
+    }
+
     input[type="range"].strat-slider.call-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 14px; height: 14px;
-      border-radius: 50%; background: var(--accent);
-      box-shadow: 0 0 6px rgba(220,255,30,0.6); cursor: pointer;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px rgba(220, 255, 30, 0.6);
+      cursor: pointer;
     }
-    input[type="range"].strat-slider.put-slider { background: linear-gradient(to right, #B423F0, var(--bg3)); }
+
+    input[type="range"].strat-slider.put-slider {
+      background: linear-gradient(to right, #B423F0, var(--bg3));
+    }
+
     input[type="range"].strat-slider.put-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 14px; height: 14px;
-      border-radius: 50%; background: #B423F0;
-      box-shadow: 0 0 6px rgba(180,35,240,0.6); cursor: pointer;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #B423F0;
+      box-shadow: 0 0 6px rgba(180, 35, 240, 0.6);
+      cursor: pointer;
     }
-    input[type="range"].strat-slider.neutral-slider { background: linear-gradient(to right, var(--blue), var(--bg3)); }
+
+    input[type="range"].strat-slider.neutral-slider {
+      background: linear-gradient(to right, var(--blue), var(--bg3));
+    }
+
     input[type="range"].strat-slider.neutral-slider::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 14px; height: 14px;
-      border-radius: 50%; background: var(--blue);
-      box-shadow: 0 0 6px rgba(59,140,255,0.5); cursor: pointer;
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 6px rgba(59, 140, 255, 0.5);
+      cursor: pointer;
     }
 
     /* Stats tiles in builder */
     #strat-stats-grid {
-      display: grid; grid-template-columns: 1fr 1fr;
-      gap: 8px; margin-top: 4px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
     }
+
     .strat-stat-tile {
-      background: var(--bg); border: 1px solid var(--border2);
-      border-radius: 6px; padding: 10px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 10px 12px;
     }
+
     .strat-stat-tile .ss-label {
-      font-size: 9px; font-weight: 700; color: var(--text3);
-      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 3px;
     }
+
     .strat-stat-tile .ss-val {
-      font-size: 18px; font-weight: 900; line-height: 1;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
     }
+
     .strat-stat-tile .ss-sub {
-      font-size: 9px; color: var(--text3); margin-top: 2px;
+      font-size: 9px;
+      color: var(--text3);
+      margin-top: 2px;
     }
+
     /* alias classes for strat stat tiles */
-    .strat-stat-lbl { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-    .strat-stat-val { font-size: 17px; font-weight: 900; line-height: 1.1; }
-    .strat-stat-val.accent { color: var(--accent); }
-    .strat-stat-val.red    { color: var(--red); }
+    .strat-stat-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
+    }
+
+    .strat-stat-val {
+      font-size: 17px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .strat-stat-val.accent {
+      color: var(--accent);
+    }
+
+    .strat-stat-val.red {
+      color: var(--red);
+    }
+
     /* Strategy type header */
     #strat-type-label {
-      font-size: 14px; font-weight: 800; color: var(--text);
-      text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 12px; padding-bottom: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
 
     /* Cursor tooltip on chart */
     #strat-cursor {
-      position: absolute; pointer-events: none;
+      position: absolute;
+      pointer-events: none;
       display: none;
-      background: #1a1d28; border: 1px solid var(--border2);
-      border-radius: 5px; padding: 6px 10px;
-      font-size: 11px; white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      background: #1a1d28;
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-size: 11px;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
       z-index: 10;
     }
-    #strat-chart-wrap { position: relative; }
+
+    #strat-chart-wrap {
+      position: relative;
+    }
 
     .strat-input:focus {
       outline: none;
@@ -2380,7 +3130,9 @@
     <!-- ── Sidebar ── -->
     <nav id="sidebar">
       <div id="sidebar-logo">
-        <div class="brand-icon"><spanb>↗</spanb></div>
+        <div class="brand-icon">
+          <spanb>↗</spanb>
+        </div>
         <div class="logo-text"> Market Engine</div>
       </div>
 
@@ -2493,23 +3245,57 @@
             <div id="ov-ticker-track">
               <div id="ov-ticker-group-primary" style="display:flex;align-items:center;">
                 <!-- SPY -->
-                <div class="ov-tick-item" data-ovsym="SPY"><span class="ov-tick-sym">SPY</span><span class="ov-tick-price" id="ovt-SPY-price">--</span><span class="ov-tick-chg flat" id="ovt-SPY-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="QQQ"><span class="ov-tick-sym">QQQ</span><span class="ov-tick-price" id="ovt-QQQ-price">--</span><span class="ov-tick-chg flat" id="ovt-QQQ-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="$VIX"><span class="ov-tick-sym">VIX</span><span class="ov-tick-price" id="ovt-VIX-price">--</span><span class="ov-tick-chg flat" id="ovt-VIX-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="$TNX"><span class="ov-tick-sym">TNX</span><span class="ov-tick-price" id="ovt-TNX-price">--</span><span class="ov-tick-chg flat" id="ovt-TNX-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="UUP"><span class="ov-tick-sym">UUP</span><span class="ov-tick-price" id="ovt-UUP-price">--</span><span class="ov-tick-chg flat" id="ovt-UUP-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="TLT"><span class="ov-tick-sym">TLT</span><span class="ov-tick-price" id="ovt-TLT-price">--</span><span class="ov-tick-chg flat" id="ovt-TLT-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLE"><span class="ov-tick-sym">XLE</span><span class="ov-tick-price" id="ovt-XLE-price">--</span><span class="ov-tick-chg flat" id="ovt-XLE-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLF"><span class="ov-tick-sym">XLF</span><span class="ov-tick-price" id="ovt-XLF-price">--</span><span class="ov-tick-chg flat" id="ovt-XLF-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLK"><span class="ov-tick-sym">XLK</span><span class="ov-tick-price" id="ovt-XLK-price">--</span><span class="ov-tick-chg flat" id="ovt-XLK-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLI"><span class="ov-tick-sym">XLI</span><span class="ov-tick-price" id="ovt-XLI-price">--</span><span class="ov-tick-chg flat" id="ovt-XLI-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLC"><span class="ov-tick-sym">XLC</span><span class="ov-tick-price" id="ovt-XLC-price">--</span><span class="ov-tick-chg flat" id="ovt-XLC-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLY"><span class="ov-tick-sym">XLY</span><span class="ov-tick-price" id="ovt-XLY-price">--</span><span class="ov-tick-chg flat" id="ovt-XLY-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLV"><span class="ov-tick-sym">XLV</span><span class="ov-tick-price" id="ovt-XLV-price">--</span><span class="ov-tick-chg flat" id="ovt-XLV-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLRE"><span class="ov-tick-sym">XLRE</span><span class="ov-tick-price" id="ovt-XLRE-price">--</span><span class="ov-tick-chg flat" id="ovt-XLRE-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLP"><span class="ov-tick-sym">XLP</span><span class="ov-tick-price" id="ovt-XLP-price">--</span><span class="ov-tick-chg flat" id="ovt-XLP-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLB"><span class="ov-tick-sym">XLB</span><span class="ov-tick-price" id="ovt-XLB-price">--</span><span class="ov-tick-chg flat" id="ovt-XLB-chg">--</span></div>
-                <div class="ov-tick-item" data-ovsym="XLU"><span class="ov-tick-sym">XLU</span><span class="ov-tick-price" id="ovt-XLU-price">--</span><span class="ov-tick-chg flat" id="ovt-XLU-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="SPY"><span class="ov-tick-sym">SPY</span><span
+                    class="ov-tick-price" id="ovt-SPY-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-SPY-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="QQQ"><span class="ov-tick-sym">QQQ</span><span
+                    class="ov-tick-price" id="ovt-QQQ-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-QQQ-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="$VIX"><span class="ov-tick-sym">VIX</span><span
+                    class="ov-tick-price" id="ovt-VIX-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-VIX-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="$TNX"><span class="ov-tick-sym">TNX</span><span
+                    class="ov-tick-price" id="ovt-TNX-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-TNX-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="UUP"><span class="ov-tick-sym">UUP</span><span
+                    class="ov-tick-price" id="ovt-UUP-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-UUP-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="TLT"><span class="ov-tick-sym">TLT</span><span
+                    class="ov-tick-price" id="ovt-TLT-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-TLT-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLE"><span class="ov-tick-sym">XLE</span><span
+                    class="ov-tick-price" id="ovt-XLE-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLE-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLF"><span class="ov-tick-sym">XLF</span><span
+                    class="ov-tick-price" id="ovt-XLF-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLF-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLK"><span class="ov-tick-sym">XLK</span><span
+                    class="ov-tick-price" id="ovt-XLK-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLK-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLI"><span class="ov-tick-sym">XLI</span><span
+                    class="ov-tick-price" id="ovt-XLI-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLI-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLC"><span class="ov-tick-sym">XLC</span><span
+                    class="ov-tick-price" id="ovt-XLC-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLC-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLY"><span class="ov-tick-sym">XLY</span><span
+                    class="ov-tick-price" id="ovt-XLY-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLY-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLV"><span class="ov-tick-sym">XLV</span><span
+                    class="ov-tick-price" id="ovt-XLV-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLV-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLRE"><span class="ov-tick-sym">XLRE</span><span
+                    class="ov-tick-price" id="ovt-XLRE-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLRE-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLP"><span class="ov-tick-sym">XLP</span><span
+                    class="ov-tick-price" id="ovt-XLP-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLP-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLB"><span class="ov-tick-sym">XLB</span><span
+                    class="ov-tick-price" id="ovt-XLB-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLB-chg">--</span></div>
+                <div class="ov-tick-item" data-ovsym="XLU"><span class="ov-tick-sym">XLU</span><span
+                    class="ov-tick-price" id="ovt-XLU-price">--</span><span class="ov-tick-chg flat"
+                    id="ovt-XLU-chg">--</span></div>
               </div>
             </div>
           </div>
@@ -2533,10 +3319,10 @@
               <div id="ov-ring-wrap">
                 <div id="ov-ring-container">
                   <svg id="ov-ring-svg" width="140" height="140" viewBox="0 0 140 140">
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--bg3)" stroke-width="10"/>
+                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--bg3)" stroke-width="10" />
                     <circle id="ov-ring-arc" cx="70" cy="70" r="56" fill="none" stroke="var(--accent)" stroke-width="10"
                       stroke-linecap="round" stroke-dasharray="351.858" stroke-dashoffset="351.858"
-                      transform="rotate(-90 70 70)" style="transition:stroke-dashoffset 0.7s ease,stroke 0.4s;"/>
+                      transform="rotate(-90 70 70)" style="transition:stroke-dashoffset 0.7s ease,stroke 0.4s;" />
                   </svg>
                   <div class="ov-ring-score-group">
                     <span id="ov-ring-score">--</span>
@@ -2549,27 +3335,37 @@
               <div class="ov-weight-bars">
                 <div class="ov-weight-row">
                   <span class="ov-weight-label">Volatility</span>
-                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-vol" style="width:0%;background:var(--text3);"></div></div>
+                  <div class="ov-weight-bar-track">
+                    <div class="ov-weight-bar-fill" id="ovbar-vol" style="width:0%;background:var(--text3);"></div>
+                  </div>
                   <span class="ov-weight-score tone-neutral" id="ovscore-vol">--</span>
                 </div>
                 <div class="ov-weight-row">
                   <span class="ov-weight-label">Trend</span>
-                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);"></div></div>
+                  <div class="ov-weight-bar-track">
+                    <div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);"></div>
+                  </div>
                   <span class="ov-weight-score tone-neutral" id="ovscore-trend">--</span>
                 </div>
                 <div class="ov-weight-row">
                   <span class="ov-weight-label">Breadth</span>
-                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-breadth" style="width:0%;background:var(--text3);"></div></div>
+                  <div class="ov-weight-bar-track">
+                    <div class="ov-weight-bar-fill" id="ovbar-breadth" style="width:0%;background:var(--text3);"></div>
+                  </div>
                   <span class="ov-weight-score tone-neutral" id="ovscore-breadth">--</span>
                 </div>
                 <div class="ov-weight-row">
                   <span class="ov-weight-label">Momentum</span>
-                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-mom" style="width:0%;background:var(--text3);"></div></div>
+                  <div class="ov-weight-bar-track">
+                    <div class="ov-weight-bar-fill" id="ovbar-mom" style="width:0%;background:var(--text3);"></div>
+                  </div>
                   <span class="ov-weight-score tone-neutral" id="ovscore-mom">--</span>
                 </div>
                 <div class="ov-weight-row">
                   <span class="ov-weight-label">Macro</span>
-                  <div class="ov-weight-bar-track"><div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);"></div></div>
+                  <div class="ov-weight-bar-track">
+                    <div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);"></div>
+                  </div>
                   <span class="ov-weight-score tone-neutral" id="ovscore-macro">--</span>
                 </div>
               </div>
@@ -2606,7 +3402,9 @@
                 <span class="ov-panel-title">&#9889; Volatility</span>
                 <span class="ov-panel-score-badge tone-neutral" id="ovpanel-vol-score">--</span>
               </div>
-              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-vol-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-bar">
+                <div class="ov-panel-bar-fill" id="ovpanel-vol-bar" style="width:0%;"></div>
+              </div>
               <div class="ov-panel-body">
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">VIX Level</span>
@@ -2642,7 +3440,9 @@
                 <span class="ov-panel-title">&#128200; Trend</span>
                 <span class="ov-panel-score-badge tone-neutral" id="ovpanel-trend-score">--</span>
               </div>
-              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-trend-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-bar">
+                <div class="ov-panel-bar-fill" id="ovpanel-trend-bar" style="width:0%;"></div>
+              </div>
               <div class="ov-panel-body">
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">Regime</span>
@@ -2683,7 +3483,9 @@
                 <span class="ov-panel-title">&#127754; Breadth</span>
                 <span class="ov-panel-score-badge tone-neutral" id="ovpanel-breadth-score">--</span>
               </div>
-              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-breadth-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-bar">
+                <div class="ov-panel-bar-fill" id="ovpanel-breadth-bar" style="width:0%;"></div>
+              </div>
               <div class="ov-panel-body">
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">Sectors &gt; 20MA</span>
@@ -2714,7 +3516,9 @@
                 <span class="ov-panel-title">&#128640; Momentum</span>
                 <span class="ov-panel-score-badge tone-neutral" id="ovpanel-mom-score">--</span>
               </div>
-              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-mom-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-bar">
+                <div class="ov-panel-bar-fill" id="ovpanel-mom-bar" style="width:0%;"></div>
+              </div>
               <div class="ov-panel-body">
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">SPY RSI-14</span>
@@ -2750,7 +3554,9 @@
                 <span class="ov-panel-title">&#127760; Macro</span>
                 <span class="ov-panel-score-badge tone-neutral" id="ovpanel-macro-score">--</span>
               </div>
-              <div class="ov-panel-bar"><div class="ov-panel-bar-fill" id="ovpanel-macro-bar" style="width:0%;"></div></div>
+              <div class="ov-panel-bar">
+                <div class="ov-panel-bar-fill" id="ovpanel-macro-bar" style="width:0%;"></div>
+              </div>
               <div class="ov-panel-body">
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">10Y Yield &#916;</span>
@@ -2799,7 +3605,8 @@
                   <span class="kl-pill spot">Connect Schwab</span>
                 </div>
                 <hr class="sep">
-                <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">Waiting for data&#8230;</div>
+                <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">Waiting for
+                  data&#8230;</div>
               </div>
             </div>
             <div class="card">
@@ -2819,16 +3626,20 @@
             <div id="ov-exec-card">
               <div class="ov-exec-header">
                 <span class="card-title">&#9881; Execution Window</span>
-                <span style="font-size:10px;color:var(--text3);">Score: <b id="ov-exec-score" style="color:var(--text);">--</b></span>
+                <span style="font-size:10px;color:var(--text3);">Score: <b id="ov-exec-score"
+                    style="color:var(--text);">--</b></span>
               </div>
               <div class="ov-exec-body">
                 <div class="ov-exec-main">
                   <div class="ov-exec-verdict sit-out" id="ov-exec-verdict">SIT OUT</div>
                   <div class="ov-exec-conf-row">
-                    <span style="color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Confidence:</span>
+                    <span
+                      style="color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Confidence:</span>
                     <span class="ov-exec-conf medium" id="ov-exec-conf">MEDIUM</span>
                   </div>
-                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Active Signals</div>
+                  <div
+                    style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
+                    Active Signals</div>
                   <ul class="ov-exec-signals" id="ov-exec-signals">
                     <li>Waiting for data...</li>
                   </ul>
@@ -2842,7 +3653,9 @@
                     <span class="ov-exec-kv-label">Bias</span>
                     <span class="ov-exec-kv-val ov-exec-bias neutral" id="ov-exec-bias">NEUTRAL</span>
                   </div>
-                  <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">Risk Notes</div>
+                  <div
+                    style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
+                    Risk Notes</div>
                   <div class="ov-exec-risks" id="ov-exec-risks">
                     <div class="ov-exec-risk-note">--</div>
                   </div>
@@ -2882,7 +3695,8 @@
                 <div id="ov-terminal-errors">
                   <div id="ov-terminal-errors-header">
                     <span>&#9888; Data Load Errors</span>
-                    <button id="ov-terminal-err-clear" onclick="ovClearTerminalErrors()" title="Clear errors">CLEAR</button>
+                    <button id="ov-terminal-err-clear" onclick="ovClearTerminalErrors()"
+                      title="Clear errors">CLEAR</button>
                   </div>
                   <div id="ov-terminal-err-list"></div>
                 </div>
@@ -2895,7 +3709,8 @@
             <div id="ov-geo-card">
               <div id="ov-geo-header">
                 <span class="card-title">&#127757; Geo Risk Intel</span>
-                <span id="ov-geo-risk-badge" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(122,128,153,0.15);color:var(--text3);">--</span>
+                <span id="ov-geo-risk-badge"
+                  style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(122,128,153,0.15);color:var(--text3);">--</span>
               </div>
               <div id="ov-geo-stories">
                 <div style="padding:14px;font-size:10px;color:var(--text3);">Loading geo risk data&#8230;</div>
@@ -2999,25 +3814,46 @@
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="font-size:9px;color:var(--text3)">Sort by:</span>
-              <select id="flow-sort-sel" onchange="flowApplySort()" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
+              <select id="flow-sort-sel" onchange="flowApplySort()"
+                style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
                 <option value="premium">Premium $</option>
                 <option value="volume">Volume</option>
                 <option value="oi">Open Interest</option>
                 <option value="otm">%OTM</option>
                 <option value="iv">IV%</option>
               </select>
-              <button onclick="loadOptionsFlow()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">↻ REFRESH</button>
+              <button onclick="loadOptionsFlow()"
+                style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">↻
+                REFRESH</button>
             </div>
           </div>
 
           <!-- STATS BAR -->
           <div id="flow-stats-bar">
-            <div class="flow-stat-cell"><div class="flow-stat-lbl">TOTAL PREMIUM</div><div class="flow-stat-val" id="fstat-total">—</div></div>
-            <div class="flow-stat-cell"><div class="flow-stat-lbl">CALL $</div><div class="flow-stat-val" style="color:var(--accent)" id="fstat-call">—</div></div>
-            <div class="flow-stat-cell"><div class="flow-stat-lbl">PUT $</div><div class="flow-stat-val" style="color:var(--purple)" id="fstat-put">—</div></div>
-            <div class="flow-stat-cell"><div class="flow-stat-lbl">P/C RATIO</div><div class="flow-stat-val" id="fstat-pc">—</div></div>
-            <div class="flow-stat-cell"><div class="flow-stat-lbl">CONTRACTS</div><div class="flow-stat-val" id="fstat-count">—</div></div>
-            <div class="flow-stat-cell"><div class="flow-stat-lbl">SWEEPS</div><div class="flow-stat-val" style="color:#f59e0b" id="fstat-sweeps">—</div></div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">TOTAL PREMIUM</div>
+              <div class="flow-stat-val" id="fstat-total">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">CALL $</div>
+              <div class="flow-stat-val" style="color:var(--accent)" id="fstat-call">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">PUT $</div>
+              <div class="flow-stat-val" style="color:var(--purple)" id="fstat-put">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">P/C RATIO</div>
+              <div class="flow-stat-val" id="fstat-pc">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">CONTRACTS</div>
+              <div class="flow-stat-val" id="fstat-count">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">SWEEPS</div>
+              <div class="flow-stat-val" style="color:#f59e0b" id="fstat-sweeps">—</div>
+            </div>
           </div>
 
           <!-- FLOW TABLE -->
@@ -3044,7 +3880,10 @@
                 </tr>
               </thead>
               <tbody id="flow-tbody">
-                <tr><td colspan="16" style="text-align:center;padding:32px;color:var(--text3);">Connect Schwab to view options flow.</td></tr>
+                <tr>
+                  <td colspan="16" style="text-align:center;padding:32px;color:var(--text3);">Connect Schwab to view
+                    options flow.</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -3074,13 +3913,18 @@
             </div>
             <div class="strat-input-group">
               <span class="strat-label">Expiry</span>
-              <select id="strat-expiry" class="strat-input" style="width:130px;" onchange="stratLoadChain()"><option>Loading...</option></select>
+              <select id="strat-expiry" class="strat-input" style="width:130px;" onchange="stratLoadChain()">
+                <option>Loading...</option>
+              </select>
             </div>
             <div class="strat-input-group">
               <span class="strat-label">Qty</span>
-              <input class="strat-input" id="strat-qty" type="number" value="1" min="1" style="width:55px;" oninput="stratRecalc()">
+              <input class="strat-input" id="strat-qty" type="number" value="1" min="1" style="width:55px;"
+                oninput="stratRecalc()">
             </div>
-            <button style="margin-left:auto;background:var(--accent);color:#000;border:none;border-radius:5px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="stratLoadChain(true)">↻ LOAD CHAIN</button>
+            <button
+              style="margin-left:auto;background:var(--accent);color:#000;border:none;border-radius:5px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
+              onclick="stratLoadChain(true)">↻ LOAD CHAIN</button>
           </div>
 
           <!-- TWO-COLUMN BUILDER -->
@@ -3469,7 +4313,7 @@
       let detailStr = '';
       if (detail) {
         if (typeof detail === 'object') {
-          try { detailStr = JSON.stringify(detail).slice(0, 220); } catch(e) { detailStr = String(detail).slice(0, 220); }
+          try { detailStr = JSON.stringify(detail).slice(0, 220); } catch (e) { detailStr = String(detail).slice(0, 220); }
         } else {
           detailStr = String(detail).slice(0, 220);
         }
@@ -3499,7 +4343,7 @@
       // Re-render SVG chart after transition so it fills the new width
       setTimeout(() => {
         if (typeof ovState !== 'undefined' && ovState.snapshot && ovState.snapshot.scores) {
-          try { ovRenderChart(ovState.snapshot.scores.spyCandles); } catch(e){}
+          try { ovRenderChart(ovState.snapshot.scores.spyCandles); } catch (e) { }
         }
       }, 280);
     }
@@ -3593,198 +4437,198 @@
     };
 
     const OV_TRADE_WEIGHTS = {
-      scalp:    { volatility:30, trend:15, breadth:10, momentum:35, macro:10 },
-      swing:    { volatility:20, trend:25, breadth:20, momentum:20, macro:15 },
-      position: { volatility:15, trend:30, breadth:25, momentum:10, macro:20 }
+      scalp: { volatility: 30, trend: 15, breadth: 10, momentum: 35, macro: 10 },
+      swing: { volatility: 20, trend: 25, breadth: 20, momentum: 20, macro: 15 },
+      position: { volatility: 15, trend: 30, breadth: 25, momentum: 10, macro: 20 }
     };
 
-    const FOMC_DATES = ["2026-04-20","2026-06-17","2026-07-29","2026-09-16","2026-10-28","2026-12-09"];
+    const FOMC_DATES = ["2026-04-20", "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09"];
     const CPI_EVENTS = [
-      {releaseDate:"2026-04-10",labelMonth:"Mar"},
-      {releaseDate:"2026-05-12",labelMonth:"Apr"},
-      {releaseDate:"2026-06-10",labelMonth:"May"},
-      {releaseDate:"2026-07-14",labelMonth:"Jun"},
-      {releaseDate:"2026-08-12",labelMonth:"Jul"},
-      {releaseDate:"2026-09-10",labelMonth:"Aug"},
-      {releaseDate:"2026-10-13",labelMonth:"Sep"},
-      {releaseDate:"2026-11-12",labelMonth:"Oct"},
-      {releaseDate:"2026-12-10",labelMonth:"Nov"}
+      { releaseDate: "2026-04-10", labelMonth: "Mar" },
+      { releaseDate: "2026-05-12", labelMonth: "Apr" },
+      { releaseDate: "2026-06-10", labelMonth: "May" },
+      { releaseDate: "2026-07-14", labelMonth: "Jun" },
+      { releaseDate: "2026-08-12", labelMonth: "Jul" },
+      { releaseDate: "2026-09-10", labelMonth: "Aug" },
+      { releaseDate: "2026-10-13", labelMonth: "Sep" },
+      { releaseDate: "2026-11-12", labelMonth: "Oct" },
+      { releaseDate: "2026-12-10", labelMonth: "Nov" }
     ];
     const JOLTS_EVENTS = [
-      {releaseDate:"2026-04-01",labelMonth:"Feb"},
-      {releaseDate:"2026-05-05",labelMonth:"Mar"},
-      {releaseDate:"2026-06-02",labelMonth:"Apr"},
-      {releaseDate:"2026-07-07",labelMonth:"May"},
-      {releaseDate:"2026-08-04",labelMonth:"Jun"},
-      {releaseDate:"2026-09-01",labelMonth:"Jul"},
-      {releaseDate:"2026-10-06",labelMonth:"Aug"},
-      {releaseDate:"2026-11-03",labelMonth:"Sep"},
-      {releaseDate:"2026-12-01",labelMonth:"Oct"}
+      { releaseDate: "2026-04-01", labelMonth: "Feb" },
+      { releaseDate: "2026-05-05", labelMonth: "Mar" },
+      { releaseDate: "2026-06-02", labelMonth: "Apr" },
+      { releaseDate: "2026-07-07", labelMonth: "May" },
+      { releaseDate: "2026-08-04", labelMonth: "Jun" },
+      { releaseDate: "2026-09-01", labelMonth: "Jul" },
+      { releaseDate: "2026-10-06", labelMonth: "Aug" },
+      { releaseDate: "2026-11-03", labelMonth: "Sep" },
+      { releaseDate: "2026-12-01", labelMonth: "Oct" }
     ];
     const GEO_RISK_API_URL = "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php";
     const GEO_RISK_API_HOST = "world-conflict-intelligence-api.p.rapidapi.com";
     const GEO_RISK_API_KEY = "64de0721dfmsh16b88a238670039p180561jsne239188deb55";
 
-    const SECTOR_ORDER = ["XLE","XLF","XLK","XLI","XLC","XLY","XLV","XLRE","XLP","XLB","XLU"];
+    const SECTOR_ORDER = ["XLE", "XLF", "XLK", "XLI", "XLC", "XLY", "XLV", "XLRE", "XLP", "XLB", "XLU"];
 
     // ── Tiny math helpers ──
     function ovSma(arr, period) {
       if (!arr || arr.length < period) return null;
       const slice = arr.slice(-period);
-      return slice.reduce((s,v)=>s+v,0) / period;
+      return slice.reduce((s, v) => s + v, 0) / period;
     }
-    function ovRsi(closes, period=14) {
-      if (!closes || closes.length < period+1) return null;
-      let gains=0, losses=0;
-      for(let i=closes.length-period; i<closes.length; i++) {
-        const d = closes[i]-closes[i-1];
-        if(d>0) gains+=d; else losses+=Math.abs(d);
+    function ovRsi(closes, period = 14) {
+      if (!closes || closes.length < period + 1) return null;
+      let gains = 0, losses = 0;
+      for (let i = closes.length - period; i < closes.length; i++) {
+        const d = closes[i] - closes[i - 1];
+        if (d > 0) gains += d; else losses += Math.abs(d);
       }
-      const ag=gains/period, al=losses/period;
-      if(al===0) return 100;
-      return 100 - (100/(1+(ag/al)));
+      const ag = gains / period, al = losses / period;
+      if (al === 0) return 100;
+      return 100 - (100 / (1 + (ag / al)));
     }
-    function ovMacd(closes, fast=12, slow=26, sig=9) {
+    function ovMacd(closes, fast = 12, slow = 26, sig = 9) {
       function ema(arr, p) {
-        if(arr.length<p) return null;
-        let e = arr.slice(0,p).reduce((s,v)=>s+v,0)/p;
-        const k=2/(p+1);
-        for(let i=p;i<arr.length;i++) e=arr[i]*k+e*(1-k);
+        if (arr.length < p) return null;
+        let e = arr.slice(0, p).reduce((s, v) => s + v, 0) / p;
+        const k = 2 / (p + 1);
+        for (let i = p; i < arr.length; i++) e = arr[i] * k + e * (1 - k);
         return e;
       }
-      if(closes.length<slow+sig) return null;
-      const fastEma = ema(closes,fast);
-      const slowEma = ema(closes,slow);
-      if(fastEma==null||slowEma==null) return null;
-      const macdLine = fastEma-slowEma;
+      if (closes.length < slow + sig) return null;
+      const fastEma = ema(closes, fast);
+      const slowEma = ema(closes, slow);
+      if (fastEma == null || slowEma == null) return null;
+      const macdLine = fastEma - slowEma;
       // approximate signal from last `sig` macd values
-      const recent = closes.slice(-(slow+sig));
+      const recent = closes.slice(-(slow + sig));
       const macdSeries = [];
-      for(let i=slow-1;i<recent.length;i++){
-        const f=ema(recent.slice(0,i+1),fast);
-        const s=ema(recent.slice(0,i+1),slow);
-        if(f!=null&&s!=null) macdSeries.push(f-s);
+      for (let i = slow - 1; i < recent.length; i++) {
+        const f = ema(recent.slice(0, i + 1), fast);
+        const s = ema(recent.slice(0, i + 1), slow);
+        if (f != null && s != null) macdSeries.push(f - s);
       }
-      const signal=ema(macdSeries,sig);
-      const hist=signal!=null?macdLine-signal:null;
-      return {macd:macdLine, signal, hist};
+      const signal = ema(macdSeries, sig);
+      const hist = signal != null ? macdLine - signal : null;
+      return { macd: macdLine, signal, hist };
     }
-    function ovStoch(candles, kPeriod=14, dPeriod=3) {
-      if(!candles||candles.length<kPeriod) return null;
-      const kValues=[];
-      for(let i=kPeriod-1;i<candles.length;i++){
-        const slice=candles.slice(i-kPeriod+1,i+1);
-        const h=Math.max(...slice.map(c=>c.high||c.h||0));
-        const l=Math.min(...slice.map(c=>c.low||c.l||9999));
-        const c=candles[i].close||candles[i].c||0;
-        kValues.push(h===l?50:((c-l)/(h-l))*100);
+    function ovStoch(candles, kPeriod = 14, dPeriod = 3) {
+      if (!candles || candles.length < kPeriod) return null;
+      const kValues = [];
+      for (let i = kPeriod - 1; i < candles.length; i++) {
+        const slice = candles.slice(i - kPeriod + 1, i + 1);
+        const h = Math.max(...slice.map(c => c.high || c.h || 0));
+        const l = Math.min(...slice.map(c => c.low || c.l || 9999));
+        const c = candles[i].close || candles[i].c || 0;
+        kValues.push(h === l ? 50 : ((c - l) / (h - l)) * 100);
       }
-      const d=kValues.length>=dPeriod?kValues.slice(-dPeriod).reduce((s,v)=>s+v,0)/dPeriod:null;
-      return {k:kValues[kValues.length-1], d};
+      const d = kValues.length >= dPeriod ? kValues.slice(-dPeriod).reduce((s, v) => s + v, 0) / dPeriod : null;
+      return { k: kValues[kValues.length - 1], d };
     }
     function ovSlope5(arr) {
-      if(!arr||arr.length<2) return 0;
-      const s=arr.slice(-5);
-      if(s.length<2) return 0;
-      return (s[s.length-1]-s[0])/(s.length-1);
+      if (!arr || arr.length < 2) return 0;
+      const s = arr.slice(-5);
+      if (s.length < 2) return 0;
+      return (s[s.length - 1] - s[0]) / (s.length - 1);
     }
-    function ovPctDiff(a,b) {
-      if(!Number.isFinite(a)||!Number.isFinite(b)||b===0) return null;
-      return ((a-b)/b)*100;
+    function ovPctDiff(a, b) {
+      if (!Number.isFinite(a) || !Number.isFinite(b) || b === 0) return null;
+      return ((a - b) / b) * 100;
     }
     function ovPctileRank(arr, val) {
-      if(!arr||arr.length===0) return null;
-      const below=arr.filter(v=>v<val).length;
-      return (below/arr.length)*100;
+      if (!arr || arr.length === 0) return null;
+      const below = arr.filter(v => v < val).length;
+      return (below / arr.length) * 100;
     }
-    function ovClamp(v,mn=0,mx=100){return Math.max(mn,Math.min(mx,v));}
-    function ovFmtPct(v,d=2,showSign=false){
-      if(v==null||isNaN(v)) return '--';
-      const s=(showSign&&v>0)?'+':'';
-      return s+Number(v).toFixed(d)+'%';
+    function ovClamp(v, mn = 0, mx = 100) { return Math.max(mn, Math.min(mx, v)); }
+    function ovFmtPct(v, d = 2, showSign = false) {
+      if (v == null || isNaN(v)) return '--';
+      const s = (showSign && v > 0) ? '+' : '';
+      return s + Number(v).toFixed(d) + '%';
     }
-    function ovN(v,def=null){const n=Number(v);return Number.isFinite(n)?n:def;}
+    function ovN(v, def = null) { const n = Number(v); return Number.isFinite(n) ? n : def; }
 
-    function ovStartOfDay(d){const r=new Date(d);r.setHours(0,0,0,0);return r;}
-    function ovParseDate(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
-    function ovDaysUntil(dateStr){
-      const today=ovStartOfDay(new Date());
-      const target=ovStartOfDay(ovParseDate(dateStr));
-      return Math.round((target-today)/(1000*60*60*24));
+    function ovStartOfDay(d) { const r = new Date(d); r.setHours(0, 0, 0, 0); return r; }
+    function ovParseDate(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+    function ovDaysUntil(dateStr) {
+      const today = ovStartOfDay(new Date());
+      const target = ovStartOfDay(ovParseDate(dateStr));
+      return Math.round((target - today) / (1000 * 60 * 60 * 24));
     }
-    function ovNextEvent(dates){
-      const today=ovStartOfDay(new Date());
-      const upcoming=dates.map(d=>({d,days:ovDaysUntil(d)})).filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);
-      return upcoming[0]||null;
+    function ovNextEvent(dates) {
+      const today = ovStartOfDay(new Date());
+      const upcoming = dates.map(d => ({ d, days: ovDaysUntil(d) })).filter(x => x.days >= 0).sort((a, b) => a.days - b.days);
+      return upcoming[0] || null;
     }
-    function ovNextCpi(){
-      const today=ovStartOfDay(new Date());
-      const upcoming=CPI_EVENTS.map(e=>({...e,days:ovDaysUntil(e.releaseDate)})).filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);
-      return upcoming[0]||null;
+    function ovNextCpi() {
+      const today = ovStartOfDay(new Date());
+      const upcoming = CPI_EVENTS.map(e => ({ ...e, days: ovDaysUntil(e.releaseDate) })).filter(x => x.days >= 0).sort((a, b) => a.days - b.days);
+      return upcoming[0] || null;
     }
-    function ovNextJolts(){
-      const today=ovStartOfDay(new Date());
-      const upcoming=JOLTS_EVENTS.map(e=>({...e,days:ovDaysUntil(e.releaseDate)})).filter(x=>x.days>=0).sort((a,b)=>a.days-b.days);
-      return upcoming[0]||null;
+    function ovNextJolts() {
+      const today = ovStartOfDay(new Date());
+      const upcoming = JOLTS_EVENTS.map(e => ({ ...e, days: ovDaysUntil(e.releaseDate) })).filter(x => x.days >= 0).sort((a, b) => a.days - b.days);
+      return upcoming[0] || null;
     }
-    function ovEventTone(days){
-      if(days===0||days===1) return 'danger';
-      if(days<=4) return 'caution';
-      if(days<=9) return 'caution';
+    function ovEventTone(days) {
+      if (days === 0 || days === 1) return 'danger';
+      if (days <= 4) return 'caution';
+      if (days <= 9) return 'caution';
       return 'positive';
     }
 
     // ── Tone helpers ──
-    function ovScoreTone(s){
-      if(s>=60) return 'positive';
-      if(s>=40) return 'caution';
+    function ovScoreTone(s) {
+      if (s >= 60) return 'positive';
+      if (s >= 40) return 'caution';
       return 'danger';
     }
-    function ovBarColor(s){
-      if(s>=60) return 'linear-gradient(90deg,var(--green),rgba(34,221,136,0.5))';
-      if(s>=40) return 'linear-gradient(90deg,var(--orange),rgba(255,140,59,0.5))';
+    function ovBarColor(s) {
+      if (s >= 60) return 'linear-gradient(90deg,var(--green),rgba(34,221,136,0.5))';
+      if (s >= 40) return 'linear-gradient(90deg,var(--orange),rgba(255,140,59,0.5))';
       return 'linear-gradient(90deg,var(--red),rgba(255,59,92,0.5))';
     }
-    function ovSetMetric(valId, tagId, value, tag, tone){
-      const vEl=document.getElementById(valId);
-      const tEl=document.getElementById(tagId);
-      if(vEl) vEl.textContent=value;
-      if(tEl){tEl.textContent=tag;tEl.className='ov-metric-tag '+tone;}
+    function ovSetMetric(valId, tagId, value, tag, tone) {
+      const vEl = document.getElementById(valId);
+      const tEl = document.getElementById(tagId);
+      if (vEl) vEl.textContent = value;
+      if (tEl) { tEl.textContent = tag; tEl.className = 'ov-metric-tag ' + tone; }
     }
-    function ovSetScore(scoreId, barId, score){
-      const sEl=document.getElementById(scoreId);
-      const bEl=document.getElementById(barId);
-      const tone=ovScoreTone(score);
-      const colorCls=tone==='positive'?'tone-pos':tone==='caution'?'tone-caution':'tone-neg';
-      if(sEl){sEl.textContent=Math.round(score);sEl.className='ov-panel-score-badge '+colorCls;}
-      if(bEl){bEl.style.width=score+'%';bEl.style.background=ovBarColor(score);}
+    function ovSetScore(scoreId, barId, score) {
+      const sEl = document.getElementById(scoreId);
+      const bEl = document.getElementById(barId);
+      const tone = ovScoreTone(score);
+      const colorCls = tone === 'positive' ? 'tone-pos' : tone === 'caution' ? 'tone-caution' : 'tone-neg';
+      if (sEl) { sEl.textContent = Math.round(score); sEl.className = 'ov-panel-score-badge ' + colorCls; }
+      if (bEl) { bEl.style.width = score + '%'; bEl.style.background = ovBarColor(score); }
     }
-    function ovSetWeightBar(scoreId,barId,score){
-      const sEl=document.getElementById(scoreId);
-      const bEl=document.getElementById(barId);
-      const tone=ovScoreTone(score);
-      const colorCls=tone==='positive'?'tone-pos':tone==='caution'?'tone-caution':'tone-neg';
-      if(sEl){sEl.textContent=Math.round(score);sEl.className='ov-weight-score '+colorCls;}
-      if(bEl){bEl.style.width=score+'%';bEl.style.background=tone==='positive'?'var(--green)':tone==='caution'?'var(--orange)':'var(--red)';}
+    function ovSetWeightBar(scoreId, barId, score) {
+      const sEl = document.getElementById(scoreId);
+      const bEl = document.getElementById(barId);
+      const tone = ovScoreTone(score);
+      const colorCls = tone === 'positive' ? 'tone-pos' : tone === 'caution' ? 'tone-caution' : 'tone-neg';
+      if (sEl) { sEl.textContent = Math.round(score); sEl.className = 'ov-weight-score ' + colorCls; }
+      if (bEl) { bEl.style.width = score + '%'; bEl.style.background = tone === 'positive' ? 'var(--green)' : tone === 'caution' ? 'var(--orange)' : 'var(--red)'; }
     }
 
     // ── Core scoring (Schwab data) ──
     function ovComputeScores(quotes, histMap) {
       const get = (sym) => {
         const q = quotes[sym];
-        if(!q) return {};
+        if (!q) return {};
         return q.quote || q;
       };
       function closes(sym) {
-        return (histMap[sym]||[]).map(c=>ovN(c.close)).filter(Number.isFinite);
+        return (histMap[sym] || []).map(c => ovN(c.close)).filter(Number.isFinite);
       }
       function allCandles(sym) {
-        return (histMap[sym]||[]).filter(c=>ovN(c.close)!=null);
+        return (histMap[sym] || []).filter(c => ovN(c.close) != null);
       }
-      function lastClose(sym){ const a=closes(sym); return a.length?a[a.length-1]:null; }
-      function pctChg1d(sym){ const a=closes(sym); if(a.length<2) return null; return ovPctDiff(a[a.length-1],a[a.length-2]); }
-      function perf5d(sym){ const a=closes(sym); if(a.length<6) return null; return ovPctDiff(a[a.length-1],a[a.length-6]); }
-      function perf1m(sym){ const a=closes(sym); if(a.length<22) return null; return ovPctDiff(a[a.length-1],a[a.length-22]); }
+      function lastClose(sym) { const a = closes(sym); return a.length ? a[a.length - 1] : null; }
+      function pctChg1d(sym) { const a = closes(sym); if (a.length < 2) return null; return ovPctDiff(a[a.length - 1], a[a.length - 2]); }
+      function perf5d(sym) { const a = closes(sym); if (a.length < 6) return null; return ovPctDiff(a[a.length - 1], a[a.length - 6]); }
+      function perf1m(sym) { const a = closes(sym); if (a.length < 22) return null; return ovPctDiff(a[a.length - 1], a[a.length - 22]); }
 
       // Core prices
       const spyQ = get('SPY');
@@ -3805,542 +4649,542 @@
       const tltCloses = closes('TLT');
 
       // Moving averages
-      const spy20=ovSma(spyCloses,20), spy50=ovSma(spyCloses,50), spy200=ovSma(spyCloses,200);
-      const qqq20=ovSma(qqqCloses,20), qqq50=ovSma(qqqCloses,50), qqq200=ovSma(qqqCloses,200);
+      const spy20 = ovSma(spyCloses, 20), spy50 = ovSma(spyCloses, 50), spy200 = ovSma(spyCloses, 200);
+      const qqq20 = ovSma(qqqCloses, 20), qqq50 = ovSma(qqqCloses, 50), qqq200 = ovSma(qqqCloses, 200);
 
       // Regime
-      function classifyRegime(s,s20,s50,s200,q,q20,q50,q200){
-        let sc=0;
-        if(s>s20)sc+=1;else sc-=1;
-        if(s>s50)sc+=2;else sc-=2;
-        if(s>s200)sc+=3;else sc-=3;
-        if(s20>s50)sc+=2;else sc-=2;
-        if(s50>s200)sc+=3;else sc-=3;
-        if(s>s20&&s20>s50&&s50>s200)sc+=2;
-        if(s<s20&&s20<s50&&s50<s200)sc-=2;
-        if(q>q20)sc+=1;else sc-=1;
-        if(q>q50)sc+=2;else sc-=2;
-        if(q>q200)sc+=3;else sc-=3;
-        if(q20>q50)sc+=2;else sc-=2;
-        if(q50>q200)sc+=3;else sc-=3;
-        if(q>q20&&q20>q50&&q50>q200)sc+=2;
-        if(q<q20&&q20<q50&&q50<q200)sc-=2;
-        if(sc>=16)return'strong_uptrend';
-        if(sc>=7)return'uptrend';
-        if(sc<=-16)return'strong_downtrend';
-        if(sc<=-7)return'downtrend';
-        return'chop';
+      function classifyRegime(s, s20, s50, s200, q, q20, q50, q200) {
+        let sc = 0;
+        if (s > s20) sc += 1; else sc -= 1;
+        if (s > s50) sc += 2; else sc -= 2;
+        if (s > s200) sc += 3; else sc -= 3;
+        if (s20 > s50) sc += 2; else sc -= 2;
+        if (s50 > s200) sc += 3; else sc -= 3;
+        if (s > s20 && s20 > s50 && s50 > s200) sc += 2;
+        if (s < s20 && s20 < s50 && s50 < s200) sc -= 2;
+        if (q > q20) sc += 1; else sc -= 1;
+        if (q > q50) sc += 2; else sc -= 2;
+        if (q > q200) sc += 3; else sc -= 3;
+        if (q20 > q50) sc += 2; else sc -= 2;
+        if (q50 > q200) sc += 3; else sc -= 3;
+        if (q > q20 && q20 > q50 && q50 > q200) sc += 2;
+        if (q < q20 && q20 < q50 && q50 < q200) sc -= 2;
+        if (sc >= 16) return 'strong_uptrend';
+        if (sc >= 7) return 'uptrend';
+        if (sc <= -16) return 'strong_downtrend';
+        if (sc <= -7) return 'downtrend';
+        return 'chop';
       }
-      const validRegime = [SPY,spy20,spy50,spy200,QQQ,qqq20,qqq50,qqq200].every(Number.isFinite);
-      const regime = validRegime ? classifyRegime(SPY,spy20,spy50,spy200,QQQ,qqq20,qqq50,qqq200) : 'chop';
+      const validRegime = [SPY, spy20, spy50, spy200, QQQ, qqq20, qqq50, qqq200].every(Number.isFinite);
+      const regime = validRegime ? classifyRegime(SPY, spy20, spy50, spy200, QQQ, qqq20, qqq50, qqq200) : 'chop';
 
       // VIX indicators
-      const vixSlope=ovSlope5(vixCloses);
-      const vixPct=ovPctileRank(vixCloses.slice(-252),VIX)||50;
-      const vix20sma=ovSma(vixCloses,20);
-      const vixTermRatio=(VIX&&vix20sma)?VIX/vix20sma:null;
+      const vixSlope = ovSlope5(vixCloses);
+      const vixPct = ovPctileRank(vixCloses.slice(-252), VIX) || 50;
+      const vix20sma = ovSma(vixCloses, 20);
+      const vixTermRatio = (VIX && vix20sma) ? VIX / vix20sma : null;
 
       // SMA cross
-      const sma2050Diff=ovPctDiff(spy20,spy50);
+      const sma2050Diff = ovPctDiff(spy20, spy50);
 
       // 20D trend direction
-      const closesFor20d=spyCloses.slice(-25);
-      const sma20series=closesFor20d.map((_,i)=>i>=19?closesFor20d.slice(i-19,i+1).reduce((s,v)=>s+v,0)/20:null).filter(v=>v!=null);
-      const latestSma20=sma20series[sma20series.length-1]||null;
-      const prev5Sma20=sma20series.length>=6?sma20series[sma20series.length-6]:null;
-      const trendDir20d=(latestSma20&&prev5Sma20&&prev5Sma20!==0)?ovPctDiff(latestSma20,prev5Sma20):null;
+      const closesFor20d = spyCloses.slice(-25);
+      const sma20series = closesFor20d.map((_, i) => i >= 19 ? closesFor20d.slice(i - 19, i + 1).reduce((s, v) => s + v, 0) / 20 : null).filter(v => v != null);
+      const latestSma20 = sma20series[sma20series.length - 1] || null;
+      const prev5Sma20 = sma20series.length >= 6 ? sma20series[sma20series.length - 6] : null;
+      const trendDir20d = (latestSma20 && prev5Sma20 && prev5Sma20 !== 0) ? ovPctDiff(latestSma20, prev5Sma20) : null;
 
       // RSI
-      const spyRsi=ovRsi(spyCloses);
+      const spyRsi = ovRsi(spyCloses);
 
       // MACD
-      const macdResult=ovMacd(spyCloses);
+      const macdResult = ovMacd(spyCloses);
 
       // Stochastic
-      const stochResult=ovStoch(allCandles('SPY'));
+      const stochResult = ovStoch(allCandles('SPY'));
 
       // Sector data
-      const sectors=SECTOR_ORDER.map(sym=>{
-        const c=closes(sym);
-        const last=lastClose(sym)||ovN(get(sym).lastPrice);
-        const ma20=ovSma(c,20),ma50=ovSma(c,50),ma200=ovSma(c,200);
+      const sectors = SECTOR_ORDER.map(sym => {
+        const c = closes(sym);
+        const last = lastClose(sym) || ovN(get(sym).lastPrice);
+        const ma20 = ovSma(c, 20), ma50 = ovSma(c, 50), ma200 = ovSma(c, 200);
         return {
-          symbol:sym, price:last,
-          dayChangePct:pctChg1d(sym)||ovN(get(sym).netPercentChange),
-          perf5d:perf5d(sym), perf1m:perf1m(sym),
-          above20:Number.isFinite(last)&&Number.isFinite(ma20)&&last>ma20,
-          above50:Number.isFinite(last)&&Number.isFinite(ma50)&&last>ma50,
-          above200:Number.isFinite(last)&&Number.isFinite(ma200)&&last>ma200
+          symbol: sym, price: last,
+          dayChangePct: pctChg1d(sym) || ovN(get(sym).netPercentChange),
+          perf5d: perf5d(sym), perf1m: perf1m(sym),
+          above20: Number.isFinite(last) && Number.isFinite(ma20) && last > ma20,
+          above50: Number.isFinite(last) && Number.isFinite(ma50) && last > ma50,
+          above200: Number.isFinite(last) && Number.isFinite(ma200) && last > ma200
         };
       });
-      const sectorsWithPerf=[...sectors].sort((a,b)=>ovN(b.perf5d,-999)-ovN(a.perf5d,-999));
-      const leader=sectorsWithPerf[0]||{};
-      const laggard=sectorsWithPerf[sectorsWithPerf.length-1]||{};
-      const n=Math.max(1,sectors.length);
-      const pctAbove20=Math.round((sectors.filter(s=>s.above20).length/n)*100);
-      const pctAbove50=Math.round((sectors.filter(s=>s.above50).length/n)*100);
-      const pctAbove200=Math.round((sectors.filter(s=>s.above200).length/n)*100);
-      const perfSpread=ovN(leader.perf5d,0)-ovN(laggard.perf5d,0);
-      const higherHighsPct=Math.round((sectors.filter(s=>ovN(s.dayChangePct,0)>0&&ovN(s.perf5d,0)>0).length/n)*100);
+      const sectorsWithPerf = [...sectors].sort((a, b) => ovN(b.perf5d, -999) - ovN(a.perf5d, -999));
+      const leader = sectorsWithPerf[0] || {};
+      const laggard = sectorsWithPerf[sectorsWithPerf.length - 1] || {};
+      const n = Math.max(1, sectors.length);
+      const pctAbove20 = Math.round((sectors.filter(s => s.above20).length / n) * 100);
+      const pctAbove50 = Math.round((sectors.filter(s => s.above50).length / n) * 100);
+      const pctAbove200 = Math.round((sectors.filter(s => s.above200).length / n) * 100);
+      const perfSpread = ovN(leader.perf5d, 0) - ovN(laggard.perf5d, 0);
+      const higherHighsPct = Math.round((sectors.filter(s => ovN(s.dayChangePct, 0) > 0 && ovN(s.perf5d, 0) > 0).length / n) * 100);
 
       // ── Scoring ──
       // Volatility
-      let volScore=100;
-      volScore-=Math.max(0,Math.min(60,(VIX-14)*3));
-      if(vixSlope>0) volScore-=Math.min(15,vixSlope*2);
-      if(vixPct>70) volScore-=Math.min(20,(vixPct-70)*0.4);
-      volScore=ovClamp(volScore);
+      let volScore = 100;
+      volScore -= Math.max(0, Math.min(60, (VIX - 14) * 3));
+      if (vixSlope > 0) volScore -= Math.min(15, vixSlope * 2);
+      if (vixPct > 70) volScore -= Math.min(20, (vixPct - 70) * 0.4);
+      volScore = ovClamp(volScore);
 
       // Trend
-      function scoreVsMA(price,ma,full,near){
-        const d=ovPctDiff(price,ma);
-        if(d==null) return 0;
-        if(d>=0) return full;
-        if(d>=-1.5) return near;
-        if(d>=-3.5) return Math.round(near*0.5);
+      function scoreVsMA(price, ma, full, near) {
+        const d = ovPctDiff(price, ma);
+        if (d == null) return 0;
+        if (d >= 0) return full;
+        if (d >= -1.5) return near;
+        if (d >= -3.5) return Math.round(near * 0.5);
         return 0;
       }
-      let trendScore=0;
-      trendScore+=scoreVsMA(SPY,spy20,15,8);
-      let s2050=7;
-      if(sma2050Diff!=null){
-        if(sma2050Diff>2)s2050=15;
-        else if(sma2050Diff>0.5)s2050=12;
-        else if(sma2050Diff>-0.5)s2050=7;
-        else if(sma2050Diff>-2)s2050=3;
-        else s2050=0;
+      let trendScore = 0;
+      trendScore += scoreVsMA(SPY, spy20, 15, 8);
+      let s2050 = 7;
+      if (sma2050Diff != null) {
+        if (sma2050Diff > 2) s2050 = 15;
+        else if (sma2050Diff > 0.5) s2050 = 12;
+        else if (sma2050Diff > -0.5) s2050 = 7;
+        else if (sma2050Diff > -2) s2050 = 3;
+        else s2050 = 0;
       }
-      trendScore+=s2050;
-      trendScore+=scoreVsMA(SPY,spy200,22,12);
-      let td20=6;
-      if(trendDir20d!=null){
-        if(trendDir20d>1.5)td20=13;
-        else if(trendDir20d>0.5)td20=10;
-        else if(trendDir20d>-0.5)td20=6;
-        else if(trendDir20d>-1.5)td20=2;
-        else td20=0;
+      trendScore += s2050;
+      trendScore += scoreVsMA(SPY, spy200, 22, 12);
+      let td20 = 6;
+      if (trendDir20d != null) {
+        if (trendDir20d > 1.5) td20 = 13;
+        else if (trendDir20d > 0.5) td20 = 10;
+        else if (trendDir20d > -0.5) td20 = 6;
+        else if (trendDir20d > -1.5) td20 = 2;
+        else td20 = 0;
       }
-      trendScore+=td20;
-      trendScore+=scoreVsMA(QQQ,qqq20,10,5);
-      trendScore+=scoreVsMA(QQQ,qqq200,15,8);
-      const regimeMap={strong_uptrend:10,uptrend:7,chop:4,downtrend:2,strong_downtrend:0};
-      trendScore+=regimeMap[regime]??4;
-      trendScore=ovClamp(trendScore);
+      trendScore += td20;
+      trendScore += scoreVsMA(QQQ, qqq20, 10, 5);
+      trendScore += scoreVsMA(QQQ, qqq200, 15, 8);
+      const regimeMap = { strong_uptrend: 10, uptrend: 7, chop: 4, downtrend: 2, strong_downtrend: 0 };
+      trendScore += regimeMap[regime] ?? 4;
+      trendScore = ovClamp(trendScore);
 
       // Breadth
-      let breadthScore=0;
-      breadthScore+=pctAbove20*0.20;
-      breadthScore+=pctAbove50*0.20;
-      breadthScore+=pctAbove200*0.15;
+      let breadthScore = 0;
+      breadthScore += pctAbove20 * 0.20;
+      breadthScore += pctAbove50 * 0.20;
+      breadthScore += pctAbove200 * 0.15;
       // approximated adPercent from sectors (proxy since no full market breadth)
-      const sectorAdPct=(sectors.filter(s=>ovN(s.dayChangePct,0)>0).length/n)*100;
-      breadthScore+=Math.min(25,sectorAdPct*0.25);
-      breadthScore+=Math.min(10,sectorAdPct*0.10);
-      const thrustBull=pctAbove20>70&&sectorAdPct>60;
-      const thrustBear=pctAbove20<30&&sectorAdPct<40;
-      breadthScore+=thrustBull?5:thrustBear?0:2;
-      breadthScore+=ovN(leader.perf5d,0)>0&&ovN(laggard.perf5d,0)>-3?5:2;
-      breadthScore=ovClamp(breadthScore);
+      const sectorAdPct = (sectors.filter(s => ovN(s.dayChangePct, 0) > 0).length / n) * 100;
+      breadthScore += Math.min(25, sectorAdPct * 0.25);
+      breadthScore += Math.min(10, sectorAdPct * 0.10);
+      const thrustBull = pctAbove20 > 70 && sectorAdPct > 60;
+      const thrustBear = pctAbove20 < 30 && sectorAdPct < 40;
+      breadthScore += thrustBull ? 5 : thrustBear ? 0 : 2;
+      breadthScore += ovN(leader.perf5d, 0) > 0 && ovN(laggard.perf5d, 0) > -3 ? 5 : 2;
+      breadthScore = ovClamp(breadthScore);
 
       // Momentum
-      const sectorSpreadScore=Math.min(25,Math.max(0,perfSpread*4+10));
-      const breadthParticScore=Math.min(20,Math.max(0,pctAbove20*0.20));
-      const leaderStrScore=Math.min(15,Math.max(0,(ovN(leader.perf5d,0)+2)*3));
-      const sectorPartScore=Math.min(10,Math.max(0,higherHighsPct*0.10));
+      const sectorSpreadScore = Math.min(25, Math.max(0, perfSpread * 4 + 10));
+      const breadthParticScore = Math.min(20, Math.max(0, pctAbove20 * 0.20));
+      const leaderStrScore = Math.min(15, Math.max(0, (ovN(leader.perf5d, 0) + 2) * 3));
+      const sectorPartScore = Math.min(10, Math.max(0, higherHighsPct * 0.10));
 
-      let rsiScore=50;
-      if(spyRsi!=null){
-        if(spyRsi<30)rsiScore=35;else if(spyRsi<40)rsiScore=45;else if(spyRsi<50)rsiScore=50;
-        else if(spyRsi<60)rsiScore=60;else if(spyRsi<70)rsiScore=75;else if(spyRsi<80)rsiScore=65;
-        else rsiScore=35;
+      let rsiScore = 50;
+      if (spyRsi != null) {
+        if (spyRsi < 30) rsiScore = 35; else if (spyRsi < 40) rsiScore = 45; else if (spyRsi < 50) rsiScore = 50;
+        else if (spyRsi < 60) rsiScore = 60; else if (spyRsi < 70) rsiScore = 75; else if (spyRsi < 80) rsiScore = 65;
+        else rsiScore = 35;
       }
-      let macdScore=50;
-      if(macdResult){
-        const {macd:m,signal:sg,hist:h}=macdResult;
-        if(m>sg&&h>0){macdScore=h>Math.abs(m)*0.1?85:70;}
-        else if(m>sg){macdScore=60;}
-        else if(m<sg&&h<0){macdScore=Math.abs(h)>Math.abs(m)*0.1?15:30;}
-        else{macdScore=40;}
+      let macdScore = 50;
+      if (macdResult) {
+        const { macd: m, signal: sg, hist: h } = macdResult;
+        if (m > sg && h > 0) { macdScore = h > Math.abs(m) * 0.1 ? 85 : 70; }
+        else if (m > sg) { macdScore = 60; }
+        else if (m < sg && h < 0) { macdScore = Math.abs(h) > Math.abs(m) * 0.1 ? 15 : 30; }
+        else { macdScore = 40; }
       }
-      let stochScore=50;
-      if(stochResult){
-        const{k,d}=stochResult;
-        if(k<20&&k>d)stochScore=70;
-        else if(k<20)stochScore=30;
-        else if(k>80&&k<d)stochScore=30;
-        else if(k>80)stochScore=45;
-        else if(k>d)stochScore=65;
-        else stochScore=40;
+      let stochScore = 50;
+      if (stochResult) {
+        const { k, d } = stochResult;
+        if (k < 20 && k > d) stochScore = 70;
+        else if (k < 20) stochScore = 30;
+        else if (k > 80 && k < d) stochScore = 30;
+        else if (k > 80) stochScore = 45;
+        else if (k > d) stochScore = 65;
+        else stochScore = 40;
       }
-      let momentumScore=sectorSpreadScore+breadthParticScore+leaderStrScore+sectorPartScore+
-        rsiScore*0.10+macdScore*0.10+stochScore*0.05;
-      momentumScore=ovClamp(momentumScore);
+      let momentumScore = sectorSpreadScore + breadthParticScore + leaderStrScore + sectorPartScore +
+        rsiScore * 0.10 + macdScore * 0.10 + stochScore * 0.05;
+      momentumScore = ovClamp(momentumScore);
 
       // Macro
-      const tenYearTrend=ovSlope5(tnxCloses);
-      const uupTrend=ovSlope5(uupCloses);
-      const fomc=ovNextEvent(FOMC_DATES);
-      const cpi=ovNextCpi();
-      const jolts=ovNextJolts();
-      let macroScore=60;
-      if(tenYearTrend>0) macroScore-=Math.min(15,tenYearTrend*1.5);
-      if(tenYearTrend>2) macroScore-=6;
-      if(uupTrend>0) macroScore-=Math.min(8,uupTrend*2);
-      if(uupTrend<0) macroScore+=Math.min(4,Math.abs(uupTrend)*1.25);
-      if(fomc){
-        if(fomc.days===0||fomc.days===1)macroScore-=15;
-        else if(fomc.days<=4)macroScore-=5;
-        else if(fomc.days<=9)macroScore-=2;
+      const tenYearTrend = ovSlope5(tnxCloses);
+      const uupTrend = ovSlope5(uupCloses);
+      const fomc = ovNextEvent(FOMC_DATES);
+      const cpi = ovNextCpi();
+      const jolts = ovNextJolts();
+      let macroScore = 60;
+      if (tenYearTrend > 0) macroScore -= Math.min(15, tenYearTrend * 1.5);
+      if (tenYearTrend > 2) macroScore -= 6;
+      if (uupTrend > 0) macroScore -= Math.min(8, uupTrend * 2);
+      if (uupTrend < 0) macroScore += Math.min(4, Math.abs(uupTrend) * 1.25);
+      if (fomc) {
+        if (fomc.days === 0 || fomc.days === 1) macroScore -= 15;
+        else if (fomc.days <= 4) macroScore -= 5;
+        else if (fomc.days <= 9) macroScore -= 2;
       }
-      if(cpi){
-        if(cpi.days===0||cpi.days===1)macroScore-=12;
-        else if(cpi.days<=4)macroScore-=4;
-        else if(cpi.days<=9)macroScore-=2;
+      if (cpi) {
+        if (cpi.days === 0 || cpi.days === 1) macroScore -= 12;
+        else if (cpi.days <= 4) macroScore -= 4;
+        else if (cpi.days <= 9) macroScore -= 2;
       }
-      if(jolts){
-        if(jolts.days===0||jolts.days===1)macroScore-=8;
-        else if(jolts.days<=4)macroScore-=2;
-        else if(jolts.days<=9)macroScore-=1;
+      if (jolts) {
+        if (jolts.days === 0 || jolts.days === 1) macroScore -= 8;
+        else if (jolts.days <= 4) macroScore -= 2;
+        else if (jolts.days <= 9) macroScore -= 1;
       }
-      macroScore=ovClamp(macroScore);
+      macroScore = ovClamp(macroScore);
 
-      const tnxDayChg=pctChg1d('$TNX')||ovN(get('$TNX').netPercentChange);
-      const uupDayChg=pctChg1d('UUP')||ovN(get('UUP').netPercentChange);
-      const tltDayChg=pctChg1d('TLT')||ovN(get('TLT').netPercentChange);
+      const tnxDayChg = pctChg1d('$TNX') || ovN(get('$TNX').netPercentChange);
+      const uupDayChg = pctChg1d('UUP') || ovN(get('UUP').netPercentChange);
+      const tltDayChg = pctChg1d('TLT') || ovN(get('TLT').netPercentChange);
 
       return {
-        volScore,trendScore,breadthScore,momentumScore,macroScore,
-        VIX,SPY,QQQ,TNX,UUP,TLT,
-        spy20,spy50,spy200,qqq20,qqq50,qqq200,
-        regime,vixSlope,vixPct,vixTermRatio,sma2050Diff,trendDir20d,
-        spyRsi,macdResult,stochResult,
-        pctAbove20,pctAbove50,pctAbove200,sectorAdPct,
-        thrustBull,thrustBear,leader,laggard,perfSpread,
-        tnxDayChg,uupDayChg,tltDayChg,tenYearTrend,uupTrend,
-        fomc,cpi,jolts,
-        sectors:sectorsWithPerf,
-        spyCandles:(histMap['SPY']||[])
+        volScore, trendScore, breadthScore, momentumScore, macroScore,
+        VIX, SPY, QQQ, TNX, UUP, TLT,
+        spy20, spy50, spy200, qqq20, qqq50, qqq200,
+        regime, vixSlope, vixPct, vixTermRatio, sma2050Diff, trendDir20d,
+        spyRsi, macdResult, stochResult,
+        pctAbove20, pctAbove50, pctAbove200, sectorAdPct,
+        thrustBull, thrustBear, leader, laggard, perfSpread,
+        tnxDayChg, uupDayChg, tltDayChg, tenYearTrend, uupTrend,
+        fomc, cpi, jolts,
+        sectors: sectorsWithPerf,
+        spyCandles: (histMap['SPY'] || [])
       };
     }
 
     function ovCompositeScore(scores) {
-      const w=OV_TRADE_WEIGHTS[ovState.mode]||OV_TRADE_WEIGHTS.swing;
-      const total=w.volatility+w.trend+w.breadth+w.momentum+w.macro;
+      const w = OV_TRADE_WEIGHTS[ovState.mode] || OV_TRADE_WEIGHTS.swing;
+      const total = w.volatility + w.trend + w.breadth + w.momentum + w.macro;
       return (
-        scores.volScore*w.volatility+
-        scores.trendScore*w.trend+
-        scores.breadthScore*w.breadth+
-        scores.momentumScore*w.momentum+
-        scores.macroScore*w.macro
-      )/total;
+        scores.volScore * w.volatility +
+        scores.trendScore * w.trend +
+        scores.breadthScore * w.breadth +
+        scores.momentumScore * w.momentum +
+        scores.macroScore * w.macro
+      ) / total;
     }
 
-    function ovVerdict(composite){
-      if(composite>=70)return{text:'YES \u2014 TRADE',cls:'YES'};
-      if(composite>=55)return{text:'SELECTIVE',cls:'SELECTIVE'};
-      if(composite>=40)return{text:'CAUTION',cls:'CAUTION'};
-      if(composite>=25)return{text:'REDUCE',cls:'REDUCE'};
-      return{text:'SIT OUT',cls:'SITOUT'};
+    function ovVerdict(composite) {
+      if (composite >= 70) return { text: 'YES \u2014 TRADE', cls: 'YES' };
+      if (composite >= 55) return { text: 'SELECTIVE', cls: 'SELECTIVE' };
+      if (composite >= 40) return { text: 'CAUTION', cls: 'CAUTION' };
+      if (composite >= 25) return { text: 'REDUCE', cls: 'REDUCE' };
+      return { text: 'SIT OUT', cls: 'SITOUT' };
     }
 
     // ── Render functions ──
-    function ovRenderRing(composite,scores){
-      const circumference=2*Math.PI*56;
-      const offset=circumference-(composite/100)*circumference;
-      const arc=document.getElementById('ov-ring-arc');
-      if(arc){
-        arc.style.strokeDashoffset=offset;
-        arc.style.stroke=composite>=60?'var(--green)':composite>=40?'var(--orange)':'var(--red)';
+    function ovRenderRing(composite, scores) {
+      const circumference = 2 * Math.PI * 56;
+      const offset = circumference - (composite / 100) * circumference;
+      const arc = document.getElementById('ov-ring-arc');
+      if (arc) {
+        arc.style.strokeDashoffset = offset;
+        arc.style.stroke = composite >= 60 ? 'var(--green)' : composite >= 40 ? 'var(--orange)' : 'var(--red)';
       }
-      const scoreEl=document.getElementById('ov-ring-score');
-      if(scoreEl) scoreEl.textContent=Math.round(composite);
-      const verdictEl=document.getElementById('ov-ring-verdict');
-      const v=ovVerdict(composite);
-      if(verdictEl){verdictEl.textContent=v.text;verdictEl.className='ov-ring-verdict '+v.cls;}
-      const modeEl=document.getElementById('ov-ring-mode');
-      if(modeEl) modeEl.textContent=ovState.mode.toUpperCase();
+      const scoreEl = document.getElementById('ov-ring-score');
+      if (scoreEl) scoreEl.textContent = Math.round(composite);
+      const verdictEl = document.getElementById('ov-ring-verdict');
+      const v = ovVerdict(composite);
+      if (verdictEl) { verdictEl.textContent = v.text; verdictEl.className = 'ov-ring-verdict ' + v.cls; }
+      const modeEl = document.getElementById('ov-ring-mode');
+      if (modeEl) modeEl.textContent = ovState.mode.toUpperCase();
 
       // Weight bars
-      ovSetWeightBar('ovscore-vol','ovbar-vol',scores.volScore);
-      ovSetWeightBar('ovscore-trend','ovbar-trend',scores.trendScore);
-      ovSetWeightBar('ovscore-breadth','ovbar-breadth',scores.breadthScore);
-      ovSetWeightBar('ovscore-mom','ovbar-mom',scores.momentumScore);
-      ovSetWeightBar('ovscore-macro','ovbar-macro',scores.macroScore);
+      ovSetWeightBar('ovscore-vol', 'ovbar-vol', scores.volScore);
+      ovSetWeightBar('ovscore-trend', 'ovbar-trend', scores.trendScore);
+      ovSetWeightBar('ovscore-breadth', 'ovbar-breadth', scores.breadthScore);
+      ovSetWeightBar('ovscore-mom', 'ovbar-mom', scores.momentumScore);
+      ovSetWeightBar('ovscore-macro', 'ovbar-macro', scores.macroScore);
     }
 
-    function ovRenderVolatility(sc){
-      ovSetScore('ovpanel-vol-score','ovpanel-vol-bar',sc.volScore);
+    function ovRenderVolatility(sc) {
+      ovSetScore('ovpanel-vol-score', 'ovpanel-vol-bar', sc.volScore);
       // VIX level
-      const vixTone=sc.VIX<20?'positive':sc.VIX<25?'caution':sc.VIX<30?'danger':'danger';
-      const vixTag=sc.VIX<20?'Normal':sc.VIX<25?'Elevated':sc.VIX<30?'High':'Extreme';
-      ovSetMetric('ovm-vix','ovt-vix',sc.VIX!=null?sc.VIX.toFixed(2):'--',vixTag,vixTone);
+      const vixTone = sc.VIX < 20 ? 'positive' : sc.VIX < 25 ? 'caution' : sc.VIX < 30 ? 'danger' : 'danger';
+      const vixTag = sc.VIX < 20 ? 'Normal' : sc.VIX < 25 ? 'Elevated' : sc.VIX < 30 ? 'High' : 'Extreme';
+      ovSetMetric('ovm-vix', 'ovt-vix', sc.VIX != null ? sc.VIX.toFixed(2) : '--', vixTag, vixTone);
       // VIX slope
-      const slopeTag=sc.vixSlope>0?'Rising':'Falling';
-      const slopeTone=sc.vixSlope>0?'danger':'positive';
-      ovSetMetric('ovm-vix-slope','ovt-vix-slope',sc.vixSlope!=null?sc.vixSlope.toFixed(3):'--',slopeTag,slopeTone);
+      const slopeTag = sc.vixSlope > 0 ? 'Rising' : 'Falling';
+      const slopeTone = sc.vixSlope > 0 ? 'danger' : 'positive';
+      ovSetMetric('ovm-vix-slope', 'ovt-vix-slope', sc.vixSlope != null ? sc.vixSlope.toFixed(3) : '--', slopeTag, slopeTone);
       // VIX term ratio
-      const termTone=sc.vixTermRatio&&sc.vixTermRatio>1.1?'danger':sc.vixTermRatio&&sc.vixTermRatio<0.9?'positive':'neutral';
-      const termTag=sc.vixTermRatio&&sc.vixTermRatio>1.1?'Contango':sc.vixTermRatio&&sc.vixTermRatio<0.9?'Backwardation':'Normal';
-      ovSetMetric('ovm-vix-term','ovt-vix-term',sc.vixTermRatio!=null?sc.vixTermRatio.toFixed(2):'--',termTag,termTone);
+      const termTone = sc.vixTermRatio && sc.vixTermRatio > 1.1 ? 'danger' : sc.vixTermRatio && sc.vixTermRatio < 0.9 ? 'positive' : 'neutral';
+      const termTag = sc.vixTermRatio && sc.vixTermRatio > 1.1 ? 'Contango' : sc.vixTermRatio && sc.vixTermRatio < 0.9 ? 'Backwardation' : 'Normal';
+      ovSetMetric('ovm-vix-term', 'ovt-vix-term', sc.vixTermRatio != null ? sc.vixTermRatio.toFixed(2) : '--', termTag, termTone);
       // VIX percentile
-      const pctTone=sc.vixPct>70?'danger':sc.vixPct>50?'caution':'positive';
-      const pctTag=sc.vixPct>70?'High Pctile':sc.vixPct>50?'Mid':'Low Pctile';
-      ovSetMetric('ovm-vix-pct','ovt-vix-pct',sc.vixPct!=null?Math.round(sc.vixPct)+'%':'--',pctTag,pctTone);
+      const pctTone = sc.vixPct > 70 ? 'danger' : sc.vixPct > 50 ? 'caution' : 'positive';
+      const pctTag = sc.vixPct > 70 ? 'High Pctile' : sc.vixPct > 50 ? 'Mid' : 'Low Pctile';
+      ovSetMetric('ovm-vix-pct', 'ovt-vix-pct', sc.vixPct != null ? Math.round(sc.vixPct) + '%' : '--', pctTag, pctTone);
       // Est P/C
-      const pc=sc.VIX!=null?(sc.VIX/15).toFixed(2):null;
-      const pcTone=sc.VIX>25?'danger':sc.VIX>18?'caution':'positive';
-      ovSetMetric('ovm-pc','ovt-pc',pc||'--',sc.VIX>25?'Fear':'Moderate',pcTone);
+      const pc = sc.VIX != null ? (sc.VIX / 15).toFixed(2) : null;
+      const pcTone = sc.VIX > 25 ? 'danger' : sc.VIX > 18 ? 'caution' : 'positive';
+      ovSetMetric('ovm-pc', 'ovt-pc', pc || '--', sc.VIX > 25 ? 'Fear' : 'Moderate', pcTone);
     }
 
-    function ovRenderTrend(sc){
-      ovSetScore('ovpanel-trend-score','ovpanel-trend-bar',sc.trendScore);
-      const regimeLabels={strong_uptrend:'Str Uptrend',uptrend:'Uptrend',chop:'Chop',downtrend:'Downtrend',strong_downtrend:'Str Downtrend'};
-      const regimeTones={strong_uptrend:'positive',uptrend:'positive',chop:'caution',downtrend:'danger',strong_downtrend:'danger'};
-      ovSetMetric('ovm-regime','ovt-regime',regimeLabels[sc.regime]||sc.regime,sc.regime?'Active':'--',regimeTones[sc.regime]||'neutral');
-      function trendRow(valId,tagId,price,ma){
-        const d=ovPctDiff(price,ma);
-        const txt=d!=null?(d>0?'+':'')+d.toFixed(1)+'%':'--';
-        const tone=d==null?'neutral':Math.abs(d)<=0.5?'caution':d>0?'positive':'danger';
-        const tag=d==null?'--':Math.abs(d)<=0.5?'At MA':d>0?'Above':'Below';
-        ovSetMetric(valId,tagId,txt,tag,tone);
+    function ovRenderTrend(sc) {
+      ovSetScore('ovpanel-trend-score', 'ovpanel-trend-bar', sc.trendScore);
+      const regimeLabels = { strong_uptrend: 'Str Uptrend', uptrend: 'Uptrend', chop: 'Chop', downtrend: 'Downtrend', strong_downtrend: 'Str Downtrend' };
+      const regimeTones = { strong_uptrend: 'positive', uptrend: 'positive', chop: 'caution', downtrend: 'danger', strong_downtrend: 'danger' };
+      ovSetMetric('ovm-regime', 'ovt-regime', regimeLabels[sc.regime] || sc.regime, sc.regime ? 'Active' : '--', regimeTones[sc.regime] || 'neutral');
+      function trendRow(valId, tagId, price, ma) {
+        const d = ovPctDiff(price, ma);
+        const txt = d != null ? (d > 0 ? '+' : '') + d.toFixed(1) + '%' : '--';
+        const tone = d == null ? 'neutral' : Math.abs(d) <= 0.5 ? 'caution' : d > 0 ? 'positive' : 'danger';
+        const tag = d == null ? '--' : Math.abs(d) <= 0.5 ? 'At MA' : d > 0 ? 'Above' : 'Below';
+        ovSetMetric(valId, tagId, txt, tag, tone);
       }
-      trendRow('ovm-spy20','ovt-spy20',sc.SPY,sc.spy20);
-      trendRow('ovm-spy50','ovt-spy50',sc.SPY,sc.spy50);
-      trendRow('ovm-spy200','ovt-spy200',sc.SPY,sc.spy200);
-      trendRow('ovm-qqq20','ovt-qqq20',sc.QQQ,sc.qqq20);
+      trendRow('ovm-spy20', 'ovt-spy20', sc.SPY, sc.spy20);
+      trendRow('ovm-spy50', 'ovt-spy50', sc.SPY, sc.spy50);
+      trendRow('ovm-spy200', 'ovt-spy200', sc.SPY, sc.spy200);
+      trendRow('ovm-qqq20', 'ovt-qqq20', sc.QQQ, sc.qqq20);
       // 20/50 cross
-      const crossTxt=sc.sma2050Diff!=null?(sc.sma2050Diff>0?'+':'')+sc.sma2050Diff.toFixed(1)+'%':'--';
-      const crossTone=sc.sma2050Diff==null?'neutral':sc.sma2050Diff>2?'positive':sc.sma2050Diff>-0.5?'caution':'danger';
-      const crossTag=sc.sma2050Diff==null?'--':sc.sma2050Diff>2?'Golden X':sc.sma2050Diff>0?'Above':sc.sma2050Diff>-2?'Below':'Death X';
-      ovSetMetric('ovm-cross','ovt-cross',crossTxt,crossTag,crossTone);
+      const crossTxt = sc.sma2050Diff != null ? (sc.sma2050Diff > 0 ? '+' : '') + sc.sma2050Diff.toFixed(1) + '%' : '--';
+      const crossTone = sc.sma2050Diff == null ? 'neutral' : sc.sma2050Diff > 2 ? 'positive' : sc.sma2050Diff > -0.5 ? 'caution' : 'danger';
+      const crossTag = sc.sma2050Diff == null ? '--' : sc.sma2050Diff > 2 ? 'Golden X' : sc.sma2050Diff > 0 ? 'Above' : sc.sma2050Diff > -2 ? 'Below' : 'Death X';
+      ovSetMetric('ovm-cross', 'ovt-cross', crossTxt, crossTag, crossTone);
     }
 
-    function ovRenderBreadth(sc){
-      ovSetScore('ovpanel-breadth-score','ovpanel-breadth-bar',sc.breadthScore);
-      function bRow(valId,tagId,pct){
-        const tone=pct>60?'positive':pct>40?'caution':'danger';
-        const tag=pct>60?'Bullish':pct>40?'Mixed':'Bearish';
-        ovSetMetric(valId,tagId,Math.round(pct)+'%',tag,tone);
+    function ovRenderBreadth(sc) {
+      ovSetScore('ovpanel-breadth-score', 'ovpanel-breadth-bar', sc.breadthScore);
+      function bRow(valId, tagId, pct) {
+        const tone = pct > 60 ? 'positive' : pct > 40 ? 'caution' : 'danger';
+        const tag = pct > 60 ? 'Bullish' : pct > 40 ? 'Mixed' : 'Bearish';
+        ovSetMetric(valId, tagId, Math.round(pct) + '%', tag, tone);
       }
-      bRow('ovm-above20','ovt-above20',sc.pctAbove20);
-      bRow('ovm-above50','ovt-above50',sc.pctAbove50);
-      bRow('ovm-above200','ovt-above200',sc.pctAbove200);
-      const thrustTag=sc.thrustBull?'Bullish Thrust':sc.thrustBear?'Washout':'Neutral';
-      const thrustTone=sc.thrustBull?'positive':sc.thrustBear?'danger':'neutral';
-      ovSetMetric('ovm-thrust','ovt-thrust',thrustTag,thrustTag,thrustTone);
+      bRow('ovm-above20', 'ovt-above20', sc.pctAbove20);
+      bRow('ovm-above50', 'ovt-above50', sc.pctAbove50);
+      bRow('ovm-above200', 'ovt-above200', sc.pctAbove200);
+      const thrustTag = sc.thrustBull ? 'Bullish Thrust' : sc.thrustBear ? 'Washout' : 'Neutral';
+      const thrustTone = sc.thrustBull ? 'positive' : sc.thrustBear ? 'danger' : 'neutral';
+      ovSetMetric('ovm-thrust', 'ovt-thrust', thrustTag, thrustTag, thrustTone);
     }
 
-    function ovRenderMomentum(sc){
-      ovSetScore('ovpanel-mom-score','ovpanel-mom-bar',sc.momentumScore);
-      const rsi=sc.spyRsi;
-      const rsiTone=rsi==null?'neutral':rsi>70?'danger':rsi>55?'positive':rsi<30?'danger':'caution';
-      const rsiTag=rsi==null?'--':rsi>70?'Overbought':rsi>55?'Bullish':rsi<30?'Oversold':'Neutral';
-      ovSetMetric('ovm-rsi','ovt-rsi',rsi!=null?rsi.toFixed(0):'--',rsiTag,rsiTone);
+    function ovRenderMomentum(sc) {
+      ovSetScore('ovpanel-mom-score', 'ovpanel-mom-bar', sc.momentumScore);
+      const rsi = sc.spyRsi;
+      const rsiTone = rsi == null ? 'neutral' : rsi > 70 ? 'danger' : rsi > 55 ? 'positive' : rsi < 30 ? 'danger' : 'caution';
+      const rsiTag = rsi == null ? '--' : rsi > 70 ? 'Overbought' : rsi > 55 ? 'Bullish' : rsi < 30 ? 'Oversold' : 'Neutral';
+      ovSetMetric('ovm-rsi', 'ovt-rsi', rsi != null ? rsi.toFixed(0) : '--', rsiTag, rsiTone);
       // MACD
-      const mr=sc.macdResult;
-      const macdTxt=mr?mr.macd.toFixed(2):'--';
-      const macdTone=mr&&mr.macd>mr.signal&&mr.hist>0?'positive':mr&&mr.macd<mr.signal&&mr.hist<0?'danger':'caution';
-      const macdTag=mr&&mr.macd>mr.signal?'Bullish':mr&&mr.macd<mr.signal?'Bearish':'Neutral';
-      ovSetMetric('ovm-macd','ovt-macd',macdTxt,macdTag,macdTone);
+      const mr = sc.macdResult;
+      const macdTxt = mr ? mr.macd.toFixed(2) : '--';
+      const macdTone = mr && mr.macd > mr.signal && mr.hist > 0 ? 'positive' : mr && mr.macd < mr.signal && mr.hist < 0 ? 'danger' : 'caution';
+      const macdTag = mr && mr.macd > mr.signal ? 'Bullish' : mr && mr.macd < mr.signal ? 'Bearish' : 'Neutral';
+      ovSetMetric('ovm-macd', 'ovt-macd', macdTxt, macdTag, macdTone);
       // Stoch
-      const sr=sc.stochResult;
-      const stochTxt=sr?Math.round(sr.k):'--';
-      const stochTone=sr&&sr.k<20?'positive':sr&&sr.k>80?'danger':'caution';
-      const stochTag=sr&&sr.k<20?'Oversold':sr&&sr.k>80?'Overbought':'Neutral';
-      ovSetMetric('ovm-stoch','ovt-stoch',stochTxt,stochTag,stochTone);
+      const sr = sc.stochResult;
+      const stochTxt = sr ? Math.round(sr.k) : '--';
+      const stochTone = sr && sr.k < 20 ? 'positive' : sr && sr.k > 80 ? 'danger' : 'caution';
+      const stochTag = sr && sr.k < 20 ? 'Oversold' : sr && sr.k > 80 ? 'Overbought' : 'Neutral';
+      ovSetMetric('ovm-stoch', 'ovt-stoch', stochTxt, stochTag, stochTone);
       // Leader
-      const lp=ovN(sc.leader?.perf5d);
-      const lTone=lp>1?'positive':lp>-1?'caution':'danger';
-      ovSetMetric('ovm-leader','ovt-leader',sc.leader?.symbol||'--',lp!=null?ovFmtPct(lp,1,true):'--',lTone);
+      const lp = ovN(sc.leader?.perf5d);
+      const lTone = lp > 1 ? 'positive' : lp > -1 ? 'caution' : 'danger';
+      ovSetMetric('ovm-leader', 'ovt-leader', sc.leader?.symbol || '--', lp != null ? ovFmtPct(lp, 1, true) : '--', lTone);
       // Spread
-      const spTone=sc.perfSpread>5?'positive':sc.perfSpread>2?'caution':'danger';
-      ovSetMetric('ovm-spread','ovt-spread',sc.perfSpread!=null?sc.perfSpread.toFixed(1)+'%':'--',sc.perfSpread>3?'Rotation':'Tight',spTone);
+      const spTone = sc.perfSpread > 5 ? 'positive' : sc.perfSpread > 2 ? 'caution' : 'danger';
+      ovSetMetric('ovm-spread', 'ovt-spread', sc.perfSpread != null ? sc.perfSpread.toFixed(1) + '%' : '--', sc.perfSpread > 3 ? 'Rotation' : 'Tight', spTone);
     }
 
-    function ovRenderMacro(sc){
-      ovSetScore('ovpanel-macro-score','ovpanel-macro-bar',sc.macroScore);
+    function ovRenderMacro(sc) {
+      ovSetScore('ovpanel-macro-score', 'ovpanel-macro-bar', sc.macroScore);
       // TNX
-      const tnxTone=sc.tnxDayChg==null?'neutral':sc.tnxDayChg>0?'danger':'positive';
-      ovSetMetric('ovm-tnx','ovt-tnx',sc.tnxDayChg!=null?ovFmtPct(sc.tnxDayChg,2,true):'--',sc.tnxDayChg>0?'Rising':'Falling',tnxTone);
+      const tnxTone = sc.tnxDayChg == null ? 'neutral' : sc.tnxDayChg > 0 ? 'danger' : 'positive';
+      ovSetMetric('ovm-tnx', 'ovt-tnx', sc.tnxDayChg != null ? ovFmtPct(sc.tnxDayChg, 2, true) : '--', sc.tnxDayChg > 0 ? 'Rising' : 'Falling', tnxTone);
       // UUP
-      const uupTone=sc.uupDayChg==null?'neutral':sc.uupDayChg>0?'danger':'positive';
-      ovSetMetric('ovm-uup','ovt-uup',sc.uupDayChg!=null?ovFmtPct(sc.uupDayChg,2,true):'--',sc.uupDayChg>0?'USD Up':'USD Down',uupTone);
+      const uupTone = sc.uupDayChg == null ? 'neutral' : sc.uupDayChg > 0 ? 'danger' : 'positive';
+      ovSetMetric('ovm-uup', 'ovt-uup', sc.uupDayChg != null ? ovFmtPct(sc.uupDayChg, 2, true) : '--', sc.uupDayChg > 0 ? 'USD Up' : 'USD Down', uupTone);
       // TLT
-      const tltTone=sc.tltDayChg==null?'neutral':sc.tltDayChg>0?'positive':'danger';
-      ovSetMetric('ovm-tlt','ovt-tlt',sc.tltDayChg!=null?ovFmtPct(sc.tltDayChg,2,true):'--',sc.tltDayChg>0?'Rising':'Falling',tltTone);
+      const tltTone = sc.tltDayChg == null ? 'neutral' : sc.tltDayChg > 0 ? 'positive' : 'danger';
+      ovSetMetric('ovm-tlt', 'ovt-tlt', sc.tltDayChg != null ? ovFmtPct(sc.tltDayChg, 2, true) : '--', sc.tltDayChg > 0 ? 'Rising' : 'Falling', tltTone);
       // FOMC
-      const fomc=sc.fomc;
-      if(fomc){
-        const fTone=ovEventTone(fomc.days);
-        ovSetMetric('ovm-fomc','ovt-fomc',fomc.days+'d',fomc.days<=1?'Tomorrow':fomc.days<=4?'This Week':'Approaching',fTone);
-      } else { ovSetMetric('ovm-fomc','ovt-fomc','--','No Event','neutral'); }
+      const fomc = sc.fomc;
+      if (fomc) {
+        const fTone = ovEventTone(fomc.days);
+        ovSetMetric('ovm-fomc', 'ovt-fomc', fomc.days + 'd', fomc.days <= 1 ? 'Tomorrow' : fomc.days <= 4 ? 'This Week' : 'Approaching', fTone);
+      } else { ovSetMetric('ovm-fomc', 'ovt-fomc', '--', 'No Event', 'neutral'); }
       // CPI
-      const cpi=sc.cpi;
-      if(cpi){
-        const cTone=ovEventTone(cpi.days);
-        ovSetMetric('ovm-cpi','ovt-cpi',cpi.days+'d',cpi.labelMonth+' CPI',cTone);
-      } else { ovSetMetric('ovm-cpi','ovt-cpi','--','No Event','neutral'); }
+      const cpi = sc.cpi;
+      if (cpi) {
+        const cTone = ovEventTone(cpi.days);
+        ovSetMetric('ovm-cpi', 'ovt-cpi', cpi.days + 'd', cpi.labelMonth + ' CPI', cTone);
+      } else { ovSetMetric('ovm-cpi', 'ovt-cpi', '--', 'No Event', 'neutral'); }
       // Geo handled separately
     }
 
-    function ovRenderMacroAlert(sc,geoRisk){
-      const banner=document.getElementById('ov-macro-alert');
-      const textEl=document.getElementById('ov-macro-alert-text');
-      if(!banner||!textEl) return;
-      const parts=[];
-      if(geoRisk&&geoRisk.topic&&geoRisk.topic!=='Normal'){
-        parts.push('Geo Risk: '+geoRisk.topic);
+    function ovRenderMacroAlert(sc, geoRisk) {
+      const banner = document.getElementById('ov-macro-alert');
+      const textEl = document.getElementById('ov-macro-alert-text');
+      if (!banner || !textEl) return;
+      const parts = [];
+      if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {
+        parts.push('Geo Risk: ' + geoRisk.topic);
       }
-      if(sc.fomc&&sc.fomc.days<=7) parts.push('FOMC in '+sc.fomc.days+'d');
-      if(sc.cpi&&sc.cpi.days<=7) parts.push((sc.cpi.labelMonth||'')+(sc.cpi.labelMonth?' ':'')+'CPI in '+sc.cpi.days+'d');
-      if(sc.jolts&&sc.jolts.days<=7) parts.push('JOLTS in '+sc.jolts.days+'d');
-      if(parts.length>0){
-        banner.style.display='flex';
-        banner.className=sc.VIX>30?'danger':'';
-        textEl.textContent='\u26a1 '+parts.join('  |  ');
-        document.getElementById('ov-macro-alert').id='ov-macro-alert';
+      if (sc.fomc && sc.fomc.days <= 7) parts.push('FOMC in ' + sc.fomc.days + 'd');
+      if (sc.cpi && sc.cpi.days <= 7) parts.push((sc.cpi.labelMonth || '') + (sc.cpi.labelMonth ? ' ' : '') + 'CPI in ' + sc.cpi.days + 'd');
+      if (sc.jolts && sc.jolts.days <= 7) parts.push('JOLTS in ' + sc.jolts.days + 'd');
+      if (parts.length > 0) {
+        banner.style.display = 'flex';
+        banner.className = sc.VIX > 30 ? 'danger' : '';
+        textEl.textContent = '\u26a1 ' + parts.join('  |  ');
+        document.getElementById('ov-macro-alert').id = 'ov-macro-alert';
       } else {
-        banner.style.display='none';
+        banner.style.display = 'none';
       }
     }
 
-    function ovRenderExecution(composite,scores){
-      const panelScores={volatility:scores.volScore,trend:scores.trendScore,breadth:scores.breadthScore,momentum:scores.momentumScore,macro:scores.macroScore};
-      let verdict,verdictCls;
-      if(composite>=70){verdict='TRADE LONG';verdictCls='long';}
-      else if(composite>=55){verdict='SELECTIVE LONG';verdictCls='long';}
-      else if(composite>=40){verdict='REDUCED SIZE';verdictCls='caution';}
-      else if(composite>=25){verdict='CAUTION \u2014 HEDGE';verdictCls='caution';}
-      else{verdict='SIT OUT';verdictCls='sit-out';}
-      if(scores.trendScore<30&&scores.momentumScore<35&&composite<40){verdict='TRADE SHORT';verdictCls='short';}
-      const svals=Object.values(panelScores);
-      const bull=svals.filter(s=>s>60).length,bear=svals.filter(s=>s<40).length;
-      let conf='MEDIUM',confCls='medium';
-      if(bull>=4||bear>=4){conf='HIGH';confCls='high';}
-      else if(bull<=1&&bear<=1){conf='LOW';confCls='low';}
-      const VIX=scores.VIX||20;
-      let baseSize=VIX<15?100:VIX<20?85:VIX<25?70:VIX<30?50:VIX<35?35:20;
-      let posSize=Math.max(5,Math.min(100,Math.round(baseSize*(composite/100))));
-      let bias='NEUTRAL',biasCls='neutral';
-      if(scores.trendScore>60&&scores.momentumScore>55){bias='LONG BIAS';biasCls='long-bias';}
-      else if(scores.trendScore<40&&scores.momentumScore<45){bias='SHORT BIAS';biasCls='short-bias';}
-      const sigs=Object.entries(panelScores)
-        .map(([k,s])=>({label:k.charAt(0).toUpperCase()+k.slice(1),score:s}))
-        .sort((a,b)=>Math.abs(b.score-50)-Math.abs(a.score-50))
-        .slice(0,4)
-        .map(({label,score})=>{
-          const icon=score>60?'\u25b2':score<40?'\u25bc':'\u25cf';
-          const tone=score>60?'Bullish':score<40?'Bearish':'Neutral';
+    function ovRenderExecution(composite, scores) {
+      const panelScores = { volatility: scores.volScore, trend: scores.trendScore, breadth: scores.breadthScore, momentum: scores.momentumScore, macro: scores.macroScore };
+      let verdict, verdictCls;
+      if (composite >= 70) { verdict = 'TRADE LONG'; verdictCls = 'long'; }
+      else if (composite >= 55) { verdict = 'SELECTIVE LONG'; verdictCls = 'long'; }
+      else if (composite >= 40) { verdict = 'REDUCED SIZE'; verdictCls = 'caution'; }
+      else if (composite >= 25) { verdict = 'CAUTION \u2014 HEDGE'; verdictCls = 'caution'; }
+      else { verdict = 'SIT OUT'; verdictCls = 'sit-out'; }
+      if (scores.trendScore < 30 && scores.momentumScore < 35 && composite < 40) { verdict = 'TRADE SHORT'; verdictCls = 'short'; }
+      const svals = Object.values(panelScores);
+      const bull = svals.filter(s => s > 60).length, bear = svals.filter(s => s < 40).length;
+      let conf = 'MEDIUM', confCls = 'medium';
+      if (bull >= 4 || bear >= 4) { conf = 'HIGH'; confCls = 'high'; }
+      else if (bull <= 1 && bear <= 1) { conf = 'LOW'; confCls = 'low'; }
+      const VIX = scores.VIX || 20;
+      let baseSize = VIX < 15 ? 100 : VIX < 20 ? 85 : VIX < 25 ? 70 : VIX < 30 ? 50 : VIX < 35 ? 35 : 20;
+      let posSize = Math.max(5, Math.min(100, Math.round(baseSize * (composite / 100))));
+      let bias = 'NEUTRAL', biasCls = 'neutral';
+      if (scores.trendScore > 60 && scores.momentumScore > 55) { bias = 'LONG BIAS'; biasCls = 'long-bias'; }
+      else if (scores.trendScore < 40 && scores.momentumScore < 45) { bias = 'SHORT BIAS'; biasCls = 'short-bias'; }
+      const sigs = Object.entries(panelScores)
+        .map(([k, s]) => ({ label: k.charAt(0).toUpperCase() + k.slice(1), score: s }))
+        .sort((a, b) => Math.abs(b.score - 50) - Math.abs(a.score - 50))
+        .slice(0, 4)
+        .map(({ label, score }) => {
+          const icon = score > 60 ? '\u25b2' : score < 40 ? '\u25bc' : '\u25cf';
+          const tone = score > 60 ? 'Bullish' : score < 40 ? 'Bearish' : 'Neutral';
           return `${icon} ${label}: ${Math.round(score)}/100 \u2014 ${tone}`;
         });
-      const riskNotes=[];
-      if(scores.fomc&&scores.fomc.days<=3) riskNotes.push(`FOMC in ${scores.fomc.days}d \u2014 expect volatility`);
-      if(scores.cpi&&scores.cpi.days<=3) riskNotes.push(`CPI in ${scores.cpi.days}d \u2014 potential whipsaw`);
-      if(VIX>30) riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} \u2014 reduce all`);
-      else if(VIX>25) riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} \u2014 reduce size`);
-      if(scores.spyRsi&&scores.spyRsi>75) riskNotes.push(`RSI overbought at ${Math.round(scores.spyRsi)}`);
-      if(scores.spyRsi&&scores.spyRsi<25) riskNotes.push(`RSI oversold at ${Math.round(scores.spyRsi)}`);
-      if(!riskNotes.length) riskNotes.push('No major risk flags');
+      const riskNotes = [];
+      if (scores.fomc && scores.fomc.days <= 3) riskNotes.push(`FOMC in ${scores.fomc.days}d \u2014 expect volatility`);
+      if (scores.cpi && scores.cpi.days <= 3) riskNotes.push(`CPI in ${scores.cpi.days}d \u2014 potential whipsaw`);
+      if (VIX > 30) riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} \u2014 reduce all`);
+      else if (VIX > 25) riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} \u2014 reduce size`);
+      if (scores.spyRsi && scores.spyRsi > 75) riskNotes.push(`RSI overbought at ${Math.round(scores.spyRsi)}`);
+      if (scores.spyRsi && scores.spyRsi < 25) riskNotes.push(`RSI oversold at ${Math.round(scores.spyRsi)}`);
+      if (!riskNotes.length) riskNotes.push('No major risk flags');
 
-      const vEl=document.getElementById('ov-exec-verdict');
-      if(vEl){vEl.textContent=verdict;vEl.className='ov-exec-verdict '+verdictCls;}
-      const cEl=document.getElementById('ov-exec-conf');
-      if(cEl){cEl.textContent=conf;cEl.className='ov-exec-conf '+confCls;}
-      const sigEl=document.getElementById('ov-exec-signals');
-      if(sigEl) sigEl.innerHTML=sigs.map(s=>`<li>${s}</li>`).join('');
-      const szEl=document.getElementById('ov-exec-size');
-      if(szEl) szEl.textContent=posSize+'%';
-      const bEl=document.getElementById('ov-exec-bias');
-      if(bEl){bEl.textContent=bias;bEl.className='ov-exec-kv-val ov-exec-bias '+biasCls;}
-      const rEl=document.getElementById('ov-exec-risks');
-      if(rEl) rEl.innerHTML=riskNotes.map(n=>`<div class="ov-exec-risk-note">${n}</div>`).join('');
-      const scoreEl=document.getElementById('ov-exec-score');
-      if(scoreEl) scoreEl.textContent=Math.round(composite);
+      const vEl = document.getElementById('ov-exec-verdict');
+      if (vEl) { vEl.textContent = verdict; vEl.className = 'ov-exec-verdict ' + verdictCls; }
+      const cEl = document.getElementById('ov-exec-conf');
+      if (cEl) { cEl.textContent = conf; cEl.className = 'ov-exec-conf ' + confCls; }
+      const sigEl = document.getElementById('ov-exec-signals');
+      if (sigEl) sigEl.innerHTML = sigs.map(s => `<li>${s}</li>`).join('');
+      const szEl = document.getElementById('ov-exec-size');
+      if (szEl) szEl.textContent = posSize + '%';
+      const bEl = document.getElementById('ov-exec-bias');
+      if (bEl) { bEl.textContent = bias; bEl.className = 'ov-exec-kv-val ov-exec-bias ' + biasCls; }
+      const rEl = document.getElementById('ov-exec-risks');
+      if (rEl) rEl.innerHTML = riskNotes.map(n => `<div class="ov-exec-risk-note">${n}</div>`).join('');
+      const scoreEl = document.getElementById('ov-exec-score');
+      if (scoreEl) scoreEl.textContent = Math.round(composite);
     }
 
-    function ovRenderSectors(scores){
-      const container=document.getElementById('ov-sector-list');
-      if(!container) return;
-      const sectors=scores.sectors||[];
-      if(!sectors.length){container.innerHTML='<div style="color:var(--text3);font-size:10px;padding:4px 0;">No sector data</div>';return;}
-      const perfFn=(s)=>{
-        if(ovState.sectorTf==='5d') return ovN(s.perf5d,0);
-        if(ovState.sectorTf==='1m') return ovN(s.perf1m,0);
-        return ovN(s.dayChangePct,0);
+    function ovRenderSectors(scores) {
+      const container = document.getElementById('ov-sector-list');
+      if (!container) return;
+      const sectors = scores.sectors || [];
+      if (!sectors.length) { container.innerHTML = '<div style="color:var(--text3);font-size:10px;padding:4px 0;">No sector data</div>'; return; }
+      const perfFn = (s) => {
+        if (ovState.sectorTf === '5d') return ovN(s.perf5d, 0);
+        if (ovState.sectorTf === '1m') return ovN(s.perf1m, 0);
+        return ovN(s.dayChangePct, 0);
       };
-      const perfs=sectors.map(s=>Math.abs(perfFn(s)));
-      const maxAbs=Math.max(1,...perfs);
-      container.innerHTML=sectors.map(s=>{
-        const p=perfFn(s);
-        const w=Math.max(8,Math.round((Math.abs(p)/maxAbs)*100));
-        const cls=p>=0?'pos':'neg';
-        const valCls=p>=0?'up':'dn';
+      const perfs = sectors.map(s => Math.abs(perfFn(s)));
+      const maxAbs = Math.max(1, ...perfs);
+      container.innerHTML = sectors.map(s => {
+        const p = perfFn(s);
+        const w = Math.max(8, Math.round((Math.abs(p) / maxAbs) * 100));
+        const cls = p >= 0 ? 'pos' : 'neg';
+        const valCls = p >= 0 ? 'up' : 'dn';
         return `<div class="ov-sector-row">
           <span class="ov-sector-sym">${s.symbol}</span>
           <div class="ov-sector-bar-track"><div class="ov-sector-bar-fill ${cls}" style="width:${w}%;"></div></div>
-          <span class="ov-sector-val ${valCls}">${ovFmtPct(p,2,true)}</span>
+          <span class="ov-sector-val ${valCls}">${ovFmtPct(p, 2, true)}</span>
         </div>`;
       }).join('');
     }
 
-    function ovRenderTerminal(composite,scores,geoRisk){
-      const v=ovVerdict(composite);
-      const regimeMap={strong_uptrend:'strong uptrend',uptrend:'uptrend',chop:'choppy',downtrend:'downtrend',strong_downtrend:'strong downtrend'};
-      const regimeText=regimeMap[scores.regime]||'mixed';
-      const lead=composite>=70?'GREEN LIGHT.':composite>=55?'SELECTIVE TAPE.':composite>=40?'CAUTION.':composite>=25?'REDUCE RISK.':'STAND DOWN.';
-      const summaryTone=composite>=55?'positive':composite>=40?'caution':'danger';
-      const summary=composite>=55?
-        `Trend is ${regimeText} with score ${Math.round(composite)}/100. VIX at ${scores.VIX?.toFixed(1)||'--'}. Sectors: ${Math.round(scores.pctAbove20)}% above 20MA. Leader: ${scores.leader?.symbol||'--'}.`:
-        `Mixed environment \u2014 score ${Math.round(composite)}/100. Regime: ${regimeText}. VIX: ${scores.VIX?.toFixed(1)||'--'}. ${Math.round(scores.pctAbove20)}% of sectors above 20MA.`;
+    function ovRenderTerminal(composite, scores, geoRisk) {
+      const v = ovVerdict(composite);
+      const regimeMap = { strong_uptrend: 'strong uptrend', uptrend: 'uptrend', chop: 'choppy', downtrend: 'downtrend', strong_downtrend: 'strong downtrend' };
+      const regimeText = regimeMap[scores.regime] || 'mixed';
+      const lead = composite >= 70 ? 'GREEN LIGHT.' : composite >= 55 ? 'SELECTIVE TAPE.' : composite >= 40 ? 'CAUTION.' : composite >= 25 ? 'REDUCE RISK.' : 'STAND DOWN.';
+      const summaryTone = composite >= 55 ? 'positive' : composite >= 40 ? 'caution' : 'danger';
+      const summary = composite >= 55 ?
+        `Trend is ${regimeText} with score ${Math.round(composite)}/100. VIX at ${scores.VIX?.toFixed(1) || '--'}. Sectors: ${Math.round(scores.pctAbove20)}% above 20MA. Leader: ${scores.leader?.symbol || '--'}.` :
+        `Mixed environment \u2014 score ${Math.round(composite)}/100. Regime: ${regimeText}. VIX: ${scores.VIX?.toFixed(1) || '--'}. ${Math.round(scores.pctAbove20)}% of sectors above 20MA.`;
 
-      const detail1=`Desk read: ${regimeText} | VIX ${scores.VIX?.toFixed(1)||'--'} | ${Math.round(scores.pctAbove20)}% above 20MA | ${Math.round(scores.pctAbove50)}% above 50MA | Leader: ${scores.leader?.symbol||'--'} (${ovFmtPct(scores.leader?.perf5d,1,true)} 5D) | Laggard: ${scores.laggard?.symbol||'--'}`;
-      const playbook=composite>=70?`Playbook: Lean with the ${regimeText}. Prioritize leaders, buy pullbacks, use normal ${ovState.mode} size.`:
-        composite>=55?`Playbook: Stay selective. Trade only the strongest names, tighten entries, moderate size.`:
-        composite>=40?`Playbook: Trade smaller, demand confirmation, avoid chasing late setups.`:
-        composite>=25?`Playbook: Cut exposure, tighten risk, only take exceptional ${ovState.mode} setups.`:
-        `Playbook: No new risk unless tape materially improves. Preserve capital.`;
+      const detail1 = `Desk read: ${regimeText} | VIX ${scores.VIX?.toFixed(1) || '--'} | ${Math.round(scores.pctAbove20)}% above 20MA | ${Math.round(scores.pctAbove50)}% above 50MA | Leader: ${scores.leader?.symbol || '--'} (${ovFmtPct(scores.leader?.perf5d, 1, true)} 5D) | Laggard: ${scores.laggard?.symbol || '--'}`;
+      const playbook = composite >= 70 ? `Playbook: Lean with the ${regimeText}. Prioritize leaders, buy pullbacks, use normal ${ovState.mode} size.` :
+        composite >= 55 ? `Playbook: Stay selective. Trade only the strongest names, tighten entries, moderate size.` :
+          composite >= 40 ? `Playbook: Trade smaller, demand confirmation, avoid chasing late setups.` :
+            composite >= 25 ? `Playbook: Cut exposure, tighten risk, only take exceptional ${ovState.mode} setups.` :
+              `Playbook: No new risk unless tape materially improves. Preserve capital.`;
 
-      const sumEl=document.getElementById('ov-terminal-summary');
-      if(sumEl) sumEl.innerHTML=`<span class="analysis-emphasis ${summaryTone}">${lead}</span> ${summary}`;
-      const d1=document.getElementById('ov-terminal-detail1');
-      if(d1) d1.textContent=detail1;
-      const d2=document.getElementById('ov-terminal-detail2');
-      if(d2) d2.textContent=playbook;
-      const upd=document.getElementById('ov-terminal-updated');
-      if(upd) upd.textContent='Updated '+new Date().toLocaleTimeString();
+      const sumEl = document.getElementById('ov-terminal-summary');
+      if (sumEl) sumEl.innerHTML = `<span class="analysis-emphasis ${summaryTone}">${lead}</span> ${summary}`;
+      const d1 = document.getElementById('ov-terminal-detail1');
+      if (d1) d1.textContent = detail1;
+      const d2 = document.getElementById('ov-terminal-detail2');
+      if (d2) d2.textContent = playbook;
+      const upd = document.getElementById('ov-terminal-updated');
+      if (upd) upd.textContent = 'Updated ' + new Date().toLocaleTimeString();
     }
 
-    function ovRenderGeoRisk(geoRisk){
-      const badgeEl=document.getElementById('ov-geo-risk-badge');
-      const storiesEl=document.getElementById('ov-geo-stories');
+    function ovRenderGeoRisk(geoRisk) {
+      const badgeEl = document.getElementById('ov-geo-risk-badge');
+      const storiesEl = document.getElementById('ov-geo-stories');
 
-      const lvl=geoRisk?.overallRiskLevel||'unknown';
-      const lvlColor=lvl==='high'||lvl==='critical'?'var(--red)':lvl==='medium'?'var(--orange)':'var(--text3)';
-      const lvlBg=lvl==='high'||lvl==='critical'?'rgba(255,59,92,0.12)':lvl==='medium'?'rgba(255,140,59,0.12)':'rgba(122,128,153,0.12)';
-      if(badgeEl){badgeEl.style.color=lvlColor;badgeEl.style.background=lvlBg;badgeEl.textContent=lvl.toUpperCase();}
+      const lvl = geoRisk?.overallRiskLevel || 'unknown';
+      const lvlColor = lvl === 'high' || lvl === 'critical' ? 'var(--red)' : lvl === 'medium' ? 'var(--orange)' : 'var(--text3)';
+      const lvlBg = lvl === 'high' || lvl === 'critical' ? 'rgba(255,59,92,0.12)' : lvl === 'medium' ? 'rgba(255,140,59,0.12)' : 'rgba(122,128,153,0.12)';
+      if (badgeEl) { badgeEl.style.color = lvlColor; badgeEl.style.background = lvlBg; badgeEl.textContent = lvl.toUpperCase(); }
 
       // Also update macro geo metric
-      const geoVal=geoRisk?.topic||'--';
-      const geoTag=geoRisk?.overallRiskLevel?geoRisk.overallRiskLevel.charAt(0).toUpperCase()+geoRisk.overallRiskLevel.slice(1):'No read';
-      const geoTone=lvl==='high'||lvl==='critical'?'danger':lvl==='medium'?'caution':'neutral';
-      ovSetMetric('ovm-geo','ovt-geo',geoVal,geoTag,geoTone);
+      const geoVal = geoRisk?.topic || '--';
+      const geoTag = geoRisk?.overallRiskLevel ? geoRisk.overallRiskLevel.charAt(0).toUpperCase() + geoRisk.overallRiskLevel.slice(1) : 'No read';
+      const geoTone = lvl === 'high' || lvl === 'critical' ? 'danger' : lvl === 'medium' ? 'caution' : 'neutral';
+      ovSetMetric('ovm-geo', 'ovt-geo', geoVal, geoTag, geoTone);
 
-      if(!storiesEl) return;
-      const stories=geoRisk?.stories||[];
-      if(!stories.length){storiesEl.innerHTML='<div style="padding:12px 14px;font-size:10px;color:var(--text3);">No conflict stories available.</div>';return;}
-      storiesEl.innerHTML=stories.slice(0,6).map(story=>{
-        const sev=(story.riskLevel==='high'||story.riskLevel==='critical')?'high':story.riskLevel==='medium'?'medium':'low';
-        const dotColor=sev==='high'?'var(--red)':sev==='medium'?'var(--orange)':'var(--text3)';
-        const dateStr=story.publishedAt?new Date(story.publishedAt).toLocaleDateString([],{month:'short',day:'numeric'}):'-';
-        const desc=(story.summary||story.domain||'').slice(0,200);
-        const href=(/^https?:\/\//i.test(story.url||''))?story.url:'';
-        const inner=`<div class="ov-geo-card-top">
+      if (!storiesEl) return;
+      const stories = geoRisk?.stories || [];
+      if (!stories.length) { storiesEl.innerHTML = '<div style="padding:12px 14px;font-size:10px;color:var(--text3);">No conflict stories available.</div>'; return; }
+      storiesEl.innerHTML = stories.slice(0, 6).map(story => {
+        const sev = (story.riskLevel === 'high' || story.riskLevel === 'critical') ? 'high' : story.riskLevel === 'medium' ? 'medium' : 'low';
+        const dotColor = sev === 'high' ? 'var(--red)' : sev === 'medium' ? 'var(--orange)' : 'var(--text3)';
+        const dateStr = story.publishedAt ? new Date(story.publishedAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : '-';
+        const desc = (story.summary || story.domain || '').slice(0, 200);
+        const href = (/^https?:\/\//i.test(story.url || '')) ? story.url : '';
+        const inner = `<div class="ov-geo-card-top">
           <span class="ov-geo-sev ${sev}"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dotColor};margin-right:3px;"></span>${sev.toUpperCase()}</span>
           <span class="ov-geo-date">${dateStr}</span>
         </div>
-        <div class="ov-geo-headline">${(story.headline||'--').slice(0,120)}</div>
-        ${desc?`<div class="ov-geo-desc">${desc}</div>`:''}`;
-        if(href) return `<a class="ov-geo-card" href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
+        <div class="ov-geo-headline">${(story.headline || '--').slice(0, 120)}</div>
+        ${desc ? `<div class="ov-geo-desc">${desc}</div>` : ''}`;
+        if (href) return `<a class="ov-geo-card" href="${href}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
         return `<div class="ov-geo-card">${inner}</div>`;
       }).join('');
     }
@@ -4377,14 +5221,14 @@
       const now = Date.now();
       let fromMs;
       const tf = ovState.chartTf;
-      if      (tf === '5d')  fromMs = now - 5  * 86400000;
-      else if (tf === '1m')  fromMs = now - 30 * 86400000;
-      else if (tf === '3m')  fromMs = now - 90 * 86400000;
+      if (tf === '5d') fromMs = now - 5 * 86400000;
+      else if (tf === '1m') fromMs = now - 30 * 86400000;
+      else if (tf === '3m') fromMs = now - 90 * 86400000;
       else if (tf === 'ytd') fromMs = new Date(new Date().getFullYear(), 0, 1).getTime();
-      else if (tf === '1y')  fromMs = now - 365 * 86400000;
-      else                   fromMs = now - 90 * 86400000; // default 3m
+      else if (tf === '1y') fromMs = now - 365 * 86400000;
+      else fromMs = now - 90 * 86400000; // default 3m
       const filtered = candles.filter(c => c.datetime >= fromMs);
-      const display  = filtered.length ? filtered : candles.slice(-60);
+      const display = filtered.length ? filtered : candles.slice(-60);
       if (display.length < 2) {
         container.innerHTML = '<div style="padding:12px;font-size:10px;color:var(--text3);">Not enough data</div>';
         return;
@@ -4403,8 +5247,8 @@
       const cx = i => pad.l + i * barStep + barStep / 2;
 
       // ── Price range (include wicks) ──
-      const highs  = display.map(c => c.high);
-      const lows   = display.map(c => c.low);
+      const highs = display.map(c => c.high);
+      const lows = display.map(c => c.low);
       const closes = display.map(c => c.close);
       const rawMin = Math.min(...lows);
       const rawMax = Math.max(...highs);
@@ -4416,20 +5260,20 @@
       const py = p => pad.t + priceH - ((p - minP) / priceRange) * priceH;
 
       // ── Volume range ──
-      const vols   = display.map(c => c.volume || 0);
+      const vols = display.map(c => c.volume || 0);
       const maxVol = Math.max(...vols) || 1;
       const volTop = pad.t + priceH + 6; // top of volume pane
       const vy = v => volTop + volH - (v / maxVol) * volH;
 
       // ── EMAs (computed on full candle set, sliced for display window) ──
       const allCloses = candles.map(c => c.close);
-      const startIdx  = candles.indexOf(display[0]);
-      const ema8all   = calcEMA(allCloses, 8);
-      const ema21all  = calcEMA(allCloses, 21);
-      const ema50all  = calcEMA(allCloses, 50);
-      const ema8   = ema8all.slice(startIdx,  startIdx + n);
-      const ema21  = ema21all.slice(startIdx, startIdx + n);
-      const ema50  = ema50all.slice(startIdx, startIdx + n);
+      const startIdx = candles.indexOf(display[0]);
+      const ema8all = calcEMA(allCloses, 8);
+      const ema21all = calcEMA(allCloses, 21);
+      const ema50all = calcEMA(allCloses, 50);
+      const ema8 = ema8all.slice(startIdx, startIdx + n);
+      const ema21 = ema21all.slice(startIdx, startIdx + n);
+      const ema50 = ema50all.slice(startIdx, startIdx + n);
 
       // Build EMA polyline points
       const emaLine = (arr) => arr
@@ -4443,7 +5287,7 @@
         const p = minP + (priceRange * i / yTicks);
         const y = py(p);
         gridLines += `<line x1="${pad.l}" y1="${y.toFixed(1)}" x2="${W - pad.r}" y2="${y.toFixed(1)}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
-        yLabels   += `<text x="${W - pad.r + 4}" y="${(y + 3.5).toFixed(1)}" fill="rgba(122,128,153,0.8)" font-size="9">${p.toFixed(0)}</text>`;
+        yLabels += `<text x="${W - pad.r + 4}" y="${(y + 3.5).toFixed(1)}" fill="rgba(122,128,153,0.8)" font-size="9">${p.toFixed(0)}</text>`;
       }
 
       // ── X-axis date labels ──
@@ -4465,11 +5309,11 @@
         const fillColor = up ? '#22dd88' : '#ff3b5c';
         const wickColor = up ? '#22dd88' : '#ff3b5c';
         const x = cx(i);
-        const openY  = py(c.open);
+        const openY = py(c.open);
         const closeY = py(c.close);
-        const highY  = py(c.high);
-        const lowY   = py(c.low);
-        const bodyTop    = Math.min(openY, closeY);
+        const highY = py(c.high);
+        const lowY = py(c.low);
+        const bodyTop = Math.min(openY, closeY);
         const bodyBottom = Math.max(openY, closeY);
         const bodyHeight = Math.max(1, bodyBottom - bodyTop);
         const hw = Math.max(1, Math.floor(barW / 2));
@@ -4510,121 +5354,121 @@
     }
 
     // ── Ticker marquee ──
-    function ovInitTicker(){
-      const wrap=document.getElementById('ov-ticker-wrap');
-      const track=document.getElementById('ov-ticker-track');
-      const primary=document.getElementById('ov-ticker-group-primary');
-      if(!track||!primary||track.dataset.ovReady==='true') return;
-      const clone=primary.cloneNode(true);
-      clone.id='ov-ticker-group-clone';
-      clone.querySelectorAll('[id]').forEach(n=>n.removeAttribute('id'));
+    function ovInitTicker() {
+      const wrap = document.getElementById('ov-ticker-wrap');
+      const track = document.getElementById('ov-ticker-track');
+      const primary = document.getElementById('ov-ticker-group-primary');
+      if (!track || !primary || track.dataset.ovReady === 'true') return;
+      const clone = primary.cloneNode(true);
+      clone.id = 'ov-ticker-group-clone';
+      clone.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
       track.appendChild(clone);
-      track.dataset.ovReady='true';
-      ovState.tickerGroupWidth=primary.offsetWidth;
-      wrap.addEventListener('mouseenter',()=>ovState.tickerPaused=true);
-      wrap.addEventListener('mouseleave',()=>ovState.tickerPaused=false);
+      track.dataset.ovReady = 'true';
+      ovState.tickerGroupWidth = primary.offsetWidth;
+      wrap.addEventListener('mouseenter', () => ovState.tickerPaused = true);
+      wrap.addEventListener('mouseleave', () => ovState.tickerPaused = false);
       ovStartTickerAnimation();
-      window.addEventListener('resize',()=>{ovState.tickerGroupWidth=primary.offsetWidth;});
+      window.addEventListener('resize', () => { ovState.tickerGroupWidth = primary.offsetWidth; });
     }
-    function ovStartTickerAnimation(){
-      if(ovState.tickerRafId) cancelAnimationFrame(ovState.tickerRafId);
-      ovState.tickerLastTs=0;
-      const step=(ts)=>{
-        const track=document.getElementById('ov-ticker-track');
-        if(!track||!ovState.tickerGroupWidth){ovState.tickerRafId=requestAnimationFrame(step);return;}
-        if(!ovState.tickerLastTs) ovState.tickerLastTs=ts;
-        const dt=ts-ovState.tickerLastTs;ovState.tickerLastTs=ts;
-        if(!ovState.tickerPaused){
-          ovState.tickerOffset+=(70*dt)/1000;
-          if(ovState.tickerOffset>=ovState.tickerGroupWidth) ovState.tickerOffset-=ovState.tickerGroupWidth;
-          track.style.transform=`translateX(${-ovState.tickerOffset}px)`;
+    function ovStartTickerAnimation() {
+      if (ovState.tickerRafId) cancelAnimationFrame(ovState.tickerRafId);
+      ovState.tickerLastTs = 0;
+      const step = (ts) => {
+        const track = document.getElementById('ov-ticker-track');
+        if (!track || !ovState.tickerGroupWidth) { ovState.tickerRafId = requestAnimationFrame(step); return; }
+        if (!ovState.tickerLastTs) ovState.tickerLastTs = ts;
+        const dt = ts - ovState.tickerLastTs; ovState.tickerLastTs = ts;
+        if (!ovState.tickerPaused) {
+          ovState.tickerOffset += (70 * dt) / 1000;
+          if (ovState.tickerOffset >= ovState.tickerGroupWidth) ovState.tickerOffset -= ovState.tickerGroupWidth;
+          track.style.transform = `translateX(${-ovState.tickerOffset}px)`;
         }
-        ovState.tickerRafId=requestAnimationFrame(step);
+        ovState.tickerRafId = requestAnimationFrame(step);
       };
-      ovState.tickerRafId=requestAnimationFrame(step);
+      ovState.tickerRafId = requestAnimationFrame(step);
     }
-    function ovUpdateTicker(quotes){
-      const TICKER_SYMS=[
-        {sym:'SPY',key:'SPY'},{sym:'QQQ',key:'QQQ'},{sym:'VIX',key:'$VIX'},
-        {sym:'TNX',key:'$TNX'},{sym:'UUP',key:'UUP'},{sym:'TLT',key:'TLT'},
-        {sym:'XLE',key:'XLE'},{sym:'XLF',key:'XLF'},{sym:'XLK',key:'XLK'},
-        {sym:'XLI',key:'XLI'},{sym:'XLC',key:'XLC'},{sym:'XLY',key:'XLY'},
-        {sym:'XLV',key:'XLV'},{sym:'XLRE',key:'XLRE'},{sym:'XLP',key:'XLP'},
-        {sym:'XLB',key:'XLB'},{sym:'XLU',key:'XLU'}
+    function ovUpdateTicker(quotes) {
+      const TICKER_SYMS = [
+        { sym: 'SPY', key: 'SPY' }, { sym: 'QQQ', key: 'QQQ' }, { sym: 'VIX', key: '$VIX' },
+        { sym: 'TNX', key: '$TNX' }, { sym: 'UUP', key: 'UUP' }, { sym: 'TLT', key: 'TLT' },
+        { sym: 'XLE', key: 'XLE' }, { sym: 'XLF', key: 'XLF' }, { sym: 'XLK', key: 'XLK' },
+        { sym: 'XLI', key: 'XLI' }, { sym: 'XLC', key: 'XLC' }, { sym: 'XLY', key: 'XLY' },
+        { sym: 'XLV', key: 'XLV' }, { sym: 'XLRE', key: 'XLRE' }, { sym: 'XLP', key: 'XLP' },
+        { sym: 'XLB', key: 'XLB' }, { sym: 'XLU', key: 'XLU' }
       ];
-      TICKER_SYMS.forEach(({sym,key})=>{
-        const q=quotes[key];
-        if(!q) return;
-        const qd=q.quote||q;
-        const price=ovN(qd.lastPrice)||ovN(qd.closePrice)||ovN(qd.mark);
-        const pct=ovN(qd.netPercentChange);
-        document.querySelectorAll(`[id^="ovt-${sym}-"]`).forEach(el=>{
-          const suffix=el.id.split('-').pop();
-          if(suffix==='price'&&price!=null) el.textContent=price.toFixed(2);
-          if(suffix==='chg'&&pct!=null){
-            el.textContent=(pct>0?'+':'')+pct.toFixed(2)+'%';
-            el.className='ov-tick-chg '+(pct>0?'up':pct<0?'dn':'flat');
+      TICKER_SYMS.forEach(({ sym, key }) => {
+        const q = quotes[key];
+        if (!q) return;
+        const qd = q.quote || q;
+        const price = ovN(qd.lastPrice) || ovN(qd.closePrice) || ovN(qd.mark);
+        const pct = ovN(qd.netPercentChange);
+        document.querySelectorAll(`[id^="ovt-${sym}-"]`).forEach(el => {
+          const suffix = el.id.split('-').pop();
+          if (suffix === 'price' && price != null) el.textContent = price.toFixed(2);
+          if (suffix === 'chg' && pct != null) {
+            el.textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+            el.className = 'ov-tick-chg ' + (pct > 0 ? 'up' : pct < 0 ? 'dn' : 'flat');
           }
         });
       });
     }
 
     // ── Mode + TF controls ──
-    function ovSetMode(mode){
-      ovState.mode=mode;
-      sessionStorage.setItem('ovMode',mode);
-      ['scalp','swing','position'].forEach(m=>{
-        const b=document.getElementById('ovmode-'+m);
-        if(b) b.className='ov-mode-btn'+(m===mode?' active':'');
+    function ovSetMode(mode) {
+      ovState.mode = mode;
+      sessionStorage.setItem('ovMode', mode);
+      ['scalp', 'swing', 'position'].forEach(m => {
+        const b = document.getElementById('ovmode-' + m);
+        if (b) b.className = 'ov-mode-btn' + (m === mode ? ' active' : '');
       });
-      if(ovState.snapshot) ovRerender(ovState.snapshot);
+      if (ovState.snapshot) ovRerender(ovState.snapshot);
     }
-    function ovSetSectorTf(tf,btn){
-      ovState.sectorTf=tf;
-      document.querySelectorAll('.ov-sector-tf-btn').forEach(b=>b.classList.remove('active'));
-      if(btn) btn.classList.add('active');
-      if(ovState.snapshot) ovRenderSectors(ovState.snapshot.scores);
+    function ovSetSectorTf(tf, btn) {
+      ovState.sectorTf = tf;
+      document.querySelectorAll('.ov-sector-tf-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      if (ovState.snapshot) ovRenderSectors(ovState.snapshot.scores);
     }
-    function ovSetChartTf(tf,btn){
-      ovState.chartTf=tf;
-      document.querySelectorAll('.ov-chart-tf-btn').forEach(b=>b.classList.remove('active'));
-      if(btn) btn.classList.add('active');
-      if(ovState.snapshot) ovRenderChart(ovState.snapshot.scores.spyCandles);
+    function ovSetChartTf(tf, btn) {
+      ovState.chartTf = tf;
+      document.querySelectorAll('.ov-chart-tf-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      if (ovState.snapshot) ovRenderChart(ovState.snapshot.scores.spyCandles);
     }
 
-    function ovRerender(snapshot){
-      const {scores,geoRisk}=snapshot;
-      const composite=ovCompositeScore(scores);
-      ovRenderRing(composite,scores);
+    function ovRerender(snapshot) {
+      const { scores, geoRisk } = snapshot;
+      const composite = ovCompositeScore(scores);
+      ovRenderRing(composite, scores);
       ovRenderVolatility(scores);
       ovRenderTrend(scores);
       ovRenderBreadth(scores);
       ovRenderMomentum(scores);
       ovRenderMacro(scores);
-      ovRenderMacroAlert(scores,geoRisk);
-      ovRenderExecution(composite,scores);
+      ovRenderMacroAlert(scores, geoRisk);
+      ovRenderExecution(composite, scores);
       ovRenderSectors(scores);
       ovRenderChart(scores.spyCandles);
       ovRenderGeoRisk(geoRisk);
-      ovRenderTerminal(composite,scores,geoRisk);
+      ovRenderTerminal(composite, scores, geoRisk);
     }
 
-    async function fetchGeoRisk(){
+    async function fetchGeoRisk() {
       try {
-        const r=await fetch(GEO_RISK_API_URL,{headers:{'x-rapidapi-host':GEO_RISK_API_HOST,'x-rapidapi-key':GEO_RISK_API_KEY}});
-        if(!r.ok) return null;
-        const d=await r.json();
-        const data=d.data||d;
-        const stories=Array.isArray(data.stories)?data.stories:Array.isArray(data)?data:[];
-        const levels=stories.map(s=>s.riskLevel||'low');
-        const hasHigh=levels.some(l=>l==='high'||l==='critical');
-        const hasMed=levels.some(l=>l==='medium');
+        const r = await fetch(GEO_RISK_API_URL, { headers: { 'x-rapidapi-host': GEO_RISK_API_HOST, 'x-rapidapi-key': GEO_RISK_API_KEY } });
+        if (!r.ok) return null;
+        const d = await r.json();
+        const data = d.data || d;
+        const stories = Array.isArray(data.stories) ? data.stories : Array.isArray(data) ? data : [];
+        const levels = stories.map(s => s.riskLevel || 'low');
+        const hasHigh = levels.some(l => l === 'high' || l === 'critical');
+        const hasMed = levels.some(l => l === 'medium');
         return {
-          topic:data.topic||data.subject||stories[0]?.domain||'Geopolitical Risk',
-          overallRiskLevel:hasHigh?'high':hasMed?'medium':'low',
-          overallRiskLevelUi:hasHigh?'danger':hasMed?'caution':'neutral',
-          dominantTone:hasHigh?'elevated':hasMed?'moderate':'calm',
-          stories:stories.slice(0,6)
+          topic: data.topic || data.subject || stories[0]?.domain || 'Geopolitical Risk',
+          overallRiskLevel: hasHigh ? 'high' : hasMed ? 'medium' : 'low',
+          overallRiskLevelUi: hasHigh ? 'danger' : hasMed ? 'caution' : 'neutral',
+          dominantTone: hasHigh ? 'elevated' : hasMed ? 'moderate' : 'calm',
+          stories: stories.slice(0, 6)
         };
       } catch { return null; }
     }
@@ -4653,13 +5497,13 @@
           ovLogTerminalError('QUOTES', 'Quote response returned no symbols. Schwab may have rejected the request.');
         } else {
           // Check for any expected symbols that are missing
-          const expected = ['SPY','QQQ','$VIX','$TNX','UUP','TLT'];
+          const expected = ['SPY', 'QQQ', '$VIX', '$TNX', 'UUP', 'TLT'];
           const missing = expected.filter(s => !quotes[s]);
           if (missing.length) ovLogTerminalError('QUOTES', `Missing symbols in quote response: ${missing.join(', ')}`);
         }
 
         // Warn about any history symbols that came back empty
-        const emptyHist = Object.entries(histMap || {}).filter(([,c]) => !c || c.length === 0).map(([s]) => s);
+        const emptyHist = Object.entries(histMap || {}).filter(([, c]) => !c || c.length === 0).map(([s]) => s);
         if (emptyHist.length) {
           ovLogTerminalError('PRICEHISTORY', `No candle data returned for: ${emptyHist.join(', ')}`);
         }
@@ -4728,7 +5572,7 @@
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 
         await loadMovers();
-      } catch(e){ console.warn('loadOverviewLegacy:', e); }
+      } catch (e) { console.warn('loadOverviewLegacy:', e); }
     }
 
     function gexBar(label, val) {
@@ -4774,7 +5618,7 @@
       }
     }
 
-        // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
     //  3. HEAT SEEKER
     // ═══════════════════════════════════════════════════════
     function setHeatSymbol(el, sym) {
@@ -4948,8 +5792,8 @@
       let rows = flowAllRows.slice();
 
       // Filter
-      if (flowFilter === 'CALL')  rows = rows.filter(r => r.side === 'CALL');
-      else if (flowFilter === 'PUT')   rows = rows.filter(r => r.side === 'PUT');
+      if (flowFilter === 'CALL') rows = rows.filter(r => r.side === 'CALL');
+      else if (flowFilter === 'PUT') rows = rows.filter(r => r.side === 'PUT');
       else if (flowFilter === 'SWEEP') rows = rows.filter(r => r.isSweep);
       else if (flowFilter === 'FLOOR') rows = rows.filter(r => r.isFloor);
 
@@ -4972,11 +5816,11 @@
 
         // Sentiment flags
         let flags = '';
-        if (r.isBullish)  flags += `<span class="flow-flag bullish">BULLISH</span>`;
-        if (r.isBearish)  flags += `<span class="flow-flag bearish">BEARISH</span>`;
-        if (r.isSweep)    flags += `<span class="flow-flag sweep">SWEEP</span>`;
-        if (r.isFloor)    flags += `<span class="flow-flag floor">FLOOR</span>`;
-        if (r.isUnusual)  flags += `<span class="flow-flag unusual">UNUSUAL</span>`;
+        if (r.isBullish) flags += `<span class="flow-flag bullish">BULLISH</span>`;
+        if (r.isBearish) flags += `<span class="flow-flag bearish">BEARISH</span>`;
+        if (r.isSweep) flags += `<span class="flow-flag sweep">SWEEP</span>`;
+        if (r.isFloor) flags += `<span class="flow-flag floor">FLOOR</span>`;
+        if (r.isUnusual) flags += `<span class="flow-flag unusual">UNUSUAL</span>`;
         if (r.isEarnings) flags += `<span class="flow-flag earnings">EARN</span>`;
 
         return `<tr class="flow-row-${r.side.toLowerCase()}">
@@ -5028,18 +5872,18 @@
                 const ask = c.ask ?? 0;
                 const mid = (bid + ask) / 2;
                 const size = c.totalVolume || 0;
-                const oi   = c.openInterest || 0;
+                const oi = c.openInterest || 0;
                 const premium = mid * size * 100;
                 const otmPct = underlyingPrice > 0
                   ? side === 'CALL'
                     ? ((strike - underlyingPrice) / underlyingPrice) * 100
                     : ((underlyingPrice - strike) / underlyingPrice) * 100
                   : null;
-                const isSweep   = size > oi * 0.5 && size > 100;
-                const isFloor   = size >= 5000;
+                const isSweep = size > oi * 0.5 && size > 100;
+                const isFloor = size >= 5000;
                 const isUnusual = size > oi * 2 && oi > 0;
                 const isBullish = side === 'CALL' && ask > 0 && ask >= bid;
-                const isBearish = side === 'PUT'  && ask > 0 && ask >= bid;
+                const isBearish = side === 'PUT' && ask > 0 && ask >= bid;
                 const isEarnings = (c.daysToExpiration ?? 99) <= 7;
                 rows.push({
                   sym, expKey, strike,
@@ -5063,16 +5907,16 @@
         flowAllRows = rows;
 
         // Stats bar
-        const totalPrem  = rows.reduce((s, r) => s + r.premium, 0);
-        const callPrem   = rows.filter(r => r.side === 'CALL').reduce((s, r) => s + r.premium, 0);
-        const putPrem    = rows.filter(r => r.side === 'PUT').reduce((s, r) => s + r.premium, 0);
-        const pcRatio    = callPrem > 0 ? (putPrem / callPrem).toFixed(2) : '—';
+        const totalPrem = rows.reduce((s, r) => s + r.premium, 0);
+        const callPrem = rows.filter(r => r.side === 'CALL').reduce((s, r) => s + r.premium, 0);
+        const putPrem = rows.filter(r => r.side === 'PUT').reduce((s, r) => s + r.premium, 0);
+        const pcRatio = callPrem > 0 ? (putPrem / callPrem).toFixed(2) : '—';
         const sweepCount = rows.filter(r => r.isSweep).length;
 
         document.getElementById('fstat-total').textContent = fmtDollar(totalPrem);
-        document.getElementById('fstat-call').textContent  = fmtDollar(callPrem);
-        document.getElementById('fstat-put').textContent   = fmtDollar(putPrem);
-        document.getElementById('fstat-pc').textContent    = pcRatio;
+        document.getElementById('fstat-call').textContent = fmtDollar(callPrem);
+        document.getElementById('fstat-put').textContent = fmtDollar(putPrem);
+        document.getElementById('fstat-pc').textContent = pcRatio;
         document.getElementById('fstat-count').textContent = rows.length.toLocaleString();
         document.getElementById('fstat-sweeps').textContent = sweepCount;
 
@@ -5609,44 +6453,44 @@
     //  STRATEGY BUILDER — state
     // ═══════════════════════════════════════════════════════
     let stratChain = null;    // loaded chain data
-    let stratSpot  = 0;       // underlying price
+    let stratSpot = 0;       // underlying price
     let stratStrikes = [];    // sorted unique strike list
 
     const STRAT_CONFIGS = {
       condor: {
         label: 'Iron Condor',
         legs: [
-          { id: 'lp_long',  dir: 'BUY',  type: 'put',  label: 'BUY PUT (Long)',   color: 'var(--purple)',  offsetPct: -0.08 },
-          { id: 'lp_short', dir: 'SELL', type: 'put',  label: 'SELL PUT (Short)', color: 'var(--purple)',  offsetPct: -0.03 },
-          { id: 'lc_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Short)',color: 'var(--accent)',  offsetPct:  0.03 },
-          { id: 'lc_long',  dir: 'BUY',  type: 'call', label: 'BUY CALL (Long)',  color: 'var(--accent)',  offsetPct:  0.08 },
+          { id: 'lp_long', dir: 'BUY', type: 'put', label: 'BUY PUT (Long)', color: 'var(--purple)', offsetPct: -0.08 },
+          { id: 'lp_short', dir: 'SELL', type: 'put', label: 'SELL PUT (Short)', color: 'var(--purple)', offsetPct: -0.03 },
+          { id: 'lc_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Short)', color: 'var(--accent)', offsetPct: 0.03 },
+          { id: 'lc_long', dir: 'BUY', type: 'call', label: 'BUY CALL (Long)', color: 'var(--accent)', offsetPct: 0.08 },
         ]
       },
       straddle: {
         label: 'Straddle',
         legs: [
           { id: 'sc_atm', dir: 'BUY', type: 'call', label: 'BUY CALL (ATM)', color: 'var(--accent)', offsetPct: 0 },
-          { id: 'sp_atm', dir: 'BUY', type: 'put',  label: 'BUY PUT (ATM)',  color: 'var(--purple)', offsetPct: 0 },
+          { id: 'sp_atm', dir: 'BUY', type: 'put', label: 'BUY PUT (ATM)', color: 'var(--purple)', offsetPct: 0 },
         ]
       },
       strangle: {
         label: 'Strangle',
         legs: [
-          { id: 'sg_call', dir: 'BUY', type: 'call', label: 'BUY CALL (OTM)', color: 'var(--accent)', offsetPct:  0.05 },
-          { id: 'sg_put',  dir: 'BUY', type: 'put',  label: 'BUY PUT (OTM)',  color: 'var(--purple)', offsetPct: -0.05 },
+          { id: 'sg_call', dir: 'BUY', type: 'call', label: 'BUY CALL (OTM)', color: 'var(--accent)', offsetPct: 0.05 },
+          { id: 'sg_put', dir: 'BUY', type: 'put', label: 'BUY PUT (OTM)', color: 'var(--purple)', offsetPct: -0.05 },
         ]
       },
       call_spread: {
         label: 'Call Spread',
         legs: [
-          { id: 'cs_long',  dir: 'BUY',  type: 'call', label: 'BUY CALL (Lower)', color: 'var(--accent)', offsetPct:  0.0 },
-          { id: 'cs_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Upper)',color: 'var(--accent)', offsetPct:  0.05 },
+          { id: 'cs_long', dir: 'BUY', type: 'call', label: 'BUY CALL (Lower)', color: 'var(--accent)', offsetPct: 0.0 },
+          { id: 'cs_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Upper)', color: 'var(--accent)', offsetPct: 0.05 },
         ]
       },
       put_spread: {
         label: 'Put Spread',
         legs: [
-          { id: 'ps_long',  dir: 'BUY',  type: 'put', label: 'BUY PUT (Upper)',  color: 'var(--purple)', offsetPct: -0.0 },
+          { id: 'ps_long', dir: 'BUY', type: 'put', label: 'BUY PUT (Upper)', color: 'var(--purple)', offsetPct: -0.0 },
           { id: 'ps_short', dir: 'SELL', type: 'put', label: 'SELL PUT (Lower)', color: 'var(--purple)', offsetPct: -0.05 },
         ]
       },
@@ -5688,7 +6532,7 @@
     // Compute P/L at expiry for current legs & strikes
     function stratComputePL(prices) {
       const type = document.getElementById('strat-type').value;
-      const qty  = parseInt(document.getElementById('strat-qty').value) || 1;
+      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
       const config = STRAT_CONFIGS[type];
       if (!config || !stratChain) return prices.map(() => 0);
 
@@ -5716,7 +6560,7 @@
 
     function stratGetLegs() {
       const type = document.getElementById('strat-type').value;
-      const qty  = parseInt(document.getElementById('strat-qty').value) || 1;
+      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
       const config = STRAT_CONFIGS[type];
       if (!config || !stratChain) return [];
       return config.legs.map(leg => {
@@ -5732,7 +6576,7 @@
     function stratRecalc() {
       if (!stratChain) return;
       const legs = stratGetLegs();
-      const qty  = parseInt(document.getElementById('strat-qty').value) || 1;
+      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
 
       // Update leg row prices
       legs.forEach(leg => {
@@ -5751,7 +6595,7 @@
       const prices = Array.from({ length: points }, (_, i) => stratSpot - range + i * (range * 2 / points));
       const pl = stratComputePL(prices);
       const maxProfit = Math.max(...pl);
-      const maxLoss   = Math.min(...pl);
+      const maxLoss = Math.min(...pl);
 
       // Breakevens (zero crossings)
       const bes = [];
@@ -5764,14 +6608,14 @@
 
       // Est. P(profit) — simple % of price range where PL > 0
       const profitCount = pl.filter(v => v > 0).length;
-      const probProfit  = ((profitCount / points) * 100).toFixed(0);
+      const probProfit = ((profitCount / points) * 100).toFixed(0);
 
       document.getElementById('ss-maxprofit').textContent = maxProfit > 0 ? '$' + maxProfit.toFixed(0) : '—';
-      document.getElementById('ss-maxprofit').style.color  = maxProfit > 0 ? 'var(--accent)' : 'var(--text3)';
-      document.getElementById('ss-maxloss').textContent    = '$' + maxLoss.toFixed(0);
-      document.getElementById('ss-be').textContent         = bes.length ? bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—';
-      document.getElementById('ss-prob').textContent       = probProfit + '%';
-      document.getElementById('ss-prob').style.color       = probProfit >= 50 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('ss-maxprofit').style.color = maxProfit > 0 ? 'var(--accent)' : 'var(--text3)';
+      document.getElementById('ss-maxloss').textContent = '$' + maxLoss.toFixed(0);
+      document.getElementById('ss-be').textContent = bes.length ? bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—';
+      document.getElementById('ss-prob').textContent = probProfit + '%';
+      document.getElementById('ss-prob').style.color = probProfit >= 50 ? 'var(--green)' : 'var(--red)';
 
       drawStrategyChart();
     }
@@ -5782,9 +6626,9 @@
       const wrap = document.getElementById('strat-chart-wrap');
       const W = wrap.offsetWidth || 600;
       const H = 240;
-      canvas.width  = W * window.devicePixelRatio;
+      canvas.width = W * window.devicePixelRatio;
       canvas.height = H * window.devicePixelRatio;
-      canvas.style.width  = W + 'px';
+      canvas.style.width = W + 'px';
       canvas.style.height = H + 'px';
       const ctx = canvas.getContext('2d');
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -5800,8 +6644,8 @@
       const minPL = Math.min(...pl, 0), maxPL = Math.max(...pl, 0);
       const plRange = maxPL - minPL || 1;
 
-      const toX = i  => PAD_L + (i / (points - 1)) * cW;
-      const toY = v  => PAD_T + (1 - (v - minPL) / plRange) * cH;
+      const toX = i => PAD_L + (i / (points - 1)) * cW;
+      const toY = v => PAD_T + (1 - (v - minPL) / plRange) * cH;
       const zeroY = toY(0);
 
       // Grid lines
@@ -5898,8 +6742,8 @@
           const cur = document.getElementById('strat-cursor');
           cur.style.display = 'block';
           cur.style.left = (mx + 12) + 'px';
-          cur.style.top  = (e.clientY - rect.top - 32) + 'px';
-          cur.innerHTML  = `<div style="font-size:10px;color:var(--text3)">Price: $${price.toFixed(2)}</div><div style="font-weight:700;color:${profit >= 0 ? 'var(--accent)' : 'var(--red)'};">${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}</div>`;
+          cur.style.top = (e.clientY - rect.top - 32) + 'px';
+          cur.innerHTML = `<div style="font-size:10px;color:var(--text3)">Price: $${price.toFixed(2)}</div><div style="font-weight:700;color:${profit >= 0 ? 'var(--accent)' : 'var(--red)'};">${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}</div>`;
         });
         canvas.addEventListener('mouseleave', () => { document.getElementById('strat-cursor').style.display = 'none'; });
       }
@@ -5929,14 +6773,14 @@
         const exps = (d.data?.expirationList ?? []).slice(0, 20);
         sel.innerHTML = exps.map((e, i) => `<option value="${e.expirationDate}" ${i === 1 ? 'selected' : ''}>${e.expirationDate} (${e.daysToExpiration}d)</option>`).join('');
         await stratLoadChain();
-      } catch(e) {
+      } catch (e) {
         sel.innerHTML = `<option>${e.message}</option>`;
       }
     }
 
     async function stratLoadChain(force) {
       if (!isConnected) { connectSchwab(); return; }
-      const sym    = (document.getElementById('strat-sym').value || 'SPY').toUpperCase();
+      const sym = (document.getElementById('strat-sym').value || 'SPY').toUpperCase();
       const expiry = document.getElementById('strat-expiry').value;
       if (!expiry || expiry === 'Loading…') return;
 
@@ -5946,7 +6790,7 @@
         if (!d.ok) throw new Error(d.error);
 
         stratChain = d.data;
-        stratSpot  = stratChain.underlyingPrice ?? 0;
+        stratSpot = stratChain.underlyingPrice ?? 0;
 
         // Build sorted strike list
         const strikeSet = new Set();
@@ -5963,7 +6807,7 @@
     }
 
     function stratBuildUI() {
-      const type   = document.getElementById('strat-type').value;
+      const type = document.getElementById('strat-type').value;
       const config = STRAT_CONFIGS[type];
       if (!config) return;
 
