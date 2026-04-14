@@ -953,12 +953,12 @@
       align-items: center;
       gap: 10px;
       padding: 8px 14px;
-      background: rgba(255, 140, 59, 0.1);
-      border: 1px solid rgba(255, 140, 59, 0.3);
+      background: linear-gradient(180deg, rgba(28, 18, 4, 0.9), rgba(15, 10, 4, 0.9));
+      border: 1px solid rgba(255, 176, 32, 0.45);
       border-radius: 7px;
       margin-bottom: 12px;
       font-size: 11px;
-      color: var(--orange);
+      color: #ffd98d;
       font-weight: 600;
     }
     #ov-macro-alert.danger {
@@ -994,7 +994,7 @@
     /* ── Overview: Row 4 – Exec + Sector ── */
     .ov-row4 {
       display: grid;
-      grid-template-columns: 1fr 260px;
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -2516,7 +2516,7 @@
 
           <!-- Macro Alert Banner -->
           <div id="ov-macro-alert">
-            <span id="ov-macro-alert-icon">&#9889;</span>
+            <span id="ov-macro-alert-icon">⚠</span>
             <span id="ov-macro-alert-text"></span>
           </div>
 
