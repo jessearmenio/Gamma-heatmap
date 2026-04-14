@@ -497,14 +497,157 @@ app.get("/api/dashboard", async (req, res) => {
   }
 });
 
-// Root route should serve heat.html
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "heat.html"));
+// ─── Movers ───────────────────────────────────────────────────────────────────
+// GET /api/movers?index=$SPX|$COMPX|$DJI&sort=VOLUME|TRADES|PERCENT_CHANGE_UP|PERCENT_CHANGE_DOWN&frequency=0|1|5|10|30|60
+app.get("/api/movers", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token yet. Connect Schwab first." });
+    }
+    const index = req.query.index || "$SPX";
+    const sort = req.query.sort || "PERCENT_CHANGE_UP";
+    const frequency = req.query.frequency || "0";
+
+    const response = await axios.get(
+      `https://api.schwabapi.com/marketdata/v1/movers/${encodeURIComponent(index)}`,
+      {
+        params: { sort, frequency },
+        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
+        timeout: 30000
+      }
+    );
+    res.json({ ok: true, data: response.data });
+  } catch (error) {
+    console.error("MOVERS ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to fetch movers.",
+      details: error.response?.data || error.message
+    });
+  }
 });
 
-// Catch-all fallback should also serve heat.html
+// ─── Price History ─────────────────────────────────────────────────────────────
+// GET /api/pricehistory?symbol=SPY&periodType=day&period=5&frequencyType=minute&frequency=5
+app.get("/api/pricehistory", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token yet." });
+    }
+    const symbol = (req.query.symbol || "SPY").toUpperCase();
+    const params = {
+      symbol,
+      periodType:    req.query.periodType    || "day",
+      period:        req.query.period        || "5",
+      frequencyType: req.query.frequencyType || "minute",
+      frequency:     req.query.frequency     || "5",
+      needExtendedHoursData: req.query.needExtendedHoursData || false
+    };
+    if (req.query.startDate) params.startDate = req.query.startDate;
+    if (req.query.endDate)   params.endDate   = req.query.endDate;
+
+    const response = await axios.get(
+      "https://api.schwabapi.com/marketdata/v1/pricehistory",
+      { params, headers: { Authorization: `Bearer ${schwabTokens.access_token}` }, timeout: 30000 }
+    );
+    res.json({ ok: true, data: response.data });
+  } catch (error) {
+    console.error("PRICEHISTORY ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to fetch price history.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// ─── Instruments ───────────────────────────────────────────────────────────────
+// GET /api/instruments?symbol=AAPL&projection=fundamental|desc-search|desc-regex|search|symbol-search|symbol-regex
+app.get("/api/instruments", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token yet." });
+    }
+    const symbol = req.query.symbol || "AAPL";
+    const projection = req.query.projection || "fundamental";
+    const response = await axios.get(
+      "https://api.schwabapi.com/marketdata/v1/instruments",
+      {
+        params: { symbol, projection },
+        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
+        timeout: 30000
+      }
+    );
+    res.json({ ok: true, data: response.data });
+  } catch (error) {
+    console.error("INSTRUMENTS ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to fetch instruments.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// ─── Market Hours ─────────────────────────────────────────────────────────────
+// GET /api/markets?markets=equity,option,bond,future,forex
+app.get("/api/markets", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token yet." });
+    }
+    const markets = req.query.markets || "equity,option,future,forex";
+    const date = req.query.date || getTodayISO();
+    const response = await axios.get(
+      "https://api.schwabapi.com/marketdata/v1/markets",
+      {
+        params: { markets, date },
+        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
+        timeout: 30000
+      }
+    );
+    res.json({ ok: true, data: response.data });
+  } catch (error) {
+    console.error("MARKETS ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to fetch market hours.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// ─── Expiration Chain ─────────────────────────────────────────────────────────
+// GET /api/expirationchain?symbol=SPY
+app.get("/api/expirationchain", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token yet." });
+    }
+    const symbol = (req.query.symbol || "SPY").toUpperCase();
+    const normalizedSymbol = mapChainSymbol(symbol);
+    const response = await axios.get(
+      "https://api.schwabapi.com/marketdata/v1/expirationchain",
+      {
+        params: { symbol: normalizedSymbol },
+        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
+        timeout: 30000
+      }
+    );
+    res.json({ ok: true, data: response.data });
+  } catch (error) {
+    console.error("EXPIRATIONCHAIN ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to fetch expiration chain.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+// Root route — serve dashboard
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+});
+
+// Catch-all fallback
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "heat.html"));
+  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
 app.listen(PORT, () => {
