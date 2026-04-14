@@ -874,51 +874,126 @@
     /* ─────────────────────────────────────────────
    OPTIONS FLOW PAGE
 ───────────────────────────────────────────── */
-    #flow-table-wrap {
-      overflow-x: auto;
+    #flow-top-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      background: rgba(255,255,255,0.01);
     }
+    #flow-sym-input {
+      background: var(--bg3); color: var(--text);
+      border: 1px solid var(--border2); border-radius: 5px;
+      padding: 5px 10px; font-size: 11px; font-family: inherit;
+      width: 75px; text-transform: uppercase;
+    }
+    #flow-sym-input:focus { outline: none; border-color: var(--accent); }
+    .flow-filter-btn {
+      padding: 4px 10px; border-radius: 5px; font-size: 10px;
+      font-weight: 700; cursor: pointer;
+      background: var(--bg3); color: var(--text2);
+      border: 1px solid var(--border2); font-family: inherit;
+      transition: all 0.12s;
+    }
+    .flow-filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .flow-filter-btn.active { background: rgba(220,255,30,0.1); color: var(--accent); border-color: rgba(220,255,30,0.4); }
+    .flow-filter-btn.put-active { background: rgba(180,35,240,0.12); color: #d470ff; border-color: rgba(180,35,240,0.35); }
+
+    #flow-table-wrap { overflow-x: auto; flex: 1; min-height: 0; }
 
     #flow-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
+      width: 100%; border-collapse: collapse; font-size: 11px;
+      min-width: 1100px;
     }
-
     #flow-table thead th {
-      background: var(--bg3);
-      padding: 7px 10px;
-      text-align: left;
-      color: var(--text2);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border2);
-      white-space: nowrap;
+      position: sticky; top: 0; z-index: 2;
+      background: #0d1016;
+      padding: 6px 9px;
+      text-align: left; color: var(--text2);
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      border-bottom: 2px solid var(--border2);
+      white-space: nowrap; cursor: pointer;
+      user-select: none;
     }
-
+    #flow-table thead th:hover { color: var(--text); }
+    #flow-table thead th.sort-asc::after { content: ' ▲'; color: var(--accent); font-size: 8px; }
+    #flow-table thead th.sort-desc::after { content: ' ▼'; color: var(--accent); font-size: 8px; }
     #flow-table tbody td {
-      padding: 6px 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      white-space: nowrap;
+      padding: 5px 9px;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      white-space: nowrap; vertical-align: middle;
     }
+    #flow-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+    #flow-table tbody tr.flow-row-call { border-left: 2px solid rgba(220,255,30,0.35); }
+    #flow-table tbody tr.flow-row-put  { border-left: 2px solid rgba(180,35,240,0.4); }
 
-    #flow-table tbody tr:hover td {
-      background: rgba(255, 255, 255, 0.025);
-    }
+    .flow-call { color: var(--accent); }
+    .flow-put  { color: #d470ff; }
+    .flow-size-lg { color: var(--gold); font-weight: 700; }
 
-    .flow-call {
-      color: var(--accent);
+    /* Side badge */
+    .flow-side-badge {
+      display: inline-block; padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 800; letter-spacing: 0.06em;
     }
+    .flow-side-badge.call { background: rgba(220,255,30,0.15); color: var(--accent); border: 1px solid rgba(220,255,30,0.3); }
+    .flow-side-badge.put  { background: rgba(180,35,240,0.15); color: #d470ff; border: 1px solid rgba(180,35,240,0.3); }
 
-    .flow-put {
-      color: #d470ff;
+    /* Sentiment / flag badges */
+    .flow-flag {
+      display: inline-block; padding: 2px 7px; border-radius: 4px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
+      margin: 0 1px;
     }
+    .flow-flag.bullish  { background: rgba(34,221,136,0.15); color: var(--green); }
+    .flow-flag.bearish  { background: rgba(255,59,92,0.12); color: var(--red); }
+    .flow-flag.neutral  { background: rgba(120,130,160,0.15); color: var(--text2); }
+    .flow-flag.sweep    { background: rgba(255,140,59,0.15); color: var(--orange); }
+    .flow-flag.floor    { background: rgba(59,140,255,0.12); color: var(--blue); }
+    .flow-flag.unusual  { background: rgba(255,215,0,0.12); color: var(--gold); }
+    .flow-flag.earnings { background: rgba(180,35,240,0.12); color: #d470ff; }
 
-    .flow-size-lg {
-      color: var(--gold);
-      font-weight: 700;
+    /* Chain fill bar (IV/OTM%) */
+    .flow-bar-wrap {
+      display: flex; align-items: center; gap: 5px;
+      min-width: 70px;
     }
+    .flow-bar-bg {
+      flex: 1; height: 6px; background: var(--bg3);
+      border-radius: 3px; overflow: hidden;
+    }
+    .flow-bar-fill {
+      height: 100%; border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .flow-bar-fill.call-fill { background: var(--accent); }
+    .flow-bar-fill.put-fill  { background: #B423F0; }
+    .flow-bar-fill.iv-fill   { background: var(--orange); }
+
+    /* Premium cell — big number */
+    .flow-premium {
+      font-weight: 800; font-size: 12px;
+    }
+    .flow-premium.lg { color: var(--gold); }
+    .flow-premium.md { color: var(--text); }
+    .flow-premium.sm { color: var(--text2); }
+
+    /* Flow stats bar */
+    #flow-stats-bar {
+      display: flex; gap: 16px; align-items: center;
+      padding: 8px 14px; border-bottom: 1px solid var(--border);
+      font-size: 10px; flex-shrink: 0; flex-wrap: wrap;
+    }
+    .flow-stat-item { display: flex; flex-direction: column; gap: 2px; }
+    .flow-stat-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+    .flow-stat-val   { font-size: 13px; font-weight: 800; }
+    /* alias classes used in HTML */
+    .flow-stat-cell { display: flex; flex-direction: column; gap: 2px; }
+    .flow-stat-lbl  { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
 
     /* ─────────────────────────────────────────────
    MOVERS PAGE
@@ -999,38 +1074,142 @@
     /* ─────────────────────────────────────────────
    STRATEGY TESTER
 ───────────────────────────────────────────── */
+    #strat-page { overflow-y: auto; }
+
     #strat-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
+      display: flex; gap: 10px; align-items: center;
+      flex-wrap: wrap; padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .strat-input-group { display: flex; align-items: center; gap: 6px; }
+    .strat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+    .strat-input {
+      background: var(--bg3); color: var(--text);
+      border: 1px solid var(--border2); border-radius: 4px;
+      padding: 5px 8px; width: 80px;
+      font-family: inherit; font-size: 11px;
+    }
+    .strat-input:focus { outline: none; border-color: var(--accent); }
+
+    /* Builder layout */
+    #strat-builder {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 0;
+      min-height: 440px;
+    }
+    #strat-left {
+      padding: 16px 14px;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    #strat-right {
       padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    /* Leg rows */
+    .leg-row {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      padding: 10px 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .leg-badge {
+      font-size: 9px; font-weight: 800;
+      padding: 3px 8px; border-radius: 4px;
+      letter-spacing: 0.06em; flex-shrink: 0; min-width: 36px;
+      text-align: center;
+    }
+    .leg-badge.buy  { background: rgba(34,221,136,0.2); color: var(--green); border: 1px solid rgba(34,221,136,0.35); }
+    .leg-badge.sell { background: rgba(255,59,92,0.15); color: var(--red);   border: 1px solid rgba(255,59,92,0.3); }
+    .leg-name { font-size: 12px; font-weight: 700; flex: 1; }
+    .leg-price { font-size: 13px; font-weight: 800; min-width: 55px; text-align: right; }
+
+    /* Slider rows */
+    .slider-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 6px 0;
+    }
+    .slider-label {
+      font-size: 10px; font-weight: 700;
+      min-width: 130px; flex-shrink: 0;
+    }
+    .slider-val {
+      font-size: 11px; font-weight: 800;
+      min-width: 55px; text-align: right; color: var(--accent);
+    }
+    input[type="range"].strat-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"].strat-slider.call-slider { background: linear-gradient(to right, var(--accent), var(--bg3)); }
+    input[type="range"].strat-slider.call-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 6px rgba(220,255,30,0.6); cursor: pointer;
+    }
+    input[type="range"].strat-slider.put-slider { background: linear-gradient(to right, #B423F0, var(--bg3)); }
+    input[type="range"].strat-slider.put-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: #B423F0;
+      box-shadow: 0 0 6px rgba(180,35,240,0.6); cursor: pointer;
+    }
+    input[type="range"].strat-slider.neutral-slider { background: linear-gradient(to right, var(--blue), var(--bg3)); }
+    input[type="range"].strat-slider.neutral-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      border-radius: 50%; background: var(--blue);
+      box-shadow: 0 0 6px rgba(59,140,255,0.5); cursor: pointer;
+    }
+
+    /* Stats tiles in builder */
+    #strat-stats-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; margin-top: 4px;
+    }
+    .strat-stat-tile {
+      background: var(--bg); border: 1px solid var(--border2);
+      border-radius: 6px; padding: 10px 12px;
+    }
+    .strat-stat-tile .ss-label {
+      font-size: 9px; font-weight: 700; color: var(--text3);
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px;
+    }
+    .strat-stat-tile .ss-val {
+      font-size: 18px; font-weight: 900; line-height: 1;
+    }
+    .strat-stat-tile .ss-sub {
+      font-size: 9px; color: var(--text3); margin-top: 2px;
+    }
+    /* alias classes for strat stat tiles */
+    .strat-stat-lbl { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .strat-stat-val { font-size: 17px; font-weight: 900; line-height: 1.1; }
+    .strat-stat-val.accent { color: var(--accent); }
+    .strat-stat-val.red    { color: var(--red); }
+    /* Strategy type header */
+    #strat-type-label {
+      font-size: 14px; font-weight: 800; color: var(--text);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 12px; padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
     }
 
-    .strat-input-group {
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    /* Cursor tooltip on chart */
+    #strat-cursor {
+      position: absolute; pointer-events: none;
+      display: none;
+      background: #1a1d28; border: 1px solid var(--border2);
+      border-radius: 5px; padding: 6px 10px;
+      font-size: 11px; white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+      z-index: 10;
     }
-
-    .strat-label {
-      font-size: 10px;
-      color: var(--text2);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-    }
-
-    .strat-input {
-      background: var(--bg3);
-      color: var(--text);
-      border: 1px solid var(--border2);
-      border-radius: 4px;
-      padding: 5px 8px;
-      width: 80px;
-      font-family: inherit;
-      font-size: 11px;
-    }
+    #strat-chart-wrap { position: relative; }
 
     .strat-input:focus {
       outline: none;
@@ -1852,57 +2031,66 @@
            4. OPTIONS FLOW
       ════════════════════════════════════ -->
         <div id="flow-page" class="page" style="display:none;">
-          <div class="card mb12">
-            <div class="card-header">
-              <span class="card-title">Live Options Flow</span>
-              <span style="font-size:9px;color:var(--text3)">Options chain sweep detection • Sorted by OI ×
-                premium</span>
+          <!-- TOP BAR: symbol + filters + sort -->
+          <div id="flow-top-bar">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <input id="flow-sym-input" value="SPY" placeholder="Ticker" />
+              <button class="flow-filter-btn active" data-filter="ALL" onclick="flowSetFilter(this)">ALL</button>
+              <button class="flow-filter-btn" data-filter="CALL" onclick="flowSetFilter(this)">CALLS</button>
+              <button class="flow-filter-btn" data-filter="PUT" onclick="flowSetFilter(this)">PUTS</button>
+              <button class="flow-filter-btn" data-filter="SWEEP" onclick="flowSetFilter(this)">SWEEP</button>
+              <button class="flow-filter-btn" data-filter="FLOOR" onclick="flowSetFilter(this)">FLOOR</button>
             </div>
-            <div class="card-body" style="padding:0;">
-              <div id="flow-table-wrap">
-                <table id="flow-table">
-                  <thead>
-                    <tr>
-                      <th>Time</th>
-                      <th>Symbol</th>
-                      <th>Expiry</th>
-                      <th>Strike</th>
-                      <th>Type</th>
-                      <th>Bid</th>
-                      <th>Ask</th>
-                      <th>Last</th>
-                      <th>OI</th>
-                      <th>Volume</th>
-                      <th>IV</th>
-                      <th>Delta</th>
-                      <th>Gamma</th>
-                      <th>GEX</th>
-                      <th>In Money</th>
-                    </tr>
-                  </thead>
-                  <tbody id="flow-tbody">
-                    <tr>
-                      <td colspan="15" style="text-align:center;padding:24px;color:var(--text3);">Connect Schwab to view
-                        options flow.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:9px;color:var(--text3)">Sort by:</span>
+              <select id="flow-sort-sel" onchange="flowApplySort()" style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
+                <option value="premium">Premium $</option>
+                <option value="volume">Volume</option>
+                <option value="oi">Open Interest</option>
+                <option value="otm">%OTM</option>
+                <option value="iv">IV%</option>
+              </select>
+              <button onclick="loadOptionsFlow()" style="background:var(--accent);color:#000;border:none;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">↻ REFRESH</button>
             </div>
           </div>
-          <div class="grid-2">
-            <div class="card">
-              <div class="card-header"><span class="card-title">Call / Put Flow Ratio</span></div>
-              <div class="card-body" id="flow-ratio-body">
-                <div class="text-muted fs10">—</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">Highest GEX Strikes</span></div>
-              <div class="card-body" id="flow-gex-strikes">
-                <div class="text-muted fs10">—</div>
-              </div>
-            </div>
+
+          <!-- STATS BAR -->
+          <div id="flow-stats-bar">
+            <div class="flow-stat-cell"><div class="flow-stat-lbl">TOTAL PREMIUM</div><div class="flow-stat-val" id="fstat-total">—</div></div>
+            <div class="flow-stat-cell"><div class="flow-stat-lbl">CALL $</div><div class="flow-stat-val" style="color:var(--accent)" id="fstat-call">—</div></div>
+            <div class="flow-stat-cell"><div class="flow-stat-lbl">PUT $</div><div class="flow-stat-val" style="color:var(--purple)" id="fstat-put">—</div></div>
+            <div class="flow-stat-cell"><div class="flow-stat-lbl">P/C RATIO</div><div class="flow-stat-val" id="fstat-pc">—</div></div>
+            <div class="flow-stat-cell"><div class="flow-stat-lbl">CONTRACTS</div><div class="flow-stat-val" id="fstat-count">—</div></div>
+            <div class="flow-stat-cell"><div class="flow-stat-lbl">SWEEPS</div><div class="flow-stat-val" style="color:#f59e0b" id="fstat-sweeps">—</div></div>
+          </div>
+
+          <!-- FLOW TABLE -->
+          <div id="flow-table-wrap">
+            <table id="flow-table">
+              <thead>
+                <tr>
+                  <th data-col="time">Time</th>
+                  <th data-col="ticker">Ticker</th>
+                  <th data-col="side">Side</th>
+                  <th data-col="contract">Contract</th>
+                  <th data-col="dte">DTE</th>
+                  <th data-col="stock">Stock</th>
+                  <th data-col="otm">%OTM</th>
+                  <th data-col="bidask">Bid/Ask</th>
+                  <th data-col="spot">Spot</th>
+                  <th data-col="size">Size</th>
+                  <th data-col="premium">Premium</th>
+                  <th data-col="volume">Volume</th>
+                  <th data-col="oi">OI</th>
+                  <th data-col="chain">Chain Bar</th>
+                  <th data-col="iv">IV%</th>
+                  <th data-col="flags">Flags</th>
+                </tr>
+              </thead>
+              <tbody id="flow-tbody">
+                <tr><td colspan="16" style="text-align:center;padding:32px;color:var(--text3);">Connect Schwab to view options flow.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -1910,47 +2098,73 @@
            2. STRATEGY TESTER
       ════════════════════════════════════ -->
         <div id="strat-page" class="page" style="display:none;">
-          <div class="card mb12">
-            <div id="strat-controls">
-              <div class="strat-input-group">
-                <span class="strat-label">Symbol</span>
-                <input class="strat-input" id="strat-sym" value="SPY" style="width:70px;">
-              </div>
-              <div class="strat-input-group">
-                <span class="strat-label">Strategy</span>
-                <select id="strat-type" class="strat-input" style="width:120px;">
-                  <option value="straddle">Straddle</option>
-                  <option value="strangle">Strangle</option>
-                  <option value="call">Long Call</option>
-                  <option value="put">Long Put</option>
-                  <option value="call_spread">Call Spread</option>
-                  <option value="put_spread">Put Spread</option>
-                </select>
-              </div>
-              <div class="strat-input-group">
-                <span class="strat-label">Strike</span>
-                <input class="strat-input" id="strat-strike" value="" placeholder="ATM" style="width:75px;">
-              </div>
-              <div class="strat-input-group">
-                <span class="strat-label">Expiry</span>
-                <input class="strat-input" id="strat-expiry" type="date" style="width:130px;">
-              </div>
-              <div class="strat-input-group">
-                <span class="strat-label">Qty</span>
-                <input class="strat-input" id="strat-qty" type="number" value="1" min="1" style="width:60px;">
-              </div>
-              <button
-                style="margin-left:auto;background:var(--accent);color:#000;border:none;border-radius:5px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
-                onclick="runStrategyTest()">Run Test</button>
+          <!-- STRAT HEADER CONTROLS -->
+          <div id="strat-controls">
+            <div class="strat-input-group">
+              <span class="strat-label">Symbol</span>
+              <input class="strat-input" id="strat-sym" value="SPY" style="width:70px;" oninput="stratSymbolChange()">
             </div>
-            <div class="card-body" id="strat-result">
-              <div class="text-muted fs10">Configure a strategy above and click Run Test.</div>
+            <div class="strat-input-group">
+              <span class="strat-label">Strategy</span>
+              <select id="strat-type" class="strat-input" style="width:130px;" onchange="stratTypeChange()">
+                <option value="condor">Iron Condor</option>
+                <option value="straddle">Straddle</option>
+                <option value="strangle">Strangle</option>
+                <option value="call_spread">Call Spread</option>
+                <option value="put_spread">Put Spread</option>
+                <option value="call">Long Call</option>
+                <option value="put">Long Put</option>
+              </select>
             </div>
+            <div class="strat-input-group">
+              <span class="strat-label">Expiry</span>
+              <select id="strat-expiry" class="strat-input" style="width:130px;" onchange="stratLoadChain()"><option>Loading...</option></select>
+            </div>
+            <div class="strat-input-group">
+              <span class="strat-label">Qty</span>
+              <input class="strat-input" id="strat-qty" type="number" value="1" min="1" style="width:55px;" oninput="stratRecalc()">
+            </div>
+            <button style="margin-left:auto;background:var(--accent);color:#000;border:none;border-radius:5px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="stratLoadChain(true)">↻ LOAD CHAIN</button>
           </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">P/L at Expiry</span></div>
-            <div class="card-body">
-              <canvas id="strat-chart" width="100%" height="200" style="width:100%;height:200px;"></canvas>
+
+          <!-- TWO-COLUMN BUILDER -->
+          <div id="strat-builder">
+            <!-- LEFT: legs + stats -->
+            <div id="strat-left">
+              <div id="strat-type-label">Iron Condor</div>
+
+              <!-- LEG ROWS (populated by JS) -->
+              <div id="strat-legs"></div>
+
+              <!-- STATS GRID -->
+              <div id="strat-stats-grid">
+                <div class="strat-stat-tile">
+                  <div class="strat-stat-lbl">MAX PROFIT</div>
+                  <div class="strat-stat-val accent" id="ss-maxprofit">—</div>
+                </div>
+                <div class="strat-stat-tile">
+                  <div class="strat-stat-lbl">MAX LOSS</div>
+                  <div class="strat-stat-val red" id="ss-maxloss">—</div>
+                </div>
+                <div class="strat-stat-tile" style="grid-column:1/-1">
+                  <div class="strat-stat-lbl">BREAKEVENS</div>
+                  <div class="strat-stat-val" id="ss-be">—</div>
+                </div>
+                <div class="strat-stat-tile" style="grid-column:1/-1">
+                  <div class="strat-stat-lbl">EST. P(PROFIT)</div>
+                  <div class="strat-stat-val" id="ss-prob">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- RIGHT: chart + sliders -->
+            <div id="strat-right">
+              <div id="strat-chart-wrap">
+                <canvas id="strat-chart"></canvas>
+                <div id="strat-cursor"></div>
+              </div>
+              <!-- SLIDERS (populated by JS) -->
+              <div id="strat-sliders"></div>
             </div>
           </div>
         </div>
@@ -2238,6 +2452,7 @@
         case 'treasury-page': loadTreasury(); break;
         case 'smart-page': loadSmartMoney(); break;
         case 'darkpool-page': loadDarkPool(); break;
+        case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
       }
     }
 
@@ -2650,29 +2865,133 @@
     // ═══════════════════════════════════════════════════════
     //  4. OPTIONS FLOW
     // ═══════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════
+    //  OPTIONS FLOW — state
+    // ═══════════════════════════════════════════════════════
+    let flowAllRows = [];        // full flattened dataset
+    let flowFilter = 'ALL';      // ALL | CALL | PUT | SWEEP | FLOOR
+    let flowSortCol = 'premium'; // default sort
+
+    function flowSetFilter(btn) {
+      document.querySelectorAll('.flow-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      flowFilter = btn.dataset.filter;
+      flowRenderTable();
+    }
+
+    function flowApplySort() {
+      flowSortCol = document.getElementById('flow-sort-sel').value;
+      flowRenderTable();
+    }
+
+    function flowRenderTable() {
+      let rows = flowAllRows.slice();
+
+      // Filter
+      if (flowFilter === 'CALL')  rows = rows.filter(r => r.side === 'CALL');
+      else if (flowFilter === 'PUT')   rows = rows.filter(r => r.side === 'PUT');
+      else if (flowFilter === 'SWEEP') rows = rows.filter(r => r.isSweep);
+      else if (flowFilter === 'FLOOR') rows = rows.filter(r => r.isFloor);
+
+      // Sort
+      const sortKey = { premium: 'premium', volume: 'totalVolume', oi: 'openInterest', otm: 'otmAbs', iv: 'volatility' }[flowSortCol] || 'premium';
+      rows.sort((a, b) => b[sortKey] - a[sortKey]);
+
+      const display = rows.slice(0, 80);
+      const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      // Max premium for bar scaling
+      const maxPremium = Math.max(...display.map(r => r.premium), 1);
+
+      document.getElementById('flow-tbody').innerHTML = display.map(r => {
+        const isCall = r.side === 'CALL';
+        const sideColor = isCall ? 'var(--accent)' : 'var(--purple)';
+        const expLabel = r.expKey?.split(':')[0]?.slice(5) ?? '—';
+        const premClass = r.premium > 500000 ? 'flow-premium lg' : r.premium > 100000 ? 'flow-premium md' : 'flow-premium sm';
+        const barPct = Math.min(100, (r.premium / maxPremium) * 100).toFixed(1);
+
+        // Sentiment flags
+        let flags = '';
+        if (r.isBullish)  flags += `<span class="flow-flag bullish">BULLISH</span>`;
+        if (r.isBearish)  flags += `<span class="flow-flag bearish">BEARISH</span>`;
+        if (r.isSweep)    flags += `<span class="flow-flag sweep">SWEEP</span>`;
+        if (r.isFloor)    flags += `<span class="flow-flag floor">FLOOR</span>`;
+        if (r.isUnusual)  flags += `<span class="flow-flag unusual">UNUSUAL</span>`;
+        if (r.isEarnings) flags += `<span class="flow-flag earnings">EARN</span>`;
+
+        return `<tr class="flow-row-${r.side.toLowerCase()}">
+          <td style="color:var(--text3);white-space:nowrap">${now}</td>
+          <td><span class="flow-side-badge ${isCall ? 'call' : 'put'}">${r.sym}</span></td>
+          <td style="font-weight:700;color:${sideColor}">${r.side}</td>
+          <td style="color:var(--text2);white-space:nowrap">${expLabel} C${r.strike}</td>
+          <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
+          <td>${fmt(r.underlyingPrice)}</td>
+          <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}</td>
+          <td style="color:var(--text2)">${fmt(r.bid)} / ${fmt(r.ask)}</td>
+          <td>${fmt(r.last)}</td>
+          <td style="font-weight:600">${fmtK(r.totalVolume)}</td>
+          <td class="${premClass}">${fmtDollar(r.premium)}</td>
+          <td>${fmtK(r.totalVolume)}</td>
+          <td>${fmtK(r.openInterest)}</td>
+          <td>
+            <div class="flow-bar-wrap">
+              <div class="flow-bar-fill ${isCall ? 'call' : 'put'}" style="width:${barPct}%"></div>
+            </div>
+          </td>
+          <td style="color:var(--text2)">${r.volatility ? (r.volatility).toFixed(1) + '%' : '—'}</td>
+          <td style="white-space:nowrap">${flags || '<span style="color:var(--text3)">—</span>'}</td>
+        </tr>`;
+      }).join('');
+    }
+
     async function loadOptionsFlow() {
       if (!isConnected) return;
+      const sym = (document.getElementById('flow-sym-input')?.value || 'SPY').toUpperCase();
+      const tbody = document.getElementById('flow-tbody');
+      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--text3);">Loading ${sym} options chain…</td></tr>`;
+
       try {
-        // Fetch full chain for SPY, flatten, sort by GEX
-        const d = await apiGet('/api/chain?symbol=SPY&strikeCount=30&contractType=ALL&includeUnderlyingQuote=true');
+        const d = await apiGet(`/api/chain?symbol=${sym}&strikeCount=40&contractType=ALL&includeUnderlyingQuote=true`);
         if (!d.ok) throw new Error(d.error);
 
         const chain = d.data;
+        const underlyingPrice = chain.underlyingPrice ?? 0;
         const rows = [];
 
         const flatSide = (map, side) => {
           if (!map) return;
           Object.entries(map).forEach(([expKey, strikes]) => {
-            Object.entries(strikes).forEach(([strike, contracts]) => {
+            Object.entries(strikes).forEach(([strikeStr, contracts]) => {
               contracts.forEach(c => {
+                const strike = c.strikePrice || parseFloat(strikeStr);
+                const bid = c.bid ?? 0;
+                const ask = c.ask ?? 0;
+                const mid = (bid + ask) / 2;
+                const size = c.totalVolume || 0;
+                const oi   = c.openInterest || 0;
+                const premium = mid * size * 100;
+                const otmPct = underlyingPrice > 0
+                  ? side === 'CALL'
+                    ? ((strike - underlyingPrice) / underlyingPrice) * 100
+                    : ((underlyingPrice - strike) / underlyingPrice) * 100
+                  : null;
+                const isSweep   = size > oi * 0.5 && size > 100;
+                const isFloor   = size >= 5000;
+                const isUnusual = size > oi * 2 && oi > 0;
+                const isBullish = side === 'CALL' && ask > 0 && ask >= bid;
+                const isBearish = side === 'PUT'  && ask > 0 && ask >= bid;
+                const isEarnings = (c.daysToExpiration ?? 99) <= 7;
                 rows.push({
-                  expKey, strike: c.strikePrice || parseFloat(strike),
-                  side, symbol: c.symbol,
-                  bid: c.bid, ask: c.ask, last: c.last,
-                  openInterest: c.openInterest, totalVolume: c.totalVolume,
-                  volatility: c.volatility, delta: c.delta,
-                  gamma: c.gamma, gex: (c.gamma || 0) * (c.openInterest || 0) * 100,
-                  inTheMoney: c.inTheMoney, daysToExpiration: c.daysToExpiration
+                  sym, expKey, strike,
+                  side, bid, ask, last: c.last ?? 0,
+                  openInterest: oi, totalVolume: size,
+                  volatility: c.volatility ?? 0,
+                  delta: c.delta, gamma: c.gamma,
+                  inTheMoney: c.inTheMoney,
+                  daysToExpiration: c.daysToExpiration,
+                  underlyingPrice,
+                  premium, otmPct, otmAbs: otmPct !== null ? Math.abs(otmPct) : 999,
+                  isSweep, isFloor, isUnusual, isBullish, isBearish, isEarnings
                 });
               });
             });
@@ -2681,70 +3000,26 @@
         flatSide(chain.callExpDateMap, 'CALL');
         flatSide(chain.putExpDateMap, 'PUT');
 
-        // Sort by abs GEX
-        rows.sort((a, b) => Math.abs(b.gex) - Math.abs(a.gex));
-        const topRows = rows.slice(0, 50);
+        flowAllRows = rows;
 
-        const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        // Stats bar
+        const totalPrem  = rows.reduce((s, r) => s + r.premium, 0);
+        const callPrem   = rows.filter(r => r.side === 'CALL').reduce((s, r) => s + r.premium, 0);
+        const putPrem    = rows.filter(r => r.side === 'PUT').reduce((s, r) => s + r.premium, 0);
+        const pcRatio    = callPrem > 0 ? (putPrem / callPrem).toFixed(2) : '—';
+        const sweepCount = rows.filter(r => r.isSweep).length;
 
-        document.getElementById('flow-tbody').innerHTML = topRows.map(r => {
-          const sideClass = r.side === 'CALL' ? 'flow-call' : 'flow-put';
-          const gexBig = Math.abs(r.gex) > 500000;
-          return `<tr>
-        <td style="color:var(--text3)">${now}</td>
-        <td style="font-weight:700">SPY</td>
-        <td style="color:var(--text2)">${r.expKey?.split(':')[0]?.slice(5) ?? '—'}</td>
-        <td>${fmt(r.strike, 0)}</td>
-        <td class="${sideClass}" style="font-weight:700">${r.side}</td>
-        <td>${fmt(r.bid)}</td>
-        <td>${fmt(r.ask)}</td>
-        <td>${fmt(r.last)}</td>
-        <td>${fmtK(r.openInterest)}</td>
-        <td>${fmtK(r.totalVolume)}</td>
-        <td>${fmt(r.volatility ? r.volatility * 100 : null, 1)}%</td>
-        <td>${fmt(r.delta, 3)}</td>
-        <td>${fmt(r.gamma, 5)}</td>
-        <td class="${gexBig ? 'flow-size-lg' : ''}">${fmtDollar(r.gex)}</td>
-        <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">${r.inTheMoney ? 'ITM' : 'OTM'}</td>
-      </tr>`;
-        }).join('');
+        document.getElementById('fstat-total').textContent = fmtDollar(totalPrem);
+        document.getElementById('fstat-call').textContent  = fmtDollar(callPrem);
+        document.getElementById('fstat-put').textContent   = fmtDollar(putPrem);
+        document.getElementById('fstat-pc').textContent    = pcRatio;
+        document.getElementById('fstat-count').textContent = rows.length.toLocaleString();
+        document.getElementById('fstat-sweeps').textContent = sweepCount;
 
-        // Ratio
-        const callGex = rows.filter(r => r.side === 'CALL').reduce((s, r) => s + r.gex, 0);
-        const putGex = rows.filter(r => r.side === 'PUT').reduce((s, r) => s + Math.abs(r.gex), 0);
-        const total = callGex + putGex || 1;
-        const callPct = ((callGex / total) * 100).toFixed(1);
-        const putPct = ((putGex / total) * 100).toFixed(1);
-
-        document.getElementById('flow-ratio-body').innerHTML = `
-      <div style="font-size:12px;font-weight:700;margin-bottom:8px;">
-        <span style="color:var(--accent)">Calls: ${callPct}%</span>  &nbsp;|&nbsp;
-        <span style="color:#d470ff">Puts: ${putPct}%</span>
-      </div>
-      <div class="sm-flow-bar">
-        <div class="sm-call-part" style="width:${callPct}%"></div>
-        <div class="sm-put-part" style="width:${putPct}%"></div>
-      </div>
-      <div style="font-size:10px;color:var(--text3);margin-top:6px;">Based on ${rows.length} contracts • Sorted by GEX magnitude</div>`;
-
-        // Top GEX strikes
-        const byStrike = {};
-        rows.forEach(r => {
-          if (!byStrike[r.strike]) byStrike[r.strike] = { strike: r.strike, callGex: 0, putGex: 0 };
-          if (r.side === 'CALL') byStrike[r.strike].callGex += r.gex;
-          else byStrike[r.strike].putGex += Math.abs(r.gex);
-        });
-        const topStrikes = Object.values(byStrike).sort((a, b) => (b.callGex + b.putGex) - (a.callGex + a.putGex)).slice(0, 6);
-        document.getElementById('flow-gex-strikes').innerHTML = topStrikes.map(s => `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <span style="font-weight:700;width:55px">${s.strike}</span>
-        <span style="color:var(--accent);font-size:10px">${fmtDollar(s.callGex)}</span>
-        <span style="color:var(--text3);font-size:10px">/</span>
-        <span style="color:#d470ff;font-size:10px">${fmtDollar(s.putGex)}</span>
-      </div>`).join('');
+        flowRenderTable();
 
       } catch (e) {
-        document.getElementById('flow-tbody').innerHTML = `<tr><td colspan="15" style="text-align:center;padding:24px;color:var(--red);">${e.message}</td></tr>`;
+        document.getElementById('flow-tbody').innerHTML = `<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--red);">⚠ ${e.message}</td></tr>`;
       }
     }
 
@@ -3270,145 +3545,405 @@
     // ═══════════════════════════════════════════════════════
     //  STRATEGY TESTER
     // ═══════════════════════════════════════════════════════
-    async function runStrategyTest() {
-      if (!isConnected) { connectSchwab(); return; }
-      const sym = document.getElementById('strat-sym').value.toUpperCase() || 'SPY';
-      const type = document.getElementById('strat-type').value;
-      const strikeInput = document.getElementById('strat-strike').value;
-      const expiry = document.getElementById('strat-expiry').value;
-      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
+    // ═══════════════════════════════════════════════════════
+    //  STRATEGY BUILDER — state
+    // ═══════════════════════════════════════════════════════
+    let stratChain = null;    // loaded chain data
+    let stratSpot  = 0;       // underlying price
+    let stratStrikes = [];    // sorted unique strike list
 
-      try {
-        const d = await apiGet(`/api/chain?symbol=${sym}&contractType=ALL&strikeCount=20&includeUnderlyingQuote=true${expiry ? '&fromDate=' + expiry + '&toDate=' + expiry : ''}`);
-        if (!d.ok) throw new Error(d.error);
+    const STRAT_CONFIGS = {
+      condor: {
+        label: 'Iron Condor',
+        legs: [
+          { id: 'lp_long',  dir: 'BUY',  type: 'put',  label: 'BUY PUT (Long)',   color: 'var(--purple)',  offsetPct: -0.08 },
+          { id: 'lp_short', dir: 'SELL', type: 'put',  label: 'SELL PUT (Short)', color: 'var(--purple)',  offsetPct: -0.03 },
+          { id: 'lc_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Short)',color: 'var(--accent)',  offsetPct:  0.03 },
+          { id: 'lc_long',  dir: 'BUY',  type: 'call', label: 'BUY CALL (Long)',  color: 'var(--accent)',  offsetPct:  0.08 },
+        ]
+      },
+      straddle: {
+        label: 'Straddle',
+        legs: [
+          { id: 'sc_atm', dir: 'BUY', type: 'call', label: 'BUY CALL (ATM)', color: 'var(--accent)', offsetPct: 0 },
+          { id: 'sp_atm', dir: 'BUY', type: 'put',  label: 'BUY PUT (ATM)',  color: 'var(--purple)', offsetPct: 0 },
+        ]
+      },
+      strangle: {
+        label: 'Strangle',
+        legs: [
+          { id: 'sg_call', dir: 'BUY', type: 'call', label: 'BUY CALL (OTM)', color: 'var(--accent)', offsetPct:  0.05 },
+          { id: 'sg_put',  dir: 'BUY', type: 'put',  label: 'BUY PUT (OTM)',  color: 'var(--purple)', offsetPct: -0.05 },
+        ]
+      },
+      call_spread: {
+        label: 'Call Spread',
+        legs: [
+          { id: 'cs_long',  dir: 'BUY',  type: 'call', label: 'BUY CALL (Lower)', color: 'var(--accent)', offsetPct:  0.0 },
+          { id: 'cs_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Upper)',color: 'var(--accent)', offsetPct:  0.05 },
+        ]
+      },
+      put_spread: {
+        label: 'Put Spread',
+        legs: [
+          { id: 'ps_long',  dir: 'BUY',  type: 'put', label: 'BUY PUT (Upper)',  color: 'var(--purple)', offsetPct: -0.0 },
+          { id: 'ps_short', dir: 'SELL', type: 'put', label: 'SELL PUT (Lower)', color: 'var(--purple)', offsetPct: -0.05 },
+        ]
+      },
+      call: {
+        label: 'Long Call',
+        legs: [
+          { id: 'lc_only', dir: 'BUY', type: 'call', label: 'BUY CALL', color: 'var(--accent)', offsetPct: 0 },
+        ]
+      },
+      put: {
+        label: 'Long Put',
+        legs: [
+          { id: 'lp_only', dir: 'BUY', type: 'put', label: 'BUY PUT', color: 'var(--purple)', offsetPct: 0 },
+        ]
+      },
+    };
 
-        const chain = d.data;
-        const spotPrice = chain.underlyingPrice;
-        const strike = parseFloat(strikeInput) || spotPrice;
-
-        // Find closest call and put
-        const findContract = (map, targetStrike) => {
-          if (!map) return null;
-          let best = null, bestDist = Infinity;
-          Object.values(map).forEach(strikes => {
-            Object.entries(strikes).forEach(([k, contracts]) => {
-              const dist = Math.abs(parseFloat(k) - targetStrike);
-              if (dist < bestDist && contracts[0]) { bestDist = dist; best = contracts[0]; }
-            });
-          });
-          return best;
-        };
-
-        const call = findContract(chain.callExpDateMap, strike);
-        const put = findContract(chain.putExpDateMap, strike);
-
-        let cost = 0, desc = '';
-        if (type === 'straddle' && call && put) {
-          cost = (call.ask + put.ask) * 100 * qty;
-          desc = `Long ${qty} straddle at ${strike} — Debit: ${fmtDollar(cost)}`;
-        } else if (type === 'strangle') {
-          const callOtm = findContract(chain.callExpDateMap, spotPrice * 1.02);
-          const putOtm = findContract(chain.putExpDateMap, spotPrice * 0.98);
-          if (callOtm && putOtm) {
-            cost = (callOtm.ask + putOtm.ask) * 100 * qty;
-            desc = `Long strangle ${putOtm.strikePrice}/${callOtm.strikePrice} — Debit: ${fmtDollar(cost)}`;
-          }
-        } else if (type === 'call' && call) {
-          cost = call.ask * 100 * qty;
-          desc = `Long ${qty} call at ${call.strikePrice} — Debit: ${fmtDollar(cost)}`;
-        } else if (type === 'put' && put) {
-          cost = put.ask * 100 * qty;
-          desc = `Long ${qty} put at ${put.strikePrice} — Debit: ${fmtDollar(cost)}`;
-        }
-
-        document.getElementById('strat-result').innerHTML = `
-      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px;">${desc || 'No contracts found for parameters'}</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:11px;">
-        ${call ? `<div class="stat-tile"><div class="st-label">Call Bid/Ask</div><div class="st-value" style="font-size:14px">${fmt(call.bid)} / ${fmt(call.ask)}</div><div class="st-sub">Strike ${call.strikePrice} • IV: ${fmt(call.volatility ? call.volatility * 100 : null, 1)}%</div></div>` : ''}
-        ${put ? `<div class="stat-tile"><div class="st-label">Put Bid/Ask</div><div class="st-value" style="font-size:14px">${fmt(put.bid)} / ${fmt(put.ask)}</div><div class="st-sub">Strike ${put.strikePrice} • IV: ${fmt(put.volatility ? put.volatility * 100 : null, 1)}%</div></div>` : ''}
-        <div class="stat-tile"><div class="st-label">Underlying</div><div class="st-value" style="font-size:14px">${fmt(spotPrice)}</div><div class="st-sub">${sym} • Spot</div></div>
-      </div>`;
-
-        // Draw P/L chart
-        drawStrategyChart(type, spotPrice, call, put, qty, cost);
-      } catch (e) {
-        document.getElementById('strat-result').innerHTML = `<div class="error-banner">⚠ ${e.message}</div>`;
-      }
+    // Helper: find nearest strike index from slider value
+    function snapStrike(val) {
+      const idx = Math.round(val);
+      return stratStrikes[Math.max(0, Math.min(idx, stratStrikes.length - 1))] ?? val;
     }
 
-    function drawStrategyChart(type, spot, call, put, qty, cost) {
-      const canvas = document.getElementById('strat-chart');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
-      canvas.height = 200 * window.devicePixelRatio;
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      const W = canvas.offsetWidth, H = 200;
-      ctx.clearRect(0, 0, W, H);
+    // Helper: find contract in map for given strike
+    function findContractAtStrike(map, targetStrike) {
+      if (!map) return null;
+      let best = null, bestDist = Infinity;
+      const selectedExp = document.getElementById('strat-expiry')?.value;
+      const mapToSearch = selectedExp && map[selectedExp] ? { [selectedExp]: map[selectedExp] } : map;
+      Object.values(mapToSearch).forEach(strikes => {
+        Object.entries(strikes).forEach(([k, contracts]) => {
+          const dist = Math.abs(parseFloat(k) - targetStrike);
+          if (dist < bestDist && contracts[0]) { bestDist = dist; best = contracts[0]; }
+        });
+      });
+      return best;
+    }
 
-      const range = spot * 0.1;
-      const points = 80;
-      const prices = Array.from({ length: points }, (_, i) => spot - range + i * (range * 2 / points));
+    // Compute P/L at expiry for current legs & strikes
+    function stratComputePL(prices) {
+      const type = document.getElementById('strat-type').value;
+      const qty  = parseInt(document.getElementById('strat-qty').value) || 1;
+      const config = STRAT_CONFIGS[type];
+      if (!config || !stratChain) return prices.map(() => 0);
 
-      const pl = prices.map(p => {
-        if (type === 'straddle' && call && put) {
-          const callPL = Math.max(0, p - call.strikePrice) * 100 * qty;
-          const putPL = Math.max(0, put.strikePrice - p) * 100 * qty;
-          return callPL + putPL - cost;
-        } else if (type === 'call' && call) {
-          return Math.max(0, p - call.strikePrice) * 100 * qty - cost;
-        } else if (type === 'put' && put) {
-          return Math.max(0, put.strikePrice - p) * 100 * qty - cost;
-        }
-        return 0;
+      const legs = config.legs.map(leg => {
+        const slider = document.getElementById('sl_' + leg.id);
+        const strike = slider ? snapStrike(parseFloat(slider.value)) : stratSpot;
+        const map = leg.type === 'call' ? stratChain.callExpDateMap : stratChain.putExpDateMap;
+        const contract = findContractAtStrike(map, strike);
+        const price = contract ? (contract.bid + contract.ask) / 2 : 0;
+        return { ...leg, strike, price, contract };
       });
 
-      const minPL = Math.min(...pl), maxPL = Math.max(...pl);
-      const range2 = maxPL - minPL || 1;
+      return prices.map(p => {
+        let pl = 0;
+        legs.forEach(leg => {
+          const intrinsic = leg.type === 'call'
+            ? Math.max(0, p - leg.strike)
+            : Math.max(0, leg.strike - p);
+          const legPL = (intrinsic - leg.price) * 100 * qty;
+          pl += leg.dir === 'BUY' ? legPL : -legPL;
+        });
+        return pl;
+      });
+    }
 
-      const toX = i => 40 + (i / (points - 1)) * (W - 55);
-      const toY = v => 10 + ((1 - (v - minPL) / range2)) * (H - 30);
+    function stratGetLegs() {
+      const type = document.getElementById('strat-type').value;
+      const qty  = parseInt(document.getElementById('strat-qty').value) || 1;
+      const config = STRAT_CONFIGS[type];
+      if (!config || !stratChain) return [];
+      return config.legs.map(leg => {
+        const slider = document.getElementById('sl_' + leg.id);
+        const strike = slider ? snapStrike(parseFloat(slider.value)) : stratSpot;
+        const map = leg.type === 'call' ? stratChain.callExpDateMap : stratChain.putExpDateMap;
+        const contract = findContractAtStrike(map, strike);
+        const price = contract ? (contract.bid + contract.ask) / 2 : 0;
+        return { ...leg, strike, price, contract, qty };
+      });
+    }
+
+    function stratRecalc() {
+      if (!stratChain) return;
+      const legs = stratGetLegs();
+      const qty  = parseInt(document.getElementById('strat-qty').value) || 1;
+
+      // Update leg row prices
+      legs.forEach(leg => {
+        const priceEl = document.getElementById('legprice_' + leg.id);
+        const strikeEl = document.getElementById('legstrike_' + leg.id);
+        if (priceEl) priceEl.textContent = leg.price > 0 ? '$' + leg.price.toFixed(2) : '—';
+        if (strikeEl) strikeEl.textContent = '$' + leg.strike.toFixed(0);
+        // sync slider label
+        const labelEl = document.getElementById('sllabel_' + leg.id);
+        if (labelEl) labelEl.textContent = '$' + leg.strike.toFixed(0);
+      });
+
+      // Compute max profit / loss
+      const range = stratSpot * 0.2;
+      const points = 200;
+      const prices = Array.from({ length: points }, (_, i) => stratSpot - range + i * (range * 2 / points));
+      const pl = stratComputePL(prices);
+      const maxProfit = Math.max(...pl);
+      const maxLoss   = Math.min(...pl);
+
+      // Breakevens (zero crossings)
+      const bes = [];
+      for (let i = 1; i < pl.length; i++) {
+        if ((pl[i - 1] < 0 && pl[i] >= 0) || (pl[i - 1] >= 0 && pl[i] < 0)) {
+          const fraction = -pl[i - 1] / (pl[i] - pl[i - 1]);
+          bes.push(prices[i - 1] + fraction * (prices[i] - prices[i - 1]));
+        }
+      }
+
+      // Est. P(profit) — simple % of price range where PL > 0
+      const profitCount = pl.filter(v => v > 0).length;
+      const probProfit  = ((profitCount / points) * 100).toFixed(0);
+
+      document.getElementById('ss-maxprofit').textContent = maxProfit > 0 ? '$' + maxProfit.toFixed(0) : '—';
+      document.getElementById('ss-maxprofit').style.color  = maxProfit > 0 ? 'var(--accent)' : 'var(--text3)';
+      document.getElementById('ss-maxloss').textContent    = '$' + maxLoss.toFixed(0);
+      document.getElementById('ss-be').textContent         = bes.length ? bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—';
+      document.getElementById('ss-prob').textContent       = probProfit + '%';
+      document.getElementById('ss-prob').style.color       = probProfit >= 50 ? 'var(--green)' : 'var(--red)';
+
+      drawStrategyChart();
+    }
+
+    function drawStrategyChart() {
+      const canvas = document.getElementById('strat-chart');
+      if (!canvas || !stratChain) return;
+      const wrap = document.getElementById('strat-chart-wrap');
+      const W = wrap.offsetWidth || 600;
+      const H = 240;
+      canvas.width  = W * window.devicePixelRatio;
+      canvas.height = H * window.devicePixelRatio;
+      canvas.style.width  = W + 'px';
+      canvas.style.height = H + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.clearRect(0, 0, W, H);
+
+      const PAD_L = 52, PAD_R = 16, PAD_T = 14, PAD_B = 28;
+      const cW = W - PAD_L - PAD_R, cH = H - PAD_T - PAD_B;
+
+      const range = stratSpot * 0.15;
+      const points = 120;
+      const prices = Array.from({ length: points }, (_, i) => stratSpot - range + i * (range * 2 / points));
+      const pl = stratComputePL(prices);
+      const minPL = Math.min(...pl, 0), maxPL = Math.max(...pl, 0);
+      const plRange = maxPL - minPL || 1;
+
+      const toX = i  => PAD_L + (i / (points - 1)) * cW;
+      const toY = v  => PAD_T + (1 - (v - minPL) / plRange) * cH;
       const zeroY = toY(0);
 
-      // zero line
-      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(40, zeroY); ctx.lineTo(W, zeroY); ctx.stroke();
+      [0.25, 0.5, 0.75].forEach(f => {
+        const y = PAD_T + f * cH;
+        ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W - PAD_R, y); ctx.stroke();
+      });
 
-      // P/L fill
+      // Zero line
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(PAD_L, zeroY); ctx.lineTo(W - PAD_R, zeroY); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Profit fill (above zero)
       ctx.beginPath();
       ctx.moveTo(toX(0), zeroY);
       pl.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
       ctx.lineTo(toX(points - 1), zeroY);
       ctx.closePath();
-      const grad = ctx.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, 'rgba(220,255,30,0.25)');
-      grad.addColorStop(0.5, 'rgba(220,255,30,0.05)');
-      grad.addColorStop(1, 'rgba(180,35,240,0.2)');
-      ctx.fillStyle = grad;
-      ctx.fill();
+      const gradUp = ctx.createLinearGradient(0, PAD_T, 0, zeroY);
+      gradUp.addColorStop(0, 'rgba(220,255,30,0.30)');
+      gradUp.addColorStop(1, 'rgba(220,255,30,0.04)');
+      ctx.fillStyle = gradUp; ctx.fill();
+
+      // Loss fill (below zero)
+      ctx.beginPath();
+      ctx.moveTo(toX(0), zeroY);
+      pl.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
+      ctx.lineTo(toX(points - 1), zeroY);
+      ctx.closePath();
+      const gradDn = ctx.createLinearGradient(0, zeroY, 0, H - PAD_B);
+      gradDn.addColorStop(0, 'rgba(180,35,240,0.04)');
+      gradDn.addColorStop(1, 'rgba(180,35,240,0.25)');
+      ctx.fillStyle = gradDn; ctx.fill();
 
       // P/L line
       ctx.beginPath();
       pl.forEach((v, i) => i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)));
-      ctx.strokeStyle = pl[pl.length >> 1] >= 0 ? '#DCFF1E' : '#d470ff';
+      ctx.strokeStyle = '#DCFF1E';
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // spot line
-      const spotX = toX(40);
-      ctx.strokeStyle = 'rgba(59,140,255,0.5)';
+      // Spot price vertical dashed line
+      const spotIdx = points / 2;
+      ctx.strokeStyle = 'rgba(59,140,255,0.6)';
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(spotX, 0); ctx.lineTo(spotX, H - 20); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(toX(spotIdx), PAD_T); ctx.lineTo(toX(spotIdx), H - PAD_B); ctx.stroke();
       ctx.setLineDash([]);
 
-      // axis labels
-      ctx.fillStyle = 'rgba(120,130,160,0.8)'; ctx.font = '9px monospace'; ctx.textAlign = 'center';
-      [0, 20, 40, 60, 80 - 1].forEach(i => { ctx.fillText(fmt(prices[i]), toX(i), H - 5); });
+      // Spot label
+      ctx.fillStyle = 'rgba(59,140,255,0.9)';
+      ctx.font = 'bold 9px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('SPOT ' + stratSpot.toFixed(2), toX(spotIdx), PAD_T - 3);
+
+      // Strike vertical lines
+      const legs = stratGetLegs();
+      legs.forEach(leg => {
+        const legX = toX(prices.findIndex(p => p >= leg.strike));
+        if (legX < PAD_L || legX > W - PAD_R) return;
+        ctx.strokeStyle = leg.color.replace('var(--accent)', '#DCFF1E').replace('var(--purple)', '#B423F0');
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath(); ctx.moveTo(legX, PAD_T); ctx.lineTo(legX, H - PAD_B); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = leg.color.replace('var(--accent)', '#DCFF1E').replace('var(--purple)', '#B423F0');
+        ctx.font = '8px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('$' + leg.strike.toFixed(0), legX, H - PAD_B + 10);
+      });
+
+      // Y axis labels
+      ctx.fillStyle = 'rgba(120,130,160,0.7)';
+      ctx.font = '9px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText(fmtDollar(maxPL), 36, 15);
-      ctx.fillText(fmtDollar(minPL), 36, H - 22);
+      ctx.fillText('$' + maxPL.toFixed(0), PAD_L - 4, PAD_T + 4);
+      ctx.fillText('$0', PAD_L - 4, zeroY + 4);
+      ctx.fillText('$' + minPL.toFixed(0), PAD_L - 4, H - PAD_B);
+
+      // Hover cursor wiring (once)
+      if (!canvas._hoverBound) {
+        canvas._hoverBound = true;
+        canvas.addEventListener('mousemove', (e) => {
+          const rect = canvas.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const idx = Math.round(((mx - PAD_L) / cW) * (points - 1));
+          if (idx < 0 || idx >= points) { document.getElementById('strat-cursor').style.display = 'none'; return; }
+          const price = prices[idx];
+          const profit = pl[idx];
+          const cur = document.getElementById('strat-cursor');
+          cur.style.display = 'block';
+          cur.style.left = (mx + 12) + 'px';
+          cur.style.top  = (e.clientY - rect.top - 32) + 'px';
+          cur.innerHTML  = `<div style="font-size:10px;color:var(--text3)">Price: $${price.toFixed(2)}</div><div style="font-weight:700;color:${profit >= 0 ? 'var(--accent)' : 'var(--red)'};">${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}</div>`;
+        });
+        canvas.addEventListener('mouseleave', () => { document.getElementById('strat-cursor').style.display = 'none'; });
+      }
+    }
+
+    function stratTypeChange() {
+      const type = document.getElementById('strat-type').value;
+      const config = STRAT_CONFIGS[type];
+      document.getElementById('strat-type-label').textContent = config?.label ?? type;
+      stratBuildUI();
+      stratRecalc();
+    }
+
+    function stratSymbolChange() {
+      // debounce load
+      clearTimeout(stratSymbolChange._t);
+      stratSymbolChange._t = setTimeout(() => stratLoadExpirations(), 700);
+    }
+
+    async function stratLoadExpirations() {
+      const sym = (document.getElementById('strat-sym').value || 'SPY').toUpperCase();
+      const sel = document.getElementById('strat-expiry');
+      sel.innerHTML = '<option>Loading…</option>';
+      try {
+        const d = await apiGet(`/api/expirationchain?symbol=${sym}`);
+        if (!d.ok) throw new Error(d.error);
+        const exps = (d.data?.expirationList ?? []).slice(0, 20);
+        sel.innerHTML = exps.map((e, i) => `<option value="${e.expirationDate}" ${i === 1 ? 'selected' : ''}>${e.expirationDate} (${e.daysToExpiration}d)</option>`).join('');
+        await stratLoadChain();
+      } catch(e) {
+        sel.innerHTML = `<option>${e.message}</option>`;
+      }
+    }
+
+    async function stratLoadChain(force) {
+      if (!isConnected) { connectSchwab(); return; }
+      const sym    = (document.getElementById('strat-sym').value || 'SPY').toUpperCase();
+      const expiry = document.getElementById('strat-expiry').value;
+      if (!expiry || expiry === 'Loading…') return;
+
+      try {
+        const q = expiry ? `&fromDate=${expiry}&toDate=${expiry}` : '';
+        const d = await apiGet(`/api/chain?symbol=${sym}&contractType=ALL&strikeCount=40&includeUnderlyingQuote=true${q}`);
+        if (!d.ok) throw new Error(d.error);
+
+        stratChain = d.data;
+        stratSpot  = stratChain.underlyingPrice ?? 0;
+
+        // Build sorted strike list
+        const strikeSet = new Set();
+        const addStrikes = map => { if (!map) return; Object.values(map).forEach(s => Object.keys(s).forEach(k => strikeSet.add(parseFloat(k)))); };
+        addStrikes(stratChain.callExpDateMap);
+        addStrikes(stratChain.putExpDateMap);
+        stratStrikes = [...strikeSet].sort((a, b) => a - b);
+
+        stratBuildUI();
+        stratRecalc();
+      } catch (e) {
+        console.error('stratLoadChain:', e);
+      }
+    }
+
+    function stratBuildUI() {
+      const type   = document.getElementById('strat-type').value;
+      const config = STRAT_CONFIGS[type];
+      if (!config) return;
+
+      const n = stratStrikes.length;
+      const atmIdx = stratStrikes.reduce((best, s, i) => Math.abs(s - stratSpot) < Math.abs(stratStrikes[best] - stratSpot) ? i : best, 0);
+
+      // Build leg rows
+      document.getElementById('strat-legs').innerHTML = config.legs.map(leg => {
+        const targetStrike = stratSpot * (1 + leg.offsetPct);
+        const defIdx = stratStrikes.reduce((best, s, i) => Math.abs(s - targetStrike) < Math.abs(stratStrikes[best] - targetStrike) ? i : best, atmIdx);
+        const defStrike = stratStrikes[defIdx] ?? stratSpot;
+        return `<div class="leg-row">
+          <span class="leg-badge ${leg.dir === 'BUY' ? 'buy' : 'sell'}">${leg.dir}</span>
+          <span style="font-size:11px;color:var(--text2);flex:1">${leg.label}</span>
+          <span id="legstrike_${leg.id}" style="font-size:12px;font-weight:700;color:var(--text)">$${defStrike.toFixed(0)}</span>
+          <span id="legprice_${leg.id}" style="font-size:10px;color:var(--text3);min-width:48px;text-align:right">—</span>
+        </div>`;
+      }).join('');
+
+      // Build sliders
+      document.getElementById('strat-sliders').innerHTML = config.legs.map(leg => {
+        const targetStrike = stratSpot * (1 + leg.offsetPct);
+        const defIdx = stratStrikes.reduce((best, s, i) => Math.abs(s - targetStrike) < Math.abs(stratStrikes[best] - targetStrike) ? i : best, atmIdx);
+        const colorCss = leg.color.replace('var(--accent)', '#DCFF1E').replace('var(--purple)', '#B423F0');
+        return `<div class="slider-row">
+          <span class="leg-badge ${leg.dir === 'BUY' ? 'buy' : 'sell'}" style="font-size:9px;padding:2px 6px">${leg.dir.charAt(0)}</span>
+          <span style="font-size:10px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${leg.label}</span>
+          <span id="sllabel_${leg.id}" style="font-size:11px;font-weight:700;color:${colorCss};min-width:40px;text-align:right">$${(stratStrikes[defIdx] ?? stratSpot).toFixed(0)}</span>
+          <input type="range" class="strat-slider" id="sl_${leg.id}"
+            min="0" max="${n - 1}" step="1" value="${defIdx}"
+            style="--thumb-color:${colorCss}"
+            oninput="stratRecalc()">
+        </div>`;
+      }).join('');
+    }
+
+    // Legacy wrapper so navTo still works
+    async function runStrategyTest() {
+      if (!isConnected) { connectSchwab(); return; }
+      if (!stratChain) await stratLoadChain(true);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -3450,10 +3985,6 @@
     //  INIT
     // ═══════════════════════════════════════════════════════
     (async function init() {
-      // Set default strat expiry to 7 days out
-      const d = new Date(); d.setDate(d.getDate() + 7);
-      document.getElementById('strat-expiry').value = d.toISOString().slice(0, 10);
-
       // Check if already connected
       const connected = await checkTokenStatus();
       if (connected) {

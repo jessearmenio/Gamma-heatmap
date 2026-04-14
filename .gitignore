@@ -3,3 +3,4 @@ node_modules
 .DS_Store
 public/old-heat.html
 old-server.js
+public/heatv1.html
