@@ -642,12 +642,12 @@ app.get("/api/expirationchain", async (req, res) => {
 
 // Root route — serve dashboard
 app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+  res.sendFile(path.join(__dirname, "public", "heat.html"));
 });
 
 // Catch-all fallback
 app.get("*", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+  res.sendFile(path.join(__dirname, "public", "heat.html"));
 });
 
 app.listen(PORT, () => {
