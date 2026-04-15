@@ -28,7 +28,7 @@
       --border3: #16263d;
       --text: #e0e4f0;
       --text2: #7a8099;
-      --text3: #4a5069;
+      --text3: #71829d;
       --text4: #09111d;
       --accent: #DCFF1E;
       --accent2: #b8e000;
@@ -1070,7 +1070,7 @@
     /* ── Overview: Row 4 – Exec + Sector ── */
     .ov-row4 {
       display: grid;
-      grid-template-columns: 1fr 260px;
+      grid-template-columns: 1fr 1fr;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -1196,6 +1196,57 @@
 
     .ov-ring-verdict.SITOUT {
       color: var(--red);
+    }
+
+    /* ── Score panel dividers ── */
+    .ov-panel-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      margin: 2px 0;
+      flex-shrink: 0;
+    }
+
+    .ov-section-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      opacity: 0.6;
+      margin-bottom: 6px;
+    }
+
+    /* ── Top Contributing Factors ── */
+    .ov-top-factors {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .ov-factor-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .ov-factor-arrow {
+      font-size: 9px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+
+    .ov-factor-name {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .ov-factor-score {
+      font-size: 11px;
+      font-weight: 800;
+      min-width: 26px;
+      text-align: right;
     }
 
     /* ── Overview: Weight bars ── */
@@ -1671,8 +1722,9 @@
       height: 460px;
       /* total: ~320px candles + 140px RSI */
       border-radius: 0 0 8px 8px;
-      overflow: hidden;
+      overflow: visible;  /* must NOT be hidden — blocks LWC drag events */
       position: relative;
+      cursor: crosshair;
     }
 
     /* LWC chart legend row */
@@ -3399,7 +3451,29 @@
                   </div>
                 </div>
               </div>
-              <!-- Weight Bars -->
+              <!-- Top Contributing Factors -->
+              <div class="ov-panel-divider"></div>
+              <div>
+                <div class="ov-section-label">Top Contributing Factors</div>
+                <div class="ov-top-factors" id="ov-top-factors">
+                  <div class="ov-factor-row">
+                    <span class="ov-factor-arrow" id="ov-factor1-arrow" style="color:var(--green);">&#9650;</span>
+                    <span class="ov-factor-name"  id="ov-factor1-name">--</span>
+                    <span class="ov-factor-score" id="ov-factor1-score" style="color:var(--green);">--</span>
+                  </div>
+                  <div class="ov-factor-row">
+                    <span class="ov-factor-arrow" id="ov-factor2-arrow" style="color:var(--green);">&#9650;</span>
+                    <span class="ov-factor-name"  id="ov-factor2-name">--</span>
+                    <span class="ov-factor-score" id="ov-factor2-score" style="color:var(--green);">--</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Score Breakdown -->
+              <div class="ov-panel-divider"></div>
+              <div>
+                <div class="ov-section-label">Score Breakdown</div>
+                <!-- Weight Bars -->
               <div class="ov-weight-bars">
                 <div class="ov-weight-row">
                   <span class="ov-weight-label">Volatility</span>
@@ -3437,7 +3511,8 @@
                   <span class="ov-weight-score tone-neutral" id="ovscore-macro">--</span>
                 </div>
               </div>
-            </div>
+              </div><!-- end Score Breakdown wrapper -->
+            </div><!-- end #ov-score-panel -->
 
             <!-- SPY Chart -->
             <div id="ov-chart-card">
@@ -4984,6 +5059,28 @@
       ovSetWeightBar('ovscore-breadth', 'ovbar-breadth', scores.breadthScore);
       ovSetWeightBar('ovscore-mom', 'ovbar-mom', scores.momentumScore);
       ovSetWeightBar('ovscore-macro', 'ovbar-macro', scores.macroScore);
+
+      // Top Contributing Factors — top 2 by score
+      const factorList = [
+        { name: 'Volatility', score: Math.round(scores.volScore) },
+        { name: 'Trend',      score: Math.round(scores.trendScore) },
+        { name: 'Breadth',    score: Math.round(scores.breadthScore) },
+        { name: 'Momentum',   score: Math.round(scores.momentumScore) },
+        { name: 'Macro',      score: Math.round(scores.macroScore) },
+      ].sort((a, b) => b.score - a.score);
+
+      [1, 2].forEach(n => {
+        const f = factorList[n - 1];
+        if (!f) return;
+        const color  = f.score >= 70 ? 'var(--green)' : f.score >= 45 ? 'var(--accent)' : 'var(--red)';
+        const arrow  = f.score >= 50 ? '&#9650;' : '&#9660;';
+        const arrowEl = document.getElementById(`ov-factor${n}-arrow`);
+        const nameEl  = document.getElementById(`ov-factor${n}-name`);
+        const scoreEl = document.getElementById(`ov-factor${n}-score`);
+        if (arrowEl) { arrowEl.innerHTML = arrow; arrowEl.style.color = color; }
+        if (nameEl)  nameEl.textContent = f.name;
+        if (scoreEl) { scoreEl.textContent = f.score; scoreEl.style.color = color; }
+      });
     }
 
     function ovRenderVolatility(sc) {
@@ -5383,12 +5480,21 @@
           borderColor: 'rgba(255,255,255,0.06)',
           timeVisible: true,
           secondsVisible: false,
-          fixLeftEdge: true,
-          fixRightEdge: true,
-          rightOffset: 5,
+          fixLeftEdge:  false,
+          fixRightEdge: false,
+          rightOffset:  8,
         },
-        handleScroll: { mouseWheel: true, pressedMouseMove: true },
-        handleScale: { mouseWheel: true, pinch: true },
+        handleScroll: {
+          mouseWheel:        true,
+          pressedMouseMove:  true,   // drag to pan horizontally
+          horzTouchDrag:     true,
+          vertTouchDrag:     true,
+        },
+        handleScale: {
+          mouseWheel:  true,
+          pinch:       true,
+          axisPressedMouseMove: { time: true, price: true },
+        },
       });
 
       // ── Candle data (Schwab → LWC format) ──
