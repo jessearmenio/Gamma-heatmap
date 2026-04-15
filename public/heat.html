@@ -46,6 +46,8 @@
       --gold: #f5a623;
       --orange: #ff8c3b;
       --yellow: #ffd700;
+      --amber: #ffb020;
+      --amber-soft: rgba(255, 176, 32, 0.12);
       --nav-w: 220px;
       --header-h: 52px;
     }
@@ -1164,7 +1166,7 @@
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-top: 2px;
+      margin-top: 4px;
       display: block;
     }
 
@@ -1295,7 +1297,7 @@
     }
 
     .tone-caution {
-      color: var(--orange);
+      color: var(--amber);
     }
 
     .tone-neg {
@@ -1422,8 +1424,8 @@
     }
 
     .ov-metric-tag.caution {
-      background: rgba(255, 140, 59, 0.12);
-      color: var(--orange);
+      background: rgba(255, 176, 32, 0.12);
+      color: var(--amber);
     }
 
     .ov-metric-tag.neutral {
@@ -4736,9 +4738,9 @@
       return 'danger';
     }
     function ovBarColor(s) {
-      if (s >= 60) return 'linear-gradient(90deg,var(--green),rgba(34,221,136,0.5))';
-      if (s >= 40) return 'linear-gradient(90deg,var(--orange),rgba(255,140,59,0.5))';
-      return 'linear-gradient(90deg,var(--red),rgba(255,59,92,0.5))';
+      if (s >= 60) return 'linear-gradient(-90deg,var(--green),rgba(34,221,136,0.5))';
+      if (s >= 40) return 'linear-gradient(-90deg, var(--amber), rgba(255,176,32,0.5))';
+      return 'linear-gradient(-90deg,var(--red),rgba(255,59,92,0.5))';
     }
     function ovSetMetric(valId, tagId, value, tag, tone) {
       const vEl = document.getElementById(valId);
