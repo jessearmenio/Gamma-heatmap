@@ -1201,7 +1201,7 @@
     /* ── Score panel dividers ── */
     .ov-panel-divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.07), transparent);
       margin: 2px 0;
       flex-shrink: 0;
     }
@@ -1722,7 +1722,8 @@
       height: 460px;
       /* total: ~320px candles + 140px RSI */
       border-radius: 0 0 8px 8px;
-      overflow: visible;  /* must NOT be hidden — blocks LWC drag events */
+      overflow: visible;
+      /* must NOT be hidden — blocks LWC drag events */
       position: relative;
       cursor: crosshair;
     }
@@ -1902,7 +1903,7 @@
       margin-bottom: 12px;
     }
 
-    #ov-terminal-card .card-title{
+    #ov-terminal-card .card-title {
       color: var(--purple3);
       font-size: 13px
     }
@@ -3458,12 +3459,12 @@
                 <div class="ov-top-factors" id="ov-top-factors">
                   <div class="ov-factor-row">
                     <span class="ov-factor-arrow" id="ov-factor1-arrow" style="color:var(--green);">&#9650;</span>
-                    <span class="ov-factor-name"  id="ov-factor1-name">--</span>
+                    <span class="ov-factor-name" id="ov-factor1-name">--</span>
                     <span class="ov-factor-score" id="ov-factor1-score" style="color:var(--green);">--</span>
                   </div>
                   <div class="ov-factor-row">
                     <span class="ov-factor-arrow" id="ov-factor2-arrow" style="color:var(--green);">&#9650;</span>
-                    <span class="ov-factor-name"  id="ov-factor2-name">--</span>
+                    <span class="ov-factor-name" id="ov-factor2-name">--</span>
                     <span class="ov-factor-score" id="ov-factor2-score" style="color:var(--green);">--</span>
                   </div>
                 </div>
@@ -3474,43 +3475,44 @@
               <div>
                 <div class="ov-section-label">Score Breakdown</div>
                 <!-- Weight Bars -->
-              <div class="ov-weight-bars">
-                <div class="ov-weight-row">
-                  <span class="ov-weight-label">Volatility</span>
-                  <div class="ov-weight-bar-track">
-                    <div class="ov-weight-bar-fill" id="ovbar-vol" style="width:0%;background:var(--text3);"></div>
+                <div class="ov-weight-bars">
+                  <div class="ov-weight-row">
+                    <span class="ov-weight-label">Volatility</span>
+                    <div class="ov-weight-bar-track">
+                      <div class="ov-weight-bar-fill" id="ovbar-vol" style="width:0%;background:var(--text3);"></div>
+                    </div>
+                    <span class="ov-weight-score tone-neutral" id="ovscore-vol">--</span>
                   </div>
-                  <span class="ov-weight-score tone-neutral" id="ovscore-vol">--</span>
-                </div>
-                <div class="ov-weight-row">
-                  <span class="ov-weight-label">Trend</span>
-                  <div class="ov-weight-bar-track">
-                    <div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);"></div>
+                  <div class="ov-weight-row">
+                    <span class="ov-weight-label">Trend</span>
+                    <div class="ov-weight-bar-track">
+                      <div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);"></div>
+                    </div>
+                    <span class="ov-weight-score tone-neutral" id="ovscore-trend">--</span>
                   </div>
-                  <span class="ov-weight-score tone-neutral" id="ovscore-trend">--</span>
-                </div>
-                <div class="ov-weight-row">
-                  <span class="ov-weight-label">Breadth</span>
-                  <div class="ov-weight-bar-track">
-                    <div class="ov-weight-bar-fill" id="ovbar-breadth" style="width:0%;background:var(--text3);"></div>
+                  <div class="ov-weight-row">
+                    <span class="ov-weight-label">Breadth</span>
+                    <div class="ov-weight-bar-track">
+                      <div class="ov-weight-bar-fill" id="ovbar-breadth" style="width:0%;background:var(--text3);">
+                      </div>
+                    </div>
+                    <span class="ov-weight-score tone-neutral" id="ovscore-breadth">--</span>
                   </div>
-                  <span class="ov-weight-score tone-neutral" id="ovscore-breadth">--</span>
-                </div>
-                <div class="ov-weight-row">
-                  <span class="ov-weight-label">Momentum</span>
-                  <div class="ov-weight-bar-track">
-                    <div class="ov-weight-bar-fill" id="ovbar-mom" style="width:0%;background:var(--text3);"></div>
+                  <div class="ov-weight-row">
+                    <span class="ov-weight-label">Momentum</span>
+                    <div class="ov-weight-bar-track">
+                      <div class="ov-weight-bar-fill" id="ovbar-mom" style="width:0%;background:var(--text3);"></div>
+                    </div>
+                    <span class="ov-weight-score tone-neutral" id="ovscore-mom">--</span>
                   </div>
-                  <span class="ov-weight-score tone-neutral" id="ovscore-mom">--</span>
-                </div>
-                <div class="ov-weight-row">
-                  <span class="ov-weight-label">Macro</span>
-                  <div class="ov-weight-bar-track">
-                    <div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);"></div>
+                  <div class="ov-weight-row">
+                    <span class="ov-weight-label">Macro</span>
+                    <div class="ov-weight-bar-track">
+                      <div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);"></div>
+                    </div>
+                    <span class="ov-weight-score tone-neutral" id="ovscore-macro">--</span>
                   </div>
-                  <span class="ov-weight-score tone-neutral" id="ovscore-macro">--</span>
                 </div>
-              </div>
               </div><!-- end Score Breakdown wrapper -->
             </div><!-- end #ov-score-panel -->
 
@@ -5063,22 +5065,22 @@
       // Top Contributing Factors — top 2 by score
       const factorList = [
         { name: 'Volatility', score: Math.round(scores.volScore) },
-        { name: 'Trend',      score: Math.round(scores.trendScore) },
-        { name: 'Breadth',    score: Math.round(scores.breadthScore) },
-        { name: 'Momentum',   score: Math.round(scores.momentumScore) },
-        { name: 'Macro',      score: Math.round(scores.macroScore) },
+        { name: 'Trend', score: Math.round(scores.trendScore) },
+        { name: 'Breadth', score: Math.round(scores.breadthScore) },
+        { name: 'Momentum', score: Math.round(scores.momentumScore) },
+        { name: 'Macro', score: Math.round(scores.macroScore) },
       ].sort((a, b) => b.score - a.score);
 
       [1, 2].forEach(n => {
         const f = factorList[n - 1];
         if (!f) return;
-        const color  = f.score >= 70 ? 'var(--green)' : f.score >= 45 ? 'var(--accent)' : 'var(--red)';
-        const arrow  = f.score >= 50 ? '&#9650;' : '&#9660;';
+        const color = f.score >= 70 ? 'var(--green)' : f.score >= 45 ? 'var(--accent)' : 'var(--red)';
+        const arrow = f.score >= 50 ? '&#9650;' : '&#9660;';
         const arrowEl = document.getElementById(`ov-factor${n}-arrow`);
-        const nameEl  = document.getElementById(`ov-factor${n}-name`);
+        const nameEl = document.getElementById(`ov-factor${n}-name`);
         const scoreEl = document.getElementById(`ov-factor${n}-score`);
         if (arrowEl) { arrowEl.innerHTML = arrow; arrowEl.style.color = color; }
-        if (nameEl)  nameEl.textContent = f.name;
+        if (nameEl) nameEl.textContent = f.name;
         if (scoreEl) { scoreEl.textContent = f.score; scoreEl.style.color = color; }
       });
     }
@@ -5212,7 +5214,7 @@
       if (parts.length > 0) {
         banner.style.display = 'flex';
         banner.className = sc.VIX > 30 ? 'danger' : '';
-        textEl.textContent = '\u26a1 ' + parts.join('  |  ');
+        textEl.textContent = parts.join('  |  ');
         document.getElementById('ov-macro-alert').id = 'ov-macro-alert';
       } else {
         banner.style.display = 'none';
@@ -5480,19 +5482,19 @@
           borderColor: 'rgba(255,255,255,0.06)',
           timeVisible: true,
           secondsVisible: false,
-          fixLeftEdge:  false,
+          fixLeftEdge: false,
           fixRightEdge: false,
-          rightOffset:  8,
+          rightOffset: 8,
         },
         handleScroll: {
-          mouseWheel:        true,
-          pressedMouseMove:  true,   // drag to pan horizontally
-          horzTouchDrag:     true,
-          vertTouchDrag:     true,
+          mouseWheel: true,
+          pressedMouseMove: true,   // drag to pan horizontally
+          horzTouchDrag: true,
+          vertTouchDrag: true,
         },
         handleScale: {
-          mouseWheel:  true,
-          pinch:       true,
+          mouseWheel: true,
+          pinch: true,
           axisPressedMouseMove: { time: true, price: true },
         },
       });
