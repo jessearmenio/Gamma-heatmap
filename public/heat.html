@@ -19,7 +19,7 @@
     :root {
       --pinkgradient: linear-gradient(-45deg, #cc2b5e, #753a88, #ec008c, #6dd5ed);
       --graygradient: linear-gradient(180deg, #0b1730, #07111e);
-      --bg: #0a0b0d;
+      --bg: #030915;
       --bg2: #0f1114;
       --bg3: #141720;
       --panel: #151820;
@@ -36,6 +36,7 @@
       --pink: #CC27C5;
       --purple: #B423F0;
       --purple2: #8a16c0;
+      --purple3: #b46cff;
       --green: #22dd88;
       --red: #ff3b5c;
       --blue: #3b8cff;
@@ -53,11 +54,11 @@
     body {
       height: 100%;
       overflow: hidden;
+      background: radial-gradient(circle at top, #0b1830 0%, var(--bg) 45%);
     }
 
     body {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
-      background: var(--bg);
       color: var(--text);
       font-size: 12px;
       letter-spacing: 0.02em;
@@ -128,6 +129,7 @@
       flex-shrink: 0;
       transition: background 0.15s, color 0.15s;
       line-height: 1;
+      padding-bottom: 2px;
     }
 
     #nav-toggle:hover {
@@ -213,6 +215,12 @@
       background: #2a2e3d;
       color: var(--text2);
       border: 1px solid var(--border2);
+    }
+
+    #connect-btn.disconnected:hover {
+      color: var(--text, #e6edf7);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text, #e6edf7);
     }
 
     #status-dot {
@@ -439,8 +447,9 @@
 
     /* ── Cards / Panels ── */
     .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -457,7 +466,7 @@
     .card-title {
       font-size: 11px;
       font-weight: 700;
-      color: var(--text);
+      color: var(--cyan);
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
@@ -569,9 +578,9 @@
     }
 
     .kl-pill.spot {
-      background: rgba(59, 140, 255, 0.15);
-      color: var(--blue);
-      border: 1px solid rgba(59, 140, 255, 0.3);
+      background: #2a2e3d;
+      color: var(--text2);
+      border: 1px solid var(--border2);
     }
 
     .kl-pill.king {
@@ -658,10 +667,9 @@
     }
 
     .connect-overlay .co-btn {
-      color: var(--green);
-      background: rgba(38, 217, 127, 0.12);
-      border-color: rgba(38, 217, 127, 0.2);
-
+      background: #2a2e3d;
+      color: var(--text2);
+      border: 1px solid var(--border2);
       border-radius: 6px;
       padding: 9px 22px;
       font-size: 12px;
@@ -1080,8 +1088,9 @@
 
     /* ── Overview: Score Ring Panel ── */
     #ov-score-panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       padding: 16px;
       display: flex;
@@ -1267,8 +1276,9 @@
     }
 
     .ov-panel-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
       display: flex;
@@ -1386,8 +1396,9 @@
 
     /* ── Overview: Execution Window ── */
     #ov-exec-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -1537,8 +1548,9 @@
 
     /* ── Overview: Sector Performance ── */
     #ov-sector-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -1639,8 +1651,9 @@
     }
 
     #ov-chart-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -1715,8 +1728,9 @@
 
     /* ── Overview: Geo Risk stories ── */
     #ov-geo-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -1765,6 +1779,28 @@
       gap: 8px;
     }
 
+    .geo-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: pulse-extreme 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-extreme {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+      }
+    }
+
     .ov-geo-sev {
       font-size: 8px;
       font-weight: 700;
@@ -1806,11 +1842,17 @@
 
     /* ── Overview: Terminal Analysis ── */
     #ov-terminal-card {
-      background: var(--panel);
-      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
       overflow: hidden;
       margin-bottom: 12px;
+    }
+
+    #ov-terminal-card .card-title{
+      color: var(--purple3);
+      font-size: 13px
     }
 
     #ov-terminal-header {
@@ -3659,7 +3701,7 @@
             <!-- Execution Window -->
             <div id="ov-exec-card">
               <div class="ov-exec-header">
-                <span class="card-title">&#9881; Execution Window</span>
+                <span class="card-title">Execution Window</span>
                 <span style="font-size:10px;color:var(--text3);">Score: <b id="ov-exec-score"
                     style="color:var(--text);">--</b></span>
               </div>
@@ -3718,7 +3760,7 @@
           <div class="ov-row5">
             <div id="ov-terminal-card">
               <div id="ov-terminal-header">
-                <span class="card-title">&#11035; Terminal Analysis</span>
+                <span class="card-title">Terminal Analysis</span>
                 <span id="ov-terminal-updated" style="font-size:9px;color:var(--text3);">--</span>
               </div>
               <div id="ov-terminal-body">
@@ -3742,7 +3784,8 @@
           <div style="margin-bottom:12px;">
             <div id="ov-geo-card">
               <div id="ov-geo-header">
-                <span class="card-title">&#127757; Geo Risk Intel</span>
+                <div class="geo-live-dot"></div>
+                <span class="card-title">Geo Risk Intel</span>
                 <span id="ov-geo-risk-badge"
                   style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(122,128,153,0.15);color:var(--text3);">--</span>
               </div>
