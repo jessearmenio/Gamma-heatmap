@@ -1897,9 +1897,8 @@
       position: absolute;
       top: 0;
       left: 0;
-      pointer-events: all; /* needs mouse events for hover tooltip */
+      pointer-events: none; /* pass all events through to LWC chart underneath */
       z-index: 5;
-      cursor: crosshair;
     }
 
     /* Gamma bar hover tooltip */
@@ -3993,9 +3992,7 @@
             <div class="card">
               <div class="card-header"><span class="card-title">Market Movers &#8212; $SPX</span></div>
               <div class="card-body" id="ov-movers-body" style="padding:0;">
-                <div class="connect-overlay" style="min-height:150px;">
-                  <div class="loading-ring"></div>
-                </div>
+                <div style="padding:12px;font-size:10px;color:var(--text3);">Waiting for data…</div>
               </div>
             </div>
           </div><!-- end ov-row3 -->
@@ -6134,6 +6131,13 @@
       const MAX_BAR = 240;
       const maxAbsGex = Math.max(...ovGammaData.map(d => Math.abs(d.netGex)), 1);
 
+      // Find the king node — strike with the highest absolute GEX
+      let kingStrike = null;
+      let kingAbsGex = 0;
+      for (const { strike, netGex } of ovGammaData) {
+        if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
+      }
+
       ovGammaHitBoxes = [];
 
       for (const { strike, netGex } of ovGammaData) {
@@ -6155,22 +6159,25 @@
         const barW = Math.round((Math.abs(netGex) / maxAbsGex) * MAX_BAR);
         if (barW < 1) continue;
 
-        ctx.fillStyle = netGex > 0 ? 'rgba(220,255,30,0.55)' : 'rgba(138,22,192,0.55)';
+        // King node gets gold; all others get standard +/- GEX color
+        const isKing = strike === kingStrike;
+        ctx.fillStyle = isKing ? 'rgba(245,166,35,0.85)' : (netGex > 0 ? 'rgba(220,255,30,0.55)' : 'rgba(138,22,192,0.55)');
         ctx.fillRect(0, y - barH / 2, barW, barH);
 
         // Store hit box for hover
-        ovGammaHitBoxes.push({ x: 0, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex });
+        ovGammaHitBoxes.push({ x: 0, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex, isKing });
       }
 
-      // Wire hover events once (flag on canvas)
-      if (!canvas._gammaHoverInit) {
-        canvas._gammaHoverInit = true;
+      // Wire hover events on chart container (canvas is pointer-events:none so LWC drag still works)
+      if (!chartEl._gammaHoverInit) {
+        chartEl._gammaHoverInit = true;
         const tip = document.getElementById('ov-gamma-tip');
-        canvas.addEventListener('mousemove', (e) => {
-          const rect = canvas.getBoundingClientRect();
+        chartEl.addEventListener('mousemove', (e) => {
+          const rect = chartEl.getBoundingClientRect();
           const mx = e.clientX - rect.left;
           const my = e.clientY - rect.top;
-          // Find bar under cursor (search closest Y first, within X range)
+          // Only check if cursor is in the GEX bar zone (left side)
+          if (mx > 260) { if (tip) tip.style.display = 'none'; return; }
           let hit = null;
           let bestDist = Infinity;
           for (const hb of ovGammaHitBoxes) {
@@ -6182,8 +6189,9 @@
           }
           if (hit && tip) {
             const sign = hit.netGex >= 0 ? '+' : '';
-            const col = hit.netGex >= 0 ? '#DCFF1E' : '#9C27B0';
-            tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b> &nbsp; <span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span> <span style="color:var(--text3);font-size:9px;">Net GEX</span>`;
+            const col = hit.isKing ? '#f5a623' : (hit.netGex >= 0 ? '#DCFF1E' : '#9C27B0');
+            const kingTag = hit.isKing ? ' <span style="color:#f5a623;font-size:9px;">★ King Node</span>' : '';
+            tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b> &nbsp; <span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span> <span style="color:var(--text3);font-size:9px;">Net GEX</span>${kingTag}`;
             tip.style.display = 'block';
             tip.style.left = (e.clientX + 14) + 'px';
             tip.style.top  = (e.clientY - 10) + 'px';
@@ -6191,7 +6199,7 @@
             tip.style.display = 'none';
           }
         });
-        canvas.addEventListener('mouseleave', () => {
+        chartEl.addEventListener('mouseleave', () => {
           const tip = document.getElementById('ov-gamma-tip');
           if (tip) tip.style.display = 'none';
         });
@@ -6291,15 +6299,20 @@
             const cfg = TF_INTRADAY[tf];
             const url = `/api/pricehistory?symbol=SPY&periodType=${cfg.periodType}&period=${cfg.period}&frequencyType=${cfg.frequencyType}&frequency=${cfg.frequency}&needExtendedHoursData=true`;
             const d = await apiGet(url);
-            if (d.ok && d.data?.candles?.length) {
-              ovState.intraday[tf] = d.data.candles;
+            // apiGet returns the parsed {ok, data} JSON wrapper directly
+            const candles = d?.candles || d?.data?.candles;
+            if (candles && candles.length) {
+              ovState.intraday[tf] = candles;
               ovRenderChart(ovState.intraday[tf]);
             } else {
-              ovRenderChart(null);
+              const container2 = document.getElementById('ov-spy-chart');
+              if (container2) container2.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">No intraday data returned</div>';
             }
           } catch (e) {
             console.warn('ovSetChartTf intraday fetch:', e);
-            ovRenderChart(null);
+            ovLogTerminalError('CHART_TF', `Intraday ${tf} fetch failed: ${e.message}`);
+            const container2 = document.getElementById('ov-spy-chart');
+            if (container2) container2.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Chart data unavailable — check terminal</div>';
           }
         }
       } else {
@@ -6500,15 +6513,22 @@
         }
         const movers = Array.isArray(d.data) ? d.data : (d.data.screeners || []);
         const top = movers.slice(0, 8);
-        document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => `
+        document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => {
+          // Schwab movers API uses lastPrice / netChange / netPercentChange / totalVolume
+          const price  = m.lastPrice   ?? m.last   ?? m.close ?? null;
+          const chgPct = m.netPercentChange ?? m.percentChange ?? m.change ?? null;
+          const chgAbs = m.netChange ?? null;
+          const vol    = m.totalVolume ?? m.volume ?? null;
+          return `
       <div class="mover-row">
         <span class="mover-rank">${i + 1}</span>
-        <span class="mover-sym">${m.symbol}</span>
+        <span class="mover-sym">${m.symbol || ''}</span>
         <span class="mover-desc">${m.description || ''}</span>
-        <span class="mover-price ${chgClass(m.change)}">${fmt(m.last)}</span>
-        <span class="mover-chg ${chgClass(m.change)}">${chgPrefix(m.change)}${fmt(m.change)}%</span>
-        <span class="mover-vol">${fmtK(m.totalVolume)}</span>
-      </div>`).join('');
+        <span class="mover-price ${chgClass(chgAbs ?? chgPct)}">$${fmt(price)}</span>
+        <span class="mover-chg ${chgClass(chgAbs ?? chgPct)}">${chgPrefix(chgAbs ?? chgPct)}${fmt(chgPct)}%</span>
+        <span class="mover-vol">${fmtK(vol)}</span>
+      </div>`;
+        }).join('');
       } catch (e) {
         ovLogTerminalError('MOVERS', e.message);
         document.getElementById('ov-movers-body').innerHTML = `<div style="padding:12px;font-size:10px;color:var(--text3);">Movers unavailable: ${e.message}</div>`;

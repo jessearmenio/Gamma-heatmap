@@ -515,6 +515,9 @@ app.get("/api/movers", async (req, res) => {
         timeout: 30000
       }
     );
+    // Log first mover item to help debug field names
+    const sample = Array.isArray(response.data) ? response.data[0] : (response.data?.screeners?.[0]);
+    if (sample) console.log('MOVERS sample keys:', Object.keys(sample).join(', '));
     res.json({ ok: true, data: response.data });
   } catch (error) {
     console.error("MOVERS ERROR:", error.response?.data || error.message);
@@ -539,7 +542,7 @@ app.get("/api/pricehistory", async (req, res) => {
       period:        req.query.period        || "5",
       frequencyType: req.query.frequencyType || "minute",
       frequency:     req.query.frequency     || "5",
-      needExtendedHoursData: req.query.needExtendedHoursData || false
+      needExtendedHoursData: req.query.needExtendedHoursData === 'true' || req.query.needExtendedHoursData === true
     };
     if (req.query.startDate) params.startDate = req.query.startDate;
     if (req.query.endDate)   params.endDate   = req.query.endDate;
