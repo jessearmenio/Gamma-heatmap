@@ -19,6 +19,10 @@
     :root {
       --pinkgradient: linear-gradient(-45deg, #cc2b5e, #753a88, #ec008c, #6dd5ed);
       --graygradient: linear-gradient(180deg, #0b1730, #07111e);
+      --lightpost: rgba(41, 98, 255, 0.2);
+      --post: #2962FF;
+      --lightpre: rgba(255, 152, 1, 0.2);
+      --pre: #FF9801;
       --bg: #030915;
       --bg2: #0f1114;
       --bg3: #141720;
@@ -381,52 +385,184 @@
       color: var(--red);
     }
 
+    /* ── Market status badge ── */
     #market-status-badge {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 12px;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
     }
 
-    #market-status-badge.open {
-      background: rgba(34, 221, 136, 0.15);
-      color: var(--green);
-    }
-
-    #market-status-badge.closed {
-      background: rgba(255, 59, 92, 0.12);
-      color: var(--red);
-    }
-
-    #refresh-btn {
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      color: var(--text2);
-      padding: 5px 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 11px;
-      font-family: inherit;
-      transition: all 0.15s;
+    #market-status-badge .ms-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
       flex-shrink: 0;
     }
 
-    #refresh-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
+    #market-status-badge.open {
+      background: rgba(34, 221, 136, 0.12);
+      color: var(--green);
     }
 
-    #refresh-btn.spinning {
+    #market-status-badge.open .ms-dot {
+      background: var(--green);
+      box-shadow: 0 0 5px var(--green);
+    }
+
+    #market-status-badge.closed {
+      background: rgba(255, 59, 92, 0.10);
+      color: var(--red);
+    }
+
+    #market-status-badge.closed .ms-dot {
+      background: var(--red);
+    }
+
+    #market-status-badge.pre {
+      background: var(--lightpre);
+      color: var(--text3);
+    }
+
+    #market-status-badge.pre .ms-dot {
+      background: var(--pre);
+    }
+
+    #market-status-badge.post {
+      background: var(--lightpost);
+      color: var(--text3);
+    }
+
+    #market-status-badge.post .ms-dot {
+      background: var(--post);
+    }
+
+    /* ── Topbar right controls cluster ── */
+    #topbar-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    #updated-ago {
+      font-size: 9px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
+    #updated-ago b {
+      color: var(--text2);
+      font-weight: 600;
+    }
+
+    spanu {
+      padding-right: 5px;
+    }
+
+    .topbar-icon-btn {
+      width: 28px;
+      height: 28px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      color: var(--text2);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+      font-family: inherit;
+    }
+
+    .topbar-icon-btn:hover {
+      color: var(--text, #e6edf7);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text, #e6edf7);
+    }
+
+    .topbar-icon-btn.paused {
+color: #ffb020;
+box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
+    }
+
+    spanp{
+      padding-top: 3px;
+    }
+
+    .topbar-icon-btn.spinning {
       animation: spin 0.7s linear infinite;
+      transition: fade-out 0.5s;
+    }
+
+    #refresh-btn.refreshing {
+      background: var(--green);
+      color: #000;
+      box-shadow: 0 0 10px rgba(34, 221, 136, 0.6);
+      transition: all 0.2s ease;
     }
 
     @keyframes spin {
       to {
         transform: rotate(360deg);
       }
+    }
+
+    /* ── Connect button dropdown ── */
+    #connect-area {
+      position: relative;
+    }
+
+    #connect-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      z-index: 999;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    }
+
+    #connect-dropdown.open {
+      display: block;
+    }
+
+    .connect-dd-item {
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text2);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.12s;
+    }
+
+    .connect-dd-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+    }
+
+    .connect-dd-item.danger {
+      color: var(--red);
+    }
+
+    .connect-dd-item.danger:hover {
+      background: rgba(255, 59, 92, 0.1);
     }
 
     /* ── Page content ── */
@@ -3260,10 +3396,19 @@
       </div>
 
       <div id="connect-area">
-        <button id="connect-btn" onclick="connectSchwab()">
+        <button id="connect-btn" onclick="onConnectBtnClick()">
           <div id="status-dot" class="offline"></div>
           <span class="btn-label" id="connect-label">Connect Schwab</span>
         </button>
+        <!-- Dropdown: shown only when connected -->
+        <div id="connect-dropdown">
+          <div class="connect-dd-item" onclick="reconnectSchwab()">
+            <span>&#8635;</span> Reconnect
+          </div>
+          <div class="connect-dd-item danger" onclick="disconnectSchwab()">
+            <span>&#215;</span> Disconnect &amp; Clear Token
+          </div>
+        </div>
       </div>
 
       <ul id="nav-list">
@@ -3350,8 +3495,20 @@
             <span class="t-chg flat">—</span>
           </div>
         </div>
-        <div id="market-status-badge" class="closed">Closed</div>
-        <button id="refresh-btn" onclick="refreshCurrentPage()">↻ Refresh</button>
+        <!-- Right-side controls cluster -->
+        <div id="topbar-controls">
+          <div id="market-status-badge" class="closed">
+            <span class="ms-dot"></span>
+            <span id="ms-label">Market Closed</span>
+          </div>
+          <span id="updated-ago" style="display:none;">
+            <spanu>updated</spanu><b id="ago-val">--</b>
+          </span>
+          <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()"
+            title="Refresh now">&#8635;</button>
+          <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()"
+            title="Pause auto-refresh"><spanp>⏸</spanp></button>
+        </div>
       </div>
 
       <!-- page content -->
@@ -4373,6 +4530,10 @@
     let lastHeatData = null;
     let lastQuotesData = null;
     let autoRefreshTimer = null;
+    let isPaused = false;
+    let lastRefreshTime = null;
+    let agoTimer = null;
+    let sessionTimer = null;
 
     // ═══════════════════════════════════════════════════════
     //  NAVIGATION
@@ -4415,10 +4576,18 @@
     }
 
     function refreshCurrentPage() {
+      const btn = document.getElementById('refresh-btn');
+      if (btn) {
+        btn.classList.add('spinning', 'refreshing');
+        setTimeout(() => {
+          btn.classList.remove('spinning', 'refreshing');
+        }, 720);
+      }
       const active = document.querySelector('.nav-item.active');
       if (active) autoLoadPage(active.dataset.page);
-      // Also refresh ticker
       if (isConnected) loadTickerBar();
+      lastRefreshTime = Date.now();
+      updateAgoDisplay();
     }
 
     // ═══════════════════════════════════════════════════════
@@ -4433,29 +4602,154 @@
       } catch { setConnected(false); return false; }
     }
 
+    // ── Connection state ──
     function setConnected(v) {
       isConnected = v;
       const btn = document.getElementById('connect-btn');
       const dot = document.getElementById('status-dot');
       const lbl = document.getElementById('connect-label');
+      const dd = document.getElementById('connect-dropdown');
       if (v) {
         btn.className = 'connected';
         dot.className = 'online';
         lbl.textContent = 'Connected';
-        btn.onclick = null;
         loadTickerBar();
         loadOverview();
       } else {
         btn.className = 'disconnected';
         dot.className = 'offline';
         lbl.textContent = 'Connect Schwab';
-        btn.onclick = connectSchwab;
+        if (dd) dd.classList.remove('open');
       }
     }
 
+    // When the connect button is clicked:
+    // • If disconnected → start OAuth flow
+    // • If connected   → toggle dropdown (Reconnect / Disconnect)
+    function onConnectBtnClick() {
+      if (!isConnected) {
+        connectSchwab();
+      } else {
+        const dd = document.getElementById('connect-dropdown');
+        dd.classList.toggle('open');
+      }
+    }
+
+    // Close dropdown if user clicks anywhere outside
+    document.addEventListener('click', e => {
+      const area = document.getElementById('connect-area');
+      if (area && !area.contains(e.target)) {
+        document.getElementById('connect-dropdown')?.classList.remove('open');
+      }
+    });
+
     function connectSchwab() {
-      // Opens Schwab OAuth in same window; server handles redirect
       window.location.href = `${API_BASE}/login`;
+    }
+
+    function reconnectSchwab() {
+      document.getElementById('connect-dropdown')?.classList.remove('open');
+      connectSchwab();
+    }
+
+    async function disconnectSchwab() {
+      document.getElementById('connect-dropdown')?.classList.remove('open');
+      // Ask server to clear the token
+      try { await fetch(`${API_BASE}/api/logout`, { method: 'POST' }); } catch (e) { }
+      // Clear local state regardless
+      clearInterval(autoRefreshTimer);
+      autoRefreshTimer = null;
+      clearInterval(agoTimer);
+      agoTimer = null;
+      lastRefreshTime = null;
+      // Reset pause state
+      isPaused = false;
+      const pauseBtn = document.getElementById('pause-btn');
+      if (pauseBtn) pauseBtn.classList.remove('paused');
+      document.getElementById('updated-ago').style.display = 'none';
+      updateMarketSessionBadge();
+      setConnected(false);
+    }
+
+    // ── Market session (client-side CST) ──
+    function getMarketSession() {
+      const now = new Date();
+      // CST = UTC-6 standard / UTC-5 DST — trading hours are fixed wall-clock,
+      // so we convert current UTC to CST offset (-6 std, -5 DST).
+      // Easier: use toLocaleString to get CST time string directly.
+      const cstStr = now.toLocaleString('en-US', { timeZone: 'America/Chicago' });
+      const cst = new Date(cstStr);
+      const day = cst.getDay(); // 0=Sun,6=Sat
+      const h = cst.getHours();
+      const m = cst.getMinutes();
+      const mins = h * 60 + m;
+
+      // Weekend → always closed
+      if (day === 0 || day === 6) return 'closed';
+
+      // Weekday minute thresholds (CST)
+      const PRE_START = 3 * 60;        // 3:00 AM
+      const OPEN_START = 8 * 60 + 30;   // 8:30 AM
+      const CLOSE_END = 15 * 60;       // 3:00 PM
+      const POST_END = 27 * 60;       // 3:00 AM next day (= 24+3)
+
+      if (mins >= OPEN_START && mins < CLOSE_END) return 'open';
+      if (mins >= PRE_START && mins < OPEN_START) return 'pre';
+      // Post-market: 3pm → midnight, or midnight → 3am next day
+      if (mins >= CLOSE_END || mins < PRE_START) return 'post';
+      return 'closed';
+    }
+
+    function updateMarketSessionBadge() {
+      const session = getMarketSession();
+      const badge = document.getElementById('market-status-badge');
+      const label = document.getElementById('ms-label');
+      const pauseLabel = isPaused ? ' (PAUSED)' : '';
+      if (!badge || !label) return session;
+      badge.className = session; // 'open' | 'pre' | 'post' | 'closed'
+      const labels = { open: 'Market Open', pre: 'Pre-Market', post: 'Post-Market', closed: 'Market Closed' };
+      label.textContent = (labels[session] || 'Market Closed') + pauseLabel;
+      return session;
+    }
+
+    function startSessionTicker() {
+      updateMarketSessionBadge();
+      if (sessionTimer) clearInterval(sessionTimer);
+      sessionTimer = setInterval(updateMarketSessionBadge, 30000);
+    }
+
+    // ── Updated-ago display ──
+    function updateAgoDisplay() {
+      const el = document.getElementById('updated-ago');
+      const val = document.getElementById('ago-val');
+      if (!el || !val) return;
+      if (!lastRefreshTime) { el.style.display = 'none'; return; }
+      el.style.display = 'inline-flex';
+      const diffMs = Date.now() - lastRefreshTime;
+      const diffM = Math.round(diffMs / 60000);
+      val.textContent = diffM <= 0 ? 'just now' : diffM + 'm ago';
+    }
+
+    function startAgoTimer() {
+      if (agoTimer) clearInterval(agoTimer);
+      agoTimer = setInterval(updateAgoDisplay, 30000);
+    }
+
+    // ── Pause toggle ──
+    function togglePause() {
+      isPaused = !isPaused;
+      const btn = document.getElementById('pause-btn');
+      if (btn) btn.classList.toggle('paused', isPaused);
+      updateMarketSessionBadge();
+      if (isPaused) {
+        // Stop auto-refresh interval but leave timers (ago + session) running
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+      } else {
+        // Resume — restart auto-refresh and fire an immediate refresh
+        startAutoRefresh();
+        refreshCurrentPage();
+      }
     }
 
     // ── Terminal error log helpers ──
@@ -4564,12 +4858,7 @@
         });
         lastQuotesData = q;
 
-        // Market status based on VIX trading
-        const mhBadge = document.getElementById('market-status-badge');
-        const spyStatus = q['SPY']?.quote?.securityStatus;
-        const isOpen = spyStatus === 'Normal';
-        mhBadge.className = isOpen ? 'open' : 'closed';
-        mhBadge.textContent = isOpen ? 'Market Open' : 'After Hours';
+        // Badge is now managed by updateMarketSessionBadge() (client-side CST clock)
       } catch (e) { console.warn('Ticker bar:', e); }
     }
 
@@ -7155,11 +7444,15 @@
     function startAutoRefresh() {
       if (autoRefreshTimer) clearInterval(autoRefreshTimer);
       autoRefreshTimer = setInterval(() => {
-        if (isConnected) {
-          loadTickerBar();
-          const active = document.querySelector('.nav-item.active');
-          if (active) autoLoadPage(active.dataset.page);
-        }
+        if (!isConnected || isPaused) return;
+        // Only refresh during market-open hours (Mon-Fri 8:30-15:00 CST)
+        const session = getMarketSession();
+        if (session !== 'open') return;
+        loadTickerBar();
+        const active = document.querySelector('.nav-item.active');
+        if (active) autoLoadPage(active.dataset.page);
+        lastRefreshTime = Date.now();
+        updateAgoDisplay();
       }, 30000); // 30s refresh
     }
 
@@ -7169,6 +7462,10 @@
     (async function init() {
       // Show placeholder until Schwab data loads
       ovRenderChart(null);
+
+      // Start client-side session badge and ago timers immediately (no auth needed)
+      startSessionTicker();
+      startAgoTimer();
 
       // Check if already connected to Schwab
       const connected = await checkTokenStatus();
@@ -7212,13 +7509,8 @@
         };
         iterate(mkt);
 
-        // Update market status badge
-        const equityOpen = JSON.stringify(mkt).includes('"isOpen":true');
-        const badge = document.getElementById('market-status-badge');
-        if (badge) {
-          badge.className = equityOpen ? 'open' : 'closed';
-          badge.textContent = equityOpen ? 'Market Open' : 'After Hours';
-        }
+        // Market status badge is now managed client-side by updateMarketSessionBadge()
+        // (loadMarketHours keeps the ov-market-hours table but no longer touches the topbar badge)
 
         el.innerHTML = rows.length
           ? rows.join('')

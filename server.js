@@ -99,6 +99,12 @@ app.get("/api/token-status", (_req, res) => {
   });
 });
 
+// Logout — clears stored token so a fresh OAuth flow can begin
+app.post("/api/logout", (_req, res) => {
+  schwabTokens = null;
+  res.json({ ok: true });
+});
+
 // Quotes
 app.get("/api/quotes", async (req, res) => {
   try {
