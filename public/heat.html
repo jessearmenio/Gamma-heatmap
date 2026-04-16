@@ -139,9 +139,9 @@
     }
 
     #nav-toggle:hover {
-      color: var(--text, #e6edf7);
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--text, #e6edf7);
+      background: rgba(220, 255, 30, 0.08);
+      color: var(--accent);
+      border-color: rgba(220, 255, 30, 0.3);
     }
 
     #sidebar-logo {
@@ -1070,20 +1070,16 @@
       padding: 4px 8px;
       text-align: right;
     }
-
     #heat-table thead th.net-gex-col {
       z-index: 5;
       background: #0d1016;
     }
-
     #heat-table tr.spot-row td.net-gex-col {
-      background: rgba(59, 140, 255, 0.12) !important;
+      background: rgba(59,140,255,0.12) !important;
     }
-
     #heat-table tr.king-row td.net-gex-col {
-      background: rgba(255, 215, 0, 0.1) !important;
+      background: rgba(255,215,0,0.1) !important;
     }
-
     #heat-table tbody tr:hover td.net-gex-col {
       filter: brightness(1.15);
     }
@@ -1901,15 +1897,14 @@
       position: absolute;
       top: 0;
       left: 0;
-      pointer-events: none;
-      /* pass all events through to LWC chart underneath */
+      pointer-events: none; /* pass all events through to LWC chart underneath */
       z-index: 5;
     }
 
     /* Gamma bar hover tooltip */
     #ov-gamma-tip {
       position: fixed;
-      background: rgba(10, 12, 20, 0.95);
+      background: rgba(10,12,20,0.95);
       border: 1px solid var(--border2);
       border-radius: 5px;
       padding: 5px 9px;
@@ -1968,15 +1963,9 @@
     }
 
     .ov-chart-tf-btn.active {
-      background: rgba(17, 201, 216, 0.12) !important;
-      color: var(--cyan) !important;
-      border-color: 1px solid var(--cyan) !important;
-    }
-
-    .ov-chart-tf-btn:hover {
-      color: var(--text, #e6edf7);
-      background: rgba(255, 255, 255, 0.05);
-      border-color: var(--text, #e6edf7);
+      background: rgba(17, 201, 216, 0.12);
+      color: var(--cyan);
+      border-color: 1px solid var(--cyan);
     }
 
     /* ── Overview: Geo Risk stories ── */
@@ -2493,6 +2482,153 @@
       color: var(--text2);
     }
 
+    /* ── SPY Analytics Cards (Vol/OI/History) ─────────────────── */
+    #flow-analytics-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 12px 16px 0;
+      flex-shrink: 0;
+    }
+    #flow-history-row {
+      padding: 0 16px 0;
+      flex-shrink: 0;
+      margin: 12px 0 12px 0;
+    }
+    .flow-analytics-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .flow-analytics-card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--text1);
+    }
+    .flow-analytics-card-header .badge-call { color: var(--accent); }
+    .flow-analytics-card-header .badge-put  { color: var(--purple); }
+    .fan-table-wrap {
+      overflow-x: auto;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .fhist-wrap {
+      overflow-x: auto;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    .fan-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .fan-table thead th {
+      position: sticky;
+      top: 0;
+      background: var(--bg3);
+      color: var(--text3);
+      font-weight: 600;
+      padding: 5px 8px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    .fan-table thead th:first-child,
+    .fan-table thead th:nth-child(2),
+    .fan-table thead th:nth-child(3) { text-align: left; }
+    .fan-table tbody tr {
+      border-bottom: 1px solid rgba(30,34,48,0.7);
+    }
+    .fan-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .fan-table td {
+      padding: 4px 8px;
+      text-align: right;
+      color: var(--text2);
+    }
+    .fan-table td:first-child,
+    .fan-table td:nth-child(2),
+    .fan-table td:nth-child(3) { text-align: left; }
+    .fan-table td.call { color: var(--accent); font-weight: 700; }
+    .fan-table td.put  { color: var(--purple); font-weight: 700; }
+    .fan-vol-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .fan-vol-chip {
+      background: rgba(220,255,30,0.18);
+      color: var(--accent);
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .fan-oi-chip {
+      background: rgba(180,35,240,0.18);
+      color: #d46ef9;
+      border-radius: 3px;
+      padding: 1px 5px;
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .fan-ba-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      min-width: 70px;
+    }
+    .fan-ba-pct {
+      font-size: 9px;
+      font-weight: 700;
+      border-radius: 2px;
+      padding: 1px 4px;
+      color: #fff;
+    }
+    .fan-ba-pct.ask  { background: rgba(255,59,92,0.7); }
+    .fan-ba-pct.bid  { background: rgba(34,221,136,0.7); }
+    .fan-ba-fill {
+      height: 7px;
+      border-radius: 2px;
+      flex: 1;
+    }
+    /* History table */
+    .fhist-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .fhist-table thead th {
+      position: sticky;
+      top: 0;
+      background: var(--bg3);
+      color: var(--text3);
+      font-weight: 600;
+      padding: 5px 8px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+    .fhist-table thead th:first-child { text-align: left; }
+    .fhist-table tbody tr { border-bottom: 1px solid rgba(30,34,48,0.7); }
+    .fhist-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+    .fhist-table td {
+      padding: 4px 8px;
+      text-align: right;
+      color: var(--text2);
+    }
+    .fhist-table td:first-child { text-align: left; color: var(--text3); font-size:9px; }
+    .fhist-table td.up  { color: var(--green); }
+    .fhist-table td.dn  { color: var(--red);   }
+    .fhist-table td.netpos { color: var(--green); }
+    .fhist-table td.netneg { color: var(--red);   }
+
     /* Flow stats bar */
     #flow-stats-bar {
       display: flex;
@@ -2591,18 +2727,9 @@
       width: 55px;
       text-align: right;
     }
-
-    .mover-chg.up {
-      color: var(--green);
-    }
-
-    .mover-chg.dn {
-      color: var(--red);
-    }
-
-    .mover-chg.flat {
-      color: var(--text2);
-    }
+    .mover-chg.up { color: var(--green); }
+    .mover-chg.dn { color: var(--red); }
+    .mover-chg.flat { color: var(--text2); }
 
     .mover-vol {
       font-size: 10px;
@@ -3755,14 +3882,14 @@
               <div id="ov-chart-header">
                 <span class="card-title">SPY &#8212; S&amp;P 500 ETF</span>
                 <div id="ov-spy-chart-tf">
-                  <button class="ov-chart-tf-btn" data-ovctf="5m" onclick="ovSetChartTf('5m',this)">5m</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
                   <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1H" onclick="ovSetChartTf('1H',this)">1H</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1D" onclick="ovSetChartTf('1D',this)">1D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="5D" onclick="ovSetChartTf('5D',this)">5D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1D"  onclick="ovSetChartTf('1D',this)">1D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5D"  onclick="ovSetChartTf('5D',this)">5D</button>
                   <button class="ov-chart-tf-btn active" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1Y" onclick="ovSetChartTf('1Y',this)">1Y</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="6M"  onclick="ovSetChartTf('6M',this)">6M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1Y"  onclick="ovSetChartTf('1Y',this)">1Y</button>
                 </div>
               </div>
               <div id="ov-chart-legend">
@@ -3776,22 +3903,17 @@
                   <div class="ov-leg-line" style="background:#01BCD4;"></div>EMA 50
                 </div>
                 <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
-                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span
-                    style="color:var(--text3);font-size:9px;">+GEX</span>
-                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
-                    style="color:var(--text3);font-size:9px;">−GEX</span>
+                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">+GEX</span>
+                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">−GEX</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span
-                    style="color:#1848CC;font-size:9px;">PDH/PDL</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span style="color:#1848CC;font-size:9px;">PDH/PDL</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span
-                    style="color:#9C27B0;font-size:9px;">GBX H/L</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span style="color:#9C27B0;font-size:9px;">GBX H/L</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span
-                    style="color:#F23644;font-size:9px;">ATH</span>
+                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span style="color:#F23644;font-size:9px;">ATH</span>
                 </div>
               </div>
               <div id="ov-spy-chart">
@@ -4266,6 +4388,103 @@
               <div class="flow-stat-val" style="color:#f59e0b" id="fstat-sweeps">—</div>
             </div>
           </div>
+
+          <!-- SPY ANALYTICS ROW: Highest Vol + Highest OI -->
+          <div id="flow-analytics-row">
+
+            <!-- Highest Volume Contracts -->
+            <div class="flow-analytics-card">
+              <div class="flow-analytics-card-header">
+                <span>SPY</span>
+                <span style="color:var(--text3);font-weight:400;">Highest Volume Contracts</span>
+                <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-vol-updated"></span>
+              </div>
+              <div class="fan-table-wrap">
+                <table class="fan-table" id="spy-vol-table">
+                  <thead><tr>
+                    <th>Strike</th>
+                    <th>C/P</th>
+                    <th>Expiry</th>
+                    <th>DTE</th>
+                    <th>Last</th>
+                    <th>Low–High</th>
+                    <th>Volume</th>
+                    <th>OI</th>
+                    <th>Bid/Ask Vol</th>
+                  </tr></thead>
+                  <tbody id="spy-vol-body">
+                    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Highest OI Contracts -->
+            <div class="flow-analytics-card">
+              <div class="flow-analytics-card-header">
+                <span>SPY</span>
+                <span style="color:var(--text3);font-weight:400;">Highest OI Contracts</span>
+                <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-oi-updated"></span>
+              </div>
+              <div class="fan-table-wrap">
+                <table class="fan-table" id="spy-oi-table">
+                  <thead><tr>
+                    <th>Strike</th>
+                    <th>C/P</th>
+                    <th>Expiry</th>
+                    <th>DTE</th>
+                    <th>Last</th>
+                    <th>Low–High</th>
+                    <th>Volume</th>
+                    <th>OI</th>
+                    <th>Bid/Ask Vol</th>
+                  </tr></thead>
+                  <tbody id="spy-oi-body">
+                    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div><!-- end flow-analytics-row -->
+
+          <!-- HISTORICAL SPY DATA ROW -->
+          <div id="flow-history-row">
+            <div class="flow-analytics-card">
+              <div class="flow-analytics-card-header">
+                <span>Historical SPY Data</span>
+                <span style="margin-left:8px;color:var(--text3);font-weight:400;font-size:9px;">Last 14 Trading Days</span>
+                <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-hist-updated"></span>
+              </div>
+              <div class="fhist-wrap">
+                <table class="fhist-table" id="spy-hist-table">
+                  <thead><tr>
+                    <th>Date</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                    <th>% Chg</th>
+                    <th>Volume</th>
+                    <th>Vol/30D</th>
+                    <th>Total OI</th>
+                    <th>% OI Chg</th>
+                    <th>Call OI</th>
+                    <th>Put OI</th>
+                    <th>IVR</th>
+                    <th>Vol 30D</th>
+                    <th>Impl 30D</th>
+                    <th>Vol 60D</th>
+                    <th>Impl 60D</th>
+                    <th>Net Prem</th>
+                    <th>Total Prem</th>
+                  </tr></thead>
+                  <tbody id="spy-hist-body">
+                    <tr><td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div><!-- end flow-history-row -->
 
           <!-- FLOW TABLE -->
           <div id="flow-table-wrap">
@@ -5805,9 +6024,9 @@
     // Filter candles by TF button value
     // TF config: daily TFs use daily candles from histMap; intraday TFs fetch separately
     const TF_INTRADAY = {
-      '5m': { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '5' },
+      '5m':  { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '5' },
       '10m': { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '10' },
-      '1H': { periodType: 'month', period: '3', frequencyType: 'hour', frequency: '1' },
+      '1H':  { periodType: 'month', period: '3', frequencyType: 'hour',   frequency: '1' },
     };
 
     function lwcFilterCandles(candles, tf) {
@@ -6222,7 +6441,7 @@
             tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b> &nbsp; <span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span> <span style="color:var(--text3);font-size:9px;">Net GEX</span>${kingTag}`;
             tip.style.display = 'block';
             tip.style.left = (e.clientX + 14) + 'px';
-            tip.style.top = (e.clientY - 10) + 'px';
+            tip.style.top  = (e.clientY - 10) + 'px';
           } else if (tip) {
             tip.style.display = 'none';
           }
@@ -6543,10 +6762,10 @@
         const top = movers.slice(0, 8);
         document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => {
           // Schwab movers API uses lastPrice / netChange / netPercentChange / totalVolume
-          const price = m.lastPrice ?? m.last ?? m.close ?? null;
+          const price  = m.lastPrice   ?? m.last   ?? m.close ?? null;
           const chgPct = m.netPercentChange ?? m.percentChange ?? m.change ?? null;
           const chgAbs = m.netChange ?? null;
-          const vol = m.totalVolume ?? m.volume ?? null;
+          const vol    = m.totalVolume ?? m.volume ?? null;
           return `
       <div class="mover-row">
         <span class="mover-rank">${i + 1}</span>
@@ -6722,10 +6941,10 @@
       const alpha = 0.18 + t * 0.65;
       if (gex > 0) {
         // positive GEX = yellow #DCFF1E
-        return `rgba(${Math.round(220 * t)},${Math.round(255 * t)},${Math.round(30 * t)},${alpha})`;
+        return `rgba(${Math.round(220*t)},${Math.round(255*t)},${Math.round(30*t)},${alpha})`;
       } else {
         // negative GEX = purple #8a16c0
-        return `rgba(${Math.round(138 * t)},${Math.round(22 * t)},${Math.round(192 * t)},${alpha})`;
+        return `rgba(${Math.round(138*t)},${Math.round(22*t)},${Math.round(192*t)},${alpha})`;
       }
     }
 
@@ -6811,6 +7030,227 @@
       }).join('');
     }
 
+    // ─── SPY Highest Vol / OI Contracts ────────────────────────────────────────
+    async function loadSpyContracts() {
+      if (!isConnected) return;
+      const [volBody, oiBody] = ['spy-vol-body', 'spy-oi-body'].map(id => document.getElementById(id));
+      const loading = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
+      if (volBody) volBody.innerHTML = loading;
+      if (oiBody)  oiBody.innerHTML  = loading;
+
+      try {
+        // Wide chain: strikeCount=100 covers ~$50 both sides for SPY
+        const d = await apiGet('/api/chain?symbol=SPY&strikeCount=100&contractType=ALL&includeUnderlyingQuote=true');
+        if (!d.ok) throw new Error(d.error);
+        const chain = d.data;
+
+        // Flatten all contracts
+        const contracts = [];
+        const flatChain = (map, side) => {
+          if (!map) return;
+          Object.entries(map).forEach(([expKey, strikes]) => {
+            Object.entries(strikes).forEach(([strikeStr, arr]) => {
+              arr.forEach(c => {
+                const dte = c.daysToExpiration ?? 0;
+                // Expiry label from description or expKey
+                const expParts = expKey.split(':');
+                const expDate = expParts[0] || '';
+                contracts.push({
+                  strike: c.strikePrice || parseFloat(strikeStr),
+                  side,
+                  expiry: expDate,
+                  dte,
+                  last: c.last ?? 0,
+                  low52: c.lowPrice ?? c.low52Week ?? 0,
+                  high52: c.highPrice ?? c.high52Week ?? 0,
+                  bid: c.bid ?? 0,
+                  ask: c.ask ?? 0,
+                  volume: c.totalVolume || 0,
+                  oi: c.openInterest || 0,
+                });
+              });
+            });
+          });
+        };
+        flatChain(chain.callExpDateMap, 'CALL');
+        flatChain(chain.putExpDateMap,  'PUT');
+
+        const renderRow = (c) => {
+          const sideClass = c.side === 'CALL' ? 'call' : 'put';
+          const lohi = (c.low52 || c.high52)
+            ? `$${c.low52.toFixed(2)}–$${c.high52.toFixed(2)}`
+            : '—';
+          const volDisplay = c.volume >= 1000
+            ? `<span class="fan-vol-chip">${(c.volume/1000).toFixed(0)}K</span>`
+            : c.volume.toLocaleString();
+          const oiDisplay = c.oi >= 1000
+            ? `<span class="fan-oi-chip">${(c.oi/1000).toFixed(0)}K</span>`
+            : c.oi.toLocaleString();
+          // Bid/ask spread as % of mid; show red% bar (ask side) + green fill
+          const mid = (c.bid + c.ask) / 2;
+          const askPct = mid > 0 ? Math.round(((c.ask - mid) / mid) * 100) : 0;
+          const bidPct = 100 - askPct;
+          const bidAsk = `<div class="fan-ba-bar">`+
+            `<span class="fan-ba-pct ask">${askPct}%</span>`+
+            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>`+
+            `</div>`;
+          return `<tr>
+            <td><b>$${c.strike.toFixed(0)}</b></td>
+            <td class="${sideClass}">${c.side}</td>
+            <td style="color:var(--text3);">${c.expiry}</td>
+            <td style="color:var(--text3);">(${c.dte}D)</td>
+            <td>$${c.last.toFixed(2)}</td>
+            <td style="color:var(--text3);font-size:9px;">${lohi}</td>
+            <td>${volDisplay}</td>
+            <td>${oiDisplay}</td>
+            <td>${bidAsk}</td>
+          </tr>`;
+        };
+
+        // Top 10 by volume
+        const byVol = [...contracts].sort((a,b) => b.volume - a.volume).slice(0,10);
+        if (volBody) {
+          volBody.innerHTML = byVol.length ? byVol.map(renderRow).join('') :
+            `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
+          const ts = document.getElementById('spy-vol-updated');
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+        }
+
+        // Top 10 by OI
+        const byOI = [...contracts].sort((a,b) => b.oi - a.oi).slice(0,10);
+        if (oiBody) {
+          oiBody.innerHTML = byOI.length ? byOI.map(renderRow).join('') :
+            `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
+          const ts = document.getElementById('spy-oi-updated');
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+        }
+
+      } catch (e) {
+        const errHtml = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
+        if (volBody) volBody.innerHTML = errHtml;
+        if (oiBody)  oiBody.innerHTML  = errHtml;
+        ovLogTerminalError('SPY_CONTRACTS', e.message);
+      }
+    }
+
+    // ─── Historical SPY Data (14 trading days) ──────────────────────────────────
+    async function loadSpyHistory() {
+      if (!isConnected) return;
+      const tbody = document.getElementById('spy-hist-body');
+      if (tbody) tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
+
+      try {
+        // 30 calendar days gives 14+ trading days
+        const [priceRes, chainRes] = await Promise.all([
+          apiGet('/api/pricehistory?symbol=SPY&periodType=month&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false'),
+          apiGet('/api/chain?symbol=SPY&strikeCount=100&contractType=ALL&includeUnderlyingQuote=true')
+        ]);
+        if (!priceRes.ok) throw new Error(priceRes.error);
+
+        // Price candles (daily), most recent first
+        const candles = (priceRes.data?.candles || priceRes.candles || []).slice().reverse();
+        const last14 = candles.slice(0, 14);
+
+        // Compute 30-day avg volume from all available candles
+        const vol30Avg = candles.length >= 2
+          ? candles.slice(0, Math.min(30, candles.length)).reduce((s,c)=>s+c.volume,0) / Math.min(30, candles.length)
+          : null;
+
+        // Get today's chain summary for OI, IV data
+        let chainToday = null;
+        if (chainRes.ok) {
+          const ch = chainRes.data;
+          let callOI = 0, putOI = 0, totalPrem = 0, netPrem = 0;
+          const tallySide = (map, side) => {
+            if (!map) return;
+            Object.values(map).forEach(strikes => {
+              Object.values(strikes).forEach(arr => {
+                arr.forEach(c => {
+                  const oi = c.openInterest || 0;
+                  const vol = c.totalVolume || 0;
+                  const mid = ((c.bid||0) + (c.ask||0)) / 2;
+                  const prem = mid * vol * 100;
+                  if (side === 'CALL') { callOI += oi; totalPrem += prem; netPrem += prem; }
+                  else                { putOI  += oi; totalPrem += prem; netPrem -= prem; }
+                });
+              });
+            });
+          };
+          tallySide(ch.callExpDateMap, 'CALL');
+          tallySide(ch.putExpDateMap,  'PUT');
+          chainToday = {
+            callOI, putOI, totalOI: callOI + putOI, totalPrem, netPrem,
+            iv30: ch.volatility ?? null,
+          };
+        }
+
+        // Format rows
+        const fmtPct = (v) => v != null ? (v >= 0 ? `+${v.toFixed(2)}` : v.toFixed(2)) + '%' : '—';
+        const fmtM = (v) => {
+          if (v == null) return '—';
+          if (Math.abs(v) >= 1e9) return (v/1e9).toFixed(2) + 'B';
+          if (Math.abs(v) >= 1e6) return (v/1e6).toFixed(1) + 'M';
+          if (Math.abs(v) >= 1e3) return (v/1e3).toFixed(0) + 'K';
+          return v.toFixed(0);
+        };
+        const fmtDate = (ts) => {
+          const d = new Date(ts);
+          return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+        };
+
+        const rows = last14.map((c, i) => {
+          const prevClose = last14[i+1]?.close ?? c.close;
+          const chgPct = prevClose ? ((c.close - prevClose) / prevClose) * 100 : 0;
+          const vol30Ratio = vol30Avg ? (c.volume / vol30Avg).toFixed(2) : '—';
+          const isToday = i === 0;
+
+          // OI and premium data only available for today (live chain)
+          const totalOI = isToday && chainToday ? fmtM(chainToday.totalOI) : '—';
+          const oiChgPct = '—';
+          const callOI  = isToday && chainToday ? fmtM(chainToday.callOI) : '—';
+          const putOI   = isToday && chainToday ? fmtM(chainToday.putOI)  : '—';
+          const netPrem = isToday && chainToday ? fmtDollar(chainToday.netPrem)   : '—';
+          const totPrem = isToday && chainToday ? fmtDollar(chainToday.totalPrem) : '—';
+          const iv30    = isToday && chainToday?.iv30 != null ? Math.round(chainToday.iv30*100)+'%' : '—';
+
+          const chgClass = chgPct > 0 ? 'up' : chgPct < 0 ? 'dn' : '';
+          const netPremClass = isToday && chainToday ? (chainToday.netPrem >= 0 ? 'netpos' : 'netneg') : '';
+
+          return `<tr>
+            <td>${fmtDate(c.datetime)}</td>
+            <td>$${c.high.toFixed(2)}</td>
+            <td>$${c.low.toFixed(2)}</td>
+            <td>$${c.close.toFixed(2)}</td>
+            <td class="${chgClass}">${fmtPct(chgPct)}</td>
+            <td>${c.volume.toLocaleString()}</td>
+            <td>${vol30Ratio}</td>
+            <td>${totalOI}</td>
+            <td>${oiChgPct}</td>
+            <td>${callOI}</td>
+            <td>${putOI}</td>
+            <td>—</td>
+            <td>${iv30}</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+            <td class="${netPremClass}">${netPrem}</td>
+            <td>${totPrem}</td>
+          </tr>`;
+        });
+
+        if (tbody) {
+          tbody.innerHTML = rows.length ? rows.join('') :
+            `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
+          const ts = document.getElementById('spy-hist-updated');
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+        }
+
+      } catch (e) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
+        ovLogTerminalError('SPY_HISTORY', e.message);
+      }
+    }
+
     async function loadOptionsFlow() {
       if (!isConnected) return;
       const sym = (document.getElementById('flow-sym-input')?.value || 'SPY').toUpperCase();
@@ -6884,6 +7324,10 @@
         document.getElementById('fstat-sweeps').textContent = sweepCount;
 
         flowRenderTable();
+
+        // Also refresh the SPY analytics cards in parallel
+        loadSpyContracts();
+        loadSpyHistory();
 
       } catch (e) {
         document.getElementById('flow-tbody').innerHTML = `<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--red);">⚠ ${e.message}</td></tr>`;
