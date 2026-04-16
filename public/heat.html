@@ -959,10 +959,10 @@
     }
 
     /* Sticky strike column */
-    #heat-table th:first-child,
-    #heat-table td:first-child {
+    #heat-table th.strike-col,
+    #heat-table td.strike-col {
       position: sticky;
-      left: 0;
+      left: 78px;
       z-index: 2;
       background: #0f1218;
       border-right: 2px solid var(--border2);
@@ -986,7 +986,7 @@
       text-align: right;
     }
 
-    #heat-table thead th:first-child {
+    #heat-table thead th.strike-col {
       text-align: left;
       z-index: 4;
       background: #0d1016;
@@ -1004,14 +1004,14 @@
       cursor: default;
     }
 
-    #heat-table tbody td:first-child {
+    #heat-table tbody td.strike-col {
       text-align: left;
       font-size: 11px;
       font-weight: 700;
       color: var(--text2);
     }
 
-    #heat-table tbody tr.spot-row td:first-child {
+    #heat-table tbody tr.spot-row td.strike-col {
       color: var(--blue) !important;
       background: rgba(59, 140, 255, 0.12) !important;
     }
@@ -1020,7 +1020,7 @@
       background: rgba(59, 140, 255, 0.05) !important;
     }
 
-    #heat-table tbody tr.king-row td:first-child {
+    #heat-table tbody tr.king-row td.strike-col {
       color: var(--gold) !important;
       background: rgba(255, 215, 0, 0.1) !important;
       font-weight: 900;
@@ -1058,14 +1058,14 @@
       transition: background 0.2s;
     }
 
-    /* NET GEX column — sticky to the RIGHT edge so it stays visible when scrolling right */
+    /* NET GEX column — sticky to the LEFT, sits before STRIKE */
     #heat-table th.net-gex-col,
     #heat-table td.net-gex-col {
       position: sticky;
-      right: 0;
+      left: 0;
       z-index: 3;
       background: var(--panel);
-      border-left: 2px solid var(--border2);
+      border-right: 2px solid var(--border2);
       min-width: 78px;
       padding: 4px 8px;
       text-align: right;
@@ -1083,6 +1083,8 @@
     #heat-table tbody tr:hover td.net-gex-col {
       filter: brightness(1.15);
     }
+
+
 
     /* ─────────────────────────────────────────────
    MARKET OVERVIEW PAGE
@@ -6420,7 +6422,7 @@
       const callWall = d.summary?.strongestCallWall?.strike;
       const putWall = d.summary?.strongestPutWall?.strike;
 
-      // Build header — NET GEX first (sticky right), then STRIKE (sticky left), then exp cols
+      // Build header — NET GEX (sticky left) | STRIKE (sticky left+78) | exp cols
       const headerCols = activeExps.map(exp => {
         const parts = exp.split(':');
         const dateStr = parts[0];
@@ -6428,7 +6430,7 @@
         return `<th title="${exp}">${dateStr.slice(5)}<br><span style="color:var(--text3);font-size:8px;">${dte}d</span></th>`;
       }).join('');
 
-      let html = `<thead><tr><th>STRIKE</th>${headerCols}<th class="net-gex-col">NET GEX</th></tr></thead><tbody>`;
+      let html = `<thead><tr><th class="net-gex-col">NET GEX</th><th class="strike-col">STRIKE</th>${headerCols}</tr></thead><tbody>`;
 
       d.matrix.forEach(row => {
         const isKing = row.strike === kingStrike;
@@ -6440,7 +6442,7 @@
         if (isSpot) rowClass = 'spot-row';
         else if (isKing) rowClass = 'king-row';
 
-        let strikeTd = `<td>`;
+        let strikeTd = `<td class="strike-col">`;
         if (isKing) strikeTd += `<span style="color:var(--gold);font-size:9px;">★ </span>`;
         if (isCallWall) strikeTd += `<span style="color:var(--accent);font-size:8px;">▲</span>`;
         if (isPutWall) strikeTd += `<span style="color:#d470ff;font-size:8px;">▼</span>`;
@@ -6461,7 +6463,8 @@
 
         const rowGexColor = filteredRowGex > 0 ? 'var(--accent)' : filteredRowGex < 0 ? '#d470ff' : 'var(--text3)';
 
-        html += `<tr class="${rowClass}">${strikeTd}${cells}<td class="net-gex-col" style="color:${rowGexColor};font-weight:700;">${fmtDollar(filteredRowGex)}</td></tr>`;
+        // NET GEX td first, then STRIKE, then exp cells
+        html += `<tr class="${rowClass}"><td class="net-gex-col" style="color:${rowGexColor};font-weight:700;">${fmtDollar(filteredRowGex)}</td>${strikeTd}${cells}</tr>`;
       });
 
       html += '</tbody>';
