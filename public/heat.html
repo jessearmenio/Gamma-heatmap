@@ -139,9 +139,9 @@
     }
 
     #nav-toggle:hover {
-      background: rgba(220, 255, 30, 0.08);
-      color: var(--accent);
-      border-color: rgba(220, 255, 30, 0.3);
+      color: var(--text, #e6edf7);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text, #e6edf7);
     }
 
     #sidebar-logo {
@@ -1070,16 +1070,20 @@
       padding: 4px 8px;
       text-align: right;
     }
+
     #heat-table thead th.net-gex-col {
       z-index: 5;
       background: #0d1016;
     }
+
     #heat-table tr.spot-row td.net-gex-col {
-      background: rgba(59,140,255,0.12) !important;
+      background: rgba(59, 140, 255, 0.12) !important;
     }
+
     #heat-table tr.king-row td.net-gex-col {
-      background: rgba(255,215,0,0.1) !important;
+      background: rgba(255, 215, 0, 0.1) !important;
     }
+
     #heat-table tbody tr:hover td.net-gex-col {
       filter: brightness(1.15);
     }
@@ -1897,14 +1901,15 @@
       position: absolute;
       top: 0;
       left: 0;
-      pointer-events: none; /* pass all events through to LWC chart underneath */
+      pointer-events: none;
+      /* pass all events through to LWC chart underneath */
       z-index: 5;
     }
 
     /* Gamma bar hover tooltip */
     #ov-gamma-tip {
       position: fixed;
-      background: rgba(10,12,20,0.95);
+      background: rgba(10, 12, 20, 0.95);
       border: 1px solid var(--border2);
       border-radius: 5px;
       padding: 5px 9px;
@@ -1963,9 +1968,15 @@
     }
 
     .ov-chart-tf-btn.active {
-      background: rgba(17, 201, 216, 0.12);
-      color: var(--cyan);
-      border-color: 1px solid var(--cyan);
+      background: rgba(17, 201, 216, 0.12) !important;
+      color: var(--cyan) !important;
+      border-color: 1px solid var(--cyan) !important;
+    }
+
+    .ov-chart-tf-btn:hover {
+      color: var(--text, #e6edf7);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text, #e6edf7);
     }
 
     /* ── Overview: Geo Risk stories ── */
@@ -2580,9 +2591,18 @@
       width: 55px;
       text-align: right;
     }
-    .mover-chg.up { color: var(--green); }
-    .mover-chg.dn { color: var(--red); }
-    .mover-chg.flat { color: var(--text2); }
+
+    .mover-chg.up {
+      color: var(--green);
+    }
+
+    .mover-chg.dn {
+      color: var(--red);
+    }
+
+    .mover-chg.flat {
+      color: var(--text2);
+    }
 
     .mover-vol {
       font-size: 10px;
@@ -3735,14 +3755,14 @@
               <div id="ov-chart-header">
                 <span class="card-title">SPY &#8212; S&amp;P 500 ETF</span>
                 <div id="ov-spy-chart-tf">
-                  <button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5m" onclick="ovSetChartTf('5m',this)">5m</button>
                   <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1D"  onclick="ovSetChartTf('1D',this)">1D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="5D"  onclick="ovSetChartTf('5D',this)">5D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1H" onclick="ovSetChartTf('1H',this)">1H</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1D" onclick="ovSetChartTf('1D',this)">1D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5D" onclick="ovSetChartTf('5D',this)">5D</button>
                   <button class="ov-chart-tf-btn active" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="6M"  onclick="ovSetChartTf('6M',this)">6M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1Y"  onclick="ovSetChartTf('1Y',this)">1Y</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1Y" onclick="ovSetChartTf('1Y',this)">1Y</button>
                 </div>
               </div>
               <div id="ov-chart-legend">
@@ -3756,17 +3776,22 @@
                   <div class="ov-leg-line" style="background:#01BCD4;"></div>EMA 50
                 </div>
                 <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
-                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">+GEX</span>
-                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">−GEX</span>
+                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span
+                    style="color:var(--text3);font-size:9px;">+GEX</span>
+                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
+                    style="color:var(--text3);font-size:9px;">−GEX</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span style="color:#1848CC;font-size:9px;">PDH/PDL</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span
+                    style="color:#1848CC;font-size:9px;">PDH/PDL</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span style="color:#9C27B0;font-size:9px;">GBX H/L</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span
+                    style="color:#9C27B0;font-size:9px;">GBX H/L</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span style="color:#F23644;font-size:9px;">ATH</span>
+                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span
+                    style="color:#F23644;font-size:9px;">ATH</span>
                 </div>
               </div>
               <div id="ov-spy-chart">
@@ -5780,9 +5805,9 @@
     // Filter candles by TF button value
     // TF config: daily TFs use daily candles from histMap; intraday TFs fetch separately
     const TF_INTRADAY = {
-      '5m':  { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '5' },
+      '5m': { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '5' },
       '10m': { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '10' },
-      '1H':  { periodType: 'month', period: '3', frequencyType: 'hour',   frequency: '1' },
+      '1H': { periodType: 'month', period: '3', frequencyType: 'hour', frequency: '1' },
     };
 
     function lwcFilterCandles(candles, tf) {
@@ -6197,7 +6222,7 @@
             tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b> &nbsp; <span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span> <span style="color:var(--text3);font-size:9px;">Net GEX</span>${kingTag}`;
             tip.style.display = 'block';
             tip.style.left = (e.clientX + 14) + 'px';
-            tip.style.top  = (e.clientY - 10) + 'px';
+            tip.style.top = (e.clientY - 10) + 'px';
           } else if (tip) {
             tip.style.display = 'none';
           }
@@ -6518,10 +6543,10 @@
         const top = movers.slice(0, 8);
         document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => {
           // Schwab movers API uses lastPrice / netChange / netPercentChange / totalVolume
-          const price  = m.lastPrice   ?? m.last   ?? m.close ?? null;
+          const price = m.lastPrice ?? m.last ?? m.close ?? null;
           const chgPct = m.netPercentChange ?? m.percentChange ?? m.change ?? null;
           const chgAbs = m.netChange ?? null;
-          const vol    = m.totalVolume ?? m.volume ?? null;
+          const vol = m.totalVolume ?? m.volume ?? null;
           return `
       <div class="mover-row">
         <span class="mover-rank">${i + 1}</span>
@@ -6697,10 +6722,10 @@
       const alpha = 0.18 + t * 0.65;
       if (gex > 0) {
         // positive GEX = yellow #DCFF1E
-        return `rgba(${Math.round(220*t)},${Math.round(255*t)},${Math.round(30*t)},${alpha})`;
+        return `rgba(${Math.round(220 * t)},${Math.round(255 * t)},${Math.round(30 * t)},${alpha})`;
       } else {
         // negative GEX = purple #8a16c0
-        return `rgba(${Math.round(138*t)},${Math.round(22*t)},${Math.round(192*t)},${alpha})`;
+        return `rgba(${Math.round(138 * t)},${Math.round(22 * t)},${Math.round(192 * t)},${alpha})`;
       }
     }
 
