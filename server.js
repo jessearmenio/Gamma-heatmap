@@ -73,15 +73,8 @@ app.get("/callback", async (req, res) => {
 
     schwabTokens = tokenResponse.data;
 
-    res.send(`
-      <html>
-        <body style="font-family: Arial, sans-serif; padding: 24px;">
-          <h2>Schwab connected successfully.</h2>
-          <p>Access token received.</p>
-          <p><a href="/heat.html">Go to Heat App</a></p>
-        </body>
-      </html>
-    `);
+    // Auto-redirect to dashboard — no extra click needed
+    res.redirect('/heat.html');
   } catch (error) {
     console.error("TOKEN EXCHANGE ERROR:");
     console.error(error.response?.data || error.message);
