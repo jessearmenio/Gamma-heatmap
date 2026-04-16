@@ -515,10 +515,35 @@ app.get("/api/movers", async (req, res) => {
         timeout: 30000
       }
     );
-    // Log first mover item to help debug field names
-    const sample = Array.isArray(response.data) ? response.data[0] : (response.data?.screeners?.[0]);
-    if (sample) console.log('MOVERS sample keys:', Object.keys(sample).join(', '));
-    res.json({ ok: true, data: response.data });
+
+    // Normalise movers array (Schwab returns either array or {screeners:[...]})
+    const movers = Array.isArray(response.data)
+      ? response.data
+      : (response.data?.screeners || []);
+
+    // Enrich with real per-symbol volume + price from quotes endpoint
+    if (movers.length) {
+      const symbols = movers.map(m => m.symbol).filter(Boolean).join(',');
+      try {
+        const qRes = await axios.get(
+          'https://api.schwabapi.com/marketdata/v1/quotes',
+          { params: { symbols, fields: 'quote' }, headers: { Authorization: `Bearer ${schwabTokens.access_token}` }, timeout: 15000 }
+        );
+        const qData = qRes.data || {};
+        movers.forEach(m => {
+          const qt = qData[m.symbol]?.quote || {};
+          // Overwrite with accurate quote fields
+          if (qt.totalVolume != null) m.totalVolume = qt.totalVolume;
+          if (qt.lastPrice    != null) m.lastPrice   = qt.lastPrice;
+          if (qt.netPercentChange != null) m.netPercentChange = qt.netPercentChange;
+          if (qt.netChange    != null) m.netChange   = qt.netChange;
+        });
+      } catch (qErr) {
+        console.warn('MOVERS quotes enrich failed:', qErr.message);
+      }
+    }
+
+    res.json({ ok: true, data: movers });
   } catch (error) {
     console.error("MOVERS ERROR:", error.response?.data || error.message);
     res.status(error.response?.status || 500).json({
