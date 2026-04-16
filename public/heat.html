@@ -491,11 +491,11 @@
     }
 
     .topbar-icon-btn.paused {
-color: #ffb020;
-box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
+      color: #ffb020;
+      box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
     }
 
-    spanp{
+    spanp {
       padding-top: 3px;
     }
 
@@ -1033,11 +1033,9 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
     /* GEX color legend bar */
     #heat-legend {
       width: 14px;
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      background: linear-gradient(to bottom, var(--accent), #3a4010 50%, var(--purple));
+      flex-shrink: 0;
+      position: relative;
+      background: linear-gradient(to bottom, #DCFF1E, #3a4010 50%, #8a16c0);
       z-index: 10;
       border-left: 1px solid var(--border2);
       display: flex;
@@ -1058,6 +1056,32 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
     /* Heat cell coloring */
     .heat-cell {
       transition: background 0.2s;
+    }
+
+    /* NET GEX column — sticky to the RIGHT edge so it stays visible when scrolling right */
+    #heat-table th.net-gex-col,
+    #heat-table td.net-gex-col {
+      position: sticky;
+      right: 0;
+      z-index: 3;
+      background: var(--panel);
+      border-left: 2px solid var(--border2);
+      min-width: 78px;
+      padding: 4px 8px;
+      text-align: right;
+    }
+    #heat-table thead th.net-gex-col {
+      z-index: 5;
+      background: #0d1016;
+    }
+    #heat-table tr.spot-row td.net-gex-col {
+      background: rgba(59,140,255,0.12) !important;
+    }
+    #heat-table tr.king-row td.net-gex-col {
+      background: rgba(255,215,0,0.1) !important;
+    }
+    #heat-table tbody tr:hover td.net-gex-col {
+      filter: brightness(1.15);
     }
 
     /* ─────────────────────────────────────────────
@@ -1844,7 +1868,7 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
       border: 1px solid var(--border3);
       box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
-      overflow: hidden;
+      overflow: visible;
     }
 
     #ov-chart-header {
@@ -1864,6 +1888,15 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
       /* must NOT be hidden — blocks LWC drag events */
       position: relative;
       cursor: crosshair;
+    }
+
+    /* Gamma bar overlay canvas */
+    #ov-gamma-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
     }
 
     /* LWC chart legend row */
@@ -3506,8 +3539,9 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
           </span>
           <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()"
             title="Refresh now">&#8635;</button>
-          <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()"
-            title="Pause auto-refresh"><spanp>⏸</spanp></button>
+          <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
+            <spanp>⏸</spanp>
+          </button>
         </div>
       </div>
 
@@ -3697,10 +3731,14 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
                 <div class="ov-leg-item">
                   <div class="ov-leg-line" style="background:#01BCD4;"></div>EMA 50
                 </div>
-                <div class="ov-leg-item" style="margin-left:auto;">
+                <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
+                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">+GEX</span>
+                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">−GEX</span>
                 </div>
               </div>
-              <div id="ov-spy-chart"></div>
+              <div id="ov-spy-chart">
+                <canvas id="ov-gamma-canvas"></canvas>
+              </div>
             </div>
 
           </div><!-- end ov-row1 -->
@@ -4093,21 +4131,23 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
             </div>
 
             <!-- Grid -->
-            <div id="heat-grid-wrap" style="flex:1;overflow:auto;min-height:0;position:relative;">
-              <div class="connect-overlay" id="heat-empty-state">
-                <div class="co-icon">🌡</div>
-                <div class="co-title">Gamma Exposure Heatmap</div>
-                <div class="co-sub">Connect Schwab and click Load to generate the GEX heatmap across strikes and
-                  expirations.</div>
-                <button class="co-btn" onclick="connectSchwab()">Connect Schwab</button>
+            <!-- heat-grid-row: scroll area + fixed legend side by side -->
+            <div style="flex:1;display:flex;flex-direction:row;min-height:0;overflow:hidden;">
+              <div id="heat-grid-wrap" style="flex:1;overflow:auto;min-height:0;position:relative;">
+                <div class="connect-overlay" id="heat-empty-state">
+                  <div class="co-icon">🌡</div>
+                  <div class="co-title">Gamma Exposure Heatmap</div>
+                  <div class="co-sub">Connect Schwab and click Load to generate the GEX heatmap across strikes and
+                    expirations.</div>
+                  <button class="co-btn" onclick="connectSchwab()">Connect Schwab</button>
+                </div>
+                <table id="heat-table" style="display:none;"></table>
               </div>
-              <table id="heat-table" style="display:none;"></table>
-              <div id="heat-legend"
-                style="width:14px;position:absolute;right:0;top:0;bottom:0;background:linear-gradient(to bottom,#DCFF1E,#3a4010 50%,#B423F0);z-index:10;border-left:1px solid var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 0;">
-                <span
-                  style="writing-mode:vertical-lr;transform:rotate(180deg);font-size:8px;color:var(--accent)">+GEX</span>
+              <!-- Legend: fixed to right edge, does NOT scroll with table -->
+              <div id="heat-legend">
+                <span style="writing-mode:vertical-lr;transform:rotate(180deg);font-size:8px;color:#DCFF1E;">+GEX</span>
                 <span style="font-size:8px;color:var(--text3)">0</span>
-                <span style="writing-mode:vertical-lr;font-size:8px;color:#d470ff">−GEX</span>
+                <span style="writing-mode:vertical-lr;font-size:8px;color:#8a16c0;">−GEX</span>
               </div>
             </div>
           </div>
@@ -5660,6 +5700,8 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
 
     let lwcChart = null;  // single LWC chart instance
     let lwcCandles = null;  // candlestick series ref (for resize)
+    let lwcCandleSeries = null; // ref for price→coordinate lookups
+    let ovGammaData = [];   // [{strike, netGex}] for gamma bar overlay
 
     // EMA helper
     function calcEMA(closes, period) {
@@ -5727,11 +5769,12 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
 
       // Destroy previous chart cleanly
       if (lwcChart) { try { lwcChart.remove(); } catch (e) { } lwcChart = null; }
-      container.innerHTML = '';
+      lwcCandleSeries = null;
+      container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas>'; // preserve canvas element
 
       // Need actual candle data
       if (!candles || candles.length < 10) {
-        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Connect Schwab to load chart data</div>';
+        container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Connect Schwab to load chart data</div>';
         return;
       }
 
@@ -5812,6 +5855,7 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
       });
       candleSeries.setData(candleData);
       lwcCandles = candleSeries;
+      lwcCandleSeries = candleSeries; // store for gamma bar coordinate lookups
 
       // ── Volume series (same pane, overlay at bottom) ──
       const volSeries = lwcChart.addHistogramSeries({
@@ -5909,13 +5953,80 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
       // ── Auto-fit visible range ──
       lwcChart.timeScale().fitContent();
 
+      // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
+      const redrawGamma = () => requestAnimationFrame(drawGammaBars);
+      lwcChart.subscribeCrosshairMove(redrawGamma);
+      lwcChart.timeScale().subscribeVisibleLogicalRangeChange(redrawGamma);
+      // Also poll briefly after initial render to catch the first layout pass
+      setTimeout(drawGammaBars, 80);
+      setTimeout(drawGammaBars, 300);
+      setTimeout(drawGammaBars, 800);
+
       // ── Handle resize when sidebar collapses ──
       const ro = new ResizeObserver(() => {
         if (lwcChart) {
           lwcChart.applyOptions({ width: container.clientWidth });
+          requestAnimationFrame(drawGammaBars);
         }
       });
       ro.observe(container);
+    }
+
+    // ── Gamma bar overlay ──
+    function drawGammaBars() {
+      const canvas = document.getElementById('ov-gamma-canvas');
+      const chartEl = document.getElementById('ov-spy-chart');
+      if (!canvas || !chartEl || !lwcChart || !lwcCandleSeries) return;
+      if (!ovGammaData || !ovGammaData.length) { canvas.style.display = 'none'; return; }
+
+      // Match canvas size to chart container
+      const W = chartEl.clientWidth;
+      const H = chartEl.clientHeight;
+      canvas.width = W;
+      canvas.height = H;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      canvas.style.display = 'block';
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, W, H);
+
+      // Estimate RSI pane height (bottom ~27% of chart)
+      const candlePaneH = Math.round(H * 0.73);
+
+      // Max bar width
+      const MAX_BAR = 240;
+      const maxAbsGex = Math.max(...ovGammaData.map(d => Math.abs(d.netGex)), 1);
+
+      for (const { strike, netGex } of ovGammaData) {
+        if (netGex === 0) continue;
+
+        // Get pixel Y for this strike price
+        let y;
+        try { y = lwcCandleSeries.priceToCoordinate(strike); } catch (e) { continue; }
+        if (y == null || y < 0 || y > candlePaneH) continue;
+
+        // Bar height: use $1 price range in pixels
+        let barH;
+        try {
+          const y0 = lwcCandleSeries.priceToCoordinate(strike);
+          const y1 = lwcCandleSeries.priceToCoordinate(strike + 1);
+          barH = y0 != null && y1 != null ? Math.abs(y1 - y0) : 3;
+        } catch { barH = 3; }
+        barH = Math.max(1.5, Math.min(barH, 18)); // clamp: never thinner than 1.5px or thicker than 18px
+
+        const barW = Math.round((Math.abs(netGex) / maxAbsGex) * MAX_BAR);
+        if (barW < 1) continue;
+
+        if (netGex > 0) {
+          ctx.fillStyle = 'rgba(220,255,30,0.55)'; // yellow
+        } else {
+          ctx.fillStyle = 'rgba(138,22,192,0.55)'; // purple
+        }
+
+        // Draw bar from left edge rightward
+        ctx.fillRect(0, y - barH / 2, barW, barH);
+      }
     }
 
     // ── Ticker marquee ──
@@ -6138,6 +6249,30 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
           </div>`;
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 
+        // ── Build gamma bar data for chart overlay: net GEX per $1 strike, ≤45 DTE ──
+        if (heat.matrix && heat.expirations) {
+          const MAX_DTE = 45;
+          // Which expiration keys are within 45 DTE?
+          const validExps = new Set(
+            (heat.expirations || []).filter(exp => {
+              const dtePart = exp.split(':')[1];
+              return dtePart ? parseInt(dtePart) <= MAX_DTE : true;
+            })
+          );
+          // Sum net GEX per strike across valid expirations
+          const strikeMap = {};
+          heat.matrix.forEach(row => {
+            let rowSum = 0;
+            (row.cells || []).forEach(c => {
+              if (validExps.has(c.expKey)) rowSum += c.netGex;
+            });
+            if (rowSum !== 0) strikeMap[row.strike] = (strikeMap[row.strike] || 0) + rowSum;
+          });
+          ovGammaData = Object.entries(strikeMap).map(([s, g]) => ({ strike: Number(s), netGex: g }));
+          // Redraw bars if chart is live
+          requestAnimationFrame(drawGammaBars);
+        }
+
         await loadMovers();
       } catch (e) { console.warn('loadOverviewLegacy:', e); }
     }
@@ -6206,6 +6341,11 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
       document.querySelectorAll('.dte-btn').forEach(b => b.classList.remove('active'));
       el.classList.add('active');
       heatDTE = dte;
+      // Re-render immediately with filtered columns if data already loaded
+      if (lastHeatData) {
+        renderHeatTable(lastHeatData);
+        updateHeatKeyLevels(lastHeatData);
+      }
     }
 
     async function reloadHeat() {
@@ -6254,12 +6394,25 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
         return;
       }
 
-      // Find min/max GEX for color scaling
+      // ── DTE filtering: only show expirations ≤ heatDTE days out ──
+      const filteredExps = d.expirations.filter(exp => {
+        const dtePart = exp.split(':')[1];
+        const dte = dtePart ? parseInt(dtePart) : 9999;
+        return dte <= heatDTE;
+      });
+      // Use filtered exps if any match, otherwise fall back to all (edge case)
+      const activeExps = filteredExps.length > 0 ? filteredExps : d.expirations;
+      const activeExpSet = new Set(activeExps);
+
+      // Find min/max GEX for color scaling (within filtered exps only)
       let minGex = 0, maxGex = 0;
-      d.matrix.forEach(row => row.cells.forEach(c => {
-        if (c.netGex > maxGex) maxGex = c.netGex;
-        if (c.netGex < minGex) minGex = c.netGex;
-      }));
+      d.matrix.forEach(row => row.cells
+        .filter(c => activeExpSet.has(c.expKey))
+        .forEach(c => {
+          if (c.netGex > maxGex) maxGex = c.netGex;
+          if (c.netGex < minGex) minGex = c.netGex;
+        })
+      );
       const absMax = Math.max(Math.abs(minGex), Math.abs(maxGex)) || 1;
 
       const kingStrike = d.summary?.kingStrike?.strike;
@@ -6267,15 +6420,15 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
       const callWall = d.summary?.strongestCallWall?.strike;
       const putWall = d.summary?.strongestPutWall?.strike;
 
-      // Build header
-      const headerCols = d.expirations.map(exp => {
+      // Build header — NET GEX first (sticky right), then STRIKE (sticky left), then exp cols
+      const headerCols = activeExps.map(exp => {
         const parts = exp.split(':');
         const dateStr = parts[0];
         const dte = parts[1] ? parseInt(parts[1]) : '';
         return `<th title="${exp}">${dateStr.slice(5)}<br><span style="color:var(--text3);font-size:8px;">${dte}d</span></th>`;
       }).join('');
 
-      let html = `<thead><tr><th>STRIKE</th>${headerCols}<th style="min-width:70px;">NET GEX</th></tr></thead><tbody>`;
+      let html = `<thead><tr><th>STRIKE</th>${headerCols}<th class="net-gex-col">NET GEX</th></tr></thead><tbody>`;
 
       d.matrix.forEach(row => {
         const isKing = row.strike === kingStrike;
@@ -6294,18 +6447,21 @@ box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
         if (isSpot) strikeTd += `<span style="color:var(--blue);font-size:9px;">► </span>`;
         strikeTd += `${row.strike.toFixed(1)}</td>`;
 
-        const cells = row.cells.map(c => {
-          const v = c.netGex;
+        // Only render cells for active (filtered) expirations, recalc rowNetGex
+        let filteredRowGex = 0;
+        const cells = activeExps.map(exp => {
+          const c = row.cells.find(x => x.expKey === exp);
+          const v = c ? c.netGex : 0;
+          filteredRowGex += v;
           const bg = gexCellColor(v, absMax);
           const display = v !== 0 ? fmtDollar(v) : '—';
-          const tooltip = `data-tip="${c.expKey} | Strike: ${c.strike} | Net: ${fmtDollar(v)} | Call: ${fmtDollar(c.callGex)} | Put: ${fmtDollar(c.putGex)}"`;
-          return `<td class="heat-cell" style="background:${bg};color:${v === 0 ? 'var(--text3)' : Math.abs(v) < absMax * 0.05 ? 'var(--text2)' : 'var(--text)'};" ${tooltip} onmouseenter="showTooltip(event,this)" onmouseleave="hideTooltip()">${display}</td>`;
+          const tooltip = c ? `data-tip="${c.expKey} | Strike: ${c.strike} | Net: ${fmtDollar(v)} | Call: ${fmtDollar(c.callGex)} | Put: ${fmtDollar(c.putGex)}"` : '';
+          return `<td class="heat-cell" style="background:${bg};color:${v === 0 ? 'var(--text3)' : Math.abs(v) < absMax * 0.05 ? 'var(--text2)' : 'var(--text)'}" ${tooltip} onmouseenter="showTooltip(event,this)" onmouseleave="hideTooltip()">${display}</td>`;
         }).join('');
 
-        const rowGex = row.rowNetGex;
-        const rowGexColor = rowGex > 0 ? 'var(--accent)' : rowGex < 0 ? '#d470ff' : 'var(--text3)';
+        const rowGexColor = filteredRowGex > 0 ? 'var(--accent)' : filteredRowGex < 0 ? '#d470ff' : 'var(--text3)';
 
-        html += `<tr class="${rowClass}">${strikeTd}${cells}<td style="color:${rowGexColor};font-weight:700;border-left:1px solid var(--border2);">${fmtDollar(rowGex)}</td></tr>`;
+        html += `<tr class="${rowClass}">${strikeTd}${cells}<td class="net-gex-col" style="color:${rowGexColor};font-weight:700;">${fmtDollar(filteredRowGex)}</td></tr>`;
       });
 
       html += '</tbody>';
