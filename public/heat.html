@@ -5313,19 +5313,24 @@
     // ═══════════════════════════════════════════════════════
     async function loadTickerBar() {
       try {
-        const d = await apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM,/ES,/NQ,/GC,/CL,/BTC');
-        if (!d.ok) return;
-        const q = d.data || {};
+        // Fetch equities and futures separately — Schwab rejects mixed batches
+        const [dEq, dFut] = await Promise.all([
+          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM'),
+          apiGet('/api/quotes?symbols=%2FES,%2FNQ,%2FGC,%2FCL,%2FBTC')
+        ]);
+
+        const q = { ...(dEq.data || {}), ...(dFut.data || {}) };
+
         const quoteAliases = {
           SPY: ['SPY'],
           SPX: ['SPX', '$SPX'],
           QQQ: ['QQQ'],
           VIX: ['VIX', '$VIX'],
           IWM: ['IWM'],
-          ES: ['/ES'],
-          NQ: ['/NQ'],
-          GC: ['/GC'],
-          CL: ['/CL'],
+          ES:  ['/ES'],
+          NQ:  ['/NQ'],
+          GC:  ['/GC'],
+          CL:  ['/CL'],
           BTC: ['/BTC']
         };
 
