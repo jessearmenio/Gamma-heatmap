@@ -57,7 +57,7 @@
       --amber: #ffb020;
       --amber-soft: rgba(255, 176, 32, 0.12);
       --nav-w: 220px;
-      --header-h: 52px;
+      --header-h: 76px;
     }
 
     html,
@@ -332,12 +332,12 @@
 
     /* ── Top header bar ── */
     #topbar {
-      height: 72px;
+      min-height: var(--header-h);
       background: var(--bg2);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 16px;
+      padding: 8px 16px;
       gap: 12px;
       flex-shrink: 0;
     }
@@ -347,7 +347,7 @@
       font-weight: 700;
       color: var(--text);
       letter-spacing: 0.04em;
-      min-width: 100px;
+      min-width: 180px;
     }
 
     #ticker-strip {
@@ -356,7 +356,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
       font-size: 11px;
       min-width: 0;
     }
@@ -366,7 +366,6 @@
       align-items: center;
       gap: 16px;
       min-width: 0;
-      white-space: nowrap;
       overflow: hidden;
     }
 
@@ -3774,75 +3773,59 @@
         <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
         <div id="topbar-title" id="page-title">Market Overview</div>
         <div id="ticker-strip">
-
-          <!-- ROW 1 (ETFs / Index) -->
-          <div class="ticker-row" id="ticker-row-1">
-
-            <div class="ticker-item" id="tk-SPY">
+          <div class="ticker-row">
+            <div class="ticker-item" id="tick-SPY">
               <span class="t-sym">SPY</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-SPX">
+            <div class="ticker-item" id="tick-SPX">
               <span class="t-sym">SPX</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-QQQ">
+            <div class="ticker-item" id="tick-QQQ">
               <span class="t-sym">QQQ</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-VIX">
+            <div class="ticker-item" id="tick-VIX">
               <span class="t-sym">VIX</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-IWM">
+            <div class="ticker-item" id="tick-IWM">
               <span class="t-sym">IWM</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
           </div>
-
-          <!-- ROW 2 (futures / macro) -->
-          <div class="ticker-row" id="ticker-row-2">
-
-            <div class="ticker-item" id="tk-ES">
+          <div class="ticker-row">
+            <div class="ticker-item" id="tick-ES">
               <span class="t-sym">ES</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-NQ">
+            <div class="ticker-item" id="tick-NQ">
               <span class="t-sym">NQ</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-GC">
+            <div class="ticker-item" id="tick-GC">
               <span class="t-sym">GOLD</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-CL">
+            <div class="ticker-item" id="tick-CL">
               <span class="t-sym">OIL</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
-            <div class="ticker-item" id="tk-BTC">
+            <div class="ticker-item" id="tick-BTC">
               <span class="t-sym">BTC</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-
           </div>
         </div>
         <!-- Right-side controls cluster -->
@@ -3996,8 +3979,7 @@
                   <div class="ov-weight-row">
                     <span class="ov-weight-label">Trend</span>
                     <div class="ov-weight-bar-track">
-                      <div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);">
-                      </div>
+                      <div class="ov-weight-bar-fill" id="ovbar-trend" style="width:0%;background:var(--text3);"></div>
                     </div>
                     <span class="ov-weight-score tone-neutral" id="ovscore-trend">--</span>
                   </div>
@@ -4019,8 +4001,7 @@
                   <div class="ov-weight-row">
                     <span class="ov-weight-label">Macro</span>
                     <div class="ov-weight-bar-track">
-                      <div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);">
-                      </div>
+                      <div class="ov-weight-bar-fill" id="ovbar-macro" style="width:0%;background:var(--text3);"></div>
                     </div>
                     <span class="ov-weight-score tone-neutral" id="ovscore-macro">--</span>
                   </div>
@@ -4573,8 +4554,7 @@
                   </thead>
                   <tbody id="spy-vol-body">
                     <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…
-                      </td>
+                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -4605,8 +4585,7 @@
                   </thead>
                   <tbody id="spy-oi-body">
                     <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…
-                      </td>
+                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -4650,8 +4629,7 @@
                   </thead>
                   <tbody id="spy-hist-body">
                     <tr>
-                      <td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…
-                      </td>
+                      <td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -4965,8 +4943,7 @@
           <div class="card">
             <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
             <div class="card-body" id="sent-score-body">
-              <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning.
-                Connect
+              <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Connect
                 Schwab to calculate.</div>
             </div>
           </div>
@@ -5338,7 +5315,6 @@
       try {
         const d = await apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM,/ES,/NQ,/GC,/CL,/BTC');
         if (!d.ok) return;
-
         const q = d.data || {};
         const quoteAliases = {
           SPY: ['SPY'],
@@ -5356,18 +5332,15 @@
         Object.entries(quoteAliases).forEach(([sym, keys]) => {
           const item = keys.map(key => q[key]).find(Boolean);
           if (!item) return;
-
           const quote = item.quote || {};
           const price = quote.lastPrice ?? quote.closePrice ?? quote.mark;
           const pct = quote.futurePercentChange ?? quote.netPercentChange ?? 0;
-
-          updateTickerItem('tk-' + sym, price, pct);
+          updateTickerItem('tick-' + sym, price, pct);
         });
-
         lastQuotesData = q;
-      } catch (e) {
-        console.warn('Ticker bar:', e);
-      }
+
+        // Badge is now managed by updateMarketSessionBadge() (client-side CST clock)
+      } catch (e) { console.warn('Ticker bar:', e); }
     }
 
     // ═══════════════════════════════════════════════════════
@@ -7577,61 +7550,52 @@
 
     async function loadFutures() {
       if (!isConnected) return;
-
       try {
-        const results = await Promise.all(
-          FUTURES_SYMBOLS.map(async (sym) => {
-            const d = await apiGet(`/api/quotes?symbols=${encodeURIComponent(sym)}`);
-            if (!d.ok) return { sym, item: null };
-            const q = d.data || {};
-            return { sym, item: q[sym] || Object.values(q)[0] || null };
-          })
+        const responses = await Promise.all(
+          FUTURES_SYMBOLS.map(sym => apiGet(`/api/quotes?symbols=${encodeURIComponent(sym)}`))
         );
 
-        document.getElementById('futures-grid').innerHTML = results.map(({ sym, item }) => {
-          if (!item) {
-            return `<div class="future-card"><div class="future-sym">${sym}</div><div class="future-desc">${FUTURES_NAMES[sym] || ''}</div><div style="color:var(--text3);font-size:10px;">No data</div></div>`;
-          }
+        const quotesBySymbol = {};
+        FUTURES_SYMBOLS.forEach((sym, i) => {
+          const resp = responses[i];
+          const data = resp?.data || {};
+          quotesBySymbol[sym] = data[sym] || Object.values(data)[0] || null;
+        });
 
+        document.getElementById('futures-grid').innerHTML = FUTURES_SYMBOLS.map(sym => {
+          const item = quotesBySymbol[sym];
+          if (!item) return `<div class="future-card"><div class="future-sym">${sym}</div><div class="future-desc">${FUTURES_NAMES[sym] || ''}</div><div style="color:var(--text3);font-size:10px;">No data</div></div>`;
           const qt = item.quote || {};
           const ref = item.reference || {};
           const price = qt.lastPrice ?? qt.closePrice ?? qt.mark;
           const pct = qt.futurePercentChange ?? qt.netPercentChange ?? 0;
-
           return `<div class="future-card">
-    <div class="future-sym">${sym}</div>
-    <div class="future-desc">${ref.description || FUTURES_NAMES[sym] || ''}</div>
-    <div class="future-price ${chgClass(pct)}">${fmt(price)}</div>
-    <div class="future-meta">
-      ${futureRow('Change', `<span class="${chgClass(pct)}">${chgPrefix(pct)}${fmt(pct)}%</span>`)}
-      ${futureRow('OI', fmtK(qt.openInterest))}
-      ${futureRow('Volume', fmtK(qt.totalVolume))}
-      ${futureRow('Settle', fmt(qt.mark))}
-      ${futureRow('Tick', `${fmt(ref.futureMultiplier ?? qt.tick, 0)} × ${fmt(qt.tickAmount)}`)}
-      ${ref.futureIsActive !== undefined ? futureRow('Active', ref.futureIsActive ? '✓ Yes' : 'No') : ''}
-    </div>
-  </div>`;
+        <div class="future-sym">${sym}</div>
+        <div class="future-desc">${ref.description || FUTURES_NAMES[sym] || ''}</div>
+        <div class="future-price ${chgClass(pct)}">${fmt(price)}</div>
+        <div class="future-meta">
+          ${futureRow('Change', `<span class="${chgClass(pct)}">${chgPrefix(pct)}${fmt(pct)}%</span>`)}
+          ${futureRow('OI', fmtK(qt.openInterest))}
+          ${futureRow('Volume', fmtK(qt.totalVolume))}
+          ${futureRow('Settle', fmt(qt.mark))}
+          ${futureRow('Tick', `${fmt(ref.futureMultiplier ?? qt.tick, 0)} × ${fmt(qt.tickAmount)}`)}
+          ${ref.futureIsActive !== undefined ? futureRow('Active', ref.futureIsActive ? '✓ Yes' : 'No') : ''}
+        </div>
+      </div>`;
         }).join('');
 
-        document.getElementById('futures-table').innerHTML = results.map(({ sym, item }) => {
-          if (!item) return `<tr><td>${sym}</td><td colspan="4" style="color:var(--text3);">No data</td></tr>`;
-
+        const refLines = FUTURES_SYMBOLS.map(sym => {
+          const item = quotesBySymbol[sym];
+          if (!item) return `<div class="text-muted fs10">${sym} — No data</div>`;
           const qt = item.quote || {};
-          const price = qt.lastPrice ?? qt.closePrice ?? qt.mark;
           const pct = qt.futurePercentChange ?? qt.netPercentChange ?? 0;
-
-          return `<tr>
-    <td>${sym}</td>
-    <td>${fmt(price)}</td>
-    <td class="${chgClass(pct)}">${chgPrefix(pct)}${fmt(pct)}%</td>
-    <td>${fmtK(qt.totalVolume)}</td>
-    <td>${fmtK(qt.openInterest)}</td>
-  </tr>`;
+          const name = item.reference?.description || FUTURES_NAMES[sym] || sym;
+          return `<div class="future-meta-row"><span class="k">${sym} · ${name}</span><span class="v ${chgClass(pct)}">${fmt(qt.lastPrice ?? qt.closePrice ?? qt.mark)} (${chgPrefix(pct)}${fmt(pct)}%)</span></div>`;
         }).join('');
-
+        document.getElementById('futures-ref-body').innerHTML = refLines || '<div class="text-muted fs10">—</div>';
       } catch (e) {
         document.getElementById('futures-grid').innerHTML = `<div style="grid-column:1/-1;padding:20px;color:var(--text3);">${e.message}</div>`;
-        document.getElementById('futures-table').innerHTML = `<tr><td colspan="5" style="color:var(--text3);padding:20px;">${e.message}</td></tr>`;
+        document.getElementById('futures-ref-body').innerHTML = `<div class="text-muted fs10">${e.message}</div>`;
       }
     }
     function futureRow(k, v) { return `<div class="future-meta-row"><span class="k">${k}</span><span class="v">${v}</span></div>`; }
