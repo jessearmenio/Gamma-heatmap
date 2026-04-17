@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Market Engine Dashboard</title>
-  <script src="https://s3.tradingview.com/tv.js"></script>
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
   <style>
     /* ── Reset and Base ── */
     *,
@@ -1070,20 +1070,16 @@
       padding: 4px 8px;
       text-align: right;
     }
-
     #heat-table thead th.net-gex-col {
       z-index: 5;
       background: #0d1016;
     }
-
     #heat-table tr.spot-row td.net-gex-col {
-      background: rgba(59, 140, 255, 0.12) !important;
+      background: rgba(59,140,255,0.12) !important;
     }
-
     #heat-table tr.king-row td.net-gex-col {
-      background: rgba(255, 215, 0, 0.1) !important;
+      background: rgba(255,215,0,0.1) !important;
     }
-
     #heat-table tbody tr:hover td.net-gex-col {
       filter: brightness(1.15);
     }
@@ -1874,9 +1870,7 @@
       border: 1px solid var(--border3);
       box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      overflow: visible;
     }
 
     #ov-chart-header {
@@ -1889,18 +1883,13 @@
     }
 
     #ov-spy-chart {
-      flex: 1;
-      min-height: 380px;
+      height: 460px;
+      /* total: ~320px candles + 140px RSI */
       border-radius: 0 0 8px 8px;
-      overflow: hidden;
+      overflow: visible;
+      /* must NOT be hidden — blocks LWC drag events */
       position: relative;
-    }
-
-    #ov-tv-container {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
+      cursor: crosshair;
     }
 
     /* Gamma bar overlay canvas */
@@ -1908,15 +1897,14 @@
       position: absolute;
       top: 0;
       left: 0;
-      pointer-events: none;
-      /* pass all events through to LWC chart underneath */
+      pointer-events: none; /* pass all events through to LWC chart underneath */
       z-index: 5;
     }
 
     /* Gamma bar hover tooltip */
     #ov-gamma-tip {
       position: fixed;
-      background: rgba(10, 12, 20, 0.95);
+      background: rgba(10,12,20,0.95);
       border: 1px solid var(--border2);
       border-radius: 5px;
       padding: 5px 9px;
@@ -2502,20 +2490,17 @@
       padding: 12px 16px 0;
       flex-shrink: 0;
     }
-
     #flow-history-row {
       padding: 0 16px 0;
       flex-shrink: 0;
       margin: 12px 0 12px 0;
     }
-
     .flow-analytics-card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
     }
-
     .flow-analytics-card-header {
       display: flex;
       align-items: center;
@@ -2527,34 +2512,24 @@
       letter-spacing: 0.04em;
       color: var(--text1);
     }
-
-    .flow-analytics-card-header .badge-call {
-      color: var(--accent);
-    }
-
-    .flow-analytics-card-header .badge-put {
-      color: var(--purple);
-    }
-
+    .flow-analytics-card-header .badge-call { color: var(--accent); }
+    .flow-analytics-card-header .badge-put  { color: var(--purple); }
     .fan-table-wrap {
       overflow-x: auto;
       max-height: 260px;
       overflow-y: auto;
     }
-
     .fhist-wrap {
       overflow-x: auto;
       max-height: 280px;
       overflow-y: auto;
     }
-
     .fan-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 10px;
       white-space: nowrap;
     }
-
     .fan-table thead th {
       position: sticky;
       top: 0;
@@ -2565,74 +2540,50 @@
       text-align: right;
       border-bottom: 1px solid var(--border);
     }
-
     .fan-table thead th:first-child,
     .fan-table thead th:nth-child(2),
-    .fan-table thead th:nth-child(3) {
-      text-align: left;
-    }
-
+    .fan-table thead th:nth-child(3) { text-align: left; }
     .fan-table tbody tr {
-      border-bottom: 1px solid rgba(30, 34, 48, 0.7);
+      border-bottom: 1px solid rgba(30,34,48,0.7);
     }
-
-    .fan-table tbody tr:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
+    .fan-table tbody tr:hover { background: rgba(255,255,255,0.03); }
     .fan-table td {
       padding: 4px 8px;
       text-align: right;
       color: var(--text2);
     }
-
     .fan-table td:first-child,
     .fan-table td:nth-child(2),
-    .fan-table td:nth-child(3) {
-      text-align: left;
-    }
-
-    .fan-table td.call {
-      color: var(--accent);
-      font-weight: 700;
-    }
-
-    .fan-table td.put {
-      color: var(--purple);
-      font-weight: 700;
-    }
-
+    .fan-table td:nth-child(3) { text-align: left; }
+    .fan-table td.call { color: var(--accent); font-weight: 700; }
+    .fan-table td.put  { color: var(--purple); font-weight: 700; }
     .fan-vol-bar {
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
-
     .fan-vol-chip {
-      background: rgba(220, 255, 30, 0.18);
+      background: rgba(220,255,30,0.18);
       color: var(--accent);
       border-radius: 3px;
       padding: 1px 5px;
       font-weight: 700;
       font-size: 10px;
     }
-
     .fan-oi-chip {
-      background: rgba(180, 35, 240, 0.18);
+      background: rgba(180,35,240,0.18);
       color: #d46ef9;
       border-radius: 3px;
       padding: 1px 5px;
       font-weight: 700;
       font-size: 10px;
     }
-
     .fan-ba-bar {
       display: inline-flex;
       align-items: center;
       gap: 2px;
       min-width: 70px;
     }
-
     .fan-ba-pct {
       font-size: 9px;
       font-weight: 700;
@@ -2640,21 +2591,13 @@
       padding: 1px 4px;
       color: #fff;
     }
-
-    .fan-ba-pct.ask {
-      background: rgba(255, 59, 92, 0.7);
-    }
-
-    .fan-ba-pct.bid {
-      background: rgba(34, 221, 136, 0.7);
-    }
-
+    .fan-ba-pct.ask  { background: rgba(255,59,92,0.7); }
+    .fan-ba-pct.bid  { background: rgba(34,221,136,0.7); }
     .fan-ba-fill {
       height: 7px;
       border-radius: 2px;
       flex: 1;
     }
-
     /* History table */
     .fhist-table {
       width: 100%;
@@ -2662,7 +2605,6 @@
       font-size: 10px;
       white-space: nowrap;
     }
-
     .fhist-table thead th {
       position: sticky;
       top: 0;
@@ -2673,46 +2615,19 @@
       text-align: right;
       border-bottom: 1px solid var(--border);
     }
-
-    .fhist-table thead th:first-child {
-      text-align: left;
-    }
-
-    .fhist-table tbody tr {
-      border-bottom: 1px solid rgba(30, 34, 48, 0.7);
-    }
-
-    .fhist-table tbody tr:hover {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
+    .fhist-table thead th:first-child { text-align: left; }
+    .fhist-table tbody tr { border-bottom: 1px solid rgba(30,34,48,0.7); }
+    .fhist-table tbody tr:hover { background: rgba(255,255,255,0.03); }
     .fhist-table td {
       padding: 4px 8px;
       text-align: right;
       color: var(--text2);
     }
-
-    .fhist-table td:first-child {
-      text-align: left;
-      color: var(--text3);
-      font-size: 9px;
-    }
-
-    .fhist-table td.up {
-      color: var(--green);
-    }
-
-    .fhist-table td.dn {
-      color: var(--red);
-    }
-
-    .fhist-table td.netpos {
-      color: var(--green);
-    }
-
-    .fhist-table td.netneg {
-      color: var(--red);
-    }
+    .fhist-table td:first-child { text-align: left; color: var(--text3); font-size:9px; }
+    .fhist-table td.up  { color: var(--green); }
+    .fhist-table td.dn  { color: var(--red);   }
+    .fhist-table td.netpos { color: var(--green); }
+    .fhist-table td.netneg { color: var(--red);   }
 
     /* Flow stats bar */
     #flow-stats-bar {
@@ -2812,18 +2727,9 @@
       width: 55px;
       text-align: right;
     }
-
-    .mover-chg.up {
-      color: var(--green);
-    }
-
-    .mover-chg.dn {
-      color: var(--red);
-    }
-
-    .mover-chg.flat {
-      color: var(--text2);
-    }
+    .mover-chg.up { color: var(--green); }
+    .mover-chg.dn { color: var(--red); }
+    .mover-chg.flat { color: var(--text2); }
 
     .mover-vol {
       font-size: 10px;
@@ -3973,19 +3879,20 @@
 
             <!-- SPY Chart -->
             <div id="ov-chart-card">
+              <div id="ov-chart-header">
+                <span class="card-title">SPY &#8212; S&amp;P 500 ETF</span>
+                <div id="ov-spy-chart-tf">
+                  <button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1D"  onclick="ovSetChartTf('1D',this)">1D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5D"  onclick="ovSetChartTf('5D',this)">5D</button>
+                  <button class="ov-chart-tf-btn active" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="6M"  onclick="ovSetChartTf('6M',this)">6M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1Y"  onclick="ovSetChartTf('1Y',this)">1Y</button>
+                </div>
+              </div>
               <div id="ov-chart-legend">
-<div id="ov-spy-chart-tf">
-  <button class="ov-chart-tf-btn" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">1m</button>
-  <button class="ov-chart-tf-btn" data-ovctf="5m" onclick="ovSetChartTf('5m',this)">5m</button>
-  <button class="ov-chart-tf-btn active" data-ovctf="1H" onclick="ovSetChartTf('1D',this)">1H</button>
-  <button class="ov-chart-tf-btn" data-ovctf="1D" onclick="ovSetChartTf('1W',this)">1D</button>
-  <button class="ov-chart-tf-btn" data-ovctf="1M" onclick="ovSetChartTf('1M',this)">1W</button>
-<!-- <button class="ov-chart-tf-btn" data-ovctf="M" onclick="ovSetChartTf('M',this)">1M</button>-->
-  <button class="ov-chart-tf-btn" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
-  <button class="ov-chart-tf-btn" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
-  <button class="ov-chart-tf-btn" data-ovctf="1Y" onclick="ovSetChartTf('1Y',this)">1Y</button>
-</div>
-                <span style="color:var(--text3);font-size:9px;opacity:0.55;margin-left:8px;">⏱ 15min delayed</span>
                 <div class="ov-leg-item">
                   <div class="ov-leg-line" style="background:#11C81A;"></div>EMA 8
                 </div>
@@ -3996,26 +3903,20 @@
                   <div class="ov-leg-line" style="background:#01BCD4;"></div>EMA 50
                 </div>
                 <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
-                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span
-                    style="color:var(--text3);font-size:9px;">+GEX</span>
-                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
-                    style="color:var(--text3);font-size:9px;">−GEX</span>
+                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">+GEX</span>
+                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">−GEX</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span
-                    style="color:#1848CC;font-size:9px;">PDH/PDL</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span style="color:#1848CC;font-size:9px;">PDH/PDL</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span
-                    style="color:#9C27B0;font-size:9px;">GBX H/L</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span style="color:#9C27B0;font-size:9px;">GBX H/L</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span
-                    style="color:#F23644;font-size:9px;">ATH</span>
+                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span style="color:#F23644;font-size:9px;">ATH</span>
                 </div>
               </div>
               <div id="ov-spy-chart">
-                <div id="ov-tv-container"></div>
                 <canvas id="ov-gamma-canvas"></canvas>
               </div>
             </div>
@@ -4500,23 +4401,19 @@
               </div>
               <div class="fan-table-wrap">
                 <table class="fan-table" id="spy-vol-table">
-                  <thead>
-                    <tr>
-                      <th>Strike</th>
-                      <th>C/P</th>
-                      <th>Expiry</th>
-                      <th>DTE</th>
-                      <th>Last</th>
-                      <th>Low–High</th>
-                      <th>Volume</th>
-                      <th>OI</th>
-                      <th>Bid/Ask Vol</th>
-                    </tr>
-                  </thead>
+                  <thead><tr>
+                    <th>Strike</th>
+                    <th>C/P</th>
+                    <th>Expiry</th>
+                    <th>DTE</th>
+                    <th>Last</th>
+                    <th>Low–High</th>
+                    <th>Volume</th>
+                    <th>OI</th>
+                    <th>Bid/Ask Vol</th>
+                  </tr></thead>
                   <tbody id="spy-vol-body">
-                    <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
-                    </tr>
+                    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -4531,23 +4428,19 @@
               </div>
               <div class="fan-table-wrap">
                 <table class="fan-table" id="spy-oi-table">
-                  <thead>
-                    <tr>
-                      <th>Strike</th>
-                      <th>C/P</th>
-                      <th>Expiry</th>
-                      <th>DTE</th>
-                      <th>Last</th>
-                      <th>Low–High</th>
-                      <th>Volume</th>
-                      <th>OI</th>
-                      <th>Bid/Ask Vol</th>
-                    </tr>
-                  </thead>
+                  <thead><tr>
+                    <th>Strike</th>
+                    <th>C/P</th>
+                    <th>Expiry</th>
+                    <th>DTE</th>
+                    <th>Last</th>
+                    <th>Low–High</th>
+                    <th>Volume</th>
+                    <th>OI</th>
+                    <th>Bid/Ask Vol</th>
+                  </tr></thead>
                   <tbody id="spy-oi-body">
-                    <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
-                    </tr>
+                    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -4560,38 +4453,33 @@
             <div class="flow-analytics-card">
               <div class="flow-analytics-card-header">
                 <span>Historical SPY Data</span>
-                <span style="margin-left:8px;color:var(--text3);font-weight:400;font-size:9px;">Last 14 Trading
-                  Days</span>
+                <span style="margin-left:8px;color:var(--text3);font-weight:400;font-size:9px;">Last 14 Trading Days</span>
                 <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-hist-updated"></span>
               </div>
               <div class="fhist-wrap">
                 <table class="fhist-table" id="spy-hist-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>High</th>
-                      <th>Low</th>
-                      <th>Close</th>
-                      <th>% Chg</th>
-                      <th>Volume</th>
-                      <th>Vol/30D</th>
-                      <th>Total OI</th>
-                      <th>% OI Chg</th>
-                      <th>Call OI</th>
-                      <th>Put OI</th>
-                      <th>IVR</th>
-                      <th>Vol 30D</th>
-                      <th>Impl 30D</th>
-                      <th>Vol 60D</th>
-                      <th>Impl 60D</th>
-                      <th>Net Prem</th>
-                      <th>Total Prem</th>
-                    </tr>
-                  </thead>
+                  <thead><tr>
+                    <th>Date</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Close</th>
+                    <th>% Chg</th>
+                    <th>Volume</th>
+                    <th>Vol/30D</th>
+                    <th>Total OI</th>
+                    <th>% OI Chg</th>
+                    <th>Call OI</th>
+                    <th>Put OI</th>
+                    <th>IVR</th>
+                    <th>Vol 30D</th>
+                    <th>Impl 30D</th>
+                    <th>Vol 60D</th>
+                    <th>Impl 60D</th>
+                    <th>Net Prem</th>
+                    <th>Total Prem</th>
+                  </tr></thead>
                   <tbody id="spy-hist-body">
-                    <tr>
-                      <td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
-                    </tr>
+                    <tr><td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -6084,205 +5972,479 @@
     }
 
     // ══════════════════════════════════════════════════════
-    //  TRADINGVIEW ADVANCED CHART — 15min delayed
+    //  LIGHTWEIGHT CHARTS — Single chart, two panes
+    //  Candles + EMA 8/21/50 (top) | RSI (bottom, synced)
     // ══════════════════════════════════════════════════════
 
-    let tvWidget = null;
-    let ovGammaData = [];
-    let ovGammaHitBoxes = [];
-    let ovPriceRange = null;
-    let ovLevelLines = [];
+    let lwcChart = null;  // single LWC chart instance
+    let lwcCandles = null;  // candlestick series ref (for resize)
+    let lwcCandleSeries = null; // ref for price→coordinate lookups
+    let ovGammaData = [];   // [{strike, netGex}] for gamma bar overlay
 
+    // EMA helper
+    function calcEMA(closes, period) {
+      const k = 2 / (period + 1);
+      const out = [];
+      let ema = null;
+      for (let i = 0; i < closes.length; i++) {
+        if (ema === null) {
+          if (i >= period - 1) {
+            ema = closes.slice(i - period + 1, i + 1).reduce((a, b) => a + b, 0) / period;
+            out.push(ema);
+          } else { out.push(null); }
+        } else {
+          ema = closes[i] * k + ema * (1 - k);
+          out.push(ema);
+        }
+      }
+      return out;
+    }
 
-const TV_INTERVAL = {
-  '3m': '3',
-  '5m': '5',
-  '10m': '10',
-  '1H': '60',
-  '1D': '1D',
-  '1W': '1W',
-  '1M': 'M',
-  '3M': '3M',
-  '6M': '6M',
-  '1Y': '12M',
-};
+    // RSI helper
+    function calcRSI(closes, period = 14) {
+      const out = new Array(closes.length).fill(null);
+      if (closes.length < period + 1) return out;
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        const d = closes[i] - closes[i - 1];
+        if (d >= 0) gains += d; else losses -= d;
+      }
+      let avgGain = gains / period;
+      let avgLoss = losses / period;
+      out[period] = 100 - 100 / (1 + (avgLoss === 0 ? Infinity : avgGain / avgLoss));
+      for (let i = period + 1; i < closes.length; i++) {
+        const d = closes[i] - closes[i - 1];
+        avgGain = (avgGain * (period - 1) + Math.max(d, 0)) / period;
+        avgLoss = (avgLoss * (period - 1) + Math.max(-d, 0)) / period;
+        out[i] = 100 - 100 / (1 + (avgLoss === 0 ? Infinity : avgGain / avgLoss));
+      }
+      return out;
+    }
 
-
-    const TV_RANGE = {
-      '3m': '1D',
-      '5m': '5D',
-      '10m': '5D',
-      '1H': '1M',
-      '1D': '3M',
-      '1W': '12M',
-      '1M': '60M',
-      '3M': '36M',
-      '6M': '72M',
-      '1Y': '144M',
+    // Filter candles by TF button value
+    // TF config: daily TFs use daily candles from histMap; intraday TFs fetch separately
+    const TF_INTRADAY = {
+      '5m':  { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '5' },
+      '10m': { periodType: 'month', period: '1', frequencyType: 'minute', frequency: '10' },
+      '1H':  { periodType: 'month', period: '3', frequencyType: 'hour',   frequency: '1' },
     };
 
-    function ovCreateTVWidget(interval, range) {
-      const container = document.getElementById('ov-tv-container');
-      if (!container) return;
-      if (tvWidget) { try { tvWidget.remove(); } catch (e) { } tvWidget = null; container.innerHTML = ''; }
-      if (typeof TradingView === 'undefined') return;
-      tvWidget = new TradingView.widget({
-        container_id: 'ov-tv-container',
-        width: '100%',
-        height: '100%',
-        symbol: 'AMEX:SPY',
-        interval: interval || 'D',
-        range: range || '3M',
-        timezone: 'America/Chicago',
-        theme: 'dark',
-        style: '1',
-        locale: 'en',
-        toolbar_bg: '#030915',
-        enable_publishing: false,
-        hide_top_toolbar: false,
-        hide_side_toolbar: true,
-        allow_symbol_change: false,
-        save_image: false,
-        withdateranges: false,
-        details: false,
-        calendar: false,
-        overrides: {
-          'mainSeriesProperties.candleStyle.upColor': '#D1C4E9',
-          'mainSeriesProperties.candleStyle.downColor': '#7E57C2',
-          'mainSeriesProperties.candleStyle.borderUpColor': '#D1C4E9',
-          'mainSeriesProperties.candleStyle.borderDownColor': '#7E57C2',
-          'mainSeriesProperties.candleStyle.wickUpColor': '#D1C4E9',
-          'mainSeriesProperties.candleStyle.wickDownColor': '#7E57C2',
-          'paneProperties.background': '#030915',
-          'paneProperties.backgroundType': 'solid',
-          'paneProperties.vertGridProperties.color': 'rgba(255,255,255,0.04)',
-          'paneProperties.horzGridProperties.color': 'rgba(255,255,255,0.04)',
-          'scalesProperties.textColor': '#5c6370',
-          'scalesProperties.backgroundColor': '#030915',
-          'scalesProperties.lineColor': '#1e2230',
-        },
-        studies_overrides: {
-          'volume.volume.color.0': 'rgba(126,87,194,0.4)',
-          'volume.volume.color.1': 'rgba(209,196,233,0.4)',
-        },
-        disabled_features: [
-          'use_localstorage_for_settings', 'header_symbol_search', 'header_settings',
-          'header_compare', 'header_undo_redo', 'header_screenshot', 'header_fullscreen_button',
-          'left_toolbar', 'border_around_the_chart', 'symbol_info', 'timeframes_toolbar',
-        ],
-        enabled_features: ['move_logo_to_main_pane'],
-      });
-      // Add EMA 8/21/50 with correct colors once chart is ready
-      if (tvWidget.onChartReady) {
-        tvWidget.onChartReady(() => {
-          const chart = tvWidget.chart();
-          chart.createStudy('Moving Average Exponential', false, false, { length: 8 }, { 'Plot.color': '#4CAF51' });
-          chart.createStudy('Moving Average Exponential', false, false, { length: 21 }, { 'Plot.color': '#9C27B0' });
-          chart.createStudy('Moving Average Exponential', false, false, { length: 50 }, { 'Plot.color': '#01BCD4' });
-          setTimeout(() => { drawGammaBars(); fetchAndDrawLevels(); }, 400);
-        });
+    function lwcFilterCandles(candles, tf) {
+      // Intraday TFs: candles are already the correct set, just return all
+      if (TF_INTRADAY[tf]) return candles;
+      const now = Date.now();
+      const day = 86400000;
+      let fromMs;
+      if (tf === '1D') fromMs = now - 2 * day;
+      else if (tf === '5D') fromMs = now - 5 * day;
+      else if (tf === '3M') fromMs = now - 90 * day;
+      else if (tf === '6M') fromMs = now - 180 * day;
+      else if (tf === '1Y') fromMs = now - 365 * day;
+      else fromMs = now - 90 * day;
+      if (tf === '1D') {
+        const sorted = [...candles].sort((a, b) => b.datetime - a.datetime);
+        return sorted.slice(0, 60).reverse();
       }
+      const filtered = candles.filter(c => c.datetime >= fromMs);
+      return filtered.length >= 5 ? filtered : candles.slice(-60);
     }
 
-    // ── Price→pixel mapping ───────────────────────────────────────────────────
-    function priceToY(price) {
-      const pr = ovPriceRange;
-      if (!pr || pr.max === pr.min) return null;
-      const pad = (pr.max - pr.min) * 0.02;
-      const lo = pr.min - pad, hi = pr.max + pad;
-      return Math.round(pr.chartH * (1 - (price - lo) / (hi - lo)));
-    }
+    function ovRenderChart(candles) {
+      const container = document.getElementById('ov-spy-chart');
+      if (!container) return;
 
-    function updatePriceRange() {
-      const chartEl = document.getElementById('ov-spy-chart');
-      if (!chartEl) return;
-      const chartH = chartEl.clientHeight;
-      const candles = ovState.snapshot?.scores?.spyCandles;
-      if (!candles || !candles.length) {
-        if (ovGammaData.length) {
-          const s = ovGammaData.map(d => d.strike);
-          ovPriceRange = { min: Math.min(...s) - 10, max: Math.max(...s) + 10, chartH };
-        }
+      // Destroy previous chart cleanly
+      if (lwcChart) { try { lwcChart.remove(); } catch (e) { } lwcChart = null; }
+      lwcCandleSeries = null;
+      container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas>'; // preserve canvas element
+
+      // Need actual candle data
+      if (!candles || candles.length < 10) {
+        container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Connect Schwab to load chart data</div>';
         return;
       }
-      const tf = ovState.chartTf || '3M';
-      const now = Date.now(), day = 86400000;
-      const cuts = { '1D': 2 * day, '5D': 7 * day, '3M': 92 * day, '6M': 185 * day, '1Y': 370 * day };
-      const cut = now - (cuts[tf] || 92 * day);
-      const src = candles.filter(c => (c.datetime || c.time * 1000) >= cut);
-      const use = src.length >= 3 ? src : candles.slice(-90);
-      ovPriceRange = {
-        min: Math.min(...use.map(c => c.low)),
-        max: Math.max(...use.map(c => c.high)),
-        chartH,
+
+      const display = lwcFilterCandles(candles, ovState.chartTf);
+      if (display.length < 5) {
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Not enough data for this timeframe</div>';
+        return;
+      }
+
+      // Heights — candle pane 65%, RSI pane 35%
+      const totalH = container.clientHeight || 460;
+      const candleH = Math.round(totalH * 0.65);
+      const rsiH = totalH - candleH;
+
+      // ── Create single chart ──
+      lwcChart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 800,
+        height: totalH,
+        layout: {
+          background: { type: 'solid', color: '#0a0b0d' },
+          textColor: 'rgba(122,128,153,0.9)',
+          fontFamily: 'inherit',
+          fontSize: 10,
+        },
+        grid: {
+          vertLines: { color: 'rgba(255,255,255,0.035)' },
+          horzLines: { color: 'rgba(255,255,255,0.035)' },
+        },
+        crosshair: {
+          mode: LightweightCharts.CrosshairMode.Normal,
+          vertLine: { color: 'rgba(220,255,30,0.4)', labelBackgroundColor: '#1e2230' },
+          horzLine: { color: 'rgba(220,255,30,0.4)', labelBackgroundColor: '#1e2230' },
+        },
+        rightPriceScale: {
+          borderColor: 'rgba(255,255,255,0.06)',
+          textColor: 'rgba(122,128,153,0.9)',
+        },
+        timeScale: {
+          borderColor: 'rgba(255,255,255,0.06)',
+          timeVisible: true,
+          secondsVisible: false,
+          fixLeftEdge: false,
+          fixRightEdge: false,
+          rightOffset: 8,
+        },
+        handleScroll: {
+          mouseWheel: true,
+          pressedMouseMove: true,   // drag to pan horizontally
+          horzTouchDrag: true,
+          vertTouchDrag: true,
+        },
+        handleScale: {
+          mouseWheel: true,
+          pinch: true,
+          axisPressedMouseMove: { time: true, price: true },
+        },
+      });
+
+      // ── Candle data (Schwab → LWC format) ──
+      const candleData = display.map(c => ({
+        time: Math.floor(c.datetime / 1000),
+        open: c.open,
+        high: c.high,
+        low: c.low,
+        close: c.close,
+      }));
+
+      // ── Candlestick series (top pane — default pane 0) ──
+      const candleSeries = lwcChart.addCandlestickSeries({
+        upColor: '#D1C4E9',
+        downColor: '#7E57C2',
+        borderUpColor: '#D1C4E9',
+        borderDownColor: '#7E57C2',
+        wickUpColor: '#D1C4E9',
+        wickDownColor: '#7E57C2',
+        priceScaleId: 'right',
+        scaleMargins: { top: 0.04, bottom: 0.30 }, // leave room for volume
+      });
+      candleSeries.setData(candleData);
+      lwcCandles = candleSeries;
+      lwcCandleSeries = candleSeries; // store for gamma bar coordinate lookups
+
+      // ── Volume series (same pane, overlay at bottom) ──
+      const volSeries = lwcChart.addHistogramSeries({
+        priceFormat: { type: 'volume' },
+        priceScaleId: 'vol',
+        scaleMargins: { top: 0.80, bottom: 0.00 },
+      });
+      lwcChart.priceScale('vol').applyOptions({
+        scaleMargins: { top: 0.80, bottom: 0.00 },
+      });
+      volSeries.setData(display.map(c => ({
+        time: Math.floor(c.datetime / 1000),
+        value: c.volume || 0,
+        color: c.close >= c.open ? 'rgba(209,196,233,0.25)' : 'rgba(126,87,194,0.30)',
+      })));
+
+      // ── EMA series (all in pane 0) ──
+      const allCloses = candles.map(c => c.close);
+      const startIdx = candles.findIndex(c => c.datetime === display[0].datetime);
+      const si = startIdx >= 0 ? startIdx : 0;
+      const ema8vals = calcEMA(allCloses, 8).slice(si, si + display.length);
+      const ema21vals = calcEMA(allCloses, 21).slice(si, si + display.length);
+      const ema50vals = calcEMA(allCloses, 50).slice(si, si + display.length);
+
+      const makeEMA = (vals, color, lineWidth) => {
+        const s = lwcChart.addLineSeries({
+          color, lineWidth,
+          priceScaleId: 'right',
+          crosshairMarkerVisible: false,
+          lastValueVisible: true,
+          priceLineVisible: false,
+        });
+        s.setData(
+          vals
+            .map((v, i) => v !== null ? { time: Math.floor(display[i].datetime / 1000), value: v } : null)
+            .filter(Boolean)
+        );
+        return s;
       };
+      makeEMA(ema8vals, '#11C81A', 1);
+      makeEMA(ema21vals, '#9C27B0', 1.5);
+      makeEMA(ema50vals, '#01BCD4', 1.5);
+
+      // ── RSI series (separate price scale — overlay at bottom of same chart) ──
+      // We use a second price scale 'rsi' pinned to the bottom 28% of the chart
+      const rsiVals = calcRSI(allCloses, 14).slice(si, si + display.length);
+
+      // Divider line (visual separator between candles and RSI)
+      const dividerSeries = lwcChart.addLineSeries({
+        priceScaleId: 'rsi',
+        color: 'transparent',
+        lineWidth: 1,
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+      lwcChart.priceScale('rsi').applyOptions({
+        scaleMargins: { top: 0.73, bottom: 0.00 },
+        borderVisible: true,
+        borderColor: 'rgba(255,255,255,0.06)',
+        drawTicks: true,
+      });
+
+      // RSI 70/30 bands
+      const rsiData = rsiVals
+        .map((v, i) => v !== null ? { time: Math.floor(display[i].datetime / 1000), value: v } : null)
+        .filter(Boolean);
+
+      const rsiSeries = lwcChart.addLineSeries({
+        color: '#c084fc',
+        lineWidth: 1.5,
+        priceScaleId: 'rsi',
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 3,
+        lastValueVisible: true,
+        priceLineVisible: false,
+        autoscaleInfoProvider: () => ({
+          priceRange: { minValue: 0, maxValue: 100 },
+          margins: { above: 0, below: 0 },
+        }),
+      });
+      rsiSeries.setData(rsiData);
+
+      // RSI overbought/oversold reference lines
+      rsiSeries.createPriceLine({ price: 70, color: 'rgba(255,59,92,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '70' });
+      rsiSeries.createPriceLine({ price: 30, color: 'rgba(34,221,136,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '30' });
+      rsiSeries.createPriceLine({ price: 50, color: 'rgba(255,255,255,0.1)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false });
+
+      // RSI label (static text overlay)
+      const rsiLabel = document.createElement('div');
+      rsiLabel.style.cssText = 'position:absolute;left:8px;bottom:4px;font-size:8px;font-weight:700;color:rgba(192,132,252,0.7);pointer-events:none;letter-spacing:0.06em;';
+      rsiLabel.textContent = 'RSI (14)';
+      container.style.position = 'relative';
+      container.appendChild(rsiLabel);
+
+      // ── Auto-fit visible range ──
+      lwcChart.timeScale().fitContent();
+
+      // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
+      const redrawGamma = () => requestAnimationFrame(drawGammaBars);
+      lwcChart.subscribeCrosshairMove(redrawGamma);
+      lwcChart.timeScale().subscribeVisibleLogicalRangeChange(redrawGamma);
+      // Also poll briefly after initial render to catch the first layout pass
+      setTimeout(drawGammaBars, 80);
+      setTimeout(drawGammaBars, 300);
+      setTimeout(drawGammaBars, 800);
+
+      // ── Handle resize when sidebar collapses ──
+      const ro = new ResizeObserver(() => {
+        if (lwcChart) {
+          lwcChart.applyOptions({ width: container.clientWidth });
+          requestAnimationFrame(drawGammaBars);
+        }
+      });
+      ro.observe(container);
+
+      // Draw PDH/PDL, Globex H/L, ATH lines after chart settles
+      drawChartLevels();
     }
 
-    // ── Gamma bars ────────────────────────────────────────────────────────────
+    // ── Chart level lines (Prev Day H/L, Globex H/L, ATH) ──
+    // Called after lwcCandleSeries is ready; fetches recent intraday data and draws lines
+    async function drawChartLevels() {
+      if (!lwcChart || !lwcCandleSeries) return;
+      try {
+        // Fetch last 5 days of 5-min candles with extended hours (covers prev day + globex)
+        const url = '/api/pricehistory?symbol=SPY&periodType=day&period=5&frequencyType=minute&frequency=5&needExtendedHoursData=true';
+        const d = await apiGet(url);
+        if (!d.ok || !d.data?.candles?.length) return;
+        const candles = d.data.candles;
+
+        // Determine today's date (in ms) and yesterday's date
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const yesterdayMidnight = todayMidnight - 86400000;
+
+        // Filter to regular trading hours (9:30-16:00 ET = UTC 13:30-20:00) for prev day
+        // We detect "regular hours" by checking market session — just use 9:30-16:00 ET
+        // ET offset: UTC-4 (EDT) or UTC-5 (EST). Use a simple heuristic: hour in CST 8:30-15:00
+        const isRegular = (ms) => {
+          const d = new Date(ms);
+          const h = d.getUTCHours();
+          const m = d.getUTCMinutes();
+          const totalMin = h * 60 + m;
+          return totalMin >= 13 * 60 + 30 && totalMin < 20 * 60; // 13:30-20:00 UTC = 9:30-16:00 ET
+        };
+        const isPreMarket = (ms) => {
+          const d = new Date(ms);
+          const h = d.getUTCHours();
+          const m = d.getUTCMinutes();
+          const totalMin = h * 60 + m;
+          return totalMin >= 8 * 60 && totalMin < 13 * 60 + 30; // 8:00-9:30 UTC?
+          // Globex pre-market is roughly 4:00-9:30 ET = 8:00-13:30 UTC
+        };
+
+        // Previous day regular-hours candles
+        const prevDayCandles = candles.filter(c =>
+          c.datetime >= yesterdayMidnight && c.datetime < todayMidnight && isRegular(c.datetime)
+        );
+
+        // Today pre-market / globex candles (from midnight to 9:30 ET)
+        const globexCandles = candles.filter(c =>
+          c.datetime >= todayMidnight && !isRegular(c.datetime) &&
+          c.datetime < new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 30).getTime() + 4 * 3600000
+          // rough: today up to ~9:30 ET + 4h offset
+        );
+
+        const addLine = (price, color, title, style = LightweightCharts.LineStyle.Dashed) => {
+          if (!price || !isFinite(price)) return;
+          try {
+            lwcCandleSeries.createPriceLine({
+              price,
+              color,
+              lineWidth: 1,
+              lineStyle: style,
+              axisLabelVisible: true,
+              title,
+            });
+          } catch (e) { /* chart may have been destroyed */ }
+        };
+
+        // Prev Day H/L
+        if (prevDayCandles.length) {
+          const pdh = Math.max(...prevDayCandles.map(c => c.high));
+          const pdl = Math.min(...prevDayCandles.map(c => c.low));
+          addLine(pdh, '#1848CC', 'PDH');
+          addLine(pdl, '#1848CC', 'PDL');
+        }
+
+        // Globex H/L (pre-market)
+        if (globexCandles.length) {
+          const gh = Math.max(...globexCandles.map(c => c.high));
+          const gl = Math.min(...globexCandles.map(c => c.low));
+          addLine(gh, '#9C27B0', 'GBX H');
+          addLine(gl, '#9C27B0', 'GBX L');
+        }
+
+        // All-time high (SPY ATH ~ $613.23 as of early 2025 — fetch from full 1Y candles)
+        // Use the full snapshot candles if we have them; otherwise use a static fallback
+        let ath = null;
+        const dailyCandles = ovState.snapshot?.scores?.spyCandles;
+        if (dailyCandles && dailyCandles.length) {
+          ath = Math.max(...dailyCandles.map(c => c.high));
+        }
+        if (ath) addLine(ath, '#F23644', 'ATH', LightweightCharts.LineStyle.Solid);
+
+      } catch (e) { console.warn('drawChartLevels:', e); }
+    }
+
+    // ── Gamma bar overlay ──
+    let ovGammaHitBoxes = []; // [{x,y,w,h,strike,netGex}] for hover detection
+
     function drawGammaBars() {
       const canvas = document.getElementById('ov-gamma-canvas');
       const chartEl = document.getElementById('ov-spy-chart');
-      if (!canvas || !chartEl || !ovGammaData || !ovGammaData.length) {
-        if (canvas) canvas.style.display = 'none';
-        return;
-      }
-      updatePriceRange();
-      if (!ovPriceRange) return;
+      if (!canvas || !chartEl || !lwcChart || !lwcCandleSeries) return;
+      if (!ovGammaData || !ovGammaData.length) { canvas.style.display = 'none'; return; }
 
-      const W = chartEl.clientWidth, H = chartEl.clientHeight;
-      canvas.width = W; canvas.height = H;
-      canvas.style.cssText = `position:absolute;top:0;left:0;width:${W}px;height:${H}px;pointer-events:none;z-index:5;`;
+      // Match canvas size to chart container
+      const W = chartEl.clientWidth;
+      const H = chartEl.clientHeight;
+      canvas.width = W;
+      canvas.height = H;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      canvas.style.display = 'block';
 
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, W, H);
 
-      const MAX_BAR = 220;
+      // Estimate RSI pane height (bottom ~27% of chart)
+      const candlePaneH = Math.round(H * 0.73);
+
+      // Max bar width
+      const MAX_BAR = 240;
       const maxAbsGex = Math.max(...ovGammaData.map(d => Math.abs(d.netGex)), 1);
-      let kingStrike = null, kingAbs = 0;
+
+      // Find the king node — strike with the highest absolute GEX
+      let kingStrike = null;
+      let kingAbsGex = 0;
       for (const { strike, netGex } of ovGammaData) {
-        if (Math.abs(netGex) > kingAbs) { kingAbs = Math.abs(netGex); kingStrike = strike; }
+        if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
       }
 
       ovGammaHitBoxes = [];
-      const yA = priceToY(500), yB = priceToY(501);
-      const pxPerDollar = (yA != null && yB != null) ? Math.abs(yB - yA) : 3;
 
       for (const { strike, netGex } of ovGammaData) {
-        if (!netGex) continue;
-        const y = priceToY(strike);
-        if (y == null || y < 0 || y > H) continue;
-        const barH = Math.max(1.5, Math.min(pxPerDollar, 18));
-        const barW = Math.max(2, Math.round(Math.pow(Math.abs(netGex) / maxAbsGex, 0.45) * MAX_BAR));
+        if (netGex === 0) continue;
+
+        let y;
+        try { y = lwcCandleSeries.priceToCoordinate(strike); } catch (e) { continue; }
+        if (y == null || y < 0 || y > candlePaneH) continue;
+
+        // Bar height = $1 price range in pixels
+        let barH;
+        try {
+          const y0 = lwcCandleSeries.priceToCoordinate(strike);
+          const y1 = lwcCandleSeries.priceToCoordinate(strike + 1);
+          barH = y0 != null && y1 != null ? Math.abs(y1 - y0) : 3;
+        } catch { barH = 3; }
+        barH = Math.max(1.5, Math.min(barH, 18));
+
+        const barW = Math.round((Math.abs(netGex) / maxAbsGex) * MAX_BAR);
+        if (barW < 1) continue;
+
+        // King node gets gold; all others get standard +/- GEX color
         const isKing = strike === kingStrike;
         ctx.fillStyle = isKing ? 'rgba(245,166,35,0.85)' : (netGex > 0 ? 'rgba(220,255,30,0.55)' : 'rgba(138,22,192,0.55)');
         ctx.fillRect(0, y - barH / 2, barW, barH);
+
+        // Store hit box for hover
         ovGammaHitBoxes.push({ x: 0, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex, isKing });
       }
 
-      drawCanvasLevels();
-
-      // Hover tooltip (wired once)
+      // Wire hover events on chart container (canvas is pointer-events:none so LWC drag still works)
       if (!chartEl._gammaHoverInit) {
         chartEl._gammaHoverInit = true;
         const tip = document.getElementById('ov-gamma-tip');
-        chartEl.addEventListener('mousemove', e => {
-          const r = chartEl.getBoundingClientRect();
-          const mx = e.clientX - r.left, my = e.clientY - r.top;
+        chartEl.addEventListener('mousemove', (e) => {
+          const rect = chartEl.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          // Only check if cursor is in the GEX bar zone (left side)
           if (mx > 260) { if (tip) tip.style.display = 'none'; return; }
-          let hit = null, best = Infinity;
+          let hit = null;
+          let bestDist = Infinity;
           for (const hb of ovGammaHitBoxes) {
             if (mx >= hb.x && mx <= hb.x + hb.w) {
-              const d = Math.abs(my - (hb.y + hb.h / 2));
-              if (d < best && d < hb.h * 3) { best = d; hit = hb; }
+              const cy = hb.y + hb.h / 2;
+              const dist = Math.abs(my - cy);
+              if (dist < bestDist && dist < hb.h * 3) { bestDist = dist; hit = hb; }
             }
           }
           if (hit && tip) {
             const sign = hit.netGex >= 0 ? '+' : '';
             const col = hit.isKing ? '#f5a623' : (hit.netGex >= 0 ? '#DCFF1E' : '#9C27B0');
-            const tag = hit.isKing ? ' <span style="color:#f5a623;font-size:9px;">★ King</span>' : '';
-            tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b>&nbsp;<span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span>${tag}`;
-            tip.style.cssText = `display:block;position:fixed;left:${e.clientX + 14}px;top:${e.clientY - 10}px;background:rgba(10,12,20,0.95);border:1px solid var(--border2);border-radius:5px;padding:5px 9px;font-size:10px;color:var(--text);pointer-events:none;z-index:999;white-space:nowrap;`;
-          } else if (tip) tip.style.display = 'none';
+            const kingTag = hit.isKing ? ' <span style="color:#f5a623;font-size:9px;">★ King Node</span>' : '';
+            tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b> &nbsp; <span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span> <span style="color:var(--text3);font-size:9px;">Net GEX</span>${kingTag}`;
+            tip.style.display = 'block';
+            tip.style.left = (e.clientX + 14) + 'px';
+            tip.style.top  = (e.clientY - 10) + 'px';
+          } else if (tip) {
+            tip.style.display = 'none';
+          }
         });
         chartEl.addEventListener('mouseleave', () => {
           const tip = document.getElementById('ov-gamma-tip');
@@ -6291,76 +6453,120 @@ const TV_INTERVAL = {
       }
     }
 
-    function drawCanvasLevels() {
-      const canvas = document.getElementById('ov-gamma-canvas');
-      if (!canvas || !ovLevelLines.length) return;
-      const ctx = canvas.getContext('2d');
-      const xEnd = canvas.width - 60;
-      ctx.save();
-      ctx.font = 'bold 9px monospace';
-      ctx.textBaseline = 'middle';
-      for (const { price, color, dash, label } of ovLevelLines) {
-        const y = priceToY(price);
-        if (y == null || y < 4 || y > canvas.height - 4) continue;
-        ctx.strokeStyle = color; ctx.lineWidth = 1;
-        ctx.setLineDash(dash ? [4, 4] : []);
-        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(xEnd, y); ctx.stroke();
-        ctx.fillStyle = color;
-        ctx.fillText(label, xEnd + 3, y);
-      }
-      ctx.restore();
+    // ── Ticker marquee ──
+    function ovInitTicker() {
+      const wrap = document.getElementById('ov-ticker-wrap');
+      const track = document.getElementById('ov-ticker-track');
+      const primary = document.getElementById('ov-ticker-group-primary');
+      if (!track || !primary || track.dataset.ovReady === 'true') return;
+      const clone = primary.cloneNode(true);
+      clone.id = 'ov-ticker-group-clone';
+      clone.querySelectorAll('[id]').forEach(n => n.removeAttribute('id'));
+      track.appendChild(clone);
+      track.dataset.ovReady = 'true';
+      ovState.tickerGroupWidth = primary.offsetWidth;
+      wrap.addEventListener('mouseenter', () => ovState.tickerPaused = true);
+      wrap.addEventListener('mouseleave', () => ovState.tickerPaused = false);
+      ovStartTickerAnimation();
+      window.addEventListener('resize', () => { ovState.tickerGroupWidth = primary.offsetWidth; });
     }
-
-    async function fetchAndDrawLevels() {
-      if (!isConnected) return;
-      try {
-        const d = await apiGet('/api/pricehistory?symbol=SPY&periodType=day&period=5&frequencyType=minute&frequency=5&needExtendedHoursData=true');
-        const candles = d?.data?.candles || d?.candles || [];
-        if (!candles.length) return;
-        const byDate = {};
-        candles.forEach(c => {
-          const k = new Date(c.datetime).toISOString().slice(0, 10);
-          (byDate[k] = byDate[k] || []).push(c);
+    function ovStartTickerAnimation() {
+      if (ovState.tickerRafId) cancelAnimationFrame(ovState.tickerRafId);
+      ovState.tickerLastTs = 0;
+      const step = (ts) => {
+        const track = document.getElementById('ov-ticker-track');
+        if (!track || !ovState.tickerGroupWidth) { ovState.tickerRafId = requestAnimationFrame(step); return; }
+        if (!ovState.tickerLastTs) ovState.tickerLastTs = ts;
+        const dt = ts - ovState.tickerLastTs; ovState.tickerLastTs = ts;
+        if (!ovState.tickerPaused) {
+          ovState.tickerOffset += (70 * dt) / 1000;
+          if (ovState.tickerOffset >= ovState.tickerGroupWidth) ovState.tickerOffset -= ovState.tickerGroupWidth;
+          track.style.transform = `translateX(${-ovState.tickerOffset}px)`;
+        }
+        ovState.tickerRafId = requestAnimationFrame(step);
+      };
+      ovState.tickerRafId = requestAnimationFrame(step);
+    }
+    function ovUpdateTicker(quotes) {
+      const TICKER_SYMS = [
+        { sym: 'SPY', key: 'SPY' }, { sym: 'QQQ', key: 'QQQ' }, { sym: 'VIX', key: '$VIX' },
+        { sym: 'TNX', key: '$TNX' }, { sym: 'UUP', key: 'UUP' }, { sym: 'TLT', key: 'TLT' },
+        { sym: 'XLE', key: 'XLE' }, { sym: 'XLF', key: 'XLF' }, { sym: 'XLK', key: 'XLK' },
+        { sym: 'XLI', key: 'XLI' }, { sym: 'XLC', key: 'XLC' }, { sym: 'XLY', key: 'XLY' },
+        { sym: 'XLV', key: 'XLV' }, { sym: 'XLRE', key: 'XLRE' }, { sym: 'XLP', key: 'XLP' },
+        { sym: 'XLB', key: 'XLB' }, { sym: 'XLU', key: 'XLU' }
+      ];
+      TICKER_SYMS.forEach(({ sym, key }) => {
+        const q = quotes[key];
+        if (!q) return;
+        const qd = q.quote || q;
+        const price = ovN(qd.lastPrice) || ovN(qd.closePrice) || ovN(qd.mark);
+        const pct = ovN(qd.netPercentChange);
+        document.querySelectorAll(`[id^="ovt-${sym}-"]`).forEach(el => {
+          const suffix = el.id.split('-').pop();
+          if (suffix === 'price' && price != null) el.textContent = price.toFixed(2);
+          if (suffix === 'chg' && pct != null) {
+            el.textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+            el.className = 'ov-tick-chg ' + (pct > 0 ? 'up' : pct < 0 ? 'dn' : 'flat');
+          }
         });
-        const dates = Object.keys(byDate).sort();
-        if (dates.length < 2) return;
-        const today = dates[dates.length - 1], prev = dates[dates.length - 2];
-        const prevReg = byDate[prev].filter(c => { const h = new Date(c.datetime).getUTCHours(); return h >= 14 && h < 21; });
-        const pdh = prevReg.length ? Math.max(...prevReg.map(c => c.high)) : null;
-        const pdl = prevReg.length ? Math.min(...prevReg.map(c => c.low)) : null;
-        const globex = candles.filter(c => {
-          const dt = new Date(c.datetime), k = dt.toISOString().slice(0, 10), h = dt.getUTCHours();
-          return (k === today && h < 14) || (k === prev && h >= 21);
-        });
-        const gbxH = globex.length ? Math.max(...globex.map(c => c.high)) : null;
-        const gbxL = globex.length ? Math.min(...globex.map(c => c.low)) : null;
-        const lines = [];
-        if (pdh) lines.push({ price: pdh, color: '#1848CC', dash: true, label: 'PDH' });
-        if (pdl) lines.push({ price: pdl, color: '#1848CC', dash: true, label: 'PDL' });
-        if (gbxH) lines.push({ price: gbxH, color: '#9C27B0', dash: true, label: 'GBX H' });
-        if (gbxL) lines.push({ price: gbxL, color: '#9C27B0', dash: true, label: 'GBX L' });
-        const ar = await apiGet('/api/pricehistory?symbol=SPY&periodType=year&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false');
-        const ac = ar?.data?.candles || ar?.candles || [];
-        const ath = ac.length ? Math.max(...ac.map(c => c.high)) : null;
-        if (ath) lines.push({ price: ath, color: '#F23644', dash: false, label: 'ATH' });
-        ovLevelLines = lines;
-        drawGammaBars();
-      } catch (e) { console.warn('fetchAndDrawLevels:', e); }
+      });
     }
 
-    function ovRenderChart(candles) {
-      if (candles?.length && ovState.snapshot?.scores) ovState.snapshot.scores.spyCandles = candles;
-      updatePriceRange();
-      const tf = ovState.chartTf || '3M';
-      ovCreateTVWidget(TV_INTERVAL[tf] || 'D', TV_RANGE[tf] || '3M');
+    // ── Mode + TF controls ──
+    function ovSetMode(mode) {
+      ovState.mode = mode;
+      sessionStorage.setItem('ovMode', mode);
+      ['scalp', 'swing', 'position'].forEach(m => {
+        const b = document.getElementById('ovmode-' + m);
+        if (b) b.className = 'ov-mode-btn' + (m === mode ? ' active' : '');
+      });
+      if (ovState.snapshot) ovRerender(ovState.snapshot);
     }
-
+    function ovSetSectorTf(tf, btn) {
+      ovState.sectorTf = tf;
+      document.querySelectorAll('.ov-sector-tf-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      if (ovState.snapshot) ovRenderSectors(ovState.snapshot.scores);
+    }
     async function ovSetChartTf(tf, btn) {
       ovState.chartTf = tf;
       document.querySelectorAll('.ov-chart-tf-btn').forEach(b => b.classList.remove('active'));
       if (btn) btn.classList.add('active');
-      updatePriceRange();
-      ovCreateTVWidget(TV_INTERVAL[tf] || 'D', TV_RANGE[tf] || '3M');
+
+      if (TF_INTRADAY[tf]) {
+        // Intraday: use cache or fetch fresh
+        if (ovState.intraday[tf] && ovState.intraday[tf].length) {
+          ovRenderChart(ovState.intraday[tf]);
+        } else {
+          // Show loading state
+          const container = document.getElementById('ov-spy-chart');
+          if (container) container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Loading…</div>';
+          try {
+            const cfg = TF_INTRADAY[tf];
+            const url = `/api/pricehistory?symbol=SPY&periodType=${cfg.periodType}&period=${cfg.period}&frequencyType=${cfg.frequencyType}&frequency=${cfg.frequency}&needExtendedHoursData=true`;
+            const d = await apiGet(url);
+            // apiGet returns the parsed {ok, data} JSON wrapper directly
+            const candles = d?.candles || d?.data?.candles;
+            if (candles && candles.length) {
+              ovState.intraday[tf] = candles;
+              ovRenderChart(ovState.intraday[tf]);
+            } else {
+              const container2 = document.getElementById('ov-spy-chart');
+              if (container2) container2.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">No intraday data returned</div>';
+            }
+          } catch (e) {
+            console.warn('ovSetChartTf intraday fetch:', e);
+            ovLogTerminalError('CHART_TF', `Intraday ${tf} fetch failed: ${e.message}`);
+            const container2 = document.getElementById('ov-spy-chart');
+            if (container2) container2.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Chart data unavailable — check terminal</div>';
+          }
+        }
+      } else {
+        // Daily: use existing snapshot candles
+        const candles = ovState.snapshot && ovState.snapshot.scores && ovState.snapshot.scores.spyCandles;
+        ovRenderChart(candles || null);
+      }
     }
 
     function ovRerender(snapshot) {
@@ -6556,10 +6762,10 @@ const TV_INTERVAL = {
         const top = movers.slice(0, 8);
         document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => {
           // Schwab movers API uses lastPrice / netChange / netPercentChange / totalVolume
-          const price = m.lastPrice ?? m.last ?? m.close ?? null;
+          const price  = m.lastPrice   ?? m.last   ?? m.close ?? null;
           const chgPct = m.netPercentChange ?? m.percentChange ?? m.change ?? null;
           const chgAbs = m.netChange ?? null;
-          const vol = m.totalVolume ?? m.volume ?? null;
+          const vol    = m.totalVolume ?? m.volume ?? null;
           return `
       <div class="mover-row">
         <span class="mover-rank">${i + 1}</span>
@@ -6735,10 +6941,10 @@ const TV_INTERVAL = {
       const alpha = 0.18 + t * 0.65;
       if (gex > 0) {
         // positive GEX = yellow #DCFF1E
-        return `rgba(${Math.round(220 * t)},${Math.round(255 * t)},${Math.round(30 * t)},${alpha})`;
+        return `rgba(${Math.round(220*t)},${Math.round(255*t)},${Math.round(30*t)},${alpha})`;
       } else {
         // negative GEX = purple #8a16c0
-        return `rgba(${Math.round(138 * t)},${Math.round(22 * t)},${Math.round(192 * t)},${alpha})`;
+        return `rgba(${Math.round(138*t)},${Math.round(22*t)},${Math.round(192*t)},${alpha})`;
       }
     }
 
@@ -6830,7 +7036,7 @@ const TV_INTERVAL = {
       const [volBody, oiBody] = ['spy-vol-body', 'spy-oi-body'].map(id => document.getElementById(id));
       const loading = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
       if (volBody) volBody.innerHTML = loading;
-      if (oiBody) oiBody.innerHTML = loading;
+      if (oiBody)  oiBody.innerHTML  = loading;
 
       try {
         // Wide chain: strikeCount=100 covers ~$50 both sides for SPY
@@ -6867,7 +7073,7 @@ const TV_INTERVAL = {
           });
         };
         flatChain(chain.callExpDateMap, 'CALL');
-        flatChain(chain.putExpDateMap, 'PUT');
+        flatChain(chain.putExpDateMap,  'PUT');
 
         const renderRow = (c) => {
           const sideClass = c.side === 'CALL' ? 'call' : 'put';
@@ -6875,18 +7081,18 @@ const TV_INTERVAL = {
             ? `$${c.low52.toFixed(2)}–$${c.high52.toFixed(2)}`
             : '—';
           const volDisplay = c.volume >= 1000
-            ? `<span class="fan-vol-chip">${(c.volume / 1000).toFixed(0)}K</span>`
+            ? `<span class="fan-vol-chip">${(c.volume/1000).toFixed(0)}K</span>`
             : c.volume.toLocaleString();
           const oiDisplay = c.oi >= 1000
-            ? `<span class="fan-oi-chip">${(c.oi / 1000).toFixed(0)}K</span>`
+            ? `<span class="fan-oi-chip">${(c.oi/1000).toFixed(0)}K</span>`
             : c.oi.toLocaleString();
           // Bid/ask spread as % of mid; show red% bar (ask side) + green fill
           const mid = (c.bid + c.ask) / 2;
           const askPct = mid > 0 ? Math.round(((c.ask - mid) / mid) * 100) : 0;
           const bidPct = 100 - askPct;
-          const bidAsk = `<div class="fan-ba-bar">` +
-            `<span class="fan-ba-pct ask">${askPct}%</span>` +
-            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>` +
+          const bidAsk = `<div class="fan-ba-bar">`+
+            `<span class="fan-ba-pct ask">${askPct}%</span>`+
+            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>`+
             `</div>`;
           return `<tr>
             <td><b>$${c.strike.toFixed(0)}</b></td>
@@ -6902,27 +7108,27 @@ const TV_INTERVAL = {
         };
 
         // Top 10 by volume
-        const byVol = [...contracts].sort((a, b) => b.volume - a.volume).slice(0, 10);
+        const byVol = [...contracts].sort((a,b) => b.volume - a.volume).slice(0,10);
         if (volBody) {
           volBody.innerHTML = byVol.length ? byVol.map(renderRow).join('') :
             `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-vol-updated');
-          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
         }
 
         // Top 10 by OI
-        const byOI = [...contracts].sort((a, b) => b.oi - a.oi).slice(0, 10);
+        const byOI = [...contracts].sort((a,b) => b.oi - a.oi).slice(0,10);
         if (oiBody) {
           oiBody.innerHTML = byOI.length ? byOI.map(renderRow).join('') :
             `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-oi-updated');
-          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
         }
 
       } catch (e) {
         const errHtml = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
         if (volBody) volBody.innerHTML = errHtml;
-        if (oiBody) oiBody.innerHTML = errHtml;
+        if (oiBody)  oiBody.innerHTML  = errHtml;
         ovLogTerminalError('SPY_CONTRACTS', e.message);
       }
     }
@@ -6947,7 +7153,7 @@ const TV_INTERVAL = {
 
         // Compute 30-day avg volume from all available candles
         const vol30Avg = candles.length >= 2
-          ? candles.slice(0, Math.min(30, candles.length)).reduce((s, c) => s + c.volume, 0) / Math.min(30, candles.length)
+          ? candles.slice(0, Math.min(30, candles.length)).reduce((s,c)=>s+c.volume,0) / Math.min(30, candles.length)
           : null;
 
         // Get today's chain summary for OI, IV data
@@ -6962,16 +7168,16 @@ const TV_INTERVAL = {
                 arr.forEach(c => {
                   const oi = c.openInterest || 0;
                   const vol = c.totalVolume || 0;
-                  const mid = ((c.bid || 0) + (c.ask || 0)) / 2;
+                  const mid = ((c.bid||0) + (c.ask||0)) / 2;
                   const prem = mid * vol * 100;
                   if (side === 'CALL') { callOI += oi; totalPrem += prem; netPrem += prem; }
-                  else { putOI += oi; totalPrem += prem; netPrem -= prem; }
+                  else                { putOI  += oi; totalPrem += prem; netPrem -= prem; }
                 });
               });
             });
           };
           tallySide(ch.callExpDateMap, 'CALL');
-          tallySide(ch.putExpDateMap, 'PUT');
+          tallySide(ch.putExpDateMap,  'PUT');
           chainToday = {
             callOI, putOI, totalOI: callOI + putOI, totalPrem, netPrem,
             iv30: ch.volatility ?? null,
@@ -6982,18 +7188,18 @@ const TV_INTERVAL = {
         const fmtPct = (v) => v != null ? (v >= 0 ? `+${v.toFixed(2)}` : v.toFixed(2)) + '%' : '—';
         const fmtM = (v) => {
           if (v == null) return '—';
-          if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + 'B';
-          if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + 'M';
-          if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(0) + 'K';
+          if (Math.abs(v) >= 1e9) return (v/1e9).toFixed(2) + 'B';
+          if (Math.abs(v) >= 1e6) return (v/1e6).toFixed(1) + 'M';
+          if (Math.abs(v) >= 1e3) return (v/1e3).toFixed(0) + 'K';
           return v.toFixed(0);
         };
         const fmtDate = (ts) => {
           const d = new Date(ts);
-          return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
+          return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
         };
 
         const rows = last14.map((c, i) => {
-          const prevClose = last14[i + 1]?.close ?? c.close;
+          const prevClose = last14[i+1]?.close ?? c.close;
           const chgPct = prevClose ? ((c.close - prevClose) / prevClose) * 100 : 0;
           const vol30Ratio = vol30Avg ? (c.volume / vol30Avg).toFixed(2) : '—';
           const isToday = i === 0;
@@ -7001,11 +7207,11 @@ const TV_INTERVAL = {
           // OI and premium data only available for today (live chain)
           const totalOI = isToday && chainToday ? fmtM(chainToday.totalOI) : '—';
           const oiChgPct = '—';
-          const callOI = isToday && chainToday ? fmtM(chainToday.callOI) : '—';
-          const putOI = isToday && chainToday ? fmtM(chainToday.putOI) : '—';
-          const netPrem = isToday && chainToday ? fmtDollar(chainToday.netPrem) : '—';
+          const callOI  = isToday && chainToday ? fmtM(chainToday.callOI) : '—';
+          const putOI   = isToday && chainToday ? fmtM(chainToday.putOI)  : '—';
+          const netPrem = isToday && chainToday ? fmtDollar(chainToday.netPrem)   : '—';
           const totPrem = isToday && chainToday ? fmtDollar(chainToday.totalPrem) : '—';
-          const iv30 = isToday && chainToday?.iv30 != null ? Math.round(chainToday.iv30 * 100) + '%' : '—';
+          const iv30    = isToday && chainToday?.iv30 != null ? Math.round(chainToday.iv30*100)+'%' : '—';
 
           const chgClass = chgPct > 0 ? 'up' : chgPct < 0 ? 'dn' : '';
           const netPremClass = isToday && chainToday ? (chainToday.netPrem >= 0 ? 'netpos' : 'netneg') : '';
@@ -7036,7 +7242,7 @@ const TV_INTERVAL = {
           tbody.innerHTML = rows.length ? rows.join('') :
             `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-hist-updated');
-          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
         }
 
       } catch (e) {
@@ -8094,8 +8300,8 @@ const TV_INTERVAL = {
     //  INIT
     // ═══════════════════════════════════════════════════════
     (async function init() {
-      // Load TV widget immediately (no Schwab auth needed)
-      ovCreateTVWidget('D', '3M');
+      // Show placeholder until Schwab data loads
+      ovRenderChart(null);
 
       // Start client-side session badge and ago timers immediately (no auth needed)
       startSessionTicker();
