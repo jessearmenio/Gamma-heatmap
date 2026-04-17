@@ -4356,9 +4356,10 @@
           <div id="heat-controls">
             <!-- Symbol pills -->
             <button class="symbol-pill active" onclick="setHeatSymbol(this,'SPY')">$SPY</button>
-            <button class="symbol-pill" onclick="setHeatSymbol(this,'SPX')">$SPX</button>
+            <button class="symbol-pill" onclick="setHeatSymbol(this,'$SPX')">$SPX</button>
             <button class="symbol-pill" onclick="setHeatSymbol(this,'QQQ')">QQQ</button>
             <button class="symbol-pill" onclick="setHeatSymbol(this,'IWM')">IWM</button>
+            <button class="symbol-pill" onclick="setHeatSymbol(this,'$VIX')">$VIX</button>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
             <!-- Custom symbol dropdown -->
             <select id="heat-symbol-select" onchange="setHeatSymbolFromSelect(this)">
@@ -6909,6 +6910,7 @@
       el.classList.add('active');
       document.getElementById('heat-symbol-select').value = '';
       heatSymbol = sym;
+      reloadHeat();
     }
 
     function setHeatSymbolFromSelect(sel) {
