@@ -1070,16 +1070,20 @@
       padding: 4px 8px;
       text-align: right;
     }
+
     #heat-table thead th.net-gex-col {
       z-index: 5;
       background: #0d1016;
     }
+
     #heat-table tr.spot-row td.net-gex-col {
-      background: rgba(59,140,255,0.12) !important;
+      background: rgba(59, 140, 255, 0.12) !important;
     }
+
     #heat-table tr.king-row td.net-gex-col {
-      background: rgba(255,215,0,0.1) !important;
+      background: rgba(255, 215, 0, 0.1) !important;
     }
+
     #heat-table tbody tr:hover td.net-gex-col {
       filter: brightness(1.15);
     }
@@ -1870,7 +1874,9 @@
       border: 1px solid var(--border3);
       box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
-      overflow: visible;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     #ov-chart-header {
@@ -1883,11 +1889,13 @@
     }
 
     #ov-spy-chart {
-      height: 460px;
+      flex: 1;
+      min-height: 380px;
       border-radius: 0 0 8px 8px;
       overflow: hidden;
       position: relative;
     }
+
     #ov-tv-container {
       position: absolute;
       inset: 0;
@@ -1900,14 +1908,15 @@
       position: absolute;
       top: 0;
       left: 0;
-      pointer-events: none; /* pass all events through to LWC chart underneath */
+      pointer-events: none;
+      /* pass all events through to LWC chart underneath */
       z-index: 5;
     }
 
     /* Gamma bar hover tooltip */
     #ov-gamma-tip {
       position: fixed;
-      background: rgba(10,12,20,0.95);
+      background: rgba(10, 12, 20, 0.95);
       border: 1px solid var(--border2);
       border-radius: 5px;
       padding: 5px 9px;
@@ -2493,17 +2502,20 @@
       padding: 12px 16px 0;
       flex-shrink: 0;
     }
+
     #flow-history-row {
       padding: 0 16px 0;
       flex-shrink: 0;
       margin: 12px 0 12px 0;
     }
+
     .flow-analytics-card {
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 8px;
       overflow: hidden;
     }
+
     .flow-analytics-card-header {
       display: flex;
       align-items: center;
@@ -2515,24 +2527,34 @@
       letter-spacing: 0.04em;
       color: var(--text1);
     }
-    .flow-analytics-card-header .badge-call { color: var(--accent); }
-    .flow-analytics-card-header .badge-put  { color: var(--purple); }
+
+    .flow-analytics-card-header .badge-call {
+      color: var(--accent);
+    }
+
+    .flow-analytics-card-header .badge-put {
+      color: var(--purple);
+    }
+
     .fan-table-wrap {
       overflow-x: auto;
       max-height: 260px;
       overflow-y: auto;
     }
+
     .fhist-wrap {
       overflow-x: auto;
       max-height: 280px;
       overflow-y: auto;
     }
+
     .fan-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 10px;
       white-space: nowrap;
     }
+
     .fan-table thead th {
       position: sticky;
       top: 0;
@@ -2543,50 +2565,74 @@
       text-align: right;
       border-bottom: 1px solid var(--border);
     }
+
     .fan-table thead th:first-child,
     .fan-table thead th:nth-child(2),
-    .fan-table thead th:nth-child(3) { text-align: left; }
-    .fan-table tbody tr {
-      border-bottom: 1px solid rgba(30,34,48,0.7);
+    .fan-table thead th:nth-child(3) {
+      text-align: left;
     }
-    .fan-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    .fan-table tbody tr {
+      border-bottom: 1px solid rgba(30, 34, 48, 0.7);
+    }
+
+    .fan-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
     .fan-table td {
       padding: 4px 8px;
       text-align: right;
       color: var(--text2);
     }
+
     .fan-table td:first-child,
     .fan-table td:nth-child(2),
-    .fan-table td:nth-child(3) { text-align: left; }
-    .fan-table td.call { color: var(--accent); font-weight: 700; }
-    .fan-table td.put  { color: var(--purple); font-weight: 700; }
+    .fan-table td:nth-child(3) {
+      text-align: left;
+    }
+
+    .fan-table td.call {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .fan-table td.put {
+      color: var(--purple);
+      font-weight: 700;
+    }
+
     .fan-vol-bar {
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
+
     .fan-vol-chip {
-      background: rgba(220,255,30,0.18);
+      background: rgba(220, 255, 30, 0.18);
       color: var(--accent);
       border-radius: 3px;
       padding: 1px 5px;
       font-weight: 700;
       font-size: 10px;
     }
+
     .fan-oi-chip {
-      background: rgba(180,35,240,0.18);
+      background: rgba(180, 35, 240, 0.18);
       color: #d46ef9;
       border-radius: 3px;
       padding: 1px 5px;
       font-weight: 700;
       font-size: 10px;
     }
+
     .fan-ba-bar {
       display: inline-flex;
       align-items: center;
       gap: 2px;
       min-width: 70px;
     }
+
     .fan-ba-pct {
       font-size: 9px;
       font-weight: 700;
@@ -2594,13 +2640,21 @@
       padding: 1px 4px;
       color: #fff;
     }
-    .fan-ba-pct.ask  { background: rgba(255,59,92,0.7); }
-    .fan-ba-pct.bid  { background: rgba(34,221,136,0.7); }
+
+    .fan-ba-pct.ask {
+      background: rgba(255, 59, 92, 0.7);
+    }
+
+    .fan-ba-pct.bid {
+      background: rgba(34, 221, 136, 0.7);
+    }
+
     .fan-ba-fill {
       height: 7px;
       border-radius: 2px;
       flex: 1;
     }
+
     /* History table */
     .fhist-table {
       width: 100%;
@@ -2608,6 +2662,7 @@
       font-size: 10px;
       white-space: nowrap;
     }
+
     .fhist-table thead th {
       position: sticky;
       top: 0;
@@ -2618,19 +2673,46 @@
       text-align: right;
       border-bottom: 1px solid var(--border);
     }
-    .fhist-table thead th:first-child { text-align: left; }
-    .fhist-table tbody tr { border-bottom: 1px solid rgba(30,34,48,0.7); }
-    .fhist-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    .fhist-table thead th:first-child {
+      text-align: left;
+    }
+
+    .fhist-table tbody tr {
+      border-bottom: 1px solid rgba(30, 34, 48, 0.7);
+    }
+
+    .fhist-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
     .fhist-table td {
       padding: 4px 8px;
       text-align: right;
       color: var(--text2);
     }
-    .fhist-table td:first-child { text-align: left; color: var(--text3); font-size:9px; }
-    .fhist-table td.up  { color: var(--green); }
-    .fhist-table td.dn  { color: var(--red);   }
-    .fhist-table td.netpos { color: var(--green); }
-    .fhist-table td.netneg { color: var(--red);   }
+
+    .fhist-table td:first-child {
+      text-align: left;
+      color: var(--text3);
+      font-size: 9px;
+    }
+
+    .fhist-table td.up {
+      color: var(--green);
+    }
+
+    .fhist-table td.dn {
+      color: var(--red);
+    }
+
+    .fhist-table td.netpos {
+      color: var(--green);
+    }
+
+    .fhist-table td.netneg {
+      color: var(--red);
+    }
 
     /* Flow stats bar */
     #flow-stats-bar {
@@ -2730,9 +2812,18 @@
       width: 55px;
       text-align: right;
     }
-    .mover-chg.up { color: var(--green); }
-    .mover-chg.dn { color: var(--red); }
-    .mover-chg.flat { color: var(--text2); }
+
+    .mover-chg.up {
+      color: var(--green);
+    }
+
+    .mover-chg.dn {
+      color: var(--red);
+    }
+
+    .mover-chg.flat {
+      color: var(--text2);
+    }
 
     .mover-vol {
       font-size: 10px;
@@ -3883,16 +3974,17 @@
             <!-- SPY Chart -->
             <div id="ov-chart-card">
               <div id="ov-chart-legend">
-                <div id="ov-spy-chart-tf">
-                  <button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1D"  onclick="ovSetChartTf('1D',this)">1D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="5D"  onclick="ovSetChartTf('5D',this)">5D</button>
-                  <button class="ov-chart-tf-btn active" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="6M"  onclick="ovSetChartTf('6M',this)">6M</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1Y"  onclick="ovSetChartTf('1Y',this)">1Y</button>
-                </div>
+<div id="ov-spy-chart-tf">
+  <button class="ov-chart-tf-btn" data-ovctf="3m" onclick="ovSetChartTf('3m',this)">1m</button>
+  <button class="ov-chart-tf-btn" data-ovctf="5m" onclick="ovSetChartTf('5m',this)">5m</button>
+  <button class="ov-chart-tf-btn active" data-ovctf="1H" onclick="ovSetChartTf('1D',this)">1H</button>
+  <button class="ov-chart-tf-btn" data-ovctf="1D" onclick="ovSetChartTf('1W',this)">1D</button>
+  <button class="ov-chart-tf-btn" data-ovctf="1M" onclick="ovSetChartTf('1M',this)">1W</button>
+<!-- <button class="ov-chart-tf-btn" data-ovctf="M" onclick="ovSetChartTf('M',this)">1M</button>-->
+  <button class="ov-chart-tf-btn" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
+  <button class="ov-chart-tf-btn" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
+  <button class="ov-chart-tf-btn" data-ovctf="1Y" onclick="ovSetChartTf('1Y',this)">1Y</button>
+</div>
                 <span style="color:var(--text3);font-size:9px;opacity:0.55;margin-left:8px;">⏱ 15min delayed</span>
                 <div class="ov-leg-item">
                   <div class="ov-leg-line" style="background:#11C81A;"></div>EMA 8
@@ -3904,17 +3996,22 @@
                   <div class="ov-leg-line" style="background:#01BCD4;"></div>EMA 50
                 </div>
                 <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
-                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">+GEX</span>
-                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span style="color:var(--text3);font-size:9px;">−GEX</span>
+                  <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span
+                    style="color:var(--text3);font-size:9px;">+GEX</span>
+                  <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
+                    style="color:var(--text3);font-size:9px;">−GEX</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span style="color:#1848CC;font-size:9px;">PDH/PDL</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span
+                    style="color:#1848CC;font-size:9px;">PDH/PDL</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span style="color:#9C27B0;font-size:9px;">GBX H/L</span>
+                  <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span
+                    style="color:#9C27B0;font-size:9px;">GBX H/L</span>
                 </div>
                 <div class="ov-leg-item" style="gap:6px;">
-                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span style="color:#F23644;font-size:9px;">ATH</span>
+                  <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span
+                    style="color:#F23644;font-size:9px;">ATH</span>
                 </div>
               </div>
               <div id="ov-spy-chart">
@@ -4403,19 +4500,23 @@
               </div>
               <div class="fan-table-wrap">
                 <table class="fan-table" id="spy-vol-table">
-                  <thead><tr>
-                    <th>Strike</th>
-                    <th>C/P</th>
-                    <th>Expiry</th>
-                    <th>DTE</th>
-                    <th>Last</th>
-                    <th>Low–High</th>
-                    <th>Volume</th>
-                    <th>OI</th>
-                    <th>Bid/Ask Vol</th>
-                  </tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Strike</th>
+                      <th>C/P</th>
+                      <th>Expiry</th>
+                      <th>DTE</th>
+                      <th>Last</th>
+                      <th>Low–High</th>
+                      <th>Volume</th>
+                      <th>OI</th>
+                      <th>Bid/Ask Vol</th>
+                    </tr>
+                  </thead>
                   <tbody id="spy-vol-body">
-                    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
+                    <tr>
+                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -4430,19 +4531,23 @@
               </div>
               <div class="fan-table-wrap">
                 <table class="fan-table" id="spy-oi-table">
-                  <thead><tr>
-                    <th>Strike</th>
-                    <th>C/P</th>
-                    <th>Expiry</th>
-                    <th>DTE</th>
-                    <th>Last</th>
-                    <th>Low–High</th>
-                    <th>Volume</th>
-                    <th>OI</th>
-                    <th>Bid/Ask Vol</th>
-                  </tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Strike</th>
+                      <th>C/P</th>
+                      <th>Expiry</th>
+                      <th>DTE</th>
+                      <th>Last</th>
+                      <th>Low–High</th>
+                      <th>Volume</th>
+                      <th>OI</th>
+                      <th>Bid/Ask Vol</th>
+                    </tr>
+                  </thead>
                   <tbody id="spy-oi-body">
-                    <tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
+                    <tr>
+                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -4455,33 +4560,38 @@
             <div class="flow-analytics-card">
               <div class="flow-analytics-card-header">
                 <span>Historical SPY Data</span>
-                <span style="margin-left:8px;color:var(--text3);font-weight:400;font-size:9px;">Last 14 Trading Days</span>
+                <span style="margin-left:8px;color:var(--text3);font-weight:400;font-size:9px;">Last 14 Trading
+                  Days</span>
                 <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-hist-updated"></span>
               </div>
               <div class="fhist-wrap">
                 <table class="fhist-table" id="spy-hist-table">
-                  <thead><tr>
-                    <th>Date</th>
-                    <th>High</th>
-                    <th>Low</th>
-                    <th>Close</th>
-                    <th>% Chg</th>
-                    <th>Volume</th>
-                    <th>Vol/30D</th>
-                    <th>Total OI</th>
-                    <th>% OI Chg</th>
-                    <th>Call OI</th>
-                    <th>Put OI</th>
-                    <th>IVR</th>
-                    <th>Vol 30D</th>
-                    <th>Impl 30D</th>
-                    <th>Vol 60D</th>
-                    <th>Impl 60D</th>
-                    <th>Net Prem</th>
-                    <th>Total Prem</th>
-                  </tr></thead>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>High</th>
+                      <th>Low</th>
+                      <th>Close</th>
+                      <th>% Chg</th>
+                      <th>Volume</th>
+                      <th>Vol/30D</th>
+                      <th>Total OI</th>
+                      <th>% OI Chg</th>
+                      <th>Call OI</th>
+                      <th>Put OI</th>
+                      <th>IVR</th>
+                      <th>Vol 30D</th>
+                      <th>Impl 30D</th>
+                      <th>Vol 60D</th>
+                      <th>Impl 60D</th>
+                      <th>Net Prem</th>
+                      <th>Total Prem</th>
+                    </tr>
+                  </thead>
                   <tbody id="spy-hist-body">
-                    <tr><td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td></tr>
+                    <tr>
+                      <td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -5977,63 +6087,88 @@
     //  TRADINGVIEW ADVANCED CHART — 15min delayed
     // ══════════════════════════════════════════════════════
 
-    let tvWidget   = null;
+    let tvWidget = null;
     let ovGammaData = [];
     let ovGammaHitBoxes = [];
     let ovPriceRange = null;
     let ovLevelLines = [];
 
-    const TV_INTERVAL = { '5m':'5','10m':'10','1H':'60','1D':'D','5D':'W','3M':'D','6M':'D','1Y':'W' };
-    const TV_RANGE    = { '5m':'1M','10m':'1M','1H':'3M','1D':'1D','5D':'5D','3M':'3M','6M':'6M','1Y':'12M' };
+
+const TV_INTERVAL = {
+  '3m': '3',
+  '5m': '5',
+  '10m': '10',
+  '1H': '60',
+  '1D': '1D',
+  '1W': '1W',
+  '1M': 'M',
+  '3M': '3M',
+  '6M': '6M',
+  '1Y': '12M',
+};
+
+
+    const TV_RANGE = {
+      '3m': '1D',
+      '5m': '5D',
+      '10m': '5D',
+      '1H': '1M',
+      '1D': '3M',
+      '1W': '12M',
+      '1M': '60M',
+      '3M': '36M',
+      '6M': '72M',
+      '1Y': '144M',
+    };
 
     function ovCreateTVWidget(interval, range) {
       const container = document.getElementById('ov-tv-container');
       if (!container) return;
-      if (tvWidget) { try { tvWidget.remove(); } catch(e){} tvWidget = null; container.innerHTML = ''; }
+      if (tvWidget) { try { tvWidget.remove(); } catch (e) { } tvWidget = null; container.innerHTML = ''; }
       if (typeof TradingView === 'undefined') return;
       tvWidget = new TradingView.widget({
-        container_id:        'ov-tv-container',
-        width:               '100%',
-        height:              '100%',
-        symbol:              'AMEX:SPY',
-        interval:            interval || 'D',
-        range:               range    || '3M',
-        timezone:            'America/Chicago',
-        theme:               'dark',
-        style:               '1',
-        locale:              'en',
-        toolbar_bg:          '#030915',
-        enable_publishing:   false,
-        hide_top_toolbar:    false,
-        hide_side_toolbar:   true,
+        container_id: 'ov-tv-container',
+        width: '100%',
+        height: '100%',
+        symbol: 'AMEX:SPY',
+        interval: interval || 'D',
+        range: range || '3M',
+        timezone: 'America/Chicago',
+        theme: 'dark',
+        style: '1',
+        locale: 'en',
+        toolbar_bg: '#030915',
+        enable_publishing: false,
+        hide_top_toolbar: false,
+        hide_side_toolbar: true,
         allow_symbol_change: false,
-        save_image:          false,
-        withdateranges:      false,
-        details:             false,
-        calendar:            false,
+        save_image: false,
+        withdateranges: false,
+        details: false,
+        calendar: false,
         overrides: {
-          'mainSeriesProperties.candleStyle.upColor':         '#D1C4E9',
-          'mainSeriesProperties.candleStyle.downColor':       '#7E57C2',
-          'mainSeriesProperties.candleStyle.borderUpColor':   '#D1C4E9',
+          'mainSeriesProperties.candleStyle.upColor': '#D1C4E9',
+          'mainSeriesProperties.candleStyle.downColor': '#7E57C2',
+          'mainSeriesProperties.candleStyle.borderUpColor': '#D1C4E9',
           'mainSeriesProperties.candleStyle.borderDownColor': '#7E57C2',
-          'mainSeriesProperties.candleStyle.wickUpColor':     '#D1C4E9',
-          'mainSeriesProperties.candleStyle.wickDownColor':   '#7E57C2',
-          'paneProperties.background':                        '#030915',
-          'paneProperties.backgroundType':                    'solid',
-          'paneProperties.vertGridProperties.color':          'rgba(255,255,255,0.04)',
-          'paneProperties.horzGridProperties.color':          'rgba(255,255,255,0.04)',
-          'scalesProperties.textColor':                       '#5c6370',
-          'scalesProperties.backgroundColor':                 '#030915',
-          'scalesProperties.lineColor':                       '#1e2230',
+          'mainSeriesProperties.candleStyle.wickUpColor': '#D1C4E9',
+          'mainSeriesProperties.candleStyle.wickDownColor': '#7E57C2',
+          'paneProperties.background': '#030915',
+          'paneProperties.backgroundType': 'solid',
+          'paneProperties.vertGridProperties.color': 'rgba(255,255,255,0.04)',
+          'paneProperties.horzGridProperties.color': 'rgba(255,255,255,0.04)',
+          'scalesProperties.textColor': '#5c6370',
+          'scalesProperties.backgroundColor': '#030915',
+          'scalesProperties.lineColor': '#1e2230',
         },
         studies_overrides: {
           'volume.volume.color.0': 'rgba(126,87,194,0.4)',
           'volume.volume.color.1': 'rgba(209,196,233,0.4)',
         },
         disabled_features: [
-          'use_localstorage_for_settings','header_symbol_search','header_settings',
-          'header_compare','header_undo_redo','header_screenshot','header_fullscreen_button',
-          'left_toolbar','border_around_the_chart','symbol_info','timeframes_toolbar',
+          'use_localstorage_for_settings', 'header_symbol_search', 'header_settings',
+          'header_compare', 'header_undo_redo', 'header_screenshot', 'header_fullscreen_button',
+          'left_toolbar', 'border_around_the_chart', 'symbol_info', 'timeframes_toolbar',
         ],
         enabled_features: ['move_logo_to_main_pane'],
       });
@@ -6041,7 +6176,7 @@
       if (tvWidget.onChartReady) {
         tvWidget.onChartReady(() => {
           const chart = tvWidget.chart();
-          chart.createStudy('Moving Average Exponential', false, false, { length: 8  }, { 'Plot.color': '#4CAF51' });
+          chart.createStudy('Moving Average Exponential', false, false, { length: 8 }, { 'Plot.color': '#4CAF51' });
           chart.createStudy('Moving Average Exponential', false, false, { length: 21 }, { 'Plot.color': '#9C27B0' });
           chart.createStudy('Moving Average Exponential', false, false, { length: 50 }, { 'Plot.color': '#01BCD4' });
           setTimeout(() => { drawGammaBars(); fetchAndDrawLevels(); }, 400);
@@ -6072,9 +6207,9 @@
       }
       const tf = ovState.chartTf || '3M';
       const now = Date.now(), day = 86400000;
-      const cuts = { '1D': 2*day, '5D': 7*day, '3M': 92*day, '6M': 185*day, '1Y': 370*day };
-      const cut = now - (cuts[tf] || 92*day);
-      const src = candles.filter(c => (c.datetime || c.time*1000) >= cut);
+      const cuts = { '1D': 2 * day, '5D': 7 * day, '3M': 92 * day, '6M': 185 * day, '1Y': 370 * day };
+      const cut = now - (cuts[tf] || 92 * day);
+      const src = candles.filter(c => (c.datetime || c.time * 1000) >= cut);
       const use = src.length >= 3 ? src : candles.slice(-90);
       ovPriceRange = {
         min: Math.min(...use.map(c => c.low)),
@@ -6085,7 +6220,7 @@
 
     // ── Gamma bars ────────────────────────────────────────────────────────────
     function drawGammaBars() {
-      const canvas  = document.getElementById('ov-gamma-canvas');
+      const canvas = document.getElementById('ov-gamma-canvas');
       const chartEl = document.getElementById('ov-spy-chart');
       if (!canvas || !chartEl || !ovGammaData || !ovGammaData.length) {
         if (canvas) canvas.style.display = 'none';
@@ -6095,13 +6230,13 @@
       if (!ovPriceRange) return;
 
       const W = chartEl.clientWidth, H = chartEl.clientHeight;
-      canvas.width  = W; canvas.height = H;
+      canvas.width = W; canvas.height = H;
       canvas.style.cssText = `position:absolute;top:0;left:0;width:${W}px;height:${H}px;pointer-events:none;z-index:5;`;
 
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, W, H);
 
-      const MAX_BAR   = 220;
+      const MAX_BAR = 220;
       const maxAbsGex = Math.max(...ovGammaData.map(d => Math.abs(d.netGex)), 1);
       let kingStrike = null, kingAbs = 0;
       for (const { strike, netGex } of ovGammaData) {
@@ -6121,7 +6256,7 @@
         const isKing = strike === kingStrike;
         ctx.fillStyle = isKing ? 'rgba(245,166,35,0.85)' : (netGex > 0 ? 'rgba(220,255,30,0.55)' : 'rgba(138,22,192,0.55)');
         ctx.fillRect(0, y - barH / 2, barW, barH);
-        ovGammaHitBoxes.push({ x:0, y:y-barH/2, w:barW, h:Math.max(barH,8), strike, netGex, isKing });
+        ovGammaHitBoxes.push({ x: 0, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex, isKing });
       }
 
       drawCanvasLevels();
@@ -6137,16 +6272,16 @@
           let hit = null, best = Infinity;
           for (const hb of ovGammaHitBoxes) {
             if (mx >= hb.x && mx <= hb.x + hb.w) {
-              const d = Math.abs(my - (hb.y + hb.h/2));
+              const d = Math.abs(my - (hb.y + hb.h / 2));
               if (d < best && d < hb.h * 3) { best = d; hit = hb; }
             }
           }
           if (hit && tip) {
             const sign = hit.netGex >= 0 ? '+' : '';
-            const col  = hit.isKing ? '#f5a623' : (hit.netGex >= 0 ? '#DCFF1E' : '#9C27B0');
-            const tag  = hit.isKing ? ' <span style="color:#f5a623;font-size:9px;">★ King</span>' : '';
+            const col = hit.isKing ? '#f5a623' : (hit.netGex >= 0 ? '#DCFF1E' : '#9C27B0');
+            const tag = hit.isKing ? ' <span style="color:#f5a623;font-size:9px;">★ King</span>' : '';
             tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b>&nbsp;<span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span>${tag}`;
-            tip.style.cssText = `display:block;position:fixed;left:${e.clientX+14}px;top:${e.clientY-10}px;background:rgba(10,12,20,0.95);border:1px solid var(--border2);border-radius:5px;padding:5px 9px;font-size:10px;color:var(--text);pointer-events:none;z-index:999;white-space:nowrap;`;
+            tip.style.cssText = `display:block;position:fixed;left:${e.clientX + 14}px;top:${e.clientY - 10}px;background:rgba(10,12,20,0.95);border:1px solid var(--border2);border-radius:5px;padding:5px 9px;font-size:10px;color:var(--text);pointer-events:none;z-index:999;white-space:nowrap;`;
           } else if (tip) tip.style.display = 'none';
         });
         chartEl.addEventListener('mouseleave', () => {
@@ -6157,7 +6292,7 @@
     }
 
     function drawCanvasLevels() {
-      const canvas  = document.getElementById('ov-gamma-canvas');
+      const canvas = document.getElementById('ov-gamma-canvas');
       if (!canvas || !ovLevelLines.length) return;
       const ctx = canvas.getContext('2d');
       const xEnd = canvas.width - 60;
@@ -6168,7 +6303,7 @@
         const y = priceToY(price);
         if (y == null || y < 4 || y > canvas.height - 4) continue;
         ctx.strokeStyle = color; ctx.lineWidth = 1;
-        ctx.setLineDash(dash ? [4,4] : []);
+        ctx.setLineDash(dash ? [4, 4] : []);
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(xEnd, y); ctx.stroke();
         ctx.fillStyle = color;
         ctx.fillText(label, xEnd + 3, y);
@@ -6184,33 +6319,33 @@
         if (!candles.length) return;
         const byDate = {};
         candles.forEach(c => {
-          const k = new Date(c.datetime).toISOString().slice(0,10);
+          const k = new Date(c.datetime).toISOString().slice(0, 10);
           (byDate[k] = byDate[k] || []).push(c);
         });
         const dates = Object.keys(byDate).sort();
         if (dates.length < 2) return;
-        const today = dates[dates.length-1], prev = dates[dates.length-2];
-        const prevReg = byDate[prev].filter(c => { const h = new Date(c.datetime).getUTCHours(); return h>=14&&h<21; });
-        const pdh = prevReg.length ? Math.max(...prevReg.map(c=>c.high)) : null;
-        const pdl = prevReg.length ? Math.min(...prevReg.map(c=>c.low))  : null;
+        const today = dates[dates.length - 1], prev = dates[dates.length - 2];
+        const prevReg = byDate[prev].filter(c => { const h = new Date(c.datetime).getUTCHours(); return h >= 14 && h < 21; });
+        const pdh = prevReg.length ? Math.max(...prevReg.map(c => c.high)) : null;
+        const pdl = prevReg.length ? Math.min(...prevReg.map(c => c.low)) : null;
         const globex = candles.filter(c => {
-          const dt = new Date(c.datetime), k = dt.toISOString().slice(0,10), h = dt.getUTCHours();
-          return (k===today&&h<14)||(k===prev&&h>=21);
+          const dt = new Date(c.datetime), k = dt.toISOString().slice(0, 10), h = dt.getUTCHours();
+          return (k === today && h < 14) || (k === prev && h >= 21);
         });
-        const gbxH = globex.length ? Math.max(...globex.map(c=>c.high)) : null;
-        const gbxL = globex.length ? Math.min(...globex.map(c=>c.low))  : null;
+        const gbxH = globex.length ? Math.max(...globex.map(c => c.high)) : null;
+        const gbxL = globex.length ? Math.min(...globex.map(c => c.low)) : null;
         const lines = [];
-        if (pdh) lines.push({ price:pdh, color:'#1848CC', dash:true,  label:'PDH' });
-        if (pdl) lines.push({ price:pdl, color:'#1848CC', dash:true,  label:'PDL' });
-        if (gbxH) lines.push({ price:gbxH, color:'#9C27B0', dash:true, label:'GBX H' });
-        if (gbxL) lines.push({ price:gbxL, color:'#9C27B0', dash:true, label:'GBX L' });
+        if (pdh) lines.push({ price: pdh, color: '#1848CC', dash: true, label: 'PDH' });
+        if (pdl) lines.push({ price: pdl, color: '#1848CC', dash: true, label: 'PDL' });
+        if (gbxH) lines.push({ price: gbxH, color: '#9C27B0', dash: true, label: 'GBX H' });
+        if (gbxL) lines.push({ price: gbxL, color: '#9C27B0', dash: true, label: 'GBX L' });
         const ar = await apiGet('/api/pricehistory?symbol=SPY&periodType=year&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false');
         const ac = ar?.data?.candles || ar?.candles || [];
-        const ath = ac.length ? Math.max(...ac.map(c=>c.high)) : null;
-        if (ath) lines.push({ price:ath, color:'#F23644', dash:false, label:'ATH' });
+        const ath = ac.length ? Math.max(...ac.map(c => c.high)) : null;
+        if (ath) lines.push({ price: ath, color: '#F23644', dash: false, label: 'ATH' });
         ovLevelLines = lines;
         drawGammaBars();
-      } catch(e) { console.warn('fetchAndDrawLevels:', e); }
+      } catch (e) { console.warn('fetchAndDrawLevels:', e); }
     }
 
     function ovRenderChart(candles) {
@@ -6421,10 +6556,10 @@
         const top = movers.slice(0, 8);
         document.getElementById('ov-movers-body').innerHTML = top.map((m, i) => {
           // Schwab movers API uses lastPrice / netChange / netPercentChange / totalVolume
-          const price  = m.lastPrice   ?? m.last   ?? m.close ?? null;
+          const price = m.lastPrice ?? m.last ?? m.close ?? null;
           const chgPct = m.netPercentChange ?? m.percentChange ?? m.change ?? null;
           const chgAbs = m.netChange ?? null;
-          const vol    = m.totalVolume ?? m.volume ?? null;
+          const vol = m.totalVolume ?? m.volume ?? null;
           return `
       <div class="mover-row">
         <span class="mover-rank">${i + 1}</span>
@@ -6600,10 +6735,10 @@
       const alpha = 0.18 + t * 0.65;
       if (gex > 0) {
         // positive GEX = yellow #DCFF1E
-        return `rgba(${Math.round(220*t)},${Math.round(255*t)},${Math.round(30*t)},${alpha})`;
+        return `rgba(${Math.round(220 * t)},${Math.round(255 * t)},${Math.round(30 * t)},${alpha})`;
       } else {
         // negative GEX = purple #8a16c0
-        return `rgba(${Math.round(138*t)},${Math.round(22*t)},${Math.round(192*t)},${alpha})`;
+        return `rgba(${Math.round(138 * t)},${Math.round(22 * t)},${Math.round(192 * t)},${alpha})`;
       }
     }
 
@@ -6695,7 +6830,7 @@
       const [volBody, oiBody] = ['spy-vol-body', 'spy-oi-body'].map(id => document.getElementById(id));
       const loading = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
       if (volBody) volBody.innerHTML = loading;
-      if (oiBody)  oiBody.innerHTML  = loading;
+      if (oiBody) oiBody.innerHTML = loading;
 
       try {
         // Wide chain: strikeCount=100 covers ~$50 both sides for SPY
@@ -6732,7 +6867,7 @@
           });
         };
         flatChain(chain.callExpDateMap, 'CALL');
-        flatChain(chain.putExpDateMap,  'PUT');
+        flatChain(chain.putExpDateMap, 'PUT');
 
         const renderRow = (c) => {
           const sideClass = c.side === 'CALL' ? 'call' : 'put';
@@ -6740,18 +6875,18 @@
             ? `$${c.low52.toFixed(2)}–$${c.high52.toFixed(2)}`
             : '—';
           const volDisplay = c.volume >= 1000
-            ? `<span class="fan-vol-chip">${(c.volume/1000).toFixed(0)}K</span>`
+            ? `<span class="fan-vol-chip">${(c.volume / 1000).toFixed(0)}K</span>`
             : c.volume.toLocaleString();
           const oiDisplay = c.oi >= 1000
-            ? `<span class="fan-oi-chip">${(c.oi/1000).toFixed(0)}K</span>`
+            ? `<span class="fan-oi-chip">${(c.oi / 1000).toFixed(0)}K</span>`
             : c.oi.toLocaleString();
           // Bid/ask spread as % of mid; show red% bar (ask side) + green fill
           const mid = (c.bid + c.ask) / 2;
           const askPct = mid > 0 ? Math.round(((c.ask - mid) / mid) * 100) : 0;
           const bidPct = 100 - askPct;
-          const bidAsk = `<div class="fan-ba-bar">`+
-            `<span class="fan-ba-pct ask">${askPct}%</span>`+
-            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>`+
+          const bidAsk = `<div class="fan-ba-bar">` +
+            `<span class="fan-ba-pct ask">${askPct}%</span>` +
+            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>` +
             `</div>`;
           return `<tr>
             <td><b>$${c.strike.toFixed(0)}</b></td>
@@ -6767,27 +6902,27 @@
         };
 
         // Top 10 by volume
-        const byVol = [...contracts].sort((a,b) => b.volume - a.volume).slice(0,10);
+        const byVol = [...contracts].sort((a, b) => b.volume - a.volume).slice(0, 10);
         if (volBody) {
           volBody.innerHTML = byVol.length ? byVol.map(renderRow).join('') :
             `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-vol-updated');
-          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
         // Top 10 by OI
-        const byOI = [...contracts].sort((a,b) => b.oi - a.oi).slice(0,10);
+        const byOI = [...contracts].sort((a, b) => b.oi - a.oi).slice(0, 10);
         if (oiBody) {
           oiBody.innerHTML = byOI.length ? byOI.map(renderRow).join('') :
             `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-oi-updated');
-          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
       } catch (e) {
         const errHtml = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
         if (volBody) volBody.innerHTML = errHtml;
-        if (oiBody)  oiBody.innerHTML  = errHtml;
+        if (oiBody) oiBody.innerHTML = errHtml;
         ovLogTerminalError('SPY_CONTRACTS', e.message);
       }
     }
@@ -6812,7 +6947,7 @@
 
         // Compute 30-day avg volume from all available candles
         const vol30Avg = candles.length >= 2
-          ? candles.slice(0, Math.min(30, candles.length)).reduce((s,c)=>s+c.volume,0) / Math.min(30, candles.length)
+          ? candles.slice(0, Math.min(30, candles.length)).reduce((s, c) => s + c.volume, 0) / Math.min(30, candles.length)
           : null;
 
         // Get today's chain summary for OI, IV data
@@ -6827,16 +6962,16 @@
                 arr.forEach(c => {
                   const oi = c.openInterest || 0;
                   const vol = c.totalVolume || 0;
-                  const mid = ((c.bid||0) + (c.ask||0)) / 2;
+                  const mid = ((c.bid || 0) + (c.ask || 0)) / 2;
                   const prem = mid * vol * 100;
                   if (side === 'CALL') { callOI += oi; totalPrem += prem; netPrem += prem; }
-                  else                { putOI  += oi; totalPrem += prem; netPrem -= prem; }
+                  else { putOI += oi; totalPrem += prem; netPrem -= prem; }
                 });
               });
             });
           };
           tallySide(ch.callExpDateMap, 'CALL');
-          tallySide(ch.putExpDateMap,  'PUT');
+          tallySide(ch.putExpDateMap, 'PUT');
           chainToday = {
             callOI, putOI, totalOI: callOI + putOI, totalPrem, netPrem,
             iv30: ch.volatility ?? null,
@@ -6847,18 +6982,18 @@
         const fmtPct = (v) => v != null ? (v >= 0 ? `+${v.toFixed(2)}` : v.toFixed(2)) + '%' : '—';
         const fmtM = (v) => {
           if (v == null) return '—';
-          if (Math.abs(v) >= 1e9) return (v/1e9).toFixed(2) + 'B';
-          if (Math.abs(v) >= 1e6) return (v/1e6).toFixed(1) + 'M';
-          if (Math.abs(v) >= 1e3) return (v/1e3).toFixed(0) + 'K';
+          if (Math.abs(v) >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+          if (Math.abs(v) >= 1e6) return (v / 1e6).toFixed(1) + 'M';
+          if (Math.abs(v) >= 1e3) return (v / 1e3).toFixed(0) + 'K';
           return v.toFixed(0);
         };
         const fmtDate = (ts) => {
           const d = new Date(ts);
-          return `${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getDate().toString().padStart(2,'0')}`;
+          return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
         };
 
         const rows = last14.map((c, i) => {
-          const prevClose = last14[i+1]?.close ?? c.close;
+          const prevClose = last14[i + 1]?.close ?? c.close;
           const chgPct = prevClose ? ((c.close - prevClose) / prevClose) * 100 : 0;
           const vol30Ratio = vol30Avg ? (c.volume / vol30Avg).toFixed(2) : '—';
           const isToday = i === 0;
@@ -6866,11 +7001,11 @@
           // OI and premium data only available for today (live chain)
           const totalOI = isToday && chainToday ? fmtM(chainToday.totalOI) : '—';
           const oiChgPct = '—';
-          const callOI  = isToday && chainToday ? fmtM(chainToday.callOI) : '—';
-          const putOI   = isToday && chainToday ? fmtM(chainToday.putOI)  : '—';
-          const netPrem = isToday && chainToday ? fmtDollar(chainToday.netPrem)   : '—';
+          const callOI = isToday && chainToday ? fmtM(chainToday.callOI) : '—';
+          const putOI = isToday && chainToday ? fmtM(chainToday.putOI) : '—';
+          const netPrem = isToday && chainToday ? fmtDollar(chainToday.netPrem) : '—';
           const totPrem = isToday && chainToday ? fmtDollar(chainToday.totalPrem) : '—';
-          const iv30    = isToday && chainToday?.iv30 != null ? Math.round(chainToday.iv30*100)+'%' : '—';
+          const iv30 = isToday && chainToday?.iv30 != null ? Math.round(chainToday.iv30 * 100) + '%' : '—';
 
           const chgClass = chgPct > 0 ? 'up' : chgPct < 0 ? 'dn' : '';
           const netPremClass = isToday && chainToday ? (chainToday.netPrem >= 0 ? 'netpos' : 'netneg') : '';
@@ -6901,7 +7036,7 @@
           tbody.innerHTML = rows.length ? rows.join('') :
             `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-hist-updated');
-          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+          if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
       } catch (e) {
