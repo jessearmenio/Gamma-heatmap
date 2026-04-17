@@ -108,7 +108,8 @@ app.get("/api/quotes", async (req, res) => {
       });
     }
 
-    const symbols = req.query.symbols || "SPY,SPX,VIX";
+    const requestedSymbols = req.query.symbols || "SPY,SPX,VIX";
+    const symbols = mapQuoteSymbolsParam(requestedSymbols);
 
     const response = await axios.get(
       "https://api.schwabapi.com/marketdata/v1/quotes",
@@ -123,7 +124,9 @@ app.get("/api/quotes", async (req, res) => {
 
     res.json({
       ok: true,
-      data: response.data
+      requestedSymbols,
+      actualSymbols: symbols,
+      data: addQuoteAliases(response.data)
     });
   } catch (error) {
     console.error("QUOTES ERROR:");
@@ -153,6 +156,44 @@ function mapChainSymbol(rawSymbol) {
   if (normalized === "VIX") return "$VIX";
 
   return normalized;
+}
+
+function mapQuoteSymbol(rawSymbol) {
+  const normalized = String(rawSymbol || "").trim().toUpperCase();
+
+  if (normalized === "SPX" || normalized === "$SPX") return "$SPX";
+  if (normalized === "VIX" || normalized === "$VIX") return "$VIX";
+  if (normalized === "TNX" || normalized === "$TNX") return "$TNX";
+
+  return normalized;
+}
+
+function mapQuoteSymbolsParam(rawSymbols) {
+  return String(rawSymbols || "")
+    .split(",")
+    .map(sym => sym.trim())
+    .filter(Boolean)
+    .map(mapQuoteSymbol)
+    .join(",");
+}
+
+function addQuoteAliases(data) {
+  if (!data || typeof data !== "object") return data;
+
+  const out = { ...data };
+
+  const aliasPairs = [
+    ["$SPX", "SPX"],
+    ["$VIX", "VIX"],
+    ["$TNX", "TNX"]
+  ];
+
+  for (const [canonical, alias] of aliasPairs) {
+    if (out[canonical] && !out[alias]) out[alias] = out[canonical];
+    if (out[alias] && !out[canonical]) out[canonical] = out[alias];
+  }
+
+  return out;
 }
 
 async function fetchChain(symbol, accessToken, overrides = {}) {
@@ -458,7 +499,7 @@ app.get("/api/dashboard", async (req, res) => {
 
     const [quotesResponse, chainResponse] = await Promise.all([
       axios.get("https://api.schwabapi.com/marketdata/v1/quotes", {
-        params: { symbols: "SPY,SPX,VIX" },
+        params: { symbols: mapQuoteSymbolsParam("SPY,SPX,VIX") },
         headers: {
           Authorization: `Bearer ${schwabTokens.access_token}`
         },
@@ -534,9 +575,9 @@ app.get("/api/movers", async (req, res) => {
           const qt = qData[m.symbol]?.quote || {};
           // Overwrite with accurate quote fields
           if (qt.totalVolume != null) m.totalVolume = qt.totalVolume;
-          if (qt.lastPrice    != null) m.lastPrice   = qt.lastPrice;
+          if (qt.lastPrice != null) m.lastPrice = qt.lastPrice;
           if (qt.netPercentChange != null) m.netPercentChange = qt.netPercentChange;
-          if (qt.netChange    != null) m.netChange   = qt.netChange;
+          if (qt.netChange != null) m.netChange = qt.netChange;
         });
       } catch (qErr) {
         console.warn('MOVERS quotes enrich failed:', qErr.message);
@@ -563,14 +604,14 @@ app.get("/api/pricehistory", async (req, res) => {
     const symbol = (req.query.symbol || "SPY").toUpperCase();
     const params = {
       symbol,
-      periodType:    req.query.periodType    || "day",
-      period:        req.query.period        || "5",
+      periodType: req.query.periodType || "day",
+      period: req.query.period || "5",
       frequencyType: req.query.frequencyType || "minute",
-      frequency:     req.query.frequency     || "5",
+      frequency: req.query.frequency || "5",
       needExtendedHoursData: req.query.needExtendedHoursData === 'true' || req.query.needExtendedHoursData === true
     };
     if (req.query.startDate) params.startDate = req.query.startDate;
-    if (req.query.endDate)   params.endDate   = req.query.endDate;
+    if (req.query.endDate) params.endDate = req.query.endDate;
 
     const response = await axios.get(
       "https://api.schwabapi.com/marketdata/v1/pricehistory",
@@ -686,7 +727,7 @@ app.get("/api/marketoverview", async (req, res) => {
 
     // Symbols needed
     const quoteSymbols = "SPY,QQQ,$VIX,$TNX,UUP,TLT,XLE,XLF,XLK,XLI,XLC,XLY,XLV,XLRE,XLP,XLB,XLU";
-    const histSymbols = ["SPY","QQQ","$VIX","$TNX","UUP","TLT","XLE","XLF","XLK","XLI","XLC","XLY","XLV","XLRE","XLP","XLB","XLU"];
+    const histSymbols = ["SPY", "QQQ", "$VIX", "$TNX", "UUP", "TLT", "XLE", "XLF", "XLK", "XLI", "XLC", "XLY", "XLV", "XLRE", "XLP", "XLB", "XLU"];
 
     // Fetch all in parallel
     const [quotesRes, moversRes, ...histResponses] = await Promise.all([
@@ -697,7 +738,7 @@ app.get("/api/marketoverview", async (req, res) => {
           params: { symbol: sym, periodType: "year", period: "1", frequencyType: "daily", frequency: "1" },
           headers, timeout
         }).then(r => ({ sym, candles: r.data?.candles || [] }))
-         .catch(() => ({ sym, candles: [] }))
+          .catch(() => ({ sym, candles: [] }))
       )
     ]);
 

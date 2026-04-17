@@ -5275,12 +5275,20 @@
       try {
         const d = await apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM');
         if (!d.ok) return;
-        const q = d.data;
-        ['SPY', 'SPX', 'QQQ', 'VIX', 'IWM'].forEach(sym => {
-          const item = q[sym];
+        const q = d.data || {};
+        const quoteAliases = {
+          SPY: ['SPY'],
+          SPX: ['SPX', '$SPX'],
+          QQQ: ['QQQ'],
+          VIX: ['VIX', '$VIX'],
+          IWM: ['IWM']
+        };
+
+        Object.entries(quoteAliases).forEach(([sym, keys]) => {
+          const item = keys.map(key => q[key]).find(Boolean);
           if (!item) return;
           const quote = item.quote || {};
-          const price = quote.lastPrice ?? quote.closePrice;
+          const price = quote.lastPrice ?? quote.closePrice ?? quote.mark;
           const pct = quote.netPercentChange ?? 0;
           updateTickerItem('tick-' + sym, price, pct);
         });
