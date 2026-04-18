@@ -749,6 +749,33 @@ app.get("/api/marketoverview", async (req, res) => {
     const histMap = {};
     histResponses.forEach(({ sym, candles }) => { histMap[sym] = candles; });
 
+    // Append a synthetic today-candle for SPY so the chart price axis reaches today's price.
+    // The 1-year daily history only contains completed trading days — today's move is missing
+    // until market close, causing the chart and GEX overlay to be stuck at yesterday's range.
+    const spyQuote = quotes['SPY']?.quote || {};
+    const spyLast = spyQuote.lastPrice ?? spyQuote.mark ?? spyQuote.closePrice;
+    if (spyLast && histMap['SPY']?.length) {
+      const todayMs = new Date().setHours(0, 0, 0, 0);
+      const lastCandle = histMap['SPY'][histMap['SPY'].length - 1];
+      // Only add if last candle is from a prior day (avoid duplicating on weekend/holiday)
+      if (!lastCandle || lastCandle.datetime < todayMs) {
+        const open = spyQuote.openPrice ?? spyLast;
+        const high = spyQuote.highPrice ?? spyLast;
+        const low  = spyQuote.lowPrice  ?? spyLast;
+        histMap['SPY'].push({
+          datetime: todayMs,
+          open, high, low,
+          close: spyLast,
+          volume: spyQuote.totalVolume ?? 0
+        });
+      } else {
+        // Update the existing today candle with the latest price
+        lastCandle.close = spyLast;
+        if (spyQuote.highPrice) lastCandle.high = Math.max(lastCandle.high, spyQuote.highPrice);
+        if (spyQuote.lowPrice)  lastCandle.low  = Math.min(lastCandle.low,  spyQuote.lowPrice);
+      }
+    }
+
     res.json({ ok: true, quotes, movers, histMap });
   } catch (error) {
     console.error("MARKETOVERVIEW ERROR:", error.response?.data || error.message);
