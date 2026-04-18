@@ -4344,11 +4344,7 @@
             </div>
 
           </div><!-- end ov-row4 -->
-<div class="ov-row5">
-          <div class="fx-grid" id="fx-grid">
-            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Connect Schwab to view FX pairs.</div>
-          </div>
-</div>
+
           <!-- ── ROW 5: Terminal Analysis (full width) ── -->
           <div class="ov-row5">
             <div id="ov-terminal-card">
@@ -5317,38 +5313,41 @@
     // ═══════════════════════════════════════════════════════
     async function loadTickerBar() {
       try {
-        // Fetch equities and futures separately — Schwab rejects mixed batches
-        const [dEq, dFut] = await Promise.all([
+        // Equities: batch fetch (keys match exactly)
+        // Futures: fetch individually — Schwab returns contract-month keys (e.g. /ESM26)
+        //          so we can't batch-key-match; use Object.values(data)[0] fallback
+        const futureSyms = ['/ES', '/NQ', '/GC', '/CL', '/BTC'];
+        const futureIds  = ['ES',  'NQ',  'GC',  'CL',  'BTC' ];
+
+        const [dEq, ...futureResps] = await Promise.all([
           apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM'),
-          apiGet('/api/quotes?symbols=%2FES,%2FNQ,%2FGC,%2FCL,%2FBTC')
+          ...futureSyms.map(s => apiGet(`/api/quotes?symbols=${encodeURIComponent(s)}`))
         ]);
 
-        const q = { ...(dEq.data || {}), ...(dFut.data || {}) };
+        // Update equities
+        const eq = dEq.data || {};
+        [['SPY',['SPY']],['SPX',['SPX','$SPX']],['QQQ',['QQQ']],['VIX',['VIX','$VIX']],['IWM',['IWM']]]
+          .forEach(([id, keys]) => {
+            const item = keys.map(k => eq[k]).find(Boolean);
+            if (!item) return;
+            const quote = item.quote || {};
+            const price = quote.lastPrice ?? quote.closePrice ?? quote.mark;
+            const pct   = quote.netPercentChange ?? 0;
+            updateTickerItem('tick-' + id, price, pct);
+          });
 
-        const quoteAliases = {
-          SPY: ['SPY'],
-          SPX: ['SPX', '$SPX'],
-          QQQ: ['QQQ'],
-          VIX: ['VIX', '$VIX'],
-          IWM: ['IWM'],
-          ES:  ['/ES'],
-          NQ:  ['/NQ'],
-          GC:  ['/GC'],
-          CL:  ['/CL'],
-          BTC: ['/BTC']
-        };
-
-        Object.entries(quoteAliases).forEach(([sym, keys]) => {
-          const item = keys.map(key => q[key]).find(Boolean);
+        // Update futures — fall back to first value in response
+        futureIds.forEach((id, i) => {
+          const data = futureResps[i]?.data || {};
+          const item = Object.values(data)[0];
           if (!item) return;
           const quote = item.quote || {};
           const price = quote.lastPrice ?? quote.closePrice ?? quote.mark;
-          const pct = quote.futurePercentChange ?? quote.netPercentChange ?? 0;
-          updateTickerItem('tick-' + sym, price, pct);
+          const pct   = quote.futurePercentChange ?? quote.netPercentChange ?? 0;
+          updateTickerItem('tick-' + id, price, pct);
         });
-        lastQuotesData = q;
 
-        // Badge is now managed by updateMarketSessionBadge() (client-side CST clock)
+        lastQuotesData = eq;
       } catch (e) { console.warn('Ticker bar:', e); }
     }
 
