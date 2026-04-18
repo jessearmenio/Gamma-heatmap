@@ -164,6 +164,8 @@ function mapQuoteSymbol(rawSymbol) {
   if (normalized === "SPX" || normalized === "$SPX") return "$SPX";
   if (normalized === "VIX" || normalized === "$VIX") return "$VIX";
   if (normalized === "TNX" || normalized === "$TNX") return "$TNX";
+  if (normalized === "DJI" || normalized === "$DJI") return "$DJI";
+  if (normalized === "DXY" || normalized === "$DXY" || normalized === "$NYICDX") return "$NYICDX";
 
   return normalized;
 }
@@ -185,7 +187,9 @@ function addQuoteAliases(data) {
   const aliasPairs = [
     ["$SPX", "SPX"],
     ["$VIX", "VIX"],
-    ["$TNX", "TNX"]
+    ["$TNX", "TNX"],
+    ["$DJI", "DJI"],
+    ["$NYICDX", "DXY"]
   ];
 
   for (const [canonical, alias] of aliasPairs) {
@@ -761,7 +765,7 @@ app.get("/api/marketoverview", async (req, res) => {
       if (!lastCandle || lastCandle.datetime < todayMs) {
         const open = spyQuote.openPrice ?? spyLast;
         const high = spyQuote.highPrice ?? spyLast;
-        const low  = spyQuote.lowPrice  ?? spyLast;
+        const low = spyQuote.lowPrice ?? spyLast;
         histMap['SPY'].push({
           datetime: todayMs,
           open, high, low,
@@ -772,7 +776,7 @@ app.get("/api/marketoverview", async (req, res) => {
         // Update the existing today candle with the latest price
         lastCandle.close = spyLast;
         if (spyQuote.highPrice) lastCandle.high = Math.max(lastCandle.high, spyQuote.highPrice);
-        if (spyQuote.lowPrice)  lastCandle.low  = Math.min(lastCandle.low,  spyQuote.lowPrice);
+        if (spyQuote.lowPrice) lastCandle.low = Math.min(lastCandle.low, spyQuote.lowPrice);
       }
     }
 

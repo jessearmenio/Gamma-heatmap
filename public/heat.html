@@ -4179,7 +4179,7 @@
                   <span class="ov-metric-tag neutral" id="ovt-above200">--</span>
                 </div>
                 <div class="ov-metric-row">
-                  <span class="ov-metric-label">Breadth Thrust</span>
+                  <span class="ov-metric-label">Thrust</span>
                   <span class="ov-metric-value" id="ovm-thrust">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-thrust">--</span>
                 </div>
@@ -5337,7 +5337,7 @@
         const futureIds = ['ES', 'NQ', 'CL', 'GC', 'BTC'];
 
         const [dEq, ...futureResps] = await Promise.all([
-          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,DJI,IWM,VIX,DXY'),
+          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,$DJI,IWM,VIX,$NYICDX'),
           ...futureSyms.map(s => apiGet(`/api/quotes?symbols=${encodeURIComponent(s)}`))
         ]);
 
@@ -5347,10 +5347,10 @@
           ['SPY', ['SPY']],
           ['SPX', ['SPX', '$SPX']],
           ['QQQ', ['QQQ']],
-          ['DJI', ['DJI', '$DJI']],
+          ['DJI', ['$DJI', 'DJI']],
           ['IWM', ['IWM']],
           ['VIX', ['VIX', '$VIX']],
-          ['DXY', ['DXY', '$DXY']]
+          ['DXY', ['$NYICDX', 'DXY', '$DXY']]
         ]
           .forEach(([id, keys]) => {
             const item = keys.map(k => eq[k]).find(Boolean);
