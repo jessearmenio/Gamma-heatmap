@@ -3789,8 +3789,8 @@
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-            <div class="ticker-item" id="tick-VIX">
-              <span class="t-sym">VIX</span>
+            <div class="ticker-item" id="tick-DJI">
+              <span class="t-sym">DJI</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
@@ -3799,20 +3799,25 @@
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
+            <div class="ticker-item" id="tick-BTC">
+              <span class="t-sym">BTC</span>
+              <span class="t-price">—</span>
+              <span class="t-chg flat">—</span>
+            </div>
           </div>
           <div class="ticker-row">
+            <div class="ticker-item" id="tick-VIX">
+              <span class="t-sym">VIX</span>
+              <span class="t-price">—</span>
+              <span class="t-chg flat">—</span>
+            </div>
             <div class="ticker-item" id="tick-ES">
-              <span class="t-sym">ES</span>
+              <span class="t-sym">/ES</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
             <div class="ticker-item" id="tick-NQ">
-              <span class="t-sym">NQ</span>
-              <span class="t-price">—</span>
-              <span class="t-chg flat">—</span>
-            </div>
-            <div class="ticker-item" id="tick-GC">
-              <span class="t-sym">GOLD</span>
+              <span class="t-sym">/NQ</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
@@ -3821,8 +3826,13 @@
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-            <div class="ticker-item" id="tick-BTC">
-              <span class="t-sym">BTC</span>
+            <div class="ticker-item" id="tick-GC">
+              <span class="t-sym">GOLD</span>
+              <span class="t-price">—</span>
+              <span class="t-chg flat">—</span>
+            </div>
+            <div class="ticker-item" id="tick-DXY">
+              <span class="t-sym">DXY</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
@@ -3858,8 +3868,7 @@
           <div id="ov-ticker-wrap">
             <div id="ov-ticker-track">
               <div id="ov-ticker-group-primary" style="display:flex;align-items:center;">
-                <!-- SPY -->
-                <div class="ov-tick-item" data-ovsym="SPY"><span class="ov-tick-sym">SPY</span><span
+                <!--<div class="ov-tick-item" data-ovsym="SPY"><span class="ov-tick-sym">SPY</span><span
                     class="ov-tick-price" id="ovt-SPY-price">--</span><span class="ov-tick-chg flat"
                     id="ovt-SPY-chg">--</span></div>
                 <div class="ov-tick-item" data-ovsym="QQQ"><span class="ov-tick-sym">QQQ</span><span
@@ -3867,7 +3876,7 @@
                     id="ovt-QQQ-chg">--</span></div>
                 <div class="ov-tick-item" data-ovsym="$VIX"><span class="ov-tick-sym">VIX</span><span
                     class="ov-tick-price" id="ovt-VIX-price">--</span><span class="ov-tick-chg flat"
-                    id="ovt-VIX-chg">--</span></div>
+                    id="ovt-VIX-chg">--</span></div>-->
                 <div class="ov-tick-item" data-ovsym="$TNX"><span class="ov-tick-sym">TNX</span><span
                     class="ov-tick-price" id="ovt-TNX-price">--</span><span class="ov-tick-chg flat"
                     id="ovt-TNX-chg">--</span></div>
@@ -5300,7 +5309,10 @@
     function fmtTopbarPrice(v) {
       const n = Number(v);
       if (!Number.isFinite(n)) return '—';
-      return Math.round(n).toLocaleString('en-US');
+      return n.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
     }
 
     function updateTickerItem(id, price, netPct) {
@@ -5321,18 +5333,25 @@
       try {
         // Equities: batch fetch (keys match exactly)
         // Futures: fetch individually — Schwab returns contract-month keys (e.g. /ESM26)
-        //          so we can't batch-key-match; use Object.values(data)[0] fallback
-        const futureSyms = ['/ES', '/NQ', '/GC', '/CL', '/BTC'];
-        const futureIds = ['ES', 'NQ', 'GC', 'CL', 'BTC'];
+        const futureSyms = ['/ES', '/NQ', '/CL', '/GC', '/BTC'];
+        const futureIds = ['ES', 'NQ', 'CL', 'GC', 'BTC'];
 
         const [dEq, ...futureResps] = await Promise.all([
-          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM'),
+          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,DJI,IWM,VIX,DXY'),
           ...futureSyms.map(s => apiGet(`/api/quotes?symbols=${encodeURIComponent(s)}`))
         ]);
 
         // Update equities
         const eq = dEq.data || {};
-        [['SPY', ['SPY']], ['SPX', ['SPX', '$SPX']], ['QQQ', ['QQQ']], ['VIX', ['VIX', '$VIX']], ['IWM', ['IWM']]]
+        [
+          ['SPY', ['SPY']],
+          ['SPX', ['SPX', '$SPX']],
+          ['QQQ', ['QQQ']],
+          ['DJI', ['DJI', '$DJI']],
+          ['IWM', ['IWM']],
+          ['VIX', ['VIX', '$VIX']],
+          ['DXY', ['DXY', '$DXY']]
+        ]
           .forEach(([id, keys]) => {
             const item = keys.map(k => eq[k]).find(Boolean);
             if (!item) return;
