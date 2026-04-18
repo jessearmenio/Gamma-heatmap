@@ -5298,15 +5298,14 @@
       if (day === 0 || day === 6) return 'closed';
 
       // Weekday minute thresholds (CST)
-      const PRE_START = 3 * 60;        // 3:00 AM
-      const OPEN_START = 8 * 60 + 30;   // 8:30 AM
-      const CLOSE_END = 15 * 60;       // 3:00 PM
-      const POST_END = 27 * 60;       // 3:00 AM next day (= 24+3)
+      const PRE_START = 3 * 60;          // 3:00 AM
+      const OPEN_START = 8 * 60 + 30;    // 8:30 AM
+      const CLOSE_END = 15 * 60;         // 3:00 PM
+      const POST_END = 19 * 60;          // 7:00 PM
 
       if (mins >= OPEN_START && mins < CLOSE_END) return 'open';
       if (mins >= PRE_START && mins < OPEN_START) return 'pre';
-      // Post-market: 3pm → midnight, or midnight → 3am next day
-      if (mins >= CLOSE_END || mins < PRE_START) return 'post';
+      if (mins >= CLOSE_END && mins < POST_END) return 'post';
       return 'closed';
     }
 
