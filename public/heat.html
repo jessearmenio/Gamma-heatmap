@@ -5297,11 +5297,17 @@
     function chgClass(v) { return v > 0 ? 'up' : v < 0 ? 'dn' : 'flat'; }
     function chgPrefix(v) { return v > 0 ? '+' : ''; }
 
+    function fmtTopbarPrice(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '—';
+      return Math.round(n).toLocaleString('en-US');
+    }
+
     function updateTickerItem(id, price, netPct) {
       const el = document.getElementById(id);
       if (!el) return;
       const parts = el.querySelectorAll('span');
-      if (parts[1]) parts[1].textContent = fmt(price);
+      if (parts[1]) parts[1].textContent = fmtTopbarPrice(price);
       if (parts[2]) {
         parts[2].textContent = `${chgPrefix(netPct)}${fmt(netPct)}%`;
         parts[2].className = `t-chg ${chgClass(netPct)}`;
@@ -5317,7 +5323,7 @@
         // Futures: fetch individually — Schwab returns contract-month keys (e.g. /ESM26)
         //          so we can't batch-key-match; use Object.values(data)[0] fallback
         const futureSyms = ['/ES', '/NQ', '/GC', '/CL', '/BTC'];
-        const futureIds  = ['ES',  'NQ',  'GC',  'CL',  'BTC' ];
+        const futureIds = ['ES', 'NQ', 'GC', 'CL', 'BTC'];
 
         const [dEq, ...futureResps] = await Promise.all([
           apiGet('/api/quotes?symbols=SPY,SPX,QQQ,VIX,IWM'),
@@ -5326,13 +5332,13 @@
 
         // Update equities
         const eq = dEq.data || {};
-        [['SPY',['SPY']],['SPX',['SPX','$SPX']],['QQQ',['QQQ']],['VIX',['VIX','$VIX']],['IWM',['IWM']]]
+        [['SPY', ['SPY']], ['SPX', ['SPX', '$SPX']], ['QQQ', ['QQQ']], ['VIX', ['VIX', '$VIX']], ['IWM', ['IWM']]]
           .forEach(([id, keys]) => {
             const item = keys.map(k => eq[k]).find(Boolean);
             if (!item) return;
             const quote = item.quote || {};
             const price = quote.lastPrice ?? quote.closePrice ?? quote.mark;
-            const pct   = quote.netPercentChange ?? 0;
+            const pct = quote.netPercentChange ?? 0;
             updateTickerItem('tick-' + id, price, pct);
           });
 
@@ -5343,7 +5349,7 @@
           if (!item) return;
           const quote = item.quote || {};
           const price = quote.lastPrice ?? quote.closePrice ?? quote.mark;
-          const pct   = quote.futurePercentChange ?? quote.netPercentChange ?? 0;
+          const pct = quote.futurePercentChange ?? quote.netPercentChange ?? 0;
           updateTickerItem('tick-' + id, price, pct);
         });
 
