@@ -1263,14 +1263,43 @@
       gap: 12px;
     }
 
-    spanb {
-      margin-bottom: 2px;
-    }
-
     #calendar-toolbar {
       display: flex;
       align-items: center;
       gap: 8px;
+    }
+
+    #calendar-view-toggle {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: 4px;
+    }
+
+    .calendar-view-btn {
+      background: var(--bg3);
+      color: var(--text2);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.12s ease;
+    }
+
+    .calendar-view-btn:hover {
+      color: var(--text);
+      border-color: rgba(59, 220, 255, 0.28);
+    }
+
+    .calendar-view-btn.active {
+      color: var(--cyan);
+      background: rgba(17, 201, 216, 0.12);
+      border-color: rgba(59, 220, 255, 0.28);
     }
 
     #calendar-month-label {
@@ -1349,6 +1378,11 @@
       grid-auto-rows: minmax(120px, 1fr);
       gap: 8px;
       min-height: 0;
+    }
+
+    #calendar-grid.week-view {
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: minmax(420px, 1fr);
     }
 
     .cal-day {
@@ -1470,7 +1504,7 @@
     .cal-event.earnings {
       background: rgba(220, 255, 30, 0.12);
       border-color: rgba(220, 255, 30, 0.28);
-      color: var(--accent);
+      color: var(--green);
     }
 
     #calendar-day-panel {
@@ -5424,10 +5458,16 @@
                 <div id="calendar-month-label">—</div>
               </span>
               <div id="calendar-toolbar">
-                <button class="topbar-icon-btn" type="button" onclick="calendarPrevMonth()" title="Previous Month">
+                <div id="calendar-view-toggle">
+                  <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
+                    onclick="setCalendarViewMode('month')">Month</button>
+                  <button id="calendar-view-week-btn" class="calendar-view-btn" type="button"
+                    onclick="setCalendarViewMode('week')">Week</button>
+                </div>
+                <button class="topbar-icon-btn" type="button" onclick="calendarPrevPeriod()" title="Previous">
                   <spanb>◀</spanb>
                 </button>
-                <button class="topbar-icon-btn" type="button" onclick="calendarNextMonth()" title="Next Month">
+                <button class="topbar-icon-btn" type="button" onclick="calendarNextPeriod()" title="Next">
                   <spanb>▶</spanb>
                 </button>
               </div>
@@ -5484,6 +5524,7 @@
     let agoTimer = null;
     let sessionTimer = null;
     let calendarCursor = new Date(2026, 3, 1); // April 2026
+    let calendarViewMode = "month";
     let calendarEarningsEvents = [];
     let calendarEarningsLoadedRange = "";
     let calendarSelectedDayIso = "";
@@ -5729,36 +5770,71 @@
     }
 
     async function loadCalendarPage() {
+      document.getElementById("calendar-view-month-btn")?.classList.toggle("active", calendarViewMode === "month");
+      document.getElementById("calendar-view-week-btn")?.classList.toggle("active", calendarViewMode === "week");
+
       await ensureCalendarEarningsLoaded();
       renderCalendar();
     }
 
-    async function calendarPrevMonth() {
-      calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+    function setCalendarViewMode(mode) {
+      calendarViewMode = mode === "week" ? "week" : "month";
+
+      document.getElementById("calendar-view-month-btn")?.classList.toggle("active", calendarViewMode === "month");
+      document.getElementById("calendar-view-week-btn")?.classList.toggle("active", calendarViewMode === "week");
+
+      calendarSelectedDayIso = "";
+      closeCalendarDayPanel();
+      renderCalendar();
+    }
+
+    async function calendarPrevPeriod() {
+      if (calendarViewMode === "week") {
+        calendarCursor = addDays(calendarCursor, -7);
+      } else {
+        calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+      }
+
       calendarSelectedDayIso = "";
       await ensureCalendarEarningsLoaded();
       renderCalendar();
     }
 
-    async function calendarNextMonth() {
-      calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+    async function calendarNextPeriod() {
+      if (calendarViewMode === "week") {
+        calendarCursor = addDays(calendarCursor, 7);
+      } else {
+        calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+      }
+
       calendarSelectedDayIso = "";
       await ensureCalendarEarningsLoaded();
       renderCalendar();
     }
 
     async function ensureCalendarEarningsLoaded() {
-      const year = calendarCursor.getFullYear();
-      const month = calendarCursor.getMonth();
+      let start;
+      let end;
 
-      const first = new Date(year, month, 1);
-      const start = new Date(first);
-      start.setDate(first.getDate() - first.getDay());
+      if (calendarViewMode === "week") {
+        start = new Date(calendarCursor);
+        start.setDate(calendarCursor.getDate() - calendarCursor.getDay());
 
-      const end = new Date(start);
-      end.setDate(start.getDate() + 41);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+      } else {
+        const year = calendarCursor.getFullYear();
+        const month = calendarCursor.getMonth();
 
-      const rangeKey = `${toISODateLocal(start)}|${toISODateLocal(end)}`;
+        const first = new Date(year, month, 1);
+        start = new Date(first);
+        start.setDate(first.getDate() - first.getDay());
+
+        end = new Date(start);
+        end.setDate(start.getDate() + 41);
+      }
+
+      const rangeKey = `${calendarViewMode}|${toISODateLocal(start)}|${toISODateLocal(end)}`;
       if (calendarEarningsLoadedRange === rangeKey) return;
 
       try {
@@ -5934,7 +6010,18 @@
         <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ff97aa"></span> High Impact</div>
         <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ffd98d"></span> Medium Impact</div>
         <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#3bdcff"></span> Lower Impact</div>
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#22dd88"></span>Earnings</div>
       `;
+    }
+
+    function getOrdinal(n) {
+      if (n > 3 && n < 21) return n + "th";
+      switch (n % 10) {
+        case 1: return n + "st";
+        case 2: return n + "nd";
+        case 3: return n + "rd";
+        default: return n + "th";
+      }
     }
 
     function renderCalendar() {
@@ -5945,53 +6032,87 @@
 
       renderCalendarLegend();
 
-      const year = calendarCursor.getFullYear();
-      const month = calendarCursor.getMonth();
-
-      monthLabel.textContent = new Intl.DateTimeFormat('en-US', {
-        month: 'long',
-        year: 'numeric'
-      }).format(new Date(year, month, 1));
+      const todayParts = cstDateParts(new Date());
+      const todayIso = `${todayParts.y}-${String(todayParts.m).padStart(2, '0')}-${String(todayParts.d).padStart(2, '0')}`;
+      const allEvents = buildMacroCalendarEvents();
 
       weekdays.innerHTML = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
         .map(d => `<div class="cal-weekday">${d}</div>`)
         .join('');
 
-      const first = new Date(year, month, 1);
-      const start = new Date(first);
-      start.setDate(first.getDate() - first.getDay());
+      let start;
+      let cellCount;
+
+      if (calendarViewMode === "week") {
+        start = new Date(calendarCursor);
+        start.setDate(calendarCursor.getDate() - calendarCursor.getDay());
+        cellCount = 7;
+
+               const weekEnd = addDays(start, 6);
+
+        const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
+        const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
+
+        const startDay = getOrdinal(start.getDate());
+        const endDay = getOrdinal(weekEnd.getDate());
+
+        const sameYear = start.getFullYear() === weekEnd.getFullYear();
+        const sameMonth = sameYear && start.getMonth() === weekEnd.getMonth();
+
+        if (sameMonth) {
+          monthLabel.textContent = `${startMonth} ${startDay} – ${endDay}, ${start.getFullYear()}`;
+        } else if (sameYear) {
+          monthLabel.textContent = `${startMonth} ${startDay} – ${endMonth} ${endDay}, ${start.getFullYear()}`;
+        } else {
+          monthLabel.textContent = `${startMonth} ${startDay}, ${start.getFullYear()} – ${endMonth} ${endDay}, ${weekEnd.getFullYear()}`;
+        }
+        
+        grid.classList.add('week-view');
+      } else {
+        const year = calendarCursor.getFullYear();
+        const month = calendarCursor.getMonth();
+
+        const first = new Date(year, month, 1);
+        start = new Date(first);
+        start.setDate(first.getDate() - first.getDay());
+        cellCount = 42;
+
+        monthLabel.textContent = new Intl.DateTimeFormat('en-US', {
+          month: 'long',
+          year: 'numeric'
+        }).format(new Date(year, month, 1));
+
+        grid.classList.remove('week-view');
+      }
 
       const cells = [];
-      const todayParts = cstDateParts(new Date());
-      const todayIso = `${todayParts.y}-${String(todayParts.m).padStart(2, '0')}-${String(todayParts.d).padStart(2, '0')}`;
-      const allEvents = buildMacroCalendarEvents();
 
-      for (let i = 0; i < 42; i++) {
+      for (let i = 0; i < cellCount; i++) {
         const day = addDays(start, i);
         const iso = toISODateLocal(day);
-        const inMonth = day.getMonth() === month;
+        const inMonth = calendarViewMode === "week" ? true : day.getMonth() === calendarCursor.getMonth();
         const isSelected = iso === calendarSelectedDayIso;
 
         const dayEvents = getEventsForCalendarDay(day, allEvents);
 
         cells.push(`
-          <div class="cal-day ${inMonth ? '' : 'muted'} ${iso === todayIso ? 'today' : ''} ${isSelected ? 'selected' : ''}"
-               data-iso="${iso}">
-            <div class="cal-day-num">${day.getDate()}</div>
-            <div class="cal-events">
-              ${dayEvents.map(ev => {
+      <div class="cal-day ${inMonth ? '' : 'muted'} ${iso === todayIso ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+           data-iso="${iso}">
+        <div class="cal-day-num">${day.getDate()}</div>
+        <div class="cal-events">
+          ${dayEvents.map(ev => {
           const payload = encodeURIComponent(JSON.stringify(ev));
           return `
-                  <div class="cal-event ${ev.color}"
-                       ${ev.type === 'EARNINGS' ? `data-earnings="${payload}"` : ''}>
-                    <span class="cal-event-name">${ev.title}</span>
-                    <span class="cal-event-time">${ev.type === 'EARNINGS' ? ev.releaseLabel : ev.time}</span>
-                  </div>
-                `;
+              <div class="cal-event ${ev.color}"
+                   ${ev.type === 'EARNINGS' ? `data-earnings="${payload}"` : ''}>
+                <span class="cal-event-name">${ev.title}</span>
+                <span class="cal-event-time">${ev.type === 'EARNINGS' ? ev.releaseLabel : ev.time}</span>
+              </div>
+            `;
         }).join('')}
-            </div>
-          </div>
-        `);
+        </div>
+      </div>
+    `);
       }
 
       grid.innerHTML = cells.join('');
