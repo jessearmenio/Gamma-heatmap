@@ -774,7 +774,14 @@ app.get("/api/pricehistory", async (req, res) => {
       "https://api.schwabapi.com/marketdata/v1/pricehistory",
       { params, headers: { Authorization: `Bearer ${schwabTokens.access_token}` }, timeout: 30000 }
     );
-    res.json({ ok: true, data: response.data });
+    const candles = response.data?.candles || [];
+
+    const cleaned = candles.filter(c =>
+      c.open && c.high && c.low && c.close &&
+      c.low > 0 && c.high > 0
+    );
+
+    res.json({ ok: true, data: { ...response.data, candles: cleaned } });
   } catch (error) {
     console.error("PRICEHISTORY ERROR:", error.response?.data || error.message);
     res.status(error.response?.status || 500).json({

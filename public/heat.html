@@ -7513,6 +7513,8 @@
       // Destroy previous chart cleanly
       if (lwcChart) { try { lwcChart.remove(); } catch (e) { } lwcChart = null; }
       lwcCandleSeries = null;
+      ovChartRenderToken++;
+      const renderToken = ovChartRenderToken;
       container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas>'; // preserve canvas element
 
       // Need actual candle data
@@ -7715,17 +7717,18 @@
       ro.observe(container);
 
       // Draw PDH/PDL, Globex H/L, ATH lines after chart settles
-      drawChartLevels();
+      drawChartLevels(renderToken);
     }
 
     // ── Chart level lines (Prev Day H/L, Globex H/L, ATH) ──
     // Called after lwcCandleSeries is ready; fetches recent intraday data and draws lines
-    async function drawChartLevels() {
+    async function drawChartLevels(renderToken) {
       if (!lwcChart || !lwcCandleSeries) return;
       try {
         // Fetch last 5 days of 5-min candles with extended hours (covers prev day + globex)
         const url = '/api/pricehistory?symbol=SPY&periodType=day&period=5&frequencyType=minute&frequency=5&needExtendedHoursData=true';
         const d = await apiGet(url);
+        if (renderToken !== ovChartRenderToken) return;
         if (!d.ok || !d.data?.candles?.length) return;
         const candles = d.data.candles;
 
@@ -7795,6 +7798,8 @@
           addLine(gl, '#9C27B0', 'GBX L');
         }
 
+        if (renderToken !== ovChartRenderToken) return;
+
         // All-time high (Fetch from full 1Y candles)
         // Use the full snapshot candles if we have them; otherwise use a static fallback
         let ath = null;
@@ -7809,6 +7814,7 @@
 
     // ── Gamma bar overlay ──
     let ovGammaHitBoxes = []; // [{x,y,w,h,strike,netGex}] for hover detection
+    let ovChartRenderToken = 0; // ATH line prevent double.
 
     function drawGammaBars() {
       const canvas = document.getElementById('ov-gamma-canvas');
