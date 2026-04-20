@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const axios = require("axios");
 const path = require("path");
+const finnhub = require("finnhub");
 
 dotenv.config();
 
@@ -12,10 +13,28 @@ const PORT = process.env.PORT || 3000;
 const SCHWAB_APP_KEY = process.env.SCHWAB_APP_KEY;
 const SCHWAB_APP_SECRET = process.env.SCHWAB_APP_SECRET;
 const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI;
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
+
+const FINNHUB_TOP_100_SP500 = [
+  "AAPL","MSFT","NVDA","AMZN","META","GOOGL","GOOG","BRK.B","LLY","AVGO",
+  "JPM","V","XOM","UNH","MA","COST","HD","PG","NFLX","MRK",
+  "ABBV","CVX","KO","ADBE","PEP","BAC","AMD","TMO","WMT","CSCO",
+  "MCD","CRM","ACN","LIN","DHR","ABT","WFC","INTU","TXN","QCOM",
+  "PM","DIS","IBM","AMGN","GE","NOW","CAT","GS","RTX","ISRG",
+  "BLK","BKNG","SPGI","AXP","PLD","SYK","T","LOW","PGR","UNP",
+  "HON","TJX","VRTX","MDT","SCHW","C","ELV","LMT","DE","ADP",
+  "GILD","MMC","ADI","ETN","REGN","MO","CB","SO","ZTS","CI",
+  "BSX","DUK","ICE","BDX","CL","CSX","PYPL","ITW","WM","EOG",
+  "PNC","APD","SHW","MPC","HCA","AON","MS","FDX","MAR","SNPS"
+];
 
 // Starter-only memory storage.
 // Fine for initial testing, not for long-term production.
 let schwabTokens = null;
+
+const finnhubApiKey = finnhub.ApiClient.instance.authentications['api_key'];
+if (FINNHUB_API_KEY) finnhubApiKey.apiKey = FINNHUB_API_KEY;
+const finnhubClient = new finnhub.DefaultApi();
 
 app.use(cors());
 app.use(express.json());
@@ -138,6 +157,23 @@ app.get("/api/quotes", async (req, res) => {
     });
   }
 });
+
+function quarterLabel(year, quarter) {
+  return `${year} Q${quarter}`;
+}
+
+function pctBeatMiss(actual, estimate) {
+  const a = Number(actual);
+  const e = Number(estimate);
+  if (!Number.isFinite(a) || !Number.isFinite(e) || e === 0) return null;
+  return ((a - e) / Math.abs(e)) * 100;
+}
+
+function formatHourLabel(hour) {
+  if (hour === "amc") return "After-Hours";
+  if (hour === "bmo") return "Pre-Market";
+  return "Time Not Specified";
+}
 
 function getTodayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -483,6 +519,114 @@ app.get("/api/heat", async (req, res) => {
       ok: false,
       error: "Failed to build heat data.",
       details: error.response?.data || error.message
+    });
+  }
+});
+
+app.get("/api/earnings-calendar", async (req, res) => {
+  try {
+    if (!FINNHUB_API_KEY) {
+      return res.status(500).json({
+        ok: false,
+        error: "Missing FINNHUB_API_KEY."
+      });
+    }
+
+    const from = req.query.from;
+    const to = req.query.to;
+
+    if (!from || !to) {
+      return res.status(400).json({
+        ok: false,
+        error: "Missing from/to date range."
+      });
+    }
+
+    const symbolSet = new Set(FINNHUB_TOP_100_SP500);
+    const currentRows = await new Promise((resolve, reject) => {
+      finnhubClient.earningsCalendar({ from, to }, (error, data) => {
+        if (error) return reject(error);
+        resolve(Array.isArray(data?.earningsCalendar) ? data.earningsCalendar : []);
+      });
+    });
+
+    const filteredCurrent = currentRows.filter(row => symbolSet.has(row.symbol));
+
+    const symbolsNeedingHistory = [...new Set(filteredCurrent.map(r => r.symbol))];
+    const previousBySymbol = {};
+
+    await Promise.all(symbolsNeedingHistory.map(symbol => new Promise((resolve) => {
+      finnhubClient.earningsCalendar({ symbol }, (error, data) => {
+        if (error) {
+          previousBySymbol[symbol] = null;
+          return resolve();
+        }
+
+        const rows = Array.isArray(data?.earningsCalendar) ? data.earningsCalendar : [];
+        const sorted = rows
+          .filter(r => r.symbol === symbol)
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        const currentMatch = filteredCurrent
+          .filter(r => r.symbol === symbol)
+          .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+
+        if (!currentMatch) {
+          previousBySymbol[symbol] = null;
+          return resolve();
+        }
+
+        const prev = sorted.find(r =>
+          new Date(r.date) < new Date(currentMatch.date) &&
+          !(r.year === currentMatch.year && r.quarter === currentMatch.quarter)
+        ) || null;
+
+        previousBySymbol[symbol] = prev;
+        resolve();
+      });
+    })));
+
+    const events = filteredCurrent.map(row => {
+      const prev = previousBySymbol[row.symbol] || null;
+
+      return {
+        type: "EARNINGS",
+        symbol: row.symbol,
+        title: `${row.symbol} Earnings`,
+        releaseDate: row.date,
+        year: row.year,
+        quarter: row.quarter,
+        hour: row.hour || "",
+        releaseLabel: formatHourLabel(row.hour),
+        epsEstimate: row.epsEstimate ?? null,
+        revenueEstimate: row.revenueEstimate ?? null,
+        previous: prev ? {
+          year: prev.year,
+          quarter: prev.quarter,
+          epsEstimate: prev.epsEstimate ?? null,
+          epsActual: prev.epsActual ?? null,
+          epsBeatMissPct: pctBeatMiss(prev.epsActual, prev.epsEstimate),
+          revenueEstimate: prev.revenueEstimate ?? null,
+          revenueActual: prev.revenueActual ?? null,
+          revenueBeatMissPct: pctBeatMiss(prev.revenueActual, prev.revenueEstimate)
+        } : null
+      };
+    });
+
+    res.json({
+      ok: true,
+      from,
+      to,
+      count: events.length,
+      events
+    });
+  } catch (error) {
+    console.error("EARNINGS CALENDAR ERROR:");
+    console.error(error?.message || error);
+
+    res.status(500).json({
+      ok: false,
+      error: "Failed to load earnings calendar."
     });
   }
 });

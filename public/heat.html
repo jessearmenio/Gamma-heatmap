@@ -1242,6 +1242,239 @@
       color: var(--text3);
     }
 
+    /* ─────────────────────────────────────────────
+       CALENDAR PAGE
+    ───────────────────────────────────────────── */
+    #calendar-page {
+      height: calc(100vh - var(--header-h) - 32px);
+    }
+
+    #calendar-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #calendar-card .card-body {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    spanb {
+      margin-bottom: 2px;
+    }
+
+    #calendar-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #calendar-month-label {
+      min-width: 180px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+
+    #calendar-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cal-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      font-size: 10px;
+      color: var(--text2);
+      font-weight: 700;
+    }
+
+    .cal-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    #calendar-grid-wrap {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .cal-weekday {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0 4px;
+    }
+
+    #calendar-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: minmax(120px, 1fr);
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .cal-day {
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-height: 120px;
+      overflow: hidden;
+    }
+
+    .cal-day.muted {
+      opacity: 0.45;
+      background: rgba(255, 255, 255, 0.015)
+    }
+
+    .cal-day.today {
+      border-color: rgba(216, 216, 216, 0.5);
+      box-shadow: inset 0 0 0 1px rgba(125, 227, 250, 0.18);
+      background: radial-gradient(circle at top, #0b1830 5%, var(--bg) 111%);
+    }
+
+    .cal-day-num {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      text-align: right;
+    }
+
+    .cal-events {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+    }
+
+    .cal-event {
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1.35;
+      border: 1px solid transparent;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cal-event.high {
+      background: rgba(255, 59, 92, 0.12);
+      border-color: rgba(255, 59, 92, 0.28);
+      color: #ff97aa;
+    }
+
+    .cal-event.med {
+      background: rgba(255, 176, 32, 0.12);
+      border-color: rgba(255, 176, 32, 0.28);
+      color: var(--sand);
+    }
+
+    .cal-event.low {
+      background: rgba(59, 220, 255, 0.12);
+      border-color: rgba(59, 220, 255, 0.22);
+      color: var(--cyan);
+    }
+
+    #calendar-tooltip {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      min-width: 280px;
+      max-width: 360px;
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+      display: none;
+    }
+
+    .cal-tooltip-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    .cal-tooltip-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .cal-tooltip-line {
+      font-size: 10px;
+      color: var(--text2);
+      line-height: 1.5;
+    }
+
+    .cal-tooltip-line b {
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .cal-event.earnings {
+      background: rgba(220, 255, 30, 0.12);
+      border-color: rgba(220, 255, 30, 0.28);
+      color: var(--accent);
+    }
+
+    .cal-event-name {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cal-event-time {
+      display: block;
+      font-size: 8px;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+
+    @media (max-width: 1100px) {
+      #calendar-grid {
+        grid-auto-rows: minmax(95px, 1fr);
+      }
+
+      .cal-event {
+        font-size: 8px;
+      }
+    }
+
     /* ── Overview: Macro Alert Banner ── */
     #ov-macro-alert {
       display: none;
@@ -1273,7 +1506,7 @@
       line-height: 1.5;
     }
 
-    spanh{
+    spanh {
       margin-bottom: 2px;
     }
 
@@ -2197,7 +2430,6 @@
 
     .ov-terminal-detail {
       font-size: 10px;
-      color: var(--text2);
       line-height: 1.6;
       padding: 6px 10px;
       background: var(--bg3);
@@ -3796,12 +4028,21 @@
         <li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
           <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
         </li>
+        <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
+          <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
+        </li>
+        <li class="nav-item" data-page="#" onclick="window.location.href='https://www.jessearmenio.com/scanner'">
+          <span class="nav-icon">🔍</span><span class="nav-label">Stock Scanner</span>
+        </li>
         <li class="nav-item" data-page="penny-page" onclick="navTo(this)">
           <span class="nav-icon">🔥</span><span class="nav-label">Penny Scanner</span>
         </li>
         <li class="nav-section-label">Macro</li>
         <li class="nav-item" data-page="futures-page" onclick="navTo(this)">
           <span class="nav-icon">🌍</span><span class="nav-label">Futures</span>
+        </li>
+        <li class="nav-item" data-page="calendar-page" onclick="navTo(this)">
+          <span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span>
         </li>
         <li class="nav-item" data-page="commodities-page" onclick="navTo(this)">
           <span class="nav-icon">🛢️</span><span class="nav-label">Commodities</span>
@@ -3819,9 +4060,6 @@
         <li class="nav-item" data-page="sentiment-page" onclick="navTo(this)">
           <span class="nav-icon">🤔</span><span class="nav-label">Sentiment</span>
         </li>
-        <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
-          <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
-        </li>
       </ul>
     </nav>
 
@@ -3830,7 +4068,7 @@
       <!-- topbar -->
       <div id="topbar">
         <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
-        <div id="topbar-title" id="page-title">Market<br/> Overview</div>
+        <div id="topbar-title" id="page-title">Market<br /> Overview</div>
         <div id="ticker-strip">
           <div class="ticker-row">
             <div class="ticker-item" id="tick-SPY">
@@ -3966,7 +4204,9 @@
 
           <!-- Macro Alert Banner -->
           <div id="ov-macro-alert">
-            <span id="ov-macro-alert-icon"><spanh>⚠</spanh></span>
+            <span id="ov-macro-alert-icon">
+              <spanh>⚠</spanh>
+            </span>
             <span id="ov-macro-alert-text"></span>
           </div>
 
@@ -5039,11 +5279,34 @@
             </div>
           </div>
         </div>
-
+        <div id="calendar-page" class="page" style="display:none;">
+          <div class="card" id="calendar-card">
+            <div class="card-header">
+              <span class="card-title">
+                <div id="calendar-month-label">—</div>
+              </span>
+              <div id="calendar-toolbar">
+                <button class="topbar-icon-btn" type="button" onclick="calendarPrevMonth()" title="Previous Month">
+                  <spanb>◀</spanb>
+                </button>
+                <button class="topbar-icon-btn" type="button" onclick="calendarNextMonth()" title="Next Month">
+                  <spanb>▶</spanb>
+                </button>
+              </div>
+            </div>
+            <div class="card-body" id="calendar-body">
+              <div id="calendar-legend"></div>
+              <div id="calendar-grid-wrap">
+                <div id="calendar-weekdays"></div>
+                <div id="calendar-grid"></div>
+                <div id="calendar-tooltip"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div><!-- /page-content -->
     </div><!-- /main -->
   </div><!-- /app -->
-
   <script>
     // ═══════════════════════════════════════════════════════
     //  CONFIG — point to your Render.com backend
@@ -5065,6 +5328,9 @@
     let lastRefreshTime = null;
     let agoTimer = null;
     let sessionTimer = null;
+    let calendarCursor = new Date(2026, 3, 1); // April 2026
+    let calendarEarningsEvents = [];
+    let calendarEarningsLoadedRange = "";
 
     // ═══════════════════════════════════════════════════════
     //  NAVIGATION
@@ -5084,7 +5350,7 @@
       }
       document.getElementById('topbar-title').textContent = el.querySelector('.nav-label')?.textContent || '';
       // Auto-load pages when navigated to
-      if (isConnected || target === 'charting-page') autoLoadPage(target);
+      if (isConnected || target === 'charting-page' || target === 'calendar-page') autoLoadPage(target);
     }
 
     function autoLoadPage(pageId) {
@@ -5094,6 +5360,7 @@
         case 'flow-page': loadOptionsFlow(); break;
         case 'mag7-page': loadMag7(); break;
         case 'futures-page': loadFutures(); break;
+        case 'calendar-page': loadCalendarPage(); break;
         case 'commodities-page': loadCommodities(); break;
         case 'fx-page': loadFX(); break;
         case 'penny-page': loadPenny(); break;
@@ -5106,6 +5373,394 @@
         case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
       }
     }
+
+    const CALENDAR_EVENT_META = {
+      FOMC: { tier: 'high', time: '1:00pm CST', color: 'high' },
+      CPI: { tier: 'high', time: '7:30am CST', color: 'high' },
+      PCE: { tier: 'med', time: '7:30am CST', color: 'med' },
+      JOLTS: { tier: 'low', time: '9:00am CST', color: 'low' },
+      'Manufacturing PMI': { tier: 'med', time: '9:00am CST', color: 'med' },
+      'Services PMI': { tier: 'med', time: '9:00am CST', color: 'med' },
+      Mopex: { tier: 'med', time: '3:00pm CST', color: 'med' }
+    };
+
+    function cstDateParts(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Chicago',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      }).formatToParts(date);
+      const get = t => Number(parts.find(p => p.type === t)?.value);
+      return { y: get('year'), m: get('month'), d: get('day') };
+    }
+
+    function isoToDateLocal(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function toISODateLocal(date) {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function addDays(date, days) {
+      const next = new Date(date);
+      next.setDate(next.getDate() + days);
+      return next;
+    }
+
+    function diffCalendarDaysFromToday(isoDate) {
+      const todayParts = cstDateParts(new Date());
+      const today = new Date(todayParts.y, todayParts.m - 1, todayParts.d);
+      const eventDate = isoToDateLocal(isoDate);
+      return Math.round((eventDate - today) / 86400000);
+    }
+
+    function buildMacroCalendarEvents() {
+      const spanDays = 1;
+
+      const events = [];
+
+      FOMC_DATES.forEach(date => {
+        events.push({
+          type: 'FOMC',
+          title: 'FOMC Rate Day',
+          releaseDate: date,
+          labelMonth: '',
+          time: CALENDAR_EVENT_META.FOMC.time,
+          tier: CALENDAR_EVENT_META.FOMC.tier,
+          color: CALENDAR_EVENT_META.FOMC.color,
+          spanDays
+        });
+      });
+
+      CPI_EVENTS.forEach(ev => {
+        events.push({
+          type: 'CPI',
+          title: `${ev.labelMonth} CPI`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META.CPI.time,
+          tier: CALENDAR_EVENT_META.CPI.tier,
+          color: CALENDAR_EVENT_META.CPI.color,
+          spanDays
+        });
+      });
+
+      JOLTS_EVENTS.forEach(ev => {
+        events.push({
+          type: 'JOLTS',
+          title: `${ev.labelMonth} JOLTS`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META.JOLTS.time,
+          tier: CALENDAR_EVENT_META.JOLTS.tier,
+          color: CALENDAR_EVENT_META.JOLTS.color,
+          spanDays
+        });
+      });
+
+      PMI_MANUFACTURING_EVENTS.forEach(ev => {
+        events.push({
+          type: 'Manufacturing PMI',
+          title: `${ev.labelMonth} Manufacturing PMI`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META['Manufacturing PMI'].time,
+          tier: CALENDAR_EVENT_META['Manufacturing PMI'].tier,
+          color: CALENDAR_EVENT_META['Manufacturing PMI'].color,
+          spanDays
+        });
+      });
+
+      PMI_SERVICES_EVENTS.forEach(ev => {
+        events.push({
+          type: 'Services PMI',
+          title: `${ev.labelMonth} Services PMI`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META['Services PMI'].time,
+          tier: CALENDAR_EVENT_META['Services PMI'].tier,
+          color: CALENDAR_EVENT_META['Services PMI'].color,
+          spanDays
+        });
+      });
+
+      PCE_EVENTS.forEach(ev => {
+        events.push({
+          type: 'PCE',
+          title: `${ev.labelMonth} PCE`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META.PCE.time,
+          tier: CALENDAR_EVENT_META.PCE.tier,
+          color: CALENDAR_EVENT_META.PCE.color,
+          spanDays
+        });
+      });
+
+      MOPEX_EVENTS.forEach(ev => {
+        events.push({
+          type: 'Mopex',
+          title: `${ev.labelMonth} Mopex`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META.Mopex.time,
+          tier: CALENDAR_EVENT_META.Mopex.tier,
+          color: CALENDAR_EVENT_META.Mopex.color,
+          spanDays
+        });
+      });
+
+  const earningsEvents = calendarEarningsEvents.map(ev => ({
+    ...ev,
+    color: 'earnings',
+    tier: 'med',
+    spanDays: 1
+  }));
+
+  return [...events, ...earningsEvents].sort((a, b) => {
+    if (a.releaseDate !== b.releaseDate) return a.releaseDate.localeCompare(b.releaseDate);
+    return String(a.title || "").localeCompare(String(b.title || ""));
+  });
+}
+
+    function getMacroEventsForBanner() {
+      return buildMacroCalendarEvents()
+        .map(ev => ({ ...ev, days: diffCalendarDaysFromToday(ev.releaseDate) }))
+        .filter(ev => ev.days >= 0)
+        .sort((a, b) => a.days - b.days);
+    }
+
+    function formatBannerCountdown(days) {
+      if (days === 0) return 'TODAY';
+      if (days === 1) return 'TOMORROW';
+      return `IN ${days}D`;
+    }
+
+    function buildBannerText(ev) {
+      return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time}`;
+    }
+
+    function eventTierRank(tier) {
+      if (tier === 'high') return 3;
+      if (tier === 'med') return 2;
+      return 1;
+    }
+
+    function getBannerClass(eventsInWindow, vixValue) {
+      const topTier = eventsInWindow.reduce((max, ev) => Math.max(max, eventTierRank(ev.tier)), 0);
+      if (vixValue > 30 || topTier >= 3) return 'danger';
+      return '';
+    }
+
+    async function loadCalendarPage() {
+      await ensureCalendarEarningsLoaded();
+      renderCalendar();
+    }
+
+    async function calendarPrevMonth() {
+      calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+      await ensureCalendarEarningsLoaded();
+      renderCalendar();
+    }
+
+    async function calendarNextMonth() {
+      calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+      await ensureCalendarEarningsLoaded();
+      renderCalendar();
+    }
+
+    async function ensureCalendarEarningsLoaded() {
+  const year = calendarCursor.getFullYear();
+  const month = calendarCursor.getMonth();
+
+  const first = new Date(year, month, 1);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 41);
+
+  const rangeKey = `${toISODateLocal(start)}|${toISODateLocal(end)}`;
+  if (calendarEarningsLoadedRange === rangeKey) return;
+
+  try {
+    const res = await fetch(`/api/earnings-calendar?from=${toISODateLocal(start)}&to=${toISODateLocal(end)}`);
+    const data = await res.json();
+    calendarEarningsEvents = data?.ok && Array.isArray(data.events) ? data.events : [];
+    calendarEarningsLoadedRange = rangeKey;
+  } catch (err) {
+    console.error("Calendar earnings load failed:", err);
+    calendarEarningsEvents = [];
+    calendarEarningsLoadedRange = rangeKey;
+  }
+}
+
+function fmtMoneyShort(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  if (Math.abs(n) >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
+  if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+  if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
+  return n.toLocaleString();
+}
+
+function fmtNumMaybe(v, digits = 2) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return n.toFixed(digits);
+}
+
+function fmtPctMaybe(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)}%`;
+}
+
+function buildEarningsTooltipHtml(ev) {
+  return `
+    <div class="cal-tooltip-title">${ev.symbol} Earnings</div>
+
+    <div class="cal-tooltip-line"><b>Current Earnings ${ev.year} Q${ev.quarter}:</b></div>
+    <div class="cal-tooltip-line"><b>Releases:</b> ${ev.releaseLabel}</div>
+    <div class="cal-tooltip-line"><b>EPS Est:</b> ${fmtNumMaybe(ev.epsEstimate)}</div>
+    <div class="cal-tooltip-line"><b>Revenue Est:</b> ${fmtMoneyShort(ev.revenueEstimate)}</div>
+
+    <div class="cal-tooltip-section">
+      <div class="cal-tooltip-line"><b>Previous Earnings ${ev.previous?.year ?? "—"} Q${ev.previous?.quarter ?? "—"}:</b></div>
+      <div class="cal-tooltip-line"><b>EPS Est:</b> ${fmtNumMaybe(ev.previous?.epsEstimate)}</div>
+      <div class="cal-tooltip-line"><b>EPS Actual:</b> ${fmtNumMaybe(ev.previous?.epsActual)}</div>
+      <div class="cal-tooltip-line"><b>Beat/Miss:</b> ${fmtPctMaybe(ev.previous?.epsBeatMissPct)}</div>
+      <div class="cal-tooltip-line"><b>Revenue Est:</b> ${fmtMoneyShort(ev.previous?.revenueEstimate)}</div>
+      <div class="cal-tooltip-line"><b>Revenue Act:</b> ${fmtMoneyShort(ev.previous?.revenueActual)}</div>
+      <div class="cal-tooltip-line"><b>Beat/Miss:</b> ${fmtPctMaybe(ev.previous?.revenueBeatMissPct)}</div>
+    </div>
+  `;
+}
+
+function showCalendarTooltip(event, ev) {
+  const tip = document.getElementById('calendar-tooltip');
+  if (!tip) return;
+  tip.innerHTML = buildEarningsTooltipHtml(ev);
+  tip.style.display = 'block';
+  moveCalendarTooltip(event);
+}
+
+function moveCalendarTooltip(event) {
+  const tip = document.getElementById('calendar-tooltip');
+  if (!tip || tip.style.display !== 'block') return;
+
+  const pad = 14;
+  let left = event.clientX + pad;
+  let top = event.clientY + pad;
+
+  const rect = tip.getBoundingClientRect();
+  if (left + rect.width > window.innerWidth - 12) {
+    left = event.clientX - rect.width - pad;
+  }
+  if (top + rect.height > window.innerHeight - 12) {
+    top = event.clientY - rect.height - pad;
+  }
+
+  tip.style.left = `${Math.max(8, left)}px`;
+  tip.style.top = `${Math.max(8, top)}px`;
+}
+
+function hideCalendarTooltip() {
+  const tip = document.getElementById('calendar-tooltip');
+  if (!tip) return;
+  tip.style.display = 'none';
+}
+
+    function renderCalendarLegend() {
+      const legend = document.getElementById('calendar-legend');
+      if (!legend) return;
+
+      legend.innerHTML = `
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ff97aa"></span> High Impact</div>
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ffd98d"></span> Medium Impact</div>
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#3bdcff"></span> Lower Impact</div>
+      `;
+    }
+
+    function renderCalendar() {
+      const monthLabel = document.getElementById('calendar-month-label');
+      const weekdays = document.getElementById('calendar-weekdays');
+      const grid = document.getElementById('calendar-grid');
+      if (!monthLabel || !weekdays || !grid) return;
+
+      renderCalendarLegend();
+
+      const year = calendarCursor.getFullYear();
+      const month = calendarCursor.getMonth();
+
+      monthLabel.textContent = new Intl.DateTimeFormat('en-US', {
+        month: 'long',
+        year: 'numeric'
+      }).format(new Date(year, month, 1));
+
+      weekdays.innerHTML = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+        .map(d => `<div class="cal-weekday">${d}</div>`)
+        .join('');
+
+      const first = new Date(year, month, 1);
+      const start = new Date(first);
+      start.setDate(first.getDate() - first.getDay());
+
+      const cells = [];
+      const todayParts = cstDateParts(new Date());
+      const todayIso = `${todayParts.y}-${String(todayParts.m).padStart(2, '0')}-${String(todayParts.d).padStart(2, '0')}`;
+      const allEvents = buildMacroCalendarEvents();
+
+      for (let i = 0; i < 42; i++) {
+        const day = addDays(start, i);
+        const iso = toISODateLocal(day);
+        const inMonth = day.getMonth() === month;
+
+        const dayEvents = allEvents.filter(ev => {
+          const startDate = isoToDateLocal(ev.releaseDate);
+          return toISODateLocal(day) === toISODateLocal(startDate);
+        });
+
+        cells.push(`
+          <div class="cal-day ${inMonth ? '' : 'muted'} ${iso === todayIso ? 'today' : ''}">
+            <div class="cal-day-num">${day.getDate()}</div>
+            <div class="cal-events">
+              ${dayEvents.map(ev => {
+                const payload = encodeURIComponent(JSON.stringify(ev));
+                return `
+                  <div class="cal-event ${ev.color}"
+                       ${ev.type === 'EARNINGS' ? `data-earnings="${payload}"` : ''}>
+                    <span class="cal-event-name">${ev.title}</span>
+                    <span class="cal-event-time">${ev.type === 'EARNINGS' ? ev.releaseLabel : ev.time}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `);
+      }
+
+  grid.innerHTML = cells.join('');
+
+  grid.querySelectorAll('.cal-event[data-earnings]').forEach(node => {
+    node.addEventListener('mouseenter', (e) => {
+      try {
+        const ev = JSON.parse(decodeURIComponent(node.dataset.earnings));
+        showCalendarTooltip(e, ev);
+      } catch {}
+    });
+
+    node.addEventListener('mousemove', moveCalendarTooltip);
+    node.addEventListener('mouseleave', hideCalendarTooltip);
+  });
+}
 
     function refreshCurrentPage() {
       const btn = document.getElementById('refresh-btn');
@@ -5531,28 +6186,89 @@
       position: { volatility: 15, trend: 30, breadth: 25, momentum: 10, macro: 20 }
     };
 
-    const FOMC_DATES = ["2026-04-29", "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09"];
+    const FOMC_DATES = [
+      "2026-04-29", "2026-06-17", "2026-07-29",
+      "2026-09-16", "2026-10-28", "2026-12-09"
+    ];
+
     const CPI_EVENTS = [
+      { releaseDate: "2026-01-13", labelMonth: "Dec" },
+      { releaseDate: "2026-02-13", labelMonth: "Jan" },
+      { releaseDate: "2026-03-11", labelMonth: "Feb" },
       { releaseDate: "2026-04-10", labelMonth: "Mar" },
       { releaseDate: "2026-05-12", labelMonth: "Apr" },
       { releaseDate: "2026-06-10", labelMonth: "May" },
       { releaseDate: "2026-07-14", labelMonth: "Jun" },
       { releaseDate: "2026-08-12", labelMonth: "Jul" },
-      { releaseDate: "2026-09-10", labelMonth: "Aug" },
-      { releaseDate: "2026-10-13", labelMonth: "Sep" },
-      { releaseDate: "2026-11-12", labelMonth: "Oct" },
+      { releaseDate: "2026-09-11", labelMonth: "Aug" },
+      { releaseDate: "2026-10-14", labelMonth: "Sep" },
+      { releaseDate: "2026-11-10", labelMonth: "Oct" },
       { releaseDate: "2026-12-10", labelMonth: "Nov" }
     ];
+
     const JOLTS_EVENTS = [
-      { releaseDate: "2026-04-01", labelMonth: "Feb" },
+      { releaseDate: "2026-03-31", labelMonth: "Feb" },
       { releaseDate: "2026-05-05", labelMonth: "Mar" },
       { releaseDate: "2026-06-02", labelMonth: "Apr" },
-      { releaseDate: "2026-07-07", labelMonth: "May" },
+      { releaseDate: "2026-06-30", labelMonth: "May" },
       { releaseDate: "2026-08-04", labelMonth: "Jun" },
       { releaseDate: "2026-09-01", labelMonth: "Jul" },
-      { releaseDate: "2026-10-06", labelMonth: "Aug" },
+      { releaseDate: "2026-09-29", labelMonth: "Aug" },
       { releaseDate: "2026-11-03", labelMonth: "Sep" },
       { releaseDate: "2026-12-01", labelMonth: "Oct" }
+    ];
+
+    const PMI_MANUFACTURING_EVENTS = [
+      { releaseDate: "2026-01-05", labelMonth: "Jan" },
+      { releaseDate: "2026-02-02", labelMonth: "Feb" },
+      { releaseDate: "2026-03-02", labelMonth: "Mar" },
+      { releaseDate: "2026-04-01", labelMonth: "Apr" },
+      { releaseDate: "2026-05-01", labelMonth: "May" },
+      { releaseDate: "2026-06-01", labelMonth: "Jun" },
+      { releaseDate: "2026-07-01", labelMonth: "Jul" },
+      { releaseDate: "2026-08-03", labelMonth: "Aug" },
+      { releaseDate: "2026-09-01", labelMonth: "Sep" },
+      { releaseDate: "2026-10-01", labelMonth: "Oct" },
+      { releaseDate: "2026-11-02", labelMonth: "Nov" },
+      { releaseDate: "2026-12-01", labelMonth: "Dec" }
+    ];
+
+    const PMI_SERVICES_EVENTS = [
+      { releaseDate: "2026-01-07", labelMonth: "Jan" },
+      { releaseDate: "2026-02-04", labelMonth: "Feb" },
+      { releaseDate: "2026-03-04", labelMonth: "Mar" },
+      { releaseDate: "2026-04-06", labelMonth: "Apr" },
+      { releaseDate: "2026-05-05", labelMonth: "May" },
+      { releaseDate: "2026-06-03", labelMonth: "Jun" },
+      { releaseDate: "2026-07-06", labelMonth: "Jul" },
+      { releaseDate: "2026-08-05", labelMonth: "Aug" },
+      { releaseDate: "2026-09-03", labelMonth: "Sep" },
+      { releaseDate: "2026-10-05", labelMonth: "Oct" },
+      { releaseDate: "2026-11-04", labelMonth: "Nov" },
+      { releaseDate: "2026-12-03", labelMonth: "Dec" }
+    ];
+
+    const PCE_EVENTS = [
+      { releaseDate: "2026-04-30", labelMonth: "Mar" },
+      { releaseDate: "2026-05-28", labelMonth: "Apr" },
+      { releaseDate: "2026-06-25", labelMonth: "May" },
+      { releaseDate: "2026-07-30", labelMonth: "Jun" },
+      { releaseDate: "2026-08-26", labelMonth: "Jul" },
+      { releaseDate: "2026-09-30", labelMonth: "Aug" },
+      { releaseDate: "2026-10-29", labelMonth: "Sep" },
+      { releaseDate: "2026-11-25", labelMonth: "Oct" },
+      { releaseDate: "2026-12-23", labelMonth: "Nov" }
+    ];
+
+    const MOPEX_EVENTS = [
+      { releaseDate: "2026-05-15", labelMonth: "May" },
+      { releaseDate: "2026-06-18", labelMonth: "Jun" },
+      { releaseDate: "2026-07-17", labelMonth: "Jul" },
+      { releaseDate: "2026-08-21", labelMonth: "Aug" },
+      { releaseDate: "2026-09-18", labelMonth: "Sep" },
+      { releaseDate: "2026-10-16", labelMonth: "Oct" },
+      { releaseDate: "2026-11-20", labelMonth: "Nov" },
+      { releaseDate: "2026-12-18", labelMonth: "Dec" }
     ];
     const GEO_RISK_API_URL = "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php";
     const GEO_RISK_API_HOST = "world-conflict-intelligence-api.p.rapidapi.com";
@@ -6142,20 +6858,27 @@
       const banner = document.getElementById('ov-macro-alert');
       const textEl = document.getElementById('ov-macro-alert-text');
       if (!banner || !textEl) return;
+
       const parts = [];
+      const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 7);
+
       if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {
         parts.push('Geo Risk: ' + geoRisk.topic);
       }
-      if (sc.fomc && sc.fomc.days <= 7) parts.push('FOMC in ' + sc.fomc.days + 'd');
-      if (sc.cpi && sc.cpi.days <= 7) parts.push((sc.cpi.labelMonth || '') + (sc.cpi.labelMonth ? ' ' : '') + 'CPI in ' + sc.cpi.days + 'd');
-      if (sc.jolts && sc.jolts.days <= 7) parts.push('JOLTS in ' + sc.jolts.days + 'd');
+
+      upcoming.forEach(ev => {
+        parts.push(buildBannerText(ev));
+      });
+
       if (parts.length > 0) {
         banner.style.display = 'flex';
-        banner.className = sc.VIX > 30 ? 'danger' : '';
+        banner.className = '';
+        const extraClass = getBannerClass(upcoming, sc?.VIX ?? 0);
+        if (extraClass) banner.classList.add(extraClass);
         textEl.textContent = parts.join('  |  ');
-        document.getElementById('ov-macro-alert').id = 'ov-macro-alert';
       } else {
         banner.style.display = 'none';
+        banner.className = '';
       }
     }
 
