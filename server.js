@@ -118,7 +118,7 @@ app.get("/api/quotes", async (req, res) => {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({
         ok: false,
-        error: "No access token yet. Connect Schwab first."
+        error: "No access token found. Try to reconnect."
       });
     }
 
@@ -266,7 +266,7 @@ app.get("/api/chain", async (req, res) => {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({
         ok: false,
-        error: "No access token yet. Connect Schwab first."
+        error: "No access token found. Connect Schwab first."
       });
     }
 
@@ -477,7 +477,7 @@ app.get("/api/heat", async (req, res) => {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({
         ok: false,
-        error: "No access token yet. Connect Schwab first."
+        error: "No access token found. Try to reconnect."
       });
     }
 
@@ -645,7 +645,7 @@ app.get("/api/dashboard", async (req, res) => {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({
         ok: false,
-        error: "No access token yet. Connect Schwab first."
+        error: "No access token found. Try to reconnect."
       });
     }
 
@@ -699,7 +699,7 @@ app.get("/api/dashboard", async (req, res) => {
 app.get("/api/movers", async (req, res) => {
   try {
     if (!schwabTokens?.access_token) {
-      return res.status(401).json({ ok: false, error: "No access token yet. Connect Schwab first." });
+      return res.status(401).json({ ok: false, error: "No access token found. Try to reconnect." });
     }
     const index = req.query.index || "$SPX";
     const sort = req.query.sort || "PERCENT_CHANGE_UP";
@@ -882,7 +882,7 @@ app.get("/api/expirationchain", async (req, res) => {
 app.get("/api/marketoverview", async (req, res) => {
   try {
     if (!schwabTokens?.access_token) {
-      return res.status(401).json({ ok: false, error: "No access token yet. Connect Schwab first." });
+      return res.status(401).json({ ok: false, error: "No access token found. Try to reconnect." });
     }
     const token = schwabTokens.access_token;
     const headers = { Authorization: `Bearer ${token}` };
