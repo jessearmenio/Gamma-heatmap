@@ -1312,7 +1312,17 @@
       flex: 1;
       min-height: 0;
       display: flex;
+      flex-direction: row;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    #calendar-main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
       flex-direction: column;
+      min-height: 0;
     }
 
     #calendar-weekdays {
@@ -1351,6 +1361,18 @@
       gap: 6px;
       min-height: 120px;
       overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.12s ease;
+    }
+
+    .cal-day:hover {
+      border-color: rgba(59, 220, 255, 0.28);
+      box-shadow: inset 0 0 0 1px rgba(59, 220, 255, 0.08);
+    }
+
+    .cal-day.selected {
+      border-color: rgba(220, 255, 30, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(220, 255, 30, 0.14);
     }
 
     .cal-day.muted {
@@ -1449,6 +1471,122 @@
       background: rgba(220, 255, 30, 0.12);
       border-color: rgba(220, 255, 30, 0.28);
       color: var(--accent);
+    }
+
+    #calendar-day-panel {
+      width: 360px;
+      max-width: 360px;
+      min-width: 360px;
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      transition: width 0.22s ease, min-width 0.22s ease, max-width 0.22s ease, opacity 0.18s ease;
+    }
+
+    #calendar-day-panel.collapsed {
+      width: 0;
+      min-width: 0;
+      max-width: 0;
+      opacity: 0;
+      border: none;
+    }
+
+    #calendar-day-panel-header {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    #calendar-day-panel-title {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    #calendar-day-panel-subtitle {
+      font-size: 10px;
+      color: var(--text3);
+      margin-top: 3px;
+    }
+
+    #calendar-day-panel-body {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .calendar-day-summary-item {
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 10px 9px;
+      background: var(--bg3);
+    }
+
+    .calendar-day-summary-item.high {
+      border-color: rgba(255, 59, 92, 0.25);
+    }
+
+    .calendar-day-summary-item.med {
+      border-color: rgba(255, 176, 32, 0.25);
+    }
+
+    .calendar-day-summary-item.low {
+      border-color: rgba(59, 220, 255, 0.22);
+    }
+
+    .calendar-day-summary-item.earnings {
+      border-color: rgba(220, 255, 30, 0.25);
+    }
+
+    .calendar-day-summary-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .calendar-day-summary-name {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .calendar-day-summary-type {
+      font-size: 8px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+
+    .calendar-day-summary-time,
+    .calendar-day-summary-detail {
+      font-size: 10px;
+      color: var(--text2);
+      line-height: 1.45;
+    }
+
+    @media (max-width: 1200px) {
+      #calendar-day-panel {
+        width: 320px;
+        max-width: 320px;
+        min-width: 320px;
+      }
     }
 
     .cal-event-name {
@@ -5297,8 +5435,25 @@
             <div class="card-body" id="calendar-body">
               <div id="calendar-legend"></div>
               <div id="calendar-grid-wrap">
-                <div id="calendar-weekdays"></div>
-                <div id="calendar-grid"></div>
+                <div id="calendar-main">
+                  <div id="calendar-weekdays"></div>
+                  <div id="calendar-grid"></div>
+                </div>
+
+                <aside id="calendar-day-panel" class="collapsed">
+                  <div id="calendar-day-panel-header">
+                    <div>
+                      <div id="calendar-day-panel-title">Day Summary</div>
+                      <div id="calendar-day-panel-subtitle">—</div>
+                    </div>
+                    <button class="topbar-icon-btn" type="button" onclick="closeCalendarDayPanel()"
+                      title="Close">✕</button>
+                  </div>
+                  <div id="calendar-day-panel-body">
+                    <div class="text-muted fs10">No day selected.</div>
+                  </div>
+                </aside>
+
                 <div id="calendar-tooltip"></div>
               </div>
             </div>
@@ -5331,6 +5486,7 @@
     let calendarCursor = new Date(2026, 3, 1); // April 2026
     let calendarEarningsEvents = [];
     let calendarEarningsLoadedRange = "";
+    let calendarSelectedDayIso = "";
 
     // ═══════════════════════════════════════════════════════
     //  NAVIGATION
@@ -5516,18 +5672,18 @@
         });
       });
 
-  const earningsEvents = calendarEarningsEvents.map(ev => ({
-    ...ev,
-    color: 'earnings',
-    tier: 'med',
-    spanDays: 1
-  }));
+      const earningsEvents = calendarEarningsEvents.map(ev => ({
+        ...ev,
+        color: 'earnings',
+        tier: 'med',
+        spanDays: 1
+      }));
 
-  return [...events, ...earningsEvents].sort((a, b) => {
-    if (a.releaseDate !== b.releaseDate) return a.releaseDate.localeCompare(b.releaseDate);
-    return String(a.title || "").localeCompare(String(b.title || ""));
-  });
-}
+      return [...events, ...earningsEvents].sort((a, b) => {
+        if (a.releaseDate !== b.releaseDate) return a.releaseDate.localeCompare(b.releaseDate);
+        return String(a.title || "").localeCompare(String(b.title || ""));
+      });
+    }
 
     function getMacroEventsForBanner() {
       return buildMacroCalendarEvents()
@@ -5565,66 +5721,68 @@
 
     async function calendarPrevMonth() {
       calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1);
+      calendarSelectedDayIso = "";
       await ensureCalendarEarningsLoaded();
       renderCalendar();
     }
 
     async function calendarNextMonth() {
       calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1);
+      calendarSelectedDayIso = "";
       await ensureCalendarEarningsLoaded();
       renderCalendar();
     }
 
     async function ensureCalendarEarningsLoaded() {
-  const year = calendarCursor.getFullYear();
-  const month = calendarCursor.getMonth();
+      const year = calendarCursor.getFullYear();
+      const month = calendarCursor.getMonth();
 
-  const first = new Date(year, month, 1);
-  const start = new Date(first);
-  start.setDate(first.getDate() - first.getDay());
+      const first = new Date(year, month, 1);
+      const start = new Date(first);
+      start.setDate(first.getDate() - first.getDay());
 
-  const end = new Date(start);
-  end.setDate(start.getDate() + 41);
+      const end = new Date(start);
+      end.setDate(start.getDate() + 41);
 
-  const rangeKey = `${toISODateLocal(start)}|${toISODateLocal(end)}`;
-  if (calendarEarningsLoadedRange === rangeKey) return;
+      const rangeKey = `${toISODateLocal(start)}|${toISODateLocal(end)}`;
+      if (calendarEarningsLoadedRange === rangeKey) return;
 
-  try {
-    const res = await fetch(`/api/earnings-calendar?from=${toISODateLocal(start)}&to=${toISODateLocal(end)}`);
-    const data = await res.json();
-    calendarEarningsEvents = data?.ok && Array.isArray(data.events) ? data.events : [];
-    calendarEarningsLoadedRange = rangeKey;
-  } catch (err) {
-    console.error("Calendar earnings load failed:", err);
-    calendarEarningsEvents = [];
-    calendarEarningsLoadedRange = rangeKey;
-  }
-}
+      try {
+        const res = await fetch(`/api/earnings-calendar?from=${toISODateLocal(start)}&to=${toISODateLocal(end)}`);
+        const data = await res.json();
+        calendarEarningsEvents = data?.ok && Array.isArray(data.events) ? data.events : [];
+        calendarEarningsLoadedRange = rangeKey;
+      } catch (err) {
+        console.error("Calendar earnings load failed:", err);
+        calendarEarningsEvents = [];
+        calendarEarningsLoadedRange = rangeKey;
+      }
+    }
 
-function fmtMoneyShort(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  if (Math.abs(n) >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
-  if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
-  if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
-  return n.toLocaleString();
-}
+    function fmtMoneyShort(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return "—";
+      if (Math.abs(n) >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
+      if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
+      if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
+      return n.toLocaleString();
+    }
 
-function fmtNumMaybe(v, digits = 2) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  return n.toFixed(digits);
-}
+    function fmtNumMaybe(v, digits = 2) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return "—";
+      return n.toFixed(digits);
+    }
 
-function fmtPctMaybe(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "—";
-  const sign = n > 0 ? "+" : "";
-  return `${sign}${n.toFixed(2)}%`;
-}
+    function fmtPctMaybe(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return "—";
+      const sign = n > 0 ? "+" : "";
+      return `${sign}${n.toFixed(2)}%`;
+    }
 
-function buildEarningsTooltipHtml(ev) {
-  return `
+    function buildEarningsTooltipHtml(ev) {
+      return `
     <div class="cal-tooltip-title">${ev.symbol} Earnings</div>
 
     <div class="cal-tooltip-line"><b>Current Earnings ${ev.year} Q${ev.quarter}:</b></div>
@@ -5642,41 +5800,117 @@ function buildEarningsTooltipHtml(ev) {
       <div class="cal-tooltip-line"><b>Beat/Miss:</b> ${fmtPctMaybe(ev.previous?.revenueBeatMissPct)}</div>
     </div>
   `;
-}
+    }
 
-function showCalendarTooltip(event, ev) {
-  const tip = document.getElementById('calendar-tooltip');
-  if (!tip) return;
-  tip.innerHTML = buildEarningsTooltipHtml(ev);
-  tip.style.display = 'block';
-  moveCalendarTooltip(event);
-}
+    function showCalendarTooltip(event, ev) {
+      const tip = document.getElementById('calendar-tooltip');
+      if (!tip) return;
+      tip.innerHTML = buildEarningsTooltipHtml(ev);
+      tip.style.display = 'block';
+      moveCalendarTooltip(event);
+    }
 
-function moveCalendarTooltip(event) {
-  const tip = document.getElementById('calendar-tooltip');
-  if (!tip || tip.style.display !== 'block') return;
+    function moveCalendarTooltip(event) {
+      const tip = document.getElementById('calendar-tooltip');
+      if (!tip || tip.style.display !== 'block') return;
 
-  const pad = 14;
-  let left = event.clientX + pad;
-  let top = event.clientY + pad;
+      const pad = 14;
+      let left = event.clientX + pad;
+      let top = event.clientY + pad;
 
-  const rect = tip.getBoundingClientRect();
-  if (left + rect.width > window.innerWidth - 12) {
-    left = event.clientX - rect.width - pad;
-  }
-  if (top + rect.height > window.innerHeight - 12) {
-    top = event.clientY - rect.height - pad;
-  }
+      const rect = tip.getBoundingClientRect();
+      if (left + rect.width > window.innerWidth - 12) {
+        left = event.clientX - rect.width - pad;
+      }
+      if (top + rect.height > window.innerHeight - 12) {
+        top = event.clientY - rect.height - pad;
+      }
 
-  tip.style.left = `${Math.max(8, left)}px`;
-  tip.style.top = `${Math.max(8, top)}px`;
-}
+      tip.style.left = `${Math.max(8, left)}px`;
+      tip.style.top = `${Math.max(8, top)}px`;
+    }
 
-function hideCalendarTooltip() {
-  const tip = document.getElementById('calendar-tooltip');
-  if (!tip) return;
-  tip.style.display = 'none';
-}
+    function hideCalendarTooltip() {
+      const tip = document.getElementById('calendar-tooltip');
+      if (!tip) return;
+      tip.style.display = 'none';
+    }
+
+    function formatCalendarPanelDate(iso) {
+      const d = isoToDateLocal(iso);
+      return new Intl.DateTimeFormat('en-US', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      }).format(d);
+    }
+
+    function getEventsForCalendarDay(dayDate, allEvents) {
+      return allEvents
+        .filter(ev => toISODateLocal(dayDate) === ev.releaseDate)
+        .sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+    }
+
+    function renderCalendarDayPanel(dayIso, dayEvents) {
+      const panel = document.getElementById('calendar-day-panel');
+      const subtitle = document.getElementById('calendar-day-panel-subtitle');
+      const body = document.getElementById('calendar-day-panel-body');
+      if (!panel || !subtitle || !body) return;
+
+      subtitle.textContent = formatCalendarPanelDate(dayIso);
+
+      if (!dayEvents.length) {
+        body.innerHTML = `<div class="text-muted fs10">No events on this day.</div>`;
+      } else {
+        body.innerHTML = dayEvents.map(ev => {
+          const detailLine = ev.type === 'EARNINGS'
+            ? `${ev.symbol} • ${ev.releaseLabel}`
+            : (ev.time || '—');
+
+          const subDetail = ev.type === 'EARNINGS'
+            ? `EPS Est: ${fmtNumMaybe(ev.epsEstimate)} • Revenue Est: ${fmtMoneyShort(ev.revenueEstimate)}`
+            : (ev.labelMonth ? `Reported Month: ${ev.labelMonth}` : '');
+
+          return `
+        <div class="calendar-day-summary-item ${ev.color}">
+          <div class="calendar-day-summary-top">
+            <div class="calendar-day-summary-name">${ev.title}</div>
+            <div class="calendar-day-summary-type">${ev.type}</div>
+          </div>
+          <div class="calendar-day-summary-time">${detailLine}</div>
+          ${subDetail ? `<div class="calendar-day-summary-detail">${subDetail}</div>` : ''}
+        </div>
+      `;
+        }).join('');
+      }
+
+      panel.classList.remove('collapsed');
+    }
+
+    function closeCalendarDayPanel() {
+      const panel = document.getElementById('calendar-day-panel');
+      if (panel) panel.classList.add('collapsed');
+      calendarSelectedDayIso = "";
+      document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+    }
+
+    function toggleCalendarDayPanel(dayIso, dayEvents) {
+      const panel = document.getElementById('calendar-day-panel');
+      const isSameDay = calendarSelectedDayIso === dayIso;
+
+      if (isSameDay && panel && !panel.classList.contains('collapsed')) {
+        closeCalendarDayPanel();
+        return;
+      }
+
+      calendarSelectedDayIso = dayIso;
+      document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+      const targetCell = document.querySelector(`.cal-day[data-iso="${dayIso}"]`);
+      if (targetCell) targetCell.classList.add('selected');
+
+      renderCalendarDayPanel(dayIso, dayEvents);
+    }
 
     function renderCalendarLegend() {
       const legend = document.getElementById('calendar-legend');
@@ -5722,45 +5956,65 @@ function hideCalendarTooltip() {
         const day = addDays(start, i);
         const iso = toISODateLocal(day);
         const inMonth = day.getMonth() === month;
+        const isSelected = iso === calendarSelectedDayIso;
 
-        const dayEvents = allEvents.filter(ev => {
-          const startDate = isoToDateLocal(ev.releaseDate);
-          return toISODateLocal(day) === toISODateLocal(startDate);
-        });
+        const dayEvents = getEventsForCalendarDay(day, allEvents);
 
         cells.push(`
-          <div class="cal-day ${inMonth ? '' : 'muted'} ${iso === todayIso ? 'today' : ''}">
+          <div class="cal-day ${inMonth ? '' : 'muted'} ${iso === todayIso ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+               data-iso="${iso}">
             <div class="cal-day-num">${day.getDate()}</div>
             <div class="cal-events">
               ${dayEvents.map(ev => {
-                const payload = encodeURIComponent(JSON.stringify(ev));
-                return `
+          const payload = encodeURIComponent(JSON.stringify(ev));
+          return `
                   <div class="cal-event ${ev.color}"
                        ${ev.type === 'EARNINGS' ? `data-earnings="${payload}"` : ''}>
                     <span class="cal-event-name">${ev.title}</span>
                     <span class="cal-event-time">${ev.type === 'EARNINGS' ? ev.releaseLabel : ev.time}</span>
                   </div>
                 `;
-              }).join('')}
+        }).join('')}
             </div>
           </div>
         `);
       }
 
-  grid.innerHTML = cells.join('');
+      grid.innerHTML = cells.join('');
 
-  grid.querySelectorAll('.cal-event[data-earnings]').forEach(node => {
-    node.addEventListener('mouseenter', (e) => {
-      try {
-        const ev = JSON.parse(decodeURIComponent(node.dataset.earnings));
-        showCalendarTooltip(e, ev);
-      } catch {}
-    });
+      grid.querySelectorAll('.cal-day').forEach(node => {
+        node.addEventListener('click', (e) => {
+          if (e.target.closest('.cal-event[data-earnings]')) return;
 
-    node.addEventListener('mousemove', moveCalendarTooltip);
-    node.addEventListener('mouseleave', hideCalendarTooltip);
-  });
-}
+          const iso = node.dataset.iso;
+          const dayDate = isoToDateLocal(iso);
+          const dayEvents = getEventsForCalendarDay(dayDate, allEvents);
+          toggleCalendarDayPanel(iso, dayEvents);
+        });
+      });
+
+      grid.querySelectorAll('.cal-event[data-earnings]').forEach(node => {
+        node.addEventListener('mouseenter', (e) => {
+          try {
+            const ev = JSON.parse(decodeURIComponent(node.dataset.earnings));
+            showCalendarTooltip(e, ev);
+          } catch { }
+        });
+
+        node.addEventListener('mousemove', moveCalendarTooltip);
+        node.addEventListener('mouseleave', hideCalendarTooltip);
+
+        node.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const cell = node.closest('.cal-day');
+          if (!cell) return;
+          const iso = cell.dataset.iso;
+          const dayDate = isoToDateLocal(iso);
+          const dayEvents = getEventsForCalendarDay(dayDate, allEvents);
+          toggleCalendarDayPanel(iso, dayEvents);
+        });
+      });
+    }
 
     function refreshCurrentPage() {
       const btn = document.getElementById('refresh-btn');
