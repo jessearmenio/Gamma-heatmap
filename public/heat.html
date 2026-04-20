@@ -441,7 +441,7 @@
 
     #market-status-badge.pre {
       background: var(--lightpre);
-      color: var(--text3);
+      color: var(--accent);
     }
 
     #market-status-badge.pre .ms-dot {
@@ -4162,7 +4162,7 @@
       <div id="connect-area">
         <button id="connect-btn" onclick="onConnectBtnClick()">
           <div id="status-dot" class="offline"></div>
-          <span class="btn-label" id="connect-label">Connect Schwab</span>
+          <span class="btn-label" id="connect-label">Login</span>
         </button>
         <!-- Dropdown: shown only when connected -->
         <div id="connect-dropdown">
@@ -4728,7 +4728,7 @@
               </div>
               <div class="card-body">
                 <div class="kl-row" id="ov-key-levels">
-                  <span class="kl-pill spot">Connect Schwab</span>
+                  <span class="kl-pill spot">Please Log in</span>
                 </div>
                 <hr class="sep">
                 <div style="font-size:10px;color:var(--text2);line-height:1.8" id="ov-heat-summary">Waiting for
@@ -4812,7 +4812,7 @@
                 <span id="ov-terminal-updated" style="font-size:9px;color:var(--text3);">--</span>
               </div>
               <div id="ov-terminal-body">
-                <div id="ov-terminal-summary" class="analysis-emphasis">Connect Schwab to begin analysis.</div>
+                <div id="ov-terminal-summary" class="analysis-emphasis">Log in to begin analysis.</div>
                 <div class="ov-terminal-detail" id="ov-terminal-detail1">Awaiting market data&#8230;</div>
                 <div class="ov-terminal-detail" id="ov-terminal-detail2">Playbook will appear once connected.</div>
                 <!-- Error log: hidden until errors arrive -->
@@ -4912,9 +4912,9 @@
                 <div class="connect-overlay" id="heat-empty-state">
                   <div class="co-icon">🌡</div>
                   <div class="co-title">Gamma Exposure Heatmap</div>
-                  <div class="co-sub">Connect Schwab and click Load to generate the GEX heatmap across strikes and
+                  <div class="co-sub">Log in and click Load to generate the GEX heatmap across strikes and
                     expirations.</div>
-                  <button class="co-btn" onclick="connectSchwab()">Connect Schwab</button>
+                  <button class="co-btn" onclick="connectSchwab()">Login</button>
                 </div>
                 <table id="heat-table" style="display:none;"></table>
               </div>
@@ -5121,7 +5121,7 @@
               </thead>
               <tbody id="flow-tbody">
                 <tr>
-                  <td colspan="16" style="text-align:center;padding:32px;color:var(--text3);">Connect Schwab to view
+                  <td colspan="16" style="text-align:center;padding:32px;color:var(--text3);">Log in to view
                     options flow.</td>
                 </tr>
               </tbody>
@@ -5245,8 +5245,8 @@
               <span style="font-size:9px;color:var(--text3)">Large block trades detected via OI changes</span>
             </div>
             <div class="card-body" id="dp-alerts-body">
-              <div class="text-muted fs10">Dark pool activity is inferred from unusual Open Interest shifts. Connect
-                Schwab to activate.</div>
+              <div class="text-muted fs10">Dark pool activity is inferred from unusual Open Interest shifts. Log in to
+                activate.</div>
             </div>
           </div>
           <div class="grid-2">
@@ -5270,7 +5270,7 @@
       ════════════════════════════════════ -->
         <div id="mag7-page" class="page" style="display:none;">
           <div class="mag7-grid" id="mag7-grid">
-            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Connect Schwab to view Magnificent 7
+            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view Magnificent 7
               data.</div>
           </div>
         </div>
@@ -5280,7 +5280,7 @@
       ════════════════════════════════════ -->
         <div id="futures-page" class="page" style="display:none;">
           <div class="futures-grid mb12" id="futures-grid">
-            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Connect Schwab to view futures data.
+            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view futures data.
             </div>
           </div>
           <div class="card">
@@ -5314,7 +5314,7 @@
                 </thead>
                 <tbody id="comm-tbody">
                   <tr>
-                    <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Connect Schwab to view
+                    <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Log in to view
                       commodities.</td>
                   </tr>
                 </tbody>
@@ -5328,7 +5328,7 @@
       ════════════════════════════════════ -->
         <div id="fx-page" class="page" style="display:none;">
           <div class="fx-grid" id="fx-grid">
-            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Connect Schwab to view FX pairs.</div>
+            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view FX pairs.</div>
           </div>
         </div>
 
@@ -5358,7 +5358,7 @@
                 </thead>
                 <tbody id="penny-tbody">
                   <tr>
-                    <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Connect Schwab to scan
+                    <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Log in to scan
                       penny stocks.</td>
                   </tr>
                 </tbody>
@@ -5376,7 +5376,7 @@
               <span class="card-title">Upcoming Earnings — Volatility Monitor</span>
             </div>
             <div class="card-body" id="earnings-body">
-              <div class="text-muted fs10">Connect Schwab to view earnings volatility data.</div>
+              <div class="text-muted fs10">Log in to view earnings volatility data.</div>
             </div>
           </div>
         </div>
@@ -5402,8 +5402,8 @@
           <div class="card">
             <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
             <div class="card-body" id="sent-score-body">
-              <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Connect
-                Schwab to calculate.</div>
+              <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log in
+                to calculate.</div>
             </div>
           </div>
         </div>
@@ -5430,7 +5430,7 @@
           <div class="card mb12">
             <div class="card-header"><span class="card-title">Treasury Yield Curve</span></div>
             <div class="card-body" id="treasury-body">
-              <div class="text-muted fs10">Treasury yields (via Futures/BOND quotes). Connect Schwab to view.</div>
+              <div class="text-muted fs10">Treasury yields (via Futures/BOND quotes). Log in to view.</div>
             </div>
           </div>
           <div class="grid-2">
@@ -6267,7 +6267,7 @@
       } else {
         btn.className = 'disconnected';
         dot.className = 'offline';
-        lbl.textContent = 'Connect Schwab';
+        lbl.textContent = 'Login';
         if (dd) dd.classList.remove('open');
       }
     }
