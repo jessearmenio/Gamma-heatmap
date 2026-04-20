@@ -5574,10 +5574,10 @@
     const CALENDAR_EVENT_META = {
       FOMC: { tier: 'high', time: '1:00pm CST', color: 'high' },
       CPI: { tier: 'high', time: '7:30am CST', color: 'high' },
-      PCE: { tier: 'high', time: '7:30am CST', color: 'med' },
-      JOLTS: { tier: 'med', time: '9:00am CST', color: 'low' },
-      'Manufacturing PMI': { tier: 'low', time: '9:00am CST', color: 'med' },
-      'Services PMI': { tier: 'low', time: '9:00am CST', color: 'med' },
+      PCE: { tier: 'high', time: '7:30am CST', color: 'high' },
+      JOLTS: { tier: 'high', time: '9:00am CST', color: 'high' },
+      'Manufacturing PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
+      'Services PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
       Mopex: { tier: 'med', time: '3:00pm CST', color: 'med' },
       'VIX Expo': { tier: 'med', time: '8:00am CST', color: 'med' }
     };
@@ -6048,7 +6048,7 @@
         start.setDate(calendarCursor.getDate() - calendarCursor.getDay());
         cellCount = 7;
 
-               const weekEnd = addDays(start, 6);
+        const weekEnd = addDays(start, 6);
 
         const startMonth = start.toLocaleDateString('en-US', { month: 'short' });
         const endMonth = weekEnd.toLocaleDateString('en-US', { month: 'short' });
@@ -6066,7 +6066,7 @@
         } else {
           monthLabel.textContent = `${startMonth} ${startDay}, ${start.getFullYear()} – ${endMonth} ${endDay}, ${weekEnd.getFullYear()}`;
         }
-        
+
         grid.classList.add('week-view');
       } else {
         const year = calendarCursor.getFullYear();
