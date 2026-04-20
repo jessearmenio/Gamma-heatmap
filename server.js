@@ -13,6 +13,7 @@ const SCHWAB_APP_KEY = process.env.SCHWAB_APP_KEY;
 const SCHWAB_APP_SECRET = process.env.SCHWAB_APP_SECRET;
 const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI;
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
+const FEAR_GREED_API_KEY = process.env.FEAR_GREED_API_KEY;
 
 const FINNHUB_TOP_100_SP500 = [
   "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "BRK.B", "LLY", "AVGO",
@@ -28,8 +29,110 @@ const FINNHUB_TOP_100_SP500 = [
 ];
 
 // Starter-only memory storage.
-// Fine for initial testing, not for long-term production.
 let schwabTokens = null;
+
+// Fear & Greed cache
+let fearGreedCache = {
+  data: null,
+  fetchedAt: 0,
+  fetchedDateCst: null,
+  fetchedSlot: null
+};
+
+function getCstParts(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Chicago",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+    weekday: "short"
+  }).formatToParts(date);
+
+  const out = {};
+  for (const p of parts) {
+    if (p.type !== "literal") out[p.type] = p.value;
+  }
+  return out;
+}
+
+function getCstDateKey(date = new Date()) {
+  const p = getCstParts(date);
+  return `${p.year}-${p.month}-${p.day}`;
+}
+
+function getFearGreedSlot(date = new Date()) {
+  const p = getCstParts(date);
+  const weekday = p.weekday;
+  const hour = Number(p.hour);
+  const minute = Number(p.minute);
+  const nowMinutes = hour * 60 + minute;
+
+  // No scheduled pulls on weekends
+  if (weekday === "Sat" || weekday === "Sun") return null;
+
+  const slots = [
+    { key: "08:30", minutes: 8 * 60 + 30 },
+    { key: "10:00", minutes: 10 * 60 + 0 },
+    { key: "11:30", minutes: 11 * 60 + 30 },
+    { key: "13:00", minutes: 13 * 60 + 0 },
+    { key: "14:00", minutes: 14 * 60 + 0 },
+    { key: "15:00", minutes: 15 * 60 + 0 },
+    { key: "16:00", minutes: 16 * 60 + 0 }
+  ];
+
+  let activeSlot = null;
+  for (const slot of slots) {
+    if (nowMinutes >= slot.minutes) activeSlot = slot.key;
+  }
+  return activeSlot;
+}
+
+function shouldRefreshFearGreedCache() {
+  const todayCst = getCstDateKey();
+  const activeSlot = getFearGreedSlot();
+
+  if (!activeSlot) return false; // before first slot or weekend
+  if (!fearGreedCache.data) return true;
+  if (fearGreedCache.fetchedDateCst !== todayCst) return true;
+  if (fearGreedCache.fetchedSlot !== activeSlot) return true;
+
+  return false;
+}
+
+async function fetchFearGreedFromRapidApi() {
+  if (!FEAR_GREED_API_KEY) {
+    throw new Error("Missing FEAR_GREED_API_KEY.");
+  }
+
+  const response = await axios.get(
+    "https://fear-and-greed-index-api.p.rapidapi.com/index",
+    {
+      headers: {
+        "x-rapidapi-key": FEAR_GREED_API_KEY,
+        "x-rapidapi-host": "fear-and-greed-index-api.p.rapidapi.com",
+        "Content-Type": "application/json"
+      },
+      timeout: 15000
+    }
+  );
+
+  const payload = response.data || {};
+  const activeSlot = getFearGreedSlot();
+  const todayCst = getCstDateKey();
+
+  fearGreedCache = {
+    data: payload,
+    fetchedAt: Date.now(),
+    fetchedDateCst: todayCst,
+    fetchedSlot: activeSlot
+  };
+
+  return fearGreedCache;
+}
 
 app.use(cors());
 app.use(express.json());
@@ -104,6 +207,50 @@ app.get("/api/token-status", (_req, res) => {
     hasAccessToken: !!schwabTokens?.access_token,
     hasRefreshToken: !!schwabTokens?.refresh_token
   });
+});
+
+app.get("/api/fear-greed", async (_req, res) => {
+  try {
+    if (shouldRefreshFearGreedCache()) {
+      await fetchFearGreedFromRapidApi();
+    }
+
+    const activeSlot = getFearGreedSlot();
+
+    res.json({
+      ok: true,
+      data: fearGreedCache.data,
+      cache: {
+        fetchedAt: fearGreedCache.fetchedAt,
+        fetchedDateCst: fearGreedCache.fetchedDateCst,
+        fetchedSlot: fearGreedCache.fetchedSlot,
+        activeSlot
+      }
+    });
+  } catch (error) {
+    console.error("FEAR_GREED ERROR:", error.response?.data || error.message);
+
+    // Return stale cache if available instead of hard failing
+    if (fearGreedCache.data) {
+      return res.json({
+        ok: true,
+        data: fearGreedCache.data,
+        cache: {
+          fetchedAt: fearGreedCache.fetchedAt,
+          fetchedDateCst: fearGreedCache.fetchedDateCst,
+          fetchedSlot: fearGreedCache.fetchedSlot,
+          activeSlot: getFearGreedSlot(),
+          stale: true
+        }
+      });
+    }
+
+    res.status(500).json({
+      ok: false,
+      error: "Failed to fetch fear and greed index.",
+      details: error.response?.data || error.message
+    });
+  }
 });
 
 // Logout — clears stored token so a fresh OAuth flow can begin

@@ -510,7 +510,7 @@
     }
 
     spanp {
-      padding-top: 3px;
+      padding-top: 2px;
     }
 
     .topbar-icon-btn.spinning {
@@ -4590,11 +4590,11 @@
                   <span class="ov-metric-value" id="ovm-spy200">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-spy200">--</span>
                 </div>
-                <div class="ov-metric-row">
+                <!--<div class="ov-metric-row">
                   <span class="ov-metric-label">QQQ vs 20MA</span>
                   <span class="ov-metric-value" id="ovm-qqq20">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-qqq20">--</span>
-                </div>
+                </div>-->
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">20/50MA Cross</span>
                   <span class="ov-metric-value" id="ovm-cross">--</span>
@@ -4699,7 +4699,7 @@
                   <span class="ov-metric-value" id="ovm-tlt">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-tlt">--</span>
                 </div>
-                <div class="ov-metric-row">
+                <!--<div class="ov-metric-row">
                   <span class="ov-metric-label">FOMC Proximity</span>
                   <span class="ov-metric-value" id="ovm-fomc">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-fomc">--</span>
@@ -4708,11 +4708,16 @@
                   <span class="ov-metric-label">CPI Proximity</span>
                   <span class="ov-metric-value" id="ovm-cpi">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-cpi">--</span>
-                </div>
+                </div>-->
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">Geo Risk</span>
                   <span class="ov-metric-value" id="ovm-geo">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-geo">--</span>
+                </div>
+                <div class="ov-metric-row">
+                  <span class="ov-metric-label">Fear &amp; Greed</span>
+                  <span class="ov-metric-value" id="ovm-fng">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-fng">--</span>
                 </div>
               </div>
             </div>
@@ -7230,29 +7235,76 @@
       ovSetMetric('ovm-spread', 'ovt-spread', sc.perfSpread != null ? sc.perfSpread.toFixed(1) + '%' : '--', sc.perfSpread > 3 ? 'Rotation' : 'Tight', spTone);
     }
 
-    function ovRenderMacro(sc) {
+    function ovRenderMacro(sc, fearGreed) {
       ovSetScore('ovpanel-macro-score', 'ovpanel-macro-bar', sc.macroScore);
+
       // TNX
       const tnxTone = sc.tnxDayChg == null ? 'neutral' : sc.tnxDayChg > 0 ? 'danger' : 'positive';
-      ovSetMetric('ovm-tnx', 'ovt-tnx', sc.tnxDayChg != null ? ovFmtPct(sc.tnxDayChg, 2, true) : '--', sc.tnxDayChg > 0 ? 'Rising' : 'Falling', tnxTone);
+      ovSetMetric(
+        'ovm-tnx',
+        'ovt-tnx',
+        sc.tnxDayChg != null ? ovFmtPct(sc.tnxDayChg, 2, true) : '--',
+        sc.tnxDayChg > 0 ? 'Rising' : 'Falling',
+        tnxTone
+      );
+
       // UUP
       const uupTone = sc.uupDayChg == null ? 'neutral' : sc.uupDayChg > 0 ? 'danger' : 'positive';
-      ovSetMetric('ovm-uup', 'ovt-uup', sc.uupDayChg != null ? ovFmtPct(sc.uupDayChg, 2, true) : '--', sc.uupDayChg > 0 ? 'USD Up' : 'USD Down', uupTone);
+      ovSetMetric(
+        'ovm-uup',
+        'ovt-uup',
+        sc.uupDayChg != null ? ovFmtPct(sc.uupDayChg, 2, true) : '--',
+        sc.uupDayChg > 0 ? 'USD Up' : 'USD Down',
+        uupTone
+      );
+
       // TLT
       const tltTone = sc.tltDayChg == null ? 'neutral' : sc.tltDayChg > 0 ? 'positive' : 'danger';
-      ovSetMetric('ovm-tlt', 'ovt-tlt', sc.tltDayChg != null ? ovFmtPct(sc.tltDayChg, 2, true) : '--', sc.tltDayChg > 0 ? 'Rising' : 'Falling', tltTone);
+      ovSetMetric(
+        'ovm-tlt',
+        'ovt-tlt',
+        sc.tltDayChg != null ? ovFmtPct(sc.tltDayChg, 2, true) : '--',
+        sc.tltDayChg > 0 ? 'Rising' : 'Falling',
+        tltTone
+      );
+
+      // Fear & Greed
+      const fgScore = Number.isFinite(Number(fearGreed?.score)) ? Number(fearGreed.score) : null;
+      const fgLabel = fearGreed?.label || '--';
+      const fgTone =
+        fgScore == null ? 'neutral' :
+          fgScore >= 75 ? 'positive' :
+            fgScore >= 55 ? 'positive' :
+              fgScore >= 45 ? 'neutral' :
+                fgScore >= 25 ? 'danger' :
+                  'danger';
+
+      ovSetMetric(
+        'ovm-fng',
+        'ovt-fng',
+        fgScore != null ? String(Math.round(fgScore)) : '--',
+        fgLabel,
+        fgTone
+      );
+
       // FOMC
       const fomc = sc.fomc;
       if (fomc) {
         const fTone = ovEventTone(fomc.days);
         ovSetMetric('ovm-fomc', 'ovt-fomc', fomc.days + 'd', fomc.days <= 1 ? 'Tomorrow' : fomc.days <= 4 ? 'This Week' : 'Approaching', fTone);
-      } else { ovSetMetric('ovm-fomc', 'ovt-fomc', '--', 'No Event', 'neutral'); }
+      } else {
+        ovSetMetric('ovm-fomc', 'ovt-fomc', '--', 'No Event', 'neutral');
+      }
+
       // CPI
       const cpi = sc.cpi;
       if (cpi) {
         const cTone = ovEventTone(cpi.days);
         ovSetMetric('ovm-cpi', 'ovt-cpi', cpi.days + 'd', cpi.labelMonth + ' CPI', cTone);
-      } else { ovSetMetric('ovm-cpi', 'ovt-cpi', '--', 'No Event', 'neutral'); }
+      } else {
+        ovSetMetric('ovm-cpi', 'ovt-cpi', '--', 'No Event', 'neutral');
+      }
+
       // Geo handled separately
     }
 
@@ -8004,20 +8056,53 @@
     }
 
     function ovRerender(snapshot) {
-      const { scores, geoRisk } = snapshot;
+      const { scores, geoRisk, fearGreed } = snapshot;
       const composite = ovCompositeScore(scores);
       ovRenderRing(composite, scores);
       ovRenderVolatility(scores);
       ovRenderTrend(scores);
       ovRenderBreadth(scores);
       ovRenderMomentum(scores);
-      ovRenderMacro(scores);
+      ovRenderMacro(scores, fearGreed);
       ovRenderMacroAlert(scores, geoRisk);
       ovRenderExecution(composite, scores);
       ovRenderSectors(scores);
       ovRenderChart(scores.spyCandles);
       ovRenderGeoRisk(geoRisk);
       ovRenderTerminal(composite, scores, geoRisk);
+    }
+
+    async function fetchFearGreed() {
+      try {
+        const r = await apiGet('/api/fear-greed');
+        if (!r || !r.ok) return null;
+
+        const raw = r.data || {};
+        const data = raw.fgi || raw.data || raw.index || raw;
+
+        const score =
+          Number(data.now?.value) ||
+          Number(data.value) ||
+          Number(data.score) ||
+          Number(raw.value) ||
+          null;
+
+        const label =
+          data.now?.valueText ||
+          data.valueText ||
+          data.label ||
+          raw.valueText ||
+          raw.label ||
+          null;
+
+        return {
+          score,
+          label,
+          cache: r.cache || null
+        };
+      } catch {
+        return null;
+      }
     }
 
     async function fetchGeoRisk() {
@@ -8045,9 +8130,10 @@
       ovInitTicker();
       ovClearTerminalErrors(); // fresh load = clear old errors
       try {
-        const [ovData, geoRiskResult] = await Promise.all([
+        const [ovData, geoRiskResult, fearGreedResult] = await Promise.all([
           apiGet('/api/marketoverview'),
-          fetchGeoRisk()
+          fetchGeoRisk(),
+          fetchFearGreed()
         ]);
 
         if (!ovData.ok) {
@@ -8078,12 +8164,13 @@
         // Update ticker marquee with live quotes
         ovUpdateTicker(quotes);
 
-        // Compute all scores from Schwab data
+        // Compute all scores from data
         const scores = ovComputeScores(quotes, histMap);
         const geoRisk = geoRiskResult || { overallRiskLevel: 'unknown', stories: [] };
+        const fearGreed = fearGreedResult || { score: null, label: null, cache: null };
 
         // Store snapshot
-        ovState.snapshot = { scores, geoRisk };
+        ovState.snapshot = { scores, geoRisk, fearGreed };
 
         // Render everything
         ovRerender(ovState.snapshot);
@@ -9746,7 +9833,7 @@
         if (active) autoLoadPage(active.dataset.page);
         lastRefreshTime = Date.now();
         updateAgoDisplay();
-      }, 30000); // 30s refresh
+      }, 90000); // 90s refresh
     }
 
     // ═══════════════════════════════════════════════════════
