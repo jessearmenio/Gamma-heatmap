@@ -5533,11 +5533,12 @@
     const CALENDAR_EVENT_META = {
       FOMC: { tier: 'high', time: '1:00pm CST', color: 'high' },
       CPI: { tier: 'high', time: '7:30am CST', color: 'high' },
-      PCE: { tier: 'med', time: '7:30am CST', color: 'med' },
-      JOLTS: { tier: 'low', time: '9:00am CST', color: 'low' },
-      'Manufacturing PMI': { tier: 'med', time: '9:00am CST', color: 'med' },
-      'Services PMI': { tier: 'med', time: '9:00am CST', color: 'med' },
-      Mopex: { tier: 'med', time: '3:00pm CST', color: 'med' }
+      PCE: { tier: 'high', time: '7:30am CST', color: 'med' },
+      JOLTS: { tier: 'med', time: '9:00am CST', color: 'low' },
+      'Manufacturing PMI': { tier: 'low', time: '9:00am CST', color: 'med' },
+      'Services PMI': { tier: 'low', time: '9:00am CST', color: 'med' },
+      Mopex: { tier: 'med', time: '3:00pm CST', color: 'med' },
+      'VIX Expo': { tier: 'med', time: '8:00am CST', color: 'med' }
     };
 
     function cstDateParts(date = new Date()) {
@@ -5668,6 +5669,19 @@
           time: CALENDAR_EVENT_META.Mopex.time,
           tier: CALENDAR_EVENT_META.Mopex.tier,
           color: CALENDAR_EVENT_META.Mopex.color,
+          spanDays
+        });
+      });
+
+      VIX_EXPO_EVENTS.forEach(ev => {
+        events.push({
+          type: 'VIX Expo',
+          title: `${ev.labelMonth} VIX A.M. Settlement`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META['VIX Expo'].time,
+          tier: CALENDAR_EVENT_META['VIX Expo'].tier,
+          color: CALENDAR_EVENT_META['VIX Expo'].color,
           spanDays
         });
       });
@@ -6524,6 +6538,22 @@
       { releaseDate: "2026-11-20", labelMonth: "Nov" },
       { releaseDate: "2026-12-18", labelMonth: "Dec" }
     ];
+
+    const VIX_EXPO_EVENTS = [
+      { releaseDate: "2026-01-21", labelMonth: "Jan" },
+      { releaseDate: "2026-02-18", labelMonth: "Feb" },
+      { releaseDate: "2026-03-18", labelMonth: "Mar" },
+      { releaseDate: "2026-04-15", labelMonth: "Apr" },
+      { releaseDate: "2026-05-19", labelMonth: "May" },
+      { releaseDate: "2026-06-17", labelMonth: "Jun" },
+      { releaseDate: "2026-07-22", labelMonth: "Jul" },
+      { releaseDate: "2026-08-19", labelMonth: "Aug" },
+      { releaseDate: "2026-09-16", labelMonth: "Sep" },
+      { releaseDate: "2026-10-21", labelMonth: "Oct" },
+      { releaseDate: "2026-11-18", labelMonth: "Nov" },
+      { releaseDate: "2026-12-16", labelMonth: "Dec" }
+    ];
+
     const GEO_RISK_API_URL = "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php";
     const GEO_RISK_API_HOST = "world-conflict-intelligence-api.p.rapidapi.com";
     const GEO_RISK_API_KEY = "64de0721dfmsh16b88a238670039p180561jsne239188deb55";
