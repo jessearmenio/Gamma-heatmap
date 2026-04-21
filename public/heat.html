@@ -8820,13 +8820,21 @@
       });
 
       // ── Candle data (Schwab → LWC format) ──
-      const candleData = display.map(c => ({
-        time: Math.floor(c.datetime / 1000),
-        open: c.open,
-        high: c.high,
-        low: c.low,
-        close: c.close,
-      }));
+      const candleData = display.map((c, i) => {
+        let low = c.low;
+        // Schwab occasionally returns low=0 on the current (incomplete) candle
+        // pre-market / overnight. Clamp it to the lesser of open/close instead.
+        if (low === 0 || low == null) low = Math.min(c.open, c.close);
+        let high = c.high;
+        if (high === 0 || high == null) high = Math.max(c.open, c.close);
+        return {
+          time: Math.floor(c.datetime / 1000),
+          open: c.open,
+          high: high,
+          low: low,
+          close: c.close,
+        };
+      });
 
       // ── Candlestick series (top pane — default pane 0) ──
       const candleSeries = lwcChart.addCandlestickSeries({
