@@ -452,6 +452,24 @@
       color: var(--red);
     }
 
+    /* ── Ticker compact mode (topbar ≤ 1160px) ── */
+    /* Triggered via JS ResizeObserver on #topbar, not a viewport media query,
+       so collapsing the sidebar nav can restore full mode without page resize. */
+    #topbar.ticker-compact .ticker-item .t-chg {
+      display: none;
+    }
+    #topbar.ticker-compact .ticker-item {
+      min-width: 0;
+      gap: 5px;
+      padding: 5px 7px;
+    }
+    #topbar.ticker-compact .ticker-item .t-price.up {
+      color: var(--green);
+    }
+    #topbar.ticker-compact .ticker-item .t-price.dn {
+      color: var(--red);
+    }
+
     /* ── Market status badge ── */
     #market-status-badge {
       font-size: 9px;
@@ -7610,6 +7628,34 @@
       setTimeout(() => { if (window.ovChartResize) window.ovChartResize(); }, 260);
     }
 
+    // ── Ticker compact mode: watch #topbar width, not viewport width ──
+    // When topbar ≤ 1160px, hide % change and colorize the price instead.
+    (function () {
+      const topbar = document.getElementById('topbar');
+      if (!topbar) return;
+      const BREAKPOINT = 1160;
+
+      function applyTickerMode() {
+        const compact = topbar.offsetWidth <= BREAKPOINT;
+        topbar.classList.toggle('ticker-compact', compact);
+        // Sync up/dn color class onto each .t-price so it turns green/red in compact mode
+        topbar.querySelectorAll('.ticker-item').forEach(item => {
+          const chg = item.querySelector('.t-chg');
+          const price = item.querySelector('.t-price');
+          if (!chg || !price) return;
+          price.classList.toggle('up', chg.classList.contains('up'));
+          price.classList.toggle('dn', chg.classList.contains('dn'));
+        });
+      }
+
+      // Observe topbar width changes (sidebar toggle reflows this element)
+      const ro = new ResizeObserver(applyTickerMode);
+      ro.observe(topbar);
+
+      // Also expose so ticker update functions can call it after writing new values
+      window.syncTickerCompact = applyTickerMode;
+    })();
+
     // ═══════════════════════════════════════════════════════
     //  API HELPERS
     // ═══════════════════════════════════════════════════════
@@ -7662,6 +7708,8 @@
         parts[2].textContent = `${chgPrefix(netPct)}${fmt(netPct)}%`;
         parts[2].className = `t-chg ${chgClass(netPct)}`;
       }
+      // Keep compact-mode price color in sync after each update
+      if (window.syncTickerCompact) window.syncTickerCompact();
     }
 
     // ═══════════════════════════════════════════════════════
