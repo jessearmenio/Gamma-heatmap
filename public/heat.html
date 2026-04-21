@@ -2407,7 +2407,8 @@
       border: 1px solid var(--border3);
       box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
       border-radius: 8px;
-      overflow: visible;
+      overflow: hidden;
+      min-width: 0;
     }
 
     #ov-chart-header {
@@ -2424,9 +2425,10 @@
       /* total: ~320px candles + 140px RSI */
       border-radius: 0 0 8px 8px;
       overflow: visible;
-      /* must NOT be hidden — blocks LWC drag events */
+      /* must NOT be hidden — blocks LWC drag/crosshair events */
       position: relative;
       cursor: crosshair;
+      min-width: 0;
     }
 
     /* Gamma bar overlay canvas */
@@ -8952,9 +8954,16 @@
       // to window resize for devtools open/close. Both debounce past the 250ms transition.
       window.ovChartResize = function ovChartResize() {
         if (!lwcChart) return;
-        const w = container.clientWidth;
-        if (w > 0) lwcChart.applyOptions({ width: w });
-        requestAnimationFrame(drawGammaBars);
+        // Step 1: collapse to 1px so LWC's internal fixed-width table stops
+        //         inflating container.clientWidth via overflow
+        lwcChart.applyOptions({ width: 1 });
+        // Step 2: after browser reflow, measure the true container width and apply it
+        requestAnimationFrame(() => {
+          if (!lwcChart) return;
+          const w = container.clientWidth;
+          if (w > 0) lwcChart.applyOptions({ width: w });
+          requestAnimationFrame(drawGammaBars);
+        });
       };
 
       let _roTimer = null;
