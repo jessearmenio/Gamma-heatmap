@@ -8946,11 +8946,18 @@
       setTimeout(drawGammaBars, 800);
 
       // ── Handle resize when sidebar collapses ──
+      // Debounce by 300ms — sidebar transition is 250ms, so we wait for it to fully
+      // settle before measuring container width, otherwise the chart gets a stale
+      // mid-transition width and the price axis / gamma bars are pushed off-screen.
+      let _roTimer = null;
       const ro = new ResizeObserver(() => {
-        if (lwcChart) {
-          lwcChart.applyOptions({ width: container.clientWidth });
-          requestAnimationFrame(drawGammaBars);
-        }
+        clearTimeout(_roTimer);
+        _roTimer = setTimeout(() => {
+          if (lwcChart) {
+            lwcChart.applyOptions({ width: container.clientWidth });
+            requestAnimationFrame(drawGammaBars);
+          }
+        }, 300);
       });
       ro.observe(container);
 
