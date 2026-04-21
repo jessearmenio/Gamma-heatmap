@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const axios = require("axios");
 const path = require("path");
+const fs = require("fs/promises");
 
 dotenv.config();
 
@@ -665,15 +666,61 @@ app.get("/api/heat", async (req, res) => {
   }
 });
 
+function parseCsvLine(line) {
+  const out = [];
+  let cur = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    const next = line[i + 1];
+
+    if (ch === '"' && inQuotes && next === '"') {
+      cur += '"';
+      i++;
+    } else if (ch === '"') {
+      inQuotes = !inQuotes;
+    } else if (ch === "," && !inQuotes) {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+
+  out.push(cur);
+  return out.map(v => v.trim());
+}
+
+function quarterFromFiscalDate(fiscalDateEnding) {
+  if (!fiscalDateEnding) return { year: null, quarter: null };
+
+  const dt = new Date(fiscalDateEnding);
+  if (Number.isNaN(dt.getTime())) return { year: null, quarter: null };
+
+  const year = dt.getFullYear();
+  const month = dt.getMonth() + 1;
+
+  let quarter = null;
+  if (month <= 3) quarter = 1;
+  else if (month <= 6) quarter = 2;
+  else if (month <= 9) quarter = 3;
+  else quarter = 4;
+
+  return { year, quarter };
+}
+
+function formatReportingLabel(timeOfTheDay) {
+  const v = String(timeOfTheDay || "").trim().toLowerCase();
+
+  if (v === "pre-market" || v === "premarket" || v === "bmo") return "Pre-Market";
+  if (v === "post-market" || v === "postmarket" || v === "amc") return "Post-Market";
+
+  return "Time Not Specified";
+}
+
 app.get("/api/earnings-calendar", async (req, res) => {
   try {
-    if (!FINNHUB_API_KEY) {
-      return res.status(500).json({
-        ok: false,
-        error: "Missing FINNHUB_API_KEY."
-      });
-    }
-
     const from = req.query.from;
     const to = req.query.to;
 
@@ -684,90 +731,62 @@ app.get("/api/earnings-calendar", async (req, res) => {
       });
     }
 
-    const symbolSet = new Set(FINNHUB_TOP_100_SP500);
+    const csvPath = path.join(__dirname, "earnings_calendar.csv");
+    const csvText = await fs.readFile(csvPath, "utf8");
 
-    const response = await axios.get("https://finnhub.io/api/v1/calendar/earnings", {
-      params: {
+    const lines = csvText
+      .split(/\r?\n/)
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    if (lines.length < 2) {
+      return res.json({
+        ok: true,
         from,
         to,
-        token: FINNHUB_API_KEY
-      }
-    });
+        count: 0,
+        events: []
+      });
+    }
 
-    const currentRows = Array.isArray(response.data?.earningsCalendar)
-      ? response.data.earningsCalendar
-      : [];
+    const headers = parseCsvLine(lines[0]).map(h => h.trim());
+    const idx = Object.fromEntries(headers.map((h, i) => [h, i]));
 
-    const filteredCurrent = currentRows.filter(row => symbolSet.has(row.symbol));
+    const events = lines.slice(1).map(line => {
+      const cols = parseCsvLine(line);
 
-    const symbolsNeedingHistory = [...new Set(filteredCurrent.map(r => r.symbol))];
-    const previousBySymbol = {};
+      const symbol = cols[idx.symbol] || "";
+      const name = cols[idx.name] || "";
+      const reportDate = cols[idx.reportDate] || "";
+      const fiscalDateEnding = cols[idx.fiscalDateEnding] || "";
+      const estimate = cols[idx.estimate] || "";
+      const currency = cols[idx.currency] || "";
+      const timeOfTheDay = cols[idx.timeOfTheDay] || "";
 
-    await Promise.all(
-      symbolsNeedingHistory.map(async (symbol) => {
-        try {
-          const histResponse = await axios.get("https://finnhub.io/api/v1/calendar/earnings", {
-            params: {
-              symbol,
-              token: FINNHUB_API_KEY
-            }
-          });
-
-          const rows = Array.isArray(histResponse.data?.earningsCalendar)
-            ? histResponse.data.earningsCalendar
-            : [];
-
-          const sorted = rows
-            .filter(r => r.symbol === symbol)
-            .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-          const currentMatch = filteredCurrent
-            .filter(r => r.symbol === symbol)
-            .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
-
-          if (!currentMatch) {
-            previousBySymbol[symbol] = null;
-            return;
-          }
-
-          const prev = sorted.find(r =>
-            new Date(r.date) < new Date(currentMatch.date) &&
-            !(r.year === currentMatch.year && r.quarter === currentMatch.quarter)
-          ) || null;
-
-          previousBySymbol[symbol] = prev;
-        } catch (error) {
-          previousBySymbol[symbol] = null;
-        }
-      })
-    );
-
-    const events = filteredCurrent.map(row => {
-      const prev = previousBySymbol[row.symbol] || null;
+      const q = quarterFromFiscalDate(fiscalDateEnding);
 
       return {
         type: "EARNINGS",
-        symbol: row.symbol,
-        title: `${row.symbol} Earnings`,
-        releaseDate: row.date,
-        year: row.year,
-        quarter: row.quarter,
-        hour: row.hour || "",
-        releaseLabel: formatHourLabel(row.hour),
-        epsEstimate: row.epsEstimate ?? null,
-        revenueEstimate: row.revenueEstimate ?? null,
-        previous: prev ? {
-          year: prev.year,
-          quarter: prev.quarter,
-          epsEstimate: prev.epsEstimate ?? null,
-          epsActual: prev.epsActual ?? null,
-          epsBeatMissPct: pctBeatMiss(prev.epsActual, prev.epsEstimate),
-          revenueEstimate: prev.revenueEstimate ?? null,
-          revenueActual: prev.revenueActual ?? null,
-          revenueBeatMissPct: pctBeatMiss(prev.revenueActual, prev.revenueEstimate)
-        } : null
+        color: "earnings",
+        symbol,
+        name,
+        title: `${symbol} Earnings`,
+        releaseDate: reportDate,
+        reportDate,
+        fiscalDateEnding,
+        year: q.year,
+        quarter: q.quarter,
+        estimate: estimate === "" ? null : Number(estimate),
+        currency,
+        timeOfTheDay,
+        releaseLabel: formatReportingLabel(timeOfTheDay)
       };
-    });
+    }).filter(ev =>
+      ev.symbol &&
+      ev.releaseDate &&
+      ev.releaseDate >= from &&
+      ev.releaseDate <= to
+    );
 
     res.json({
       ok: true,
@@ -777,12 +796,12 @@ app.get("/api/earnings-calendar", async (req, res) => {
       events
     });
   } catch (error) {
-    console.error("EARNINGS CALENDAR ERROR:");
-    console.error(error?.response?.data || error?.message || error);
+    console.error("EARNINGS CALENDAR CSV ERROR:");
+    console.error(error?.message || error);
 
     res.status(500).json({
       ok: false,
-      error: "Failed to load earnings calendar."
+      error: "Failed to load earnings calendar CSV."
     });
   }
 });
@@ -1072,7 +1091,7 @@ app.get("/api/marketoverview", async (req, res) => {
       if (!lastCandle || lastCandle.datetime < todayMs) {
         const open = spyQuote.openPrice || spyLast;
         const high = spyQuote.highPrice || spyLast;
-        const low  = spyQuote.lowPrice  || spyLast;  // lowPrice=0 pre-market → fall back to last
+        const low = spyQuote.lowPrice || spyLast;  // lowPrice=0 pre-market → fall back to last
         histMap['SPY'].push({
           datetime: todayMs,
           open, high, low,
@@ -1083,9 +1102,9 @@ app.get("/api/marketoverview", async (req, res) => {
         // Update the existing today candle with the latest price
         lastCandle.close = spyLast;
         if (spyQuote.highPrice) lastCandle.high = Math.max(lastCandle.high, spyQuote.highPrice);
-        if (spyQuote.lowPrice)  lastCandle.low  = Math.min(lastCandle.low, spyQuote.lowPrice);
+        if (spyQuote.lowPrice) lastCandle.low = Math.min(lastCandle.low, spyQuote.lowPrice);
         // If low ended up 0 (Schwab overnight bug), clamp to close
-        if (!lastCandle.low)  lastCandle.low  = Math.min(lastCandle.open, lastCandle.close);
+        if (!lastCandle.low) lastCandle.low = Math.min(lastCandle.open, lastCandle.close);
         if (!lastCandle.high) lastCandle.high = Math.max(lastCandle.open, lastCandle.close);
       }
     }
@@ -1243,13 +1262,13 @@ app.get("/api/scanner", async (req, res) => {
       const companyName = fund.description || qt.description || sym;
 
       // Fundamental fields from Schwab
-      const peRatio    = fund.peRatio    ?? fund.pERatio    ?? null;
-      const pbRatio    = fund.pbRatio    ?? fund.pBRatio    ?? null;
-      const divYield   = fund.divYield   ?? fund.dividendYield ?? null;
-      const divAmount  = fund.divAmount  ?? fund.dividendAmount ?? null;
-      const eps        = fund.eps        ?? fund.epsTTM     ?? null;
-      const beta       = fund.beta       ?? null;
-      const marketCap  = fund.marketCap  ?? fund.marketCapitalization ?? null;
+      const peRatio = fund.peRatio ?? fund.pERatio ?? null;
+      const pbRatio = fund.pbRatio ?? fund.pBRatio ?? null;
+      const divYield = fund.divYield ?? fund.dividendYield ?? null;
+      const divAmount = fund.divAmount ?? fund.dividendAmount ?? null;
+      const eps = fund.eps ?? fund.epsTTM ?? null;
+      const beta = fund.beta ?? null;
+      const marketCap = fund.marketCap ?? fund.marketCapitalization ?? null;
 
       anomalies.push({
         symbol: sym,

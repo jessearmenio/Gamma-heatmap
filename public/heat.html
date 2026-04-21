@@ -458,14 +458,17 @@
     #topbar.ticker-compact .ticker-item .t-chg {
       display: none;
     }
+
     #topbar.ticker-compact .ticker-item {
       min-width: 0;
       gap: 5px;
       padding: 5px 7px;
     }
+
     #topbar.ticker-compact .ticker-item .t-price.up {
       color: var(--green);
     }
+
     #topbar.ticker-compact .ticker-item .t-price.dn {
       color: var(--red);
     }
@@ -6695,12 +6698,12 @@
       if (!lastHeatData) return;
       const strikes = lastHeatData.strikes || [];
       const totalCallOI = strikes.reduce((s, r) => s + (r.callOpenInterest || 0), 0);
-      const totalPutOI  = strikes.reduce((s, r) => s + (r.putOpenInterest  || 0), 0);
+      const totalPutOI = strikes.reduce((s, r) => s + (r.putOpenInterest || 0), 0);
       if (totalCallOI === 0) return;
       const pcr = (totalPutOI / totalCallOI).toFixed(2);
       const pcrN = parseFloat(pcr);
       const tone = pcrN > 1.2 ? 'danger' : pcrN > 0.9 ? 'caution' : 'positive';
-      const tag  = pcrN > 1.2 ? 'Bearish' : pcrN > 0.7 ? 'Neutral' : 'Bullish';
+      const tag = pcrN > 1.2 ? 'Bearish' : pcrN > 0.7 ? 'Neutral' : 'Bullish';
       if (typeof ovSetMetric === 'function') ovSetMetric('ovm-pc', 'ovt-pc', pcr, tag, tone);
     }
     let lastQuotesData = null;
@@ -7062,21 +7065,12 @@
     function buildEarningsTooltipHtml(ev) {
       return `
     <div class="cal-tooltip-title">${ev.symbol} Earnings</div>
-
-    <div class="cal-tooltip-line"><b>Current Earnings ${ev.year} Q${ev.quarter}:</b></div>
-    <div class="cal-tooltip-line"><b>Releases:</b> ${ev.releaseLabel}</div>
-    <div class="cal-tooltip-line"><b>EPS Est:</b> ${fmtNumMaybe(ev.epsEstimate)}</div>
-    <div class="cal-tooltip-line"><b>Revenue Est:</b> ${fmtMoneyShort(ev.revenueEstimate)}</div>
-
-    <div class="cal-tooltip-section">
-      <div class="cal-tooltip-line"><b>Previous Earnings ${ev.previous?.year ?? "—"} Q${ev.previous?.quarter ?? "—"}:</b></div>
-      <div class="cal-tooltip-line"><b>EPS Est:</b> ${fmtNumMaybe(ev.previous?.epsEstimate)}</div>
-      <div class="cal-tooltip-line"><b>EPS Actual:</b> ${fmtNumMaybe(ev.previous?.epsActual)}</div>
-      <div class="cal-tooltip-line"><b>Beat/Miss:</b> ${fmtPctMaybe(ev.previous?.epsBeatMissPct)}</div>
-      <div class="cal-tooltip-line"><b>Revenue Est:</b> ${fmtMoneyShort(ev.previous?.revenueEstimate)}</div>
-      <div class="cal-tooltip-line"><b>Revenue Act:</b> ${fmtMoneyShort(ev.previous?.revenueActual)}</div>
-      <div class="cal-tooltip-line"><b>Beat/Miss:</b> ${fmtPctMaybe(ev.previous?.revenueBeatMissPct)}</div>
-    </div>
+    <div class="cal-tooltip-line"><b>Symbol:</b> ${ev.symbol || "—"}</div>
+    <div class="cal-tooltip-line"><b>Name:</b> ${ev.name || "—"}</div>
+    <div class="cal-tooltip-line"><b>Report Date:</b> ${ev.reportDate || ev.releaseDate || "—"}</div>
+    <div class="cal-tooltip-line"><b>Fiscal Quarter:</b> ${ev.year && ev.quarter ? `${ev.year} Q${ev.quarter}` : "—"}</div>
+    <div class="cal-tooltip-line"><b>Estimate:</b> ${fmtNumMaybe(ev.estimate)}</div>
+    <div class="cal-tooltip-line"><b>Reporting:</b> ${ev.releaseLabel || "—"}</div>
   `;
     }
 
@@ -7143,11 +7137,11 @@
       } else {
         body.innerHTML = dayEvents.map(ev => {
           const detailLine = ev.type === 'EARNINGS'
-            ? `${ev.symbol} • ${ev.releaseLabel}`
+            ? `Symbol: ${ev.symbol || "—"} • Reporting: ${ev.releaseLabel || "—"}`
             : (ev.time || '—');
 
           const subDetail = ev.type === 'EARNINGS'
-            ? `EPS Est: ${fmtNumMaybe(ev.epsEstimate)} • Revenue Est: ${fmtMoneyShort(ev.revenueEstimate)}`
+            ? `Name: ${ev.name || "—"} • Report Date: ${ev.reportDate || ev.releaseDate || "—"} • Quarter: ${ev.year && ev.quarter ? `${ev.year} Q${ev.quarter}` : "—"} • Estimate: ${fmtNumMaybe(ev.estimate)}`
             : (ev.labelMonth ? `Reported Month: ${ev.labelMonth}` : '');
 
           return `
