@@ -5426,7 +5426,7 @@
                   <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
                 </div>
                 <div class="ov-metric-row">
-                  <span class="ov-metric-label">Est P/C Ratio</span>
+                  <span class="ov-metric-label">P/C Ratio</span>
                   <span class="ov-metric-value" id="ovm-pc">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
                 </div>
@@ -6687,6 +6687,22 @@
     let heatSymbol = 'SPY';
     let heatDTE = 30;
     let lastHeatData = null;
+
+    // ── Real P/C Ratio for Market Overview ─────────────────
+    // Shared helper so both the initial ov render and any Heat Seeker load
+    // can push the live ratio into #ovm-pc without duplicating logic.
+    function updateOvmPc() {
+      if (!lastHeatData) return;
+      const strikes = lastHeatData.strikes || [];
+      const totalCallOI = strikes.reduce((s, r) => s + (r.callOpenInterest || 0), 0);
+      const totalPutOI  = strikes.reduce((s, r) => s + (r.putOpenInterest  || 0), 0);
+      if (totalCallOI === 0) return;
+      const pcr = (totalPutOI / totalCallOI).toFixed(2);
+      const pcrN = parseFloat(pcr);
+      const tone = pcrN > 1.2 ? 'danger' : pcrN > 0.9 ? 'caution' : 'positive';
+      const tag  = pcrN > 1.2 ? 'Bearish' : pcrN > 0.7 ? 'Neutral' : 'Bullish';
+      if (typeof ovSetMetric === 'function') ovSetMetric('ovm-pc', 'ovt-pc', pcr, tag, tone);
+    }
     let lastQuotesData = null;
     let autoRefreshTimer = null;
     let isPaused = false;
@@ -8373,10 +8389,8 @@
       const pctTone = sc.vixPct > 70 ? 'danger' : sc.vixPct > 50 ? 'caution' : 'positive';
       const pctTag = sc.vixPct > 70 ? 'High Pctile' : sc.vixPct > 50 ? 'Mid' : 'Low Pctile';
       ovSetMetric('ovm-vix-pct', 'ovt-vix-pct', sc.vixPct != null ? Math.round(sc.vixPct) + '%' : '--', pctTag, pctTone);
-      // Est P/C
-      const pc = sc.VIX != null ? (sc.VIX / 15).toFixed(2) : null;
-      const pcTone = sc.VIX > 25 ? 'danger' : sc.VIX > 18 ? 'caution' : 'positive';
-      ovSetMetric('ovm-pc', 'ovt-pc', pc || '--', sc.VIX > 25 ? 'Fear' : 'Moderate', pcTone);
+      // Real P/C Ratio — pulled from lastHeatData (same source as Sentiment page)
+      updateOvmPc();
     }
 
     function ovRenderTrend(sc) {
@@ -9620,6 +9634,7 @@
         const d = await apiGet(`/api/heat?symbol=${heatSymbol}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`);
         if (!d.ok) throw new Error(d.error);
         lastHeatData = d;
+        updateOvmPc(); // refresh P/C on Overview whenever Heat data updates
         renderHeatTable(d);
         updateHeatKeyLevels(d);
       } catch (e) {
