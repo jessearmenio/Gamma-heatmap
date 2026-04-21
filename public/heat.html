@@ -76,28 +76,34 @@
     }
 
     spanb {
-      margin-bottom: 2px; /* Brand Icon, Calendar Back/Forward buttons */
+      margin-bottom: 2px;
+      /* Brand Icon, Calendar Back/Forward buttons */
     }
 
-    spanu { 
-      padding-right: 5px; /* Updated: {time} ago */ 
+    spanu {
+      padding-right: 5px;
+      /* Updated: {time} ago */
     }
 
     spanp {
-      padding-top: 2px; /* Pause button */
+      padding-top: 2px;
+      /* Pause button */
     }
 
     spanh {
-      margin-bottom: 2px; /* Macro Banner Icon */
+      margin-bottom: 2px;
+      /* Macro Banner Icon */
     }
 
-    spanr{
-      transform: scale(1.2); /* refresh button icon */
+    spanr {
+      transform: scale(1.2);
+      /* refresh button icon */
       margin-bottom: 2px;
     }
 
-    spano{
-      font-size: 16px !important; /* flow refresh button, strategy & gex load button */
+    spano {
+      font-size: 16px !important;
+      /* flow refresh button, strategy & gex load button */
     }
 
     /* ── Scrollbars ── */
@@ -412,12 +418,12 @@
     }
 
     @media (max-width: 1200px) {
-  .ticker-item {
-    min-width: 95px;
-    font-size: 11px;
-    padding: 5px 8px;
-  }
-}
+      .ticker-item {
+        min-width: 95px;
+        font-size: 11px;
+        padding: 5px 8px;
+      }
+    }
 
     .ticker-item:hover {
       background: #0f1c2b;
@@ -1884,18 +1890,16 @@
       flex-shrink: 0;
     }
 
-.ov-panel-divider-vertical {
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(
-    180deg,
-    transparent,
-    rgba(255, 255, 255, 0.07),
-    transparent
-  );
-  margin: 0 6px;
-  flex-shrink: 0;
-}
+    .ov-panel-divider-vertical {
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg,
+          transparent,
+          rgba(255, 255, 255, 0.07),
+          transparent);
+      margin: 0 6px;
+      flex-shrink: 0;
+    }
 
     .ov-section-label {
       font-size: 8px;
@@ -3903,9 +3907,13 @@
       white-space: nowrap;
     }
 
-    .sc-scan-toggle:last-child { border-right: none; }
+    .sc-scan-toggle:last-child {
+      border-right: none;
+    }
 
-    .sc-scan-toggle:hover { color: var(--text); }
+    .sc-scan-toggle:hover {
+      color: var(--text);
+    }
 
     .sc-scan-toggle.active {
       color: var(--cyan);
@@ -3924,8 +3932,13 @@
       outline: none;
     }
 
-    .sc-filter-input:focus { border-color: var(--cyan); }
-    .sc-filter-input::placeholder { color: var(--text3); }
+    .sc-filter-input:focus {
+      border-color: var(--cyan);
+    }
+
+    .sc-filter-input::placeholder {
+      color: var(--text3);
+    }
 
     .sc-range-group {
       display: flex;
@@ -3973,7 +3986,9 @@
       transition: opacity 0.15s;
     }
 
-    .sc-btn-scan:hover { opacity: 0.85; }
+    .sc-btn-scan:hover {
+      opacity: 0.85;
+    }
 
     .sc-refresh-txt {
       font-size: 10px;
@@ -3981,7 +3996,9 @@
       white-space: nowrap;
     }
 
-    .sc-filter-spacer { flex: 1; }
+    .sc-filter-spacer {
+      flex: 1;
+    }
 
     /* KPI row */
     .sc-kpi-row {
@@ -4053,8 +4070,13 @@
       z-index: 20;
     }
 
-    .sc-table th:hover { color: var(--text); }
-    .sc-table th.sc-sorted { color: var(--cyan); }
+    .sc-table th:hover {
+      color: var(--text);
+    }
+
+    .sc-table th.sc-sorted {
+      color: var(--cyan);
+    }
 
     .sc-table th .sc-sort-arrow {
       display: inline-block;
@@ -4064,16 +4086,26 @@
       transition: opacity 0.15s;
     }
 
-    .sc-table th.sc-sorted .sc-sort-arrow { opacity: 1; }
+    .sc-table th.sc-sorted .sc-sort-arrow {
+      opacity: 1;
+    }
 
     .sc-table tbody tr {
       cursor: pointer;
       transition: background 0.1s;
     }
 
-    .sc-table tbody tr:nth-child(odd) { background: var(--bg3); }
-    .sc-table tbody tr:nth-child(even) { background: var(--panel); }
-    .sc-table tbody tr:hover { background: rgba(59, 220, 255, 0.05); }
+    .sc-table tbody tr:nth-child(odd) {
+      background: var(--bg3);
+    }
+
+    .sc-table tbody tr:nth-child(even) {
+      background: var(--panel);
+    }
+
+    .sc-table tbody tr:hover {
+      background: rgba(59, 220, 255, 0.05);
+    }
 
     .sc-table td {
       padding: 6px 9px;
@@ -4099,8 +4131,17 @@
     }
 
     @keyframes sc-pulse-ext {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.6); }
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.6);
+      }
     }
 
     .sc-vol-ratio-cell {
@@ -4125,8 +4166,13 @@
       transition: width 0.3s;
     }
 
-    .sc-vol-fill.high { background: var(--red); }
-    .sc-vol-fill.extreme { background: var(--purple3); }
+    .sc-vol-fill.high {
+      background: var(--red);
+    }
+
+    .sc-vol-fill.extreme {
+      background: var(--purple3);
+    }
 
     .sc-range-bar {
       position: relative;
@@ -4140,10 +4186,11 @@
 
     .sc-range-fill {
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       height: 100%;
       border-radius: 2px;
-      background: rgba(255,255,255,0.07);
+      background: rgba(255, 255, 255, 0.07);
     }
 
     .sc-range-marker {
@@ -4168,31 +4215,55 @@
       white-space: nowrap;
     }
 
-    .sc-signal-badge.vol-spike { color: var(--amber); background: var(--amber-soft); }
-    .sc-signal-badge.price-spike { color: var(--red); background: rgba(255,59,92,0.12); }
-    .sc-signal-badge.breakout { color: var(--green); background: rgba(34,221,136,0.1); }
-    .sc-signal-badge.rel-strength { color: var(--cyan); background: var(--cyansoft); }
+    .sc-signal-badge.vol-spike {
+      color: var(--amber);
+      background: var(--amber-soft);
+    }
+
+    .sc-signal-badge.price-spike {
+      color: var(--red);
+      background: rgba(255, 59, 92, 0.12);
+    }
+
+    .sc-signal-badge.breakout {
+      color: var(--green);
+      background: rgba(34, 221, 136, 0.1);
+    }
+
+    .sc-signal-badge.rel-strength {
+      color: var(--cyan);
+      background: var(--cyansoft);
+    }
 
     .sc-sector-badge {
       font-size: 9px;
       color: var(--text2);
-      background: rgba(255,255,255,0.04);
+      background: rgba(255, 255, 255, 0.04);
       padding: 2px 5px;
       border-radius: 3px;
     }
 
     /* Skeleton */
-    .sc-skeleton td { padding: 8px 9px; }
+    .sc-skeleton td {
+      padding: 8px 9px;
+    }
+
     .sc-skel-block {
       height: 10px;
       border-radius: 3px;
-      background: linear-gradient(90deg, var(--border) 25%, rgba(37,42,58,0.5) 50%, var(--border) 75%);
+      background: linear-gradient(90deg, var(--border) 25%, rgba(37, 42, 58, 0.5) 50%, var(--border) 75%);
       background-size: 200% 100%;
       animation: sc-shimmer 1.4s ease-in-out infinite;
     }
+
     @keyframes sc-shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
     }
 
     /* Flyout */
@@ -4213,7 +4284,8 @@
 
     .sc-flyout-panel {
       position: fixed;
-      top: 0; right: 0;
+      top: 0;
+      right: 0;
       width: 400px;
       height: 100vh;
       background: var(--bg3);
@@ -4225,7 +4297,9 @@
       overflow-x: hidden;
     }
 
-    .sc-flyout-panel.open { transform: translateX(0); }
+    .sc-flyout-panel.open {
+      transform: translateX(0);
+    }
 
     .sc-flyout-hdr {
       display: flex;
@@ -4239,8 +4313,17 @@
       z-index: 10;
     }
 
-    .sc-flyout-sym { font-size: 17px; font-weight: 700; color: var(--text); }
-    .sc-flyout-name { font-size: 10px; color: var(--text2); margin-top: 2px; }
+    .sc-flyout-sym {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .sc-flyout-name {
+      font-size: 10px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
 
     .sc-flyout-price-row {
       display: flex;
@@ -4249,8 +4332,17 @@
       margin-top: 3px;
     }
 
-    .sc-flyout-price { font-size: 18px; font-weight: 700; font-feature-settings: "tnum" 1; }
-    .sc-flyout-chg { font-size: 12px; font-weight: 600; font-feature-settings: "tnum" 1; }
+    .sc-flyout-price {
+      font-size: 18px;
+      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .sc-flyout-chg {
+      font-size: 12px;
+      font-weight: 600;
+      font-feature-settings: "tnum" 1;
+    }
 
     .sc-flyout-close {
       background: none;
@@ -4258,14 +4350,20 @@
       color: var(--text2);
       cursor: pointer;
       font-size: 15px;
-      width: 26px; height: 26px;
+      width: 26px;
+      height: 26px;
       border-radius: 5px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.15s;
       flex-shrink: 0;
     }
 
-    .sc-flyout-close:hover { color: var(--text); border-color: var(--border3); }
+    .sc-flyout-close:hover {
+      color: var(--text);
+      border-color: var(--border3);
+    }
 
     .sc-flyout-sec {
       padding: 14px 18px;
@@ -4307,7 +4405,11 @@
       color: var(--text);
     }
 
-    .sc-flyout-metric-sub { font-size: 9px; color: var(--text2); margin-top: 2px; }
+    .sc-flyout-metric-sub {
+      font-size: 9px;
+      color: var(--text2);
+      margin-top: 2px;
+    }
 
     .sc-vol-compare-bar {
       height: 5px;
@@ -4357,7 +4459,8 @@
     }
 
     .sc-flyout-spinner {
-      width: 14px; height: 14px;
+      width: 14px;
+      height: 14px;
       border: 2px solid var(--border2);
       border-top-color: var(--cyan);
       border-radius: 50%;
@@ -4369,13 +4472,15 @@
       align-items: center;
       gap: 8px;
       padding: 8px 16px;
-      background: rgba(255,59,92,0.1);
-      border-bottom: 1px solid rgba(255,59,92,0.2);
+      background: rgba(255, 59, 92, 0.1);
+      border-bottom: 1px solid rgba(255, 59, 92, 0.2);
       font-size: 11px;
       color: var(--red);
     }
 
-    .sc-error-banner.visible { display: flex; }
+    .sc-error-banner.visible {
+      display: flex;
+    }
 
     /* Score badge */
     .sc-score-badge {
@@ -4392,8 +4497,8 @@
 
     #sc-penny-label:has(input:checked) {
       color: var(--amber);
-      border-color: rgba(255,176,32,0.4);
-      background: rgba(255,176,32,0.08);
+      border-color: rgba(255, 176, 32, 0.4);
+      background: rgba(255, 176, 32, 0.08);
     }
 
 
@@ -4431,8 +4536,13 @@
       outline: none;
     }
 
-    .sc-filter-num:focus { border-color: var(--cyan); }
-    .sc-filter-num::placeholder { color: var(--text3); }
+    .sc-filter-num:focus {
+      border-color: var(--cyan);
+    }
+
+    .sc-filter-num::placeholder {
+      color: var(--text3);
+    }
 
     .sc-filter-sep {
       font-size: 10px;
@@ -4459,9 +4569,18 @@
       white-space: nowrap;
     }
 
-    .sc-mcap-btn:last-child { border-right: none; }
-    .sc-mcap-btn:hover { color: var(--text); }
-    .sc-mcap-btn.active { color: var(--cyan); background: var(--cyansoft); }
+    .sc-mcap-btn:last-child {
+      border-right: none;
+    }
+
+    .sc-mcap-btn:hover {
+      color: var(--text);
+    }
+
+    .sc-mcap-btn.active {
+      color: var(--cyan);
+      background: var(--cyansoft);
+    }
 
     .sc-52w-toggles {
       display: flex;
@@ -4483,9 +4602,18 @@
       white-space: nowrap;
     }
 
-    .sc-52w-btn:last-child { border-right: none; }
-    .sc-52w-btn:hover { color: var(--text); }
-    .sc-52w-btn.active { color: var(--cyan); background: var(--cyansoft); }
+    .sc-52w-btn:last-child {
+      border-right: none;
+    }
+
+    .sc-52w-btn:hover {
+      color: var(--text);
+    }
+
+    .sc-52w-btn.active {
+      color: var(--cyan);
+      background: var(--cyansoft);
+    }
 
     .sc-filters-toggle {
       font-family: inherit;
@@ -4500,8 +4628,16 @@
       transition: all 0.15s;
     }
 
-    .sc-filters-toggle:hover { color: var(--text); border-color: var(--cyan); }
-    .sc-filters-toggle.active { color: var(--cyan); border-color: var(--cyan); background: var(--cyansoft); }
+    .sc-filters-toggle:hover {
+      color: var(--text);
+      border-color: var(--cyan);
+    }
+
+    .sc-filters-toggle.active {
+      color: var(--cyan);
+      border-color: var(--cyan);
+      background: var(--cyansoft);
+    }
 
     .sc-active-filters {
       display: flex;
@@ -4519,7 +4655,7 @@
       border-radius: 10px;
       background: var(--cyansoft);
       color: var(--cyan);
-      border: 1px solid rgba(59,220,255,0.2);
+      border: 1px solid rgba(59, 220, 255, 0.2);
       white-space: nowrap;
     }
 
@@ -4534,7 +4670,9 @@
       opacity: 0.7;
     }
 
-    .sc-active-tag button:hover { opacity: 1; }
+    .sc-active-tag button:hover {
+      opacity: 1;
+    }
 
     /* ─────────────────────────────────────────────
    EARNINGS VOL
@@ -4907,16 +5045,16 @@
           <span class="nav-icon">⚖️</span><span class="nav-label">Strategy Tester</span>
         </li>
         <li class="nav-section-label">Equities</li>
+        <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
+          <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
+        </li>
         <li class="nav-item" data-page="smart-page" onclick="navTo(this)">
           <span class="nav-icon">🧠</span><span class="nav-label">Smart Money</span>
         </li>
         <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
           <span class="nav-icon">🌊</span><span class="nav-label">Dark Pool</span>
         </li>
-                <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
-          <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
-        </li>
-                <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
+        <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
           <span class="nav-icon">🔥</span><span class="nav-label">Stock Scanner</span>
         </li>
         <!--<li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
@@ -5027,8 +5165,9 @@
           <span id="updated-ago" style="display:none;">
             <spanu>updated</spanu><b id="ago-val">--</b>
           </span>
-          <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()"
-            title="Refresh now"><spanr>↻</spanr></button>
+          <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()" title="Refresh now">
+            <spanr>↻</spanr>
+          </button>
           <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
             <spanp>⏸</spanp>
           </button>
@@ -5604,7 +5743,9 @@
             <input id="heat-strike-count" type="number" value="50" min="5" max="100" step="5" onchange="reloadHeat()">
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
-              class="dte-btn" onclick="reloadHeat()"><spano>↻</spano> Load</button>
+              class="dte-btn" onclick="reloadHeat()">
+              <spano>↻</spano> Load
+            </button>
           </div>
 
           <div id="heat-body"
@@ -5652,7 +5793,7 @@
       ════════════════════════════════════ -->
         <div id="flow-page" class="page" style="display:none;">
           <!-- TOP BAR: symbol + filters + sort -->
-          
+
 
           <!-- SPY ANALYTICS ROW: Highest Vol + Highest OI -->
           <div id="flow-analytics-row">
@@ -5763,7 +5904,7 @@
               </div>
             </div>
           </div><!-- end flow-history-row -->
-<div id="flow-top-bar">
+          <div id="flow-top-bar">
             <div style="display:flex;align-items:center;gap:6px;">
               <input id="flow-sym-input" value="SPY" placeholder="Ticker" />
               <button class="flow-filter-btn active" data-filter="ALL" onclick="flowSetFilter(this)">ALL</button>
@@ -5783,8 +5924,10 @@
                 <option value="iv">IV%</option>
               </select>
               <button onclick="loadOptionsFlow()"
-                style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><spano>↻</spano>
-                REFRESH</button>
+                style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
+                <spano>↻</spano>
+                REFRESH
+              </button>
             </div>
           </div>
           <!-- STATS BAR -->
@@ -5882,7 +6025,9 @@
             </div>
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
-              onclick="stratLoadChain(true)"><spano>↻</spano> LOAD CHAIN</button>
+              onclick="stratLoadChain(true)">
+              <spano>↻</spano> LOAD CHAIN
+            </button>
           </div>
 
           <!-- TWO-COLUMN BUILDER -->
@@ -6059,8 +6204,10 @@
             <!-- Error banner -->
             <div class="sc-error-banner" id="sc-error-banner">
               <span id="sc-error-text" style="flex:1">API request failed.</span>
-              <button onclick="loadScanner()" style="font-size:10px;padding:3px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;">Retry</button>
-              <button onclick="document.getElementById('sc-error-banner').classList.remove('visible')" style="background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;">&times;</button>
+              <button onclick="loadScanner()"
+                style="font-size:10px;padding:3px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;">Retry</button>
+              <button onclick="document.getElementById('sc-error-banner').classList.remove('visible')"
+                style="background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;">&times;</button>
             </div>
 
             <!-- Filter bar — row 1 -->
@@ -6182,17 +6329,21 @@
               <!-- Abs % Move -->
               <div class="sc-filter-pill-group">
                 <span class="sc-filter-label">|Move|% Min</span>
-                <input type="number" class="sc-filter-num" id="sc-abschange-min" placeholder="e.g. 5" min="0" step="0.5" style="width:64px">
+                <input type="number" class="sc-filter-num" id="sc-abschange-min" placeholder="e.g. 5" min="0" step="0.5"
+                  style="width:64px">
               </div>
 
               <!-- Raw Volume Floor -->
               <div class="sc-filter-pill-group">
                 <span class="sc-filter-label">Min Vol</span>
-                <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0" step="100000" style="width:100px">
+                <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0"
+                  step="100000" style="width:100px">
               </div>
 
               <!-- Penny Mode -->
-              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;" id="sc-penny-label">
+              <label
+                style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
+                id="sc-penny-label">
                 <input type="checkbox" id="sc-penny-mode" style="accent-color:var(--amber);width:12px;height:12px;">
                 <span>🔥 Penny Mode</span>
               </label>
@@ -6200,7 +6351,8 @@
               <!-- Active filter tags -->
               <div class="sc-active-filters" id="sc-active-tags"></div>
 
-              <button class="sc-filters-toggle" id="sc-clear-adv" style="color:var(--red);border-color:rgba(255,59,92,0.3);">Clear All</button>
+              <button class="sc-filters-toggle" id="sc-clear-adv"
+                style="color:var(--red);border-color:rgba(255,59,92,0.3);">Clear All</button>
             </div>
 
             <!-- KPI cards -->
@@ -6237,18 +6389,113 @@
                     <th data-col="changePct" style="text-align:right">Chg% <span class="sc-sort-arrow">▲</span></th>
                     <th data-col="volume" style="text-align:right">Volume <span class="sc-sort-arrow">▲</span></th>
                     <th data-col="avgVolume" style="text-align:right">Avg Vol <span class="sc-sort-arrow">▲</span></th>
-                    <th data-col="volRatio" style="text-align:right" class="sc-sorted">Vol Ratio <span class="sc-sort-arrow">▼</span></th>
+                    <th data-col="volRatio" style="text-align:right" class="sc-sorted">Vol Ratio <span
+                        class="sc-sort-arrow">▼</span></th>
                     <th data-col="dayRange">Day Range <span class="sc-sort-arrow">▲</span></th>
                     <th data-col="perf20d" style="text-align:right">20D Perf% <span class="sc-sort-arrow">▲</span></th>
                     <th data-col="signals">Signal <span class="sc-sort-arrow">▲</span></th>
                     <th data-col="sector">Sector <span class="sc-sort-arrow">▲</span></th>
-                    <th data-col="score" class="sc-sorted" style="text-align:center">Score <span class="sc-sort-arrow">▼</span></th>
+                    <th data-col="score" class="sc-sorted" style="text-align:center">Score <span
+                        class="sc-sort-arrow">▼</span></th>
                   </tr>
                 </thead>
                 <tbody id="sc-tbody">
-                  <tr class="sc-skeleton"><td><div class="sc-skel-block" style="width:46px"></div></td><td><div class="sc-skel-block" style="width:58px"></div></td><td><div class="sc-skel-block" style="width:44px"></div></td><td><div class="sc-skel-block" style="width:70px"></div></td><td><div class="sc-skel-block" style="width:70px"></div></td><td><div class="sc-skel-block" style="width:44px"></div></td><td><div class="sc-skel-block" style="width:78px"></div></td><td><div class="sc-skel-block" style="width:44px"></div></td><td><div class="sc-skel-block" style="width:90px"></div></td><td><div class="sc-skel-block" style="width:60px"></div></td></tr>
-                  <tr class="sc-skeleton"><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:62px"></div></td><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:65px"></div></td><td><div class="sc-skel-block" style="width:65px"></div></td><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:78px"></div></td><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:84px"></div></td><td><div class="sc-skel-block" style="width:55px"></div></td></tr>
-                  <tr class="sc-skeleton"><td><div class="sc-skel-block" style="width:50px"></div></td><td><div class="sc-skel-block" style="width:55px"></div></td><td><div class="sc-skel-block" style="width:42px"></div></td><td><div class="sc-skel-block" style="width:72px"></div></td><td><div class="sc-skel-block" style="width:72px"></div></td><td><div class="sc-skel-block" style="width:42px"></div></td><td><div class="sc-skel-block" style="width:78px"></div></td><td><div class="sc-skel-block" style="width:42px"></div></td><td><div class="sc-skel-block" style="width:96px"></div></td><td><div class="sc-skel-block" style="width:58px"></div></td></tr>
+                  <tr class="sc-skeleton">
+                    <td>
+                      <div class="sc-skel-block" style="width:46px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:58px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:44px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:70px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:70px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:44px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:78px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:44px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:90px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:60px"></div>
+                    </td>
+                  </tr>
+                  <tr class="sc-skeleton">
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:62px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:65px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:65px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:78px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:84px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:55px"></div>
+                    </td>
+                  </tr>
+                  <tr class="sc-skeleton">
+                    <td>
+                      <div class="sc-skel-block" style="width:50px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:55px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:42px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:72px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:72px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:42px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:78px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:42px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:96px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:58px"></div>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -7166,12 +7413,19 @@
       const dot = document.getElementById('status-dot');
       const lbl = document.getElementById('connect-label');
       const dd = document.getElementById('connect-dropdown');
+
       if (v) {
         btn.className = 'connected';
         dot.className = 'online';
         lbl.textContent = 'Connected';
+
         loadTickerBar();
+
+        // Keep Market Overview as the visible landing page
         loadOverview();
+
+        // Also preload Heat Seeker / GEX on initial connected load
+        reloadHeat();
       } else {
         btn.className = 'disconnected';
         dot.className = 'offline';
@@ -10000,9 +10254,9 @@
       function scFmtK(n) {
         if (n == null || isNaN(n) || n === 0) return '—';
         if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
-        if (n >= 1e9)  return (n / 1e9).toFixed(1) + 'B';
-        if (n >= 1e6)  return (n / 1e6).toFixed(1) + 'M';
-        if (n >= 1e3)  return (n / 1e3).toFixed(0) + 'K';
+        if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+        if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+        if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
         return n.toString();
       }
 
@@ -10010,8 +10264,8 @@
         if (!cap || cap <= 0) return '';
         const b = cap / 1e9;
         if (b >= 200) return 'Mega Cap';
-        if (b >= 10)  return 'Large Cap';
-        if (b >= 2)   return 'Mid Cap';
+        if (b >= 10) return 'Large Cap';
+        if (b >= 2) return 'Mid Cap';
         return 'Small Cap';
       }
 
@@ -10052,8 +10306,8 @@
         score += volScore;
 
         // Signal bonuses (stacking, max +15)
-        if (a.signals.includes('BREAKOUT'))    score += 7;
-        if (a.signals.includes('VOL SPIKE'))   score += 4;
+        if (a.signals.includes('BREAKOUT')) score += 7;
+        if (a.signals.includes('VOL SPIKE')) score += 4;
         if (a.signals.includes('PRICE SPIKE')) score += 4;
 
         // 52W near-high bonus (+5 if top 15%)
@@ -10071,15 +10325,15 @@
         if (score >= 65) return { label: 'A', color: '#ff8c3b' };
         if (score >= 50) return { label: 'B', color: '#ffb020' };
         if (score >= 35) return { label: 'C', color: '#3bdcff' };
-        return           { label: 'D', color: '#7a8099' };
+        return { label: 'D', color: '#7a8099' };
       }
 
       function scMcapTier(cap) {
         if (!cap || cap <= 0) return null;
         const b = cap / 1e9;
         if (b >= 200) return 'MEGA';
-        if (b >= 10)  return 'LARGE';
-        if (b >= 2)   return 'MID';
+        if (b >= 10) return 'LARGE';
+        if (b >= 2) return 'MID';
         return 'SMALL';
       }
 
@@ -10120,7 +10374,7 @@
           if (sc52wFilter !== 'ALL') {
             const pos = sc52wPos(a);
             if (sc52wFilter === 'NEAR_HIGH' && pos < 0.9) return false;
-            if (sc52wFilter === 'NEAR_LOW'  && pos > 0.1) return false;
+            if (sc52wFilter === 'NEAR_LOW' && pos > 0.1) return false;
             if (sc52wFilter === 'MID_RANGE' && (pos < 0.1 || pos > 0.9)) return false;
           }
           // Abs % move
@@ -10129,12 +10383,12 @@
           if (scMinVolume !== null && a.volume < scMinVolume) return false;
           // Penny mode preset
           if (scPennyMode) {
-            if (a.price >= 5)            return false;
-            if (a.volume < 1e6)          return false;
-            if (a.volRatio < 3)          return false;
+            if (a.price >= 5) return false;
+            if (a.volume < 1e6) return false;
+            if (a.volRatio < 3) return false;
             if (Math.abs(a.changePct) < 8) return false;
-            const hasPennySignal = a.signals.some(s => ['VOL SPIKE','PRICE SPIKE','BREAKOUT'].includes(s));
-            if (!hasPennySignal)         return false;
+            const hasPennySignal = a.signals.some(s => ['VOL SPIKE', 'PRICE SPIKE', 'BREAKOUT'].includes(s));
+            if (!hasPennySignal) return false;
           }
           return true;
         });
@@ -10188,7 +10442,7 @@
         window._scTagClearFns = tags.map(t => t.clear);
       }
 
-      window.scClearTag = function(i) {
+      window.scClearTag = function (i) {
         if (window._scTagClearFns && window._scTagClearFns[i]) window._scTagClearFns[i]();
         scApplyFilters(); scUpdateKPIs(); scRenderTable();
       };
@@ -10207,7 +10461,7 @@
             case 'perf20d': va = a.perf20d; vb = b.perf20d; break;
             case 'signals': va = a.signals.length; vb = b.signals.length; break;
             case 'sector': va = a.sector; vb = b.sector; return scSortDir * (va < vb ? -1 : va > vb ? 1 : 0);
-            case 'score':  va = a._score ?? 0; vb = b._score ?? 0; break;
+            case 'score': va = a._score ?? 0; vb = b._score ?? 0; break;
             default: va = a.volRatio; vb = b.volRatio;
           }
           return scSortDir * (va - vb);
@@ -10331,7 +10585,7 @@
               <div>Vol Ratio <b style="color:var(--text2)">${a.volRatio.toFixed(1)}x</b></div>
               <div>|Move| <b style="color:var(--text2)">${Math.abs(a.changePct).toFixed(1)}%</b></div>
               <div>Raw Vol <b style="color:var(--text2)">${scFmtK(a.volume)}</b></div>
-              <div>52W Pos <b style="color:var(--text2)">${(sc52wPos(a)*100).toFixed(0)}%</b></div>
+              <div>52W Pos <b style="color:var(--text2)">${(sc52wPos(a) * 100).toFixed(0)}%</b></div>
             </div>
           </div>
           <div class="sc-flyout-sec">
@@ -10410,11 +10664,11 @@
             <div class="sc-flyout-sec-title">Day Range Position</div>
             <div style="position:relative;height:8px;border-radius:4px;background:var(--border);margin-top:4px;">
               <div style="position:absolute;top:0;left:0;height:100%;width:100%;border-radius:4px;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));opacity:0.18;"></div>
-              <div style="position:absolute;top:-4px;left:${Math.max(0,Math.min(100,a.dayRangePct*100))}%;transform:translateX(-50%);width:4px;height:16px;background:var(--cyan);border-radius:2px;"></div>
+              <div style="position:absolute;top:-4px;left:${Math.max(0, Math.min(100, a.dayRangePct * 100))}%;transform:translateX(-50%);width:4px;height:16px;background:var(--cyan);border-radius:2px;"></div>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:5px;">
               <span>L $${scFmt(a.dayLow)}</span>
-              <span style="color:var(--cyan)">${(a.dayRangePct*100).toFixed(0)}% of range</span>
+              <span style="color:var(--cyan)">${(a.dayRangePct * 100).toFixed(0)}% of range</span>
               <span>H $${scFmt(a.dayHigh)}</span>
             </div>
           </div>
@@ -10574,7 +10828,7 @@
           scPriceMin = scPriceMax = scChgMin = scChgMax = scPeMin = scPeMax = scBetaMin = scBetaMax = scDivYMin = scDivYMax = null;
           scAbsChgMin = null; scMinVolume = null; scPennyMode = false;
           scMcapFilter = 'ALL'; sc52wFilter = 'ALL';
-          ['sc-price-min','sc-price-max','sc-chg-min','sc-chg-max','sc-pe-min','sc-pe-max','sc-beta-min','sc-beta-max','sc-divy-min','sc-divy-max','sc-abschange-min','sc-minvol'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+          ['sc-price-min', 'sc-price-max', 'sc-chg-min', 'sc-chg-max', 'sc-pe-min', 'sc-pe-max', 'sc-beta-min', 'sc-beta-max', 'sc-divy-min', 'sc-divy-max', 'sc-abschange-min', 'sc-minvol'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
           const pmEl = document.getElementById('sc-penny-mode'); if (pmEl) pmEl.checked = false;
           document.querySelectorAll('.sc-mcap-btn').forEach(b => b.classList.toggle('active', b.dataset.mcap === 'ALL'));
           document.querySelectorAll('.sc-52w-btn').forEach(b => b.classList.toggle('active', b.dataset['52w'] === 'ALL'));
@@ -10619,7 +10873,7 @@
 
         if (showSkeletons) {
           document.getElementById('sc-tbody').innerHTML = Array(8).fill(0).map(() =>
-            `<tr class="sc-skeleton">${Array(11).fill(0).map((_, i) => `<td><div class="sc-skel-block" style="width:${[46,58,44,70,70,44,78,44,90,60,30][i]}px"></div></td>`).join('')}</tr>`
+            `<tr class="sc-skeleton">${Array(11).fill(0).map((_, i) => `<td><div class="sc-skel-block" style="width:${[46, 58, 44, 70, 70, 44, 78, 44, 90, 60, 30][i]}px"></div></td>`).join('')}</tr>`
           ).join('');
         }
 
