@@ -5107,7 +5107,12 @@
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-            <div class="ticker-item" id="tick-DJI">
+            <div class="ticker-item" id="tick-GC">
+              <span class="t-sym">GOLD</span>
+              <span class="t-price">—</span>
+              <span class="t-chg flat">—</span>
+            </div>
+            <!--<div class="ticker-item" id="tick-DJI">
               <span class="t-sym">DJI</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
@@ -5116,7 +5121,7 @@
               <span class="t-sym">IWM</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
-            </div>
+            </div>-->
             <div class="ticker-item" id="tick-BTC">
               <span class="t-sym">BTC</span>
               <span class="t-price">—</span>
@@ -5141,11 +5146,6 @@
             </div>
             <div class="ticker-item" id="tick-CL">
               <span class="t-sym">OIL</span>
-              <span class="t-price">—</span>
-              <span class="t-chg flat">—</span>
-            </div>
-            <div class="ticker-item" id="tick-GC">
-              <span class="t-sym">GOLD</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
@@ -6243,15 +6243,15 @@
                 <input type="range" class="sc-range" id="sc-vol-ratio-range" min="1" max="10" step="0.5" value="2">
                 <span class="sc-range-val" id="sc-vol-ratio-val">2.0x</span>
               </div>
-              <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker...">
-              <button class="sc-filters-toggle" id="sc-filters-toggle">&#43; More Filters</button>
+              <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker:">
+              <button class="sc-filters-toggle active" id="sc-filters-toggle">&#43; More Filters</button>
               <div class="sc-filter-spacer"></div>
               <button class="sc-btn-scan" id="sc-btn-scan">Scan Now</button>
               <span class="sc-refresh-txt" id="sc-refresh-txt">Next refresh: --</span>
             </div>
 
             <!-- Filter bar — row 2 (advanced, collapsible) -->
-            <div class="sc-filter-row2" id="sc-filter-row2" style="display:none;">
+            <div class="sc-filter-row2" id="sc-filter-row2" style="display:flex;">
 
               <!-- Price Range -->
               <div class="sc-filter-pill-group">
@@ -6330,7 +6330,7 @@
               <div class="sc-filter-pill-group">
                 <span class="sc-filter-label">|Move|% Min</span>
                 <input type="number" class="sc-filter-num" id="sc-abschange-min" placeholder="e.g. 5" min="0" step="0.5"
-                  style="width:64px">
+                  style="width:74px">
               </div>
 
               <!-- Raw Volume Floor -->
@@ -8070,7 +8070,8 @@
       const macdResult = ovMacd(spyCloses);
 
       // Stochastic
-      const stochResult = ovStoch(allCandles('SPY'));
+      const spyStochCandles = allCandles('SPY').slice(0, -1);
+      const stochResult = ovStoch(spyStochCandles);
 
       // Sector data
       const sectors = SECTOR_ORDER.map(sym => {
