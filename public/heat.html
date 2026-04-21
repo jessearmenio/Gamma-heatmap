@@ -7604,7 +7604,8 @@
       const isCollapsed = sidebar.classList.toggle('collapsed');
       const btn = document.getElementById('nav-toggle');
       btn.title = isCollapsed ? 'Open sidebar' : 'Close sidebar';
-      // LWC chart has its own ResizeObserver — width updates automatically
+      // Fire resize after the 250ms sidebar CSS transition fully settles
+      setTimeout(() => { if (window.ovChartResize) window.ovChartResize(); }, 260);
     }
 
     // ═══════════════════════════════════════════════════════
@@ -8774,7 +8775,7 @@
 
       // ── Create single chart ──
       lwcChart = LightweightCharts.createChart(container, {
-        autoSize: true,
+        width: container.clientWidth || 800,
         height: totalH,
         layout: {
           background: { type: 'solid', color: '#0a0b0d' },
@@ -8945,18 +8946,27 @@
       setTimeout(drawGammaBars, 300);
       setTimeout(drawGammaBars, 800);
 
-      // ── Handle resize when sidebar collapses ──
-      // autoSize:true lets LightweightCharts manage its own width via its internal
-      // ResizeObserver. We only need to redraw the gamma canvas overlay after the
-      // sidebar transition (250ms) has fully settled — no manual width assignment needed.
+      // ── Resize handler ──────────────────────────────────────────────────────
+      // LWC's autoSize only tracks window resize, not container resize (sidebar toggle).
+      // We use a ResizeObserver on the container for sidebar toggles, and also listen
+      // to window resize for devtools open/close. Both debounce past the 250ms transition.
+      window.ovChartResize = function ovChartResize() {
+        if (!lwcChart) return;
+        const w = container.clientWidth;
+        if (w > 0) lwcChart.applyOptions({ width: w });
+        requestAnimationFrame(drawGammaBars);
+      };
+
       let _roTimer = null;
-      const ro = new ResizeObserver(() => {
+      function ovChartResizeDebounced() {
         clearTimeout(_roTimer);
-        _roTimer = setTimeout(() => {
-          if (lwcChart) requestAnimationFrame(drawGammaBars);
-        }, 300);
-      });
+        _roTimer = setTimeout(ovChartResize, 260);
+      }
+
+      const ro = new ResizeObserver(ovChartResizeDebounced);
       ro.observe(container);
+
+      window.addEventListener('resize', ovChartResizeDebounced);
 
       // Draw PDH/PDL, Globex H/L, ATH lines after chart settles
       drawChartLevels(renderToken);
