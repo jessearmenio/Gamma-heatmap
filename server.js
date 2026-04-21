@@ -1097,6 +1097,202 @@ app.get("/api/marketoverview", async (req, res) => {
   }
 });
 
+
+// ─── Stock Scanner ──────────────────────────────────────────────────────────
+// GET /api/scanner?sector=ALL&minVolRatio=2
+// Fetches top movers from $SPX, $COMPX, $DJI, enriches with quotes & price history
+// Detects anomaly signals using Schwab data only (no Polygon/Twelve Data)
+app.get("/api/scanner", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token found. Try to reconnect." });
+    }
+    const token = schwabTokens.access_token;
+    const headers = { Authorization: `Bearer ${token}` };
+    const timeout = 30000;
+    const base = "https://api.schwabapi.com/marketdata/v1";
+    const minVolRatio = parseFloat(req.query.minVolRatio) || 1.5;
+
+    // Step 1: Fetch top movers from all three major indices (by volume and pct change)
+    const [volMovers, pcUpMovers, pcDnMovers] = await Promise.all([
+      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, {
+        params: { sort: "VOLUME", frequency: "0" }, headers, timeout
+      }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
+      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, {
+        params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, headers, timeout
+      }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
+      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, {
+        params: { sort: "PERCENT_CHANGE_DOWN", frequency: "0" }, headers, timeout
+      }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
+    ]);
+
+    // Deduplicate and collect unique symbols
+    const seenSymbols = new Set();
+    const allMovers = [];
+    for (const m of [...volMovers, ...pcUpMovers, ...pcDnMovers]) {
+      if (m.symbol && !seenSymbols.has(m.symbol)) {
+        seenSymbols.add(m.symbol);
+        allMovers.push(m);
+      }
+    }
+
+    if (!allMovers.length) {
+      return res.json({ ok: true, anomalies: [], breadth: { advances: 0, declines: 0, unchanged: 0 } });
+    }
+
+    const symbols = allMovers.map(m => m.symbol).filter(Boolean);
+
+    // Step 2: Batch quotes for all symbols (price, volume, hi/lo, 52w range, etc.)
+    const quotesRes = await axios.get(`${base}/quotes`, {
+      params: { symbols: symbols.join(","), fields: "quote,fundamental" },
+      headers, timeout: 45000
+    }).catch(() => ({ data: {} }));
+    const quotesData = quotesRes.data || {};
+
+    // Step 3: Fetch 20-day price history for avg volume in parallel (cap at 40 symbols to avoid timeout)
+    const histSymbols = symbols.slice(0, 40);
+    const histResults = await Promise.all(
+      histSymbols.map(sym =>
+        axios.get(`${base}/pricehistory`, {
+          params: { symbol: sym, periodType: "month", period: "1", frequencyType: "daily", frequency: "1" },
+          headers, timeout: 20000
+        }).then(r => ({ sym, candles: r.data?.candles || [] }))
+          .catch(() => ({ sym, candles: [] }))
+      )
+    );
+
+    // Build avgVolume map from 20-day history
+    const avgVolMap = {};
+    const high20dMap = {};
+    const avgPrice20dMap = {};
+    for (const { sym, candles } of histResults) {
+      if (!candles.length) continue;
+      const slice = candles.slice(-20);
+      const avgVol = slice.reduce((s, c) => s + (c.volume || 0), 0) / slice.length;
+      const high20d = Math.max(...slice.map(c => c.high || 0));
+      const avgPrice = slice.reduce((s, c) => s + (c.close || 0), 0) / slice.length;
+      avgVolMap[sym] = avgVol;
+      high20dMap[sym] = high20d;
+      avgPrice20dMap[sym] = avgPrice;
+    }
+
+    // Sector mapping using Schwab fundamental data
+    const SECTOR_ETF_MAP = {
+      "Technology": "XLK",
+      "Financial Services": "XLF", "Financials": "XLF",
+      "Energy": "XLE",
+      "Healthcare": "XLV", "Health Care": "XLV",
+      "Industrials": "XLI",
+      "Consumer Cyclical": "XLY", "Consumer Discretionary": "XLY",
+      "Consumer Defensive": "XLP", "Consumer Staples": "XLP",
+      "Utilities": "XLU",
+      "Basic Materials": "XLB", "Materials": "XLB",
+      "Real Estate": "XLRE",
+      "Communication Services": "XLC", "Communications": "XLC"
+    };
+
+    // Step 4: Detect anomalies
+    const anomalies = [];
+    let advances = 0, declines = 0, unchanged = 0;
+
+    for (const mover of allMovers) {
+      const sym = mover.symbol;
+      const qWrapper = quotesData[sym];
+      const qt = qWrapper?.quote || {};
+      const fund = qWrapper?.fundamental || {};
+
+      const price = qt.lastPrice ?? qt.mark ?? mover.lastPrice ?? mover.last ?? 0;
+      const changePct = qt.netPercentChange ?? mover.percentChange ?? mover.netPercentChange ?? 0;
+      const volume = qt.totalVolume ?? mover.totalVolume ?? 0;
+      const dayHigh = qt.highPrice ?? 0;
+      const dayLow = qt.lowPrice ?? 0;
+      const week52High = qt["52WeekHigh"] ?? qt.fiftyTwoWeekHigh ?? fund["52WeekHigh"] ?? 0;
+      const week52Low = qt["52WeekLow"] ?? qt.fiftyTwoWeekLow ?? fund["52WeekLow"] ?? 0;
+
+      if (price <= 0 || volume <= 0) continue;
+
+      if (changePct > 0.05) advances++;
+      else if (changePct < -0.05) declines++;
+      else unchanged++;
+
+      const avgVolume = avgVolMap[sym] || volume;
+      const volRatio = avgVolume > 0 ? volume / avgVolume : 1;
+      const high20d = high20dMap[sym] || dayHigh;
+      const avgPrice20d = avgPrice20dMap[sym] || price;
+
+      // Signal detection (mirrors scanner.js logic)
+      const signals = [];
+      if (volRatio >= minVolRatio) signals.push("VOL SPIKE");
+      if (Math.abs(changePct) >= 3) signals.push("PRICE SPIKE");
+      if (dayHigh > high20d && volRatio > 1.5) signals.push("BREAKOUT");
+      if (changePct > 1.5 && volRatio > 1.2) signals.push("REL STRENGTH");
+      else if (changePct < -1.5 && volRatio > 1.2) signals.push("REL STRENGTH");
+
+      if (signals.length === 0) continue;
+
+      const perf20d = avgPrice20d > 0 ? ((price - avgPrice20d) / avgPrice20d) * 100 : 0;
+      const isExtreme = Math.abs(changePct) > 5 || volRatio > 5;
+      const dayRangePct = (dayHigh - dayLow) > 0 ? ((price - dayLow) / (dayHigh - dayLow)) : 0.5;
+
+      // Sector label
+      const sectorRaw = fund.sector || fund.fundType || "";
+      const sectorETF = SECTOR_ETF_MAP[sectorRaw] || "—";
+      const companyName = fund.description || qt.description || sym;
+
+      // Fundamental fields from Schwab
+      const peRatio    = fund.peRatio    ?? fund.pERatio    ?? null;
+      const pbRatio    = fund.pbRatio    ?? fund.pBRatio    ?? null;
+      const divYield   = fund.divYield   ?? fund.dividendYield ?? null;
+      const divAmount  = fund.divAmount  ?? fund.dividendAmount ?? null;
+      const eps        = fund.eps        ?? fund.epsTTM     ?? null;
+      const beta       = fund.beta       ?? null;
+      const marketCap  = fund.marketCap  ?? fund.marketCapitalization ?? null;
+
+      anomalies.push({
+        symbol: sym,
+        name: companyName,
+        price,
+        changePct,
+        volume,
+        avgVolume,
+        volRatio,
+        dayHigh,
+        dayLow,
+        dayRangePct,
+        week52High,
+        week52Low,
+        perf20d,
+        signals,
+        isExtreme,
+        sector: sectorETF,
+        sectorRaw,
+        peRatio,
+        pbRatio,
+        divYield,
+        divAmount,
+        eps,
+        beta,
+        marketCap
+      });
+    }
+
+    // Sort by volRatio desc by default
+    anomalies.sort((a, b) => b.volRatio - a.volRatio);
+
+    res.json({
+      ok: true,
+      anomalies,
+      breadth: { advances, declines, unchanged }
+    });
+  } catch (error) {
+    console.error("SCANNER ERROR:", error.response?.data || error.message);
+    res.status(error.response?.status || 500).json({
+      ok: false, error: "Failed to run scanner.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
 // Root route — serve dashboard
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "heat.html"));

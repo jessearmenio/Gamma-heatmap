@@ -37,6 +37,7 @@
       --text: #e0e4f0;
       --text2: #7a8099;
       --text3: #71829d;
+      /* muted text */
       --text4: #09111d;
       --accent: #DCFF1E;
       --accent2: #b8e000;
@@ -72,6 +73,31 @@
       color: var(--text);
       font-size: 12px;
       letter-spacing: 0.02em;
+    }
+
+    spanb {
+      margin-bottom: 2px; /* Brand Icon, Calendar Back/Forward buttons */
+    }
+
+    spanu { 
+      padding-right: 5px; /* Updated: {time} ago */ 
+    }
+
+    spanp {
+      padding-top: 2px; /* Pause button */
+    }
+
+    spanh {
+      margin-bottom: 2px; /* Macro Banner Icon */
+    }
+
+    spanr{
+      transform: scale(1.2); /* refresh button icon */
+      margin-bottom: 2px;
+    }
+
+    spano{
+      font-size: 16px !important; /* flow refresh button, strategy & gex load button */
     }
 
     /* ── Scrollbars ── */
@@ -169,10 +195,6 @@
       font-size: 14px;
       font-weight: 800;
       box-shadow: inset 0 0 0 1px rgba(245, 166, 35, 0.15);
-    }
-
-    spanb {
-      margin-bottom: 2px;
     }
 
     #sidebar-logo .logo-text {
@@ -347,7 +369,7 @@
       font-weight: 700;
       color: var(--text);
       letter-spacing: 0.04em;
-      min-width: 180px;
+      line-height: 1.2;
     }
 
     #ticker-strip {
@@ -372,9 +394,34 @@
     .ticker-item {
       display: flex;
       align-items: center;
-      gap: 5px;
-      white-space: nowrap;
-      flex-shrink: 0;
+      justify-content: space-between;
+      gap: 8px;
+
+      padding: 6px 10px;
+      min-width: 110px;
+
+      background: #0b1420;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 6px;
+
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 12px;
+
+      box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+      transition: all 0.15s ease;
+    }
+
+    @media (max-width: 1200px) {
+  .ticker-item {
+    min-width: 95px;
+    font-size: 11px;
+    padding: 5px 8px;
+  }
+}
+
+    .ticker-item:hover {
+      background: #0f1c2b;
+      border-color: rgba(255, 255, 255, 0.12);
     }
 
     .ticker-item .t-sym {
@@ -477,10 +524,6 @@
       font-weight: 600;
     }
 
-    spanu {
-      padding-right: 5px;
-    }
-
     .topbar-icon-btn {
       width: 28px;
       height: 28px;
@@ -507,10 +550,6 @@
     .topbar-icon-btn.paused {
       color: #ffb020;
       box-shadow: 0 0 6px rgba(255, 176, 32, 0.5);
-    }
-
-    spanp {
-      padding-top: 2px;
     }
 
     .topbar-icon-btn.spinning {
@@ -656,7 +695,7 @@
     .card-title {
       font-size: 11px;
       font-weight: 700;
-      color: var(--cyan);
+      color: var(--text3);
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
@@ -1678,10 +1717,6 @@
       line-height: 1.5;
     }
 
-    spanh {
-      margin-bottom: 2px;
-    }
-
     /* ── Overview: Row 1 – Score Ring + Chart ── */
     .ov-row1 {
       display: grid;
@@ -1849,6 +1884,19 @@
       flex-shrink: 0;
     }
 
+.ov-panel-divider-vertical {
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(255, 255, 255, 0.07),
+    transparent
+  );
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
     .ov-section-label {
       font-size: 8px;
       font-weight: 700;
@@ -1997,7 +2045,7 @@
     }
 
     .ov-panel-score-badge {
-      font-size: 11px;
+      font-size: 16px;
       font-weight: 800;
     }
 
@@ -2024,11 +2072,17 @@
       grid-template-columns: 1fr auto auto;
       align-items: center;
       gap: 6px;
-      min-height: 18px;
+      padding: 5px 0;
+      min-height: 20px;
+      border-bottom: 1px solid rgba(22, 38, 61, 0.35);
+    }
+
+    .ov-metric-row:last-child {
+      border-bottom: none;
     }
 
     .ov-metric-label {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--text3);
       font-weight: 600;
       letter-spacing: 0.04em;
@@ -3786,39 +3840,701 @@
     }
 
     /* ─────────────────────────────────────────────
-   PENNY SCANNER
+   STOCK SCANNER
 ───────────────────────────────────────────── */
-    .penny-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 11px;
+    .scanner-pg-wrap {
+      padding: 0 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
     }
 
-    .penny-table thead th {
-      background: var(--bg3);
-      padding: 7px 10px;
-      text-align: left;
-      color: var(--text2);
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.08em;
+    .sc-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .sc-filter-label {
+      font-size: 10px;
+      color: var(--text3);
       text-transform: uppercase;
-      border-bottom: 1px solid var(--border2);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
     }
 
-    .penny-table tbody td {
-      padding: 6px 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    .sc-filter-select {
+      font-family: inherit;
+      font-size: 11px;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 4px 24px 4px 8px;
+      appearance: none;
+      cursor: pointer;
+      outline: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2371829d' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 7px center;
     }
 
-    .penny-table tbody tr:hover td {
-      background: rgba(255, 255, 255, 0.025);
+    .sc-scan-toggles {
+      display: flex;
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      overflow: hidden;
     }
 
-    .penny-hot {
-      color: var(--red);
+    .sc-scan-toggle {
+      font-family: inherit;
+      font-size: 10px;
+      padding: 4px 10px;
+      background: var(--bg3);
+      color: var(--text2);
+      border: none;
+      border-right: 1px solid var(--border2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .sc-scan-toggle:last-child { border-right: none; }
+
+    .sc-scan-toggle:hover { color: var(--text); }
+
+    .sc-scan-toggle.active {
+      color: var(--cyan);
+      background: var(--cyansoft);
+    }
+
+    .sc-filter-input {
+      font-family: inherit;
+      font-size: 11px;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 4px 8px;
+      width: 110px;
+      outline: none;
+    }
+
+    .sc-filter-input:focus { border-color: var(--cyan); }
+    .sc-filter-input::placeholder { color: var(--text3); }
+
+    .sc-range-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sc-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 90px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border2);
+      outline: none;
+    }
+
+    .sc-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--cyan);
+      cursor: pointer;
+      border: 2px solid var(--bg3);
+    }
+
+    .sc-range-val {
+      font-size: 11px;
+      color: var(--cyan);
+      min-width: 28px;
+    }
+
+    .sc-btn-scan {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 13px;
+      background: var(--cyan);
+      color: var(--bg);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+
+    .sc-btn-scan:hover { opacity: 0.85; }
+
+    .sc-refresh-txt {
+      font-size: 10px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
+    .sc-filter-spacer { flex: 1; }
+
+    /* KPI row */
+    .sc-kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      padding: 12px 16px;
+    }
+
+    .sc-kpi-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 12px 14px;
+    }
+
+    .sc-kpi-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--text3);
+      margin-bottom: 5px;
+    }
+
+    .sc-kpi-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .sc-kpi-sub {
+      font-size: 10px;
+      color: var(--text2);
+      margin-top: 3px;
+    }
+
+    /* Scanner table */
+    .sc-table-wrap {
+      padding: 0 16px 12px;
+      overflow-x: auto;
+    }
+
+    .sc-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 11px;
+      font-feature-settings: "tnum" 1;
+    }
+
+    .sc-table thead th {
+      background: var(--bg2);
+      color: var(--text3);
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 7px 9px;
+      text-align: left !important;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      transition: color 0.15s;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .sc-table th:hover { color: var(--text); }
+    .sc-table th.sc-sorted { color: var(--cyan); }
+
+    .sc-table th .sc-sort-arrow {
+      display: inline-block;
+      margin-left: 3px;
+      font-size: 8px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .sc-table th.sc-sorted .sc-sort-arrow { opacity: 1; }
+
+    .sc-table tbody tr {
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .sc-table tbody tr:nth-child(odd) { background: var(--bg3); }
+    .sc-table tbody tr:nth-child(even) { background: var(--panel); }
+    .sc-table tbody tr:hover { background: rgba(59, 220, 255, 0.05); }
+
+    .sc-table td {
+      padding: 6px 9px;
+      border-bottom: 1px solid rgba(30, 34, 48, 0.5);
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .sc-cell-symbol {
+      display: flex;
+      align-items: center;
+      gap: 5px;
       font-weight: 700;
     }
+
+    .sc-extreme-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--red);
+      animation: sc-pulse-ext 1.5s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes sc-pulse-ext {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.6); }
+    }
+
+    .sc-vol-ratio-cell {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sc-vol-bar {
+      width: 44px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sc-vol-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--amber);
+      transition: width 0.3s;
+    }
+
+    .sc-vol-fill.high { background: var(--red); }
+    .sc-vol-fill.extreme { background: var(--purple3); }
+
+    .sc-range-bar {
+      position: relative;
+      width: 52px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--border);
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .sc-range-fill {
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.07);
+    }
+
+    .sc-range-marker {
+      position: absolute;
+      top: -3px;
+      width: 3px;
+      height: 9px;
+      border-radius: 1px;
+      background: var(--cyan);
+      transform: translateX(-50%);
+    }
+
+    .sc-signal-badge {
+      display: inline-block;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      margin-right: 2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .sc-signal-badge.vol-spike { color: var(--amber); background: var(--amber-soft); }
+    .sc-signal-badge.price-spike { color: var(--red); background: rgba(255,59,92,0.12); }
+    .sc-signal-badge.breakout { color: var(--green); background: rgba(34,221,136,0.1); }
+    .sc-signal-badge.rel-strength { color: var(--cyan); background: var(--cyansoft); }
+
+    .sc-sector-badge {
+      font-size: 9px;
+      color: var(--text2);
+      background: rgba(255,255,255,0.04);
+      padding: 2px 5px;
+      border-radius: 3px;
+    }
+
+    /* Skeleton */
+    .sc-skeleton td { padding: 8px 9px; }
+    .sc-skel-block {
+      height: 10px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, var(--border) 25%, rgba(37,42,58,0.5) 50%, var(--border) 75%);
+      background-size: 200% 100%;
+      animation: sc-shimmer 1.4s ease-in-out infinite;
+    }
+    @keyframes sc-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Flyout */
+    .sc-flyout-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 9, 21, 0.6);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .sc-flyout-backdrop.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .sc-flyout-panel {
+      position: fixed;
+      top: 0; right: 0;
+      width: 400px;
+      height: 100vh;
+      background: var(--bg3);
+      border-left: 1px solid var(--border2);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .sc-flyout-panel.open { transform: translateX(0); }
+
+    .sc-flyout-hdr {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg3);
+      z-index: 10;
+    }
+
+    .sc-flyout-sym { font-size: 17px; font-weight: 700; color: var(--text); }
+    .sc-flyout-name { font-size: 10px; color: var(--text2); margin-top: 2px; }
+
+    .sc-flyout-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 3px;
+    }
+
+    .sc-flyout-price { font-size: 18px; font-weight: 700; font-feature-settings: "tnum" 1; }
+    .sc-flyout-chg { font-size: 12px; font-weight: 600; font-feature-settings: "tnum" 1; }
+
+    .sc-flyout-close {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 15px;
+      width: 26px; height: 26px;
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .sc-flyout-close:hover { color: var(--text); border-color: var(--border3); }
+
+    .sc-flyout-sec {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sc-flyout-sec-title {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .sc-flyout-metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .sc-flyout-metric {
+      background: var(--panel);
+      border-radius: 5px;
+      padding: 9px 11px;
+    }
+
+    .sc-flyout-metric-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text3);
+      margin-bottom: 3px;
+    }
+
+    .sc-flyout-metric-val {
+      font-size: 13px;
+      font-weight: 700;
+      font-feature-settings: "tnum" 1;
+      color: var(--text);
+    }
+
+    .sc-flyout-metric-sub { font-size: 9px; color: var(--text2); margin-top: 2px; }
+
+    .sc-vol-compare-bar {
+      height: 5px;
+      border-radius: 3px;
+      background: var(--border);
+      margin-top: 5px;
+      overflow: hidden;
+    }
+
+    .sc-vol-compare-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: var(--amber);
+      transition: width 0.5s;
+    }
+
+    .sc-flyout-callout {
+      background: var(--cyansoft);
+      border: 1px solid rgba(59, 220, 255, 0.15);
+      border-radius: 5px;
+      padding: 10px 12px;
+    }
+
+    .sc-flyout-callout-title {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--cyan);
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .sc-flyout-callout-text {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .sc-flyout-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 50px 20px;
+      color: var(--text2);
+      font-size: 11px;
+      gap: 7px;
+    }
+
+    .sc-flyout-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .sc-error-banner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,59,92,0.1);
+      border-bottom: 1px solid rgba(255,59,92,0.2);
+      font-size: 11px;
+      color: var(--red);
+    }
+
+    .sc-error-banner.visible { display: flex; }
+
+    /* Score badge */
+    .sc-score-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 19px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+
+    #sc-penny-label:has(input:checked) {
+      color: var(--amber);
+      border-color: rgba(255,176,32,0.4);
+      background: rgba(255,176,32,0.08);
+    }
+
+
+    .sc-filter-row2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 16px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .sc-filter-pill-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sc-filter-minmax {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sc-filter-num {
+      font-family: inherit;
+      font-size: 11px;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 4px 7px;
+      width: 72px;
+      outline: none;
+    }
+
+    .sc-filter-num:focus { border-color: var(--cyan); }
+    .sc-filter-num::placeholder { color: var(--text3); }
+
+    .sc-filter-sep {
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .sc-mcap-toggles {
+      display: flex;
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .sc-mcap-btn {
+      font-family: inherit;
+      font-size: 10px;
+      padding: 4px 9px;
+      background: var(--bg3);
+      color: var(--text2);
+      border: none;
+      border-right: 1px solid var(--border2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .sc-mcap-btn:last-child { border-right: none; }
+    .sc-mcap-btn:hover { color: var(--text); }
+    .sc-mcap-btn.active { color: var(--cyan); background: var(--cyansoft); }
+
+    .sc-52w-toggles {
+      display: flex;
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .sc-52w-btn {
+      font-family: inherit;
+      font-size: 10px;
+      padding: 4px 9px;
+      background: var(--bg3);
+      color: var(--text2);
+      border: none;
+      border-right: 1px solid var(--border2);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .sc-52w-btn:last-child { border-right: none; }
+    .sc-52w-btn:hover { color: var(--text); }
+    .sc-52w-btn.active { color: var(--cyan); background: var(--cyansoft); }
+
+    .sc-filters-toggle {
+      font-family: inherit;
+      font-size: 10px;
+      padding: 4px 10px;
+      background: var(--bg3);
+      color: var(--text2);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+
+    .sc-filters-toggle:hover { color: var(--text); border-color: var(--cyan); }
+    .sc-filters-toggle.active { color: var(--cyan); border-color: var(--cyan); background: var(--cyansoft); }
+
+    .sc-active-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .sc-active-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 9px;
+      padding: 2px 6px 2px 7px;
+      border-radius: 10px;
+      background: var(--cyansoft);
+      color: var(--cyan);
+      border: 1px solid rgba(59,220,255,0.2);
+      white-space: nowrap;
+    }
+
+    .sc-active-tag button {
+      background: none;
+      border: none;
+      color: var(--cyan);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 0;
+      line-height: 1;
+      opacity: 0.7;
+    }
+
+    .sc-active-tag button:hover { opacity: 1; }
 
     /* ─────────────────────────────────────────────
    EARNINGS VOL
@@ -4191,24 +4907,21 @@
           <span class="nav-icon">⚖️</span><span class="nav-label">Strategy Tester</span>
         </li>
         <li class="nav-section-label">Equities</li>
-        <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
-          <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
-        </li>
         <li class="nav-item" data-page="smart-page" onclick="navTo(this)">
           <span class="nav-icon">🧠</span><span class="nav-label">Smart Money</span>
         </li>
         <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
           <span class="nav-icon">🌊</span><span class="nav-label">Dark Pool</span>
         </li>
-        <li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
+                <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
+          <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
+        </li>
+                <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
+          <span class="nav-icon">🔥</span><span class="nav-label">Stock Scanner</span>
+        </li>
+        <!--<li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
           <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
-        </li>
-        <li class="nav-item" data-page="#" onclick="window.location.href='https://www.jessearmenio.com/scanner'">
-          <span class="nav-icon">🔍</span><span class="nav-label">Stock Scanner</span>
-        </li>
-        <li class="nav-item" data-page="penny-page" onclick="navTo(this)">
-          <span class="nav-icon">🔥</span><span class="nav-label">Penny Scanner</span>
-        </li>
+        </li>-->
         <li class="nav-section-label">Macro</li>
         <li class="nav-item" data-page="calendar-page" onclick="navTo(this)">
           <span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span>
@@ -4237,7 +4950,8 @@
       <!-- topbar -->
       <div id="topbar">
         <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
-        <div id="topbar-title" id="page-title">Market<br /> Overview</div>
+        <div id="topbar-title" id="page-title">Market<br>Overview</div>
+        <div class="ov-panel-divider-vertical"></div>
         <div id="ticker-strip">
           <div class="ticker-row">
             <div class="ticker-item" id="tick-SPY">
@@ -4314,7 +5028,7 @@
             <spanu>updated</spanu><b id="ago-val">--</b>
           </span>
           <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()"
-            title="Refresh now">&#8635;</button>
+            title="Refresh now"><spanr>↻</spanr></button>
           <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
             <spanp>⏸</spanp>
           </button>
@@ -4543,7 +5257,7 @@
                   <span class="ov-metric-tag neutral" id="ovt-vix-slope">--</span>
                 </div>
                 <div class="ov-metric-row">
-                  <span class="ov-metric-label">VIX / 20SMA</span>
+                  <span class="ov-metric-label">VIX / 20MA</span>
                   <span class="ov-metric-value" id="ovm-vix-term">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-vix-term">--</span>
                 </div>
@@ -4657,7 +5371,7 @@
                   <span class="ov-metric-tag neutral" id="ovt-macd">--</span>
                 </div>
                 <div class="ov-metric-row">
-                  <span class="ov-metric-label">Stochastic K</span>
+                  <span class="ov-metric-label">Stochastic</span>
                   <span class="ov-metric-value" id="ovm-stoch">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-stoch">--</span>
                 </div>
@@ -4889,8 +5603,8 @@
               style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Strikes:</span>
             <input id="heat-strike-count" type="number" value="50" min="5" max="100" step="5" onchange="reloadHeat()">
             <button
-              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
-              class="dte-btn" onclick="reloadHeat()">↻ Load</button>
+              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
+              class="dte-btn" onclick="reloadHeat()"><spano>↻</spano> Load</button>
           </div>
 
           <div id="heat-body"
@@ -4938,58 +5652,7 @@
       ════════════════════════════════════ -->
         <div id="flow-page" class="page" style="display:none;">
           <!-- TOP BAR: symbol + filters + sort -->
-          <div id="flow-top-bar">
-            <div style="display:flex;align-items:center;gap:6px;">
-              <input id="flow-sym-input" value="SPY" placeholder="Ticker" />
-              <button class="flow-filter-btn active" data-filter="ALL" onclick="flowSetFilter(this)">ALL</button>
-              <button class="flow-filter-btn" data-filter="CALL" onclick="flowSetFilter(this)">CALLS</button>
-              <button class="flow-filter-btn" data-filter="PUT" onclick="flowSetFilter(this)">PUTS</button>
-              <button class="flow-filter-btn" data-filter="SWEEP" onclick="flowSetFilter(this)">SWEEP</button>
-              <button class="flow-filter-btn" data-filter="FLOOR" onclick="flowSetFilter(this)">FLOOR</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:9px;color:var(--text3)">Sort by:</span>
-              <select id="flow-sort-sel" onchange="flowApplySort()"
-                style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
-                <option value="premium">Premium $</option>
-                <option value="volume">Volume</option>
-                <option value="oi">Open Interest</option>
-                <option value="otm">%OTM</option>
-                <option value="iv">IV%</option>
-              </select>
-              <button onclick="loadOptionsFlow()"
-                style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">↻
-                REFRESH</button>
-            </div>
-          </div>
-
-          <!-- STATS BAR -->
-          <div id="flow-stats-bar">
-            <div class="flow-stat-cell">
-              <div class="flow-stat-lbl">TOTAL PREMIUM</div>
-              <div class="flow-stat-val" id="fstat-total">—</div>
-            </div>
-            <div class="flow-stat-cell">
-              <div class="flow-stat-lbl">CALL $</div>
-              <div class="flow-stat-val" style="color:var(--accent)" id="fstat-call">—</div>
-            </div>
-            <div class="flow-stat-cell">
-              <div class="flow-stat-lbl">PUT $</div>
-              <div class="flow-stat-val" style="color:var(--purple)" id="fstat-put">—</div>
-            </div>
-            <div class="flow-stat-cell">
-              <div class="flow-stat-lbl">P/C RATIO</div>
-              <div class="flow-stat-val" id="fstat-pc">—</div>
-            </div>
-            <div class="flow-stat-cell">
-              <div class="flow-stat-lbl">CONTRACTS</div>
-              <div class="flow-stat-val" id="fstat-count">—</div>
-            </div>
-            <div class="flow-stat-cell">
-              <div class="flow-stat-lbl">SWEEPS</div>
-              <div class="flow-stat-val" style="color:#f59e0b" id="fstat-sweeps">—</div>
-            </div>
-          </div>
+          
 
           <!-- SPY ANALYTICS ROW: Highest Vol + Highest OI -->
           <div id="flow-analytics-row">
@@ -5100,7 +5763,57 @@
               </div>
             </div>
           </div><!-- end flow-history-row -->
-
+<div id="flow-top-bar">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <input id="flow-sym-input" value="SPY" placeholder="Ticker" />
+              <button class="flow-filter-btn active" data-filter="ALL" onclick="flowSetFilter(this)">ALL</button>
+              <button class="flow-filter-btn" data-filter="CALL" onclick="flowSetFilter(this)">CALLS</button>
+              <button class="flow-filter-btn" data-filter="PUT" onclick="flowSetFilter(this)">PUTS</button>
+              <button class="flow-filter-btn" data-filter="SWEEP" onclick="flowSetFilter(this)">SWEEP</button>
+              <button class="flow-filter-btn" data-filter="FLOOR" onclick="flowSetFilter(this)">FLOOR</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:9px;color:var(--text3)">Sort by:</span>
+              <select id="flow-sort-sel" onchange="flowApplySort()"
+                style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
+                <option value="premium">Premium $</option>
+                <option value="volume">Volume</option>
+                <option value="oi">Open Interest</option>
+                <option value="otm">%OTM</option>
+                <option value="iv">IV%</option>
+              </select>
+              <button onclick="loadOptionsFlow()"
+                style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"><spano>↻</spano>
+                REFRESH</button>
+            </div>
+          </div>
+          <!-- STATS BAR -->
+          <div id="flow-stats-bar">
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">TOTAL PREMIUM</div>
+              <div class="flow-stat-val" id="fstat-total">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">CALL $</div>
+              <div class="flow-stat-val" style="color:var(--accent)" id="fstat-call">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">PUT $</div>
+              <div class="flow-stat-val" style="color:var(--purple)" id="fstat-put">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">P/C RATIO</div>
+              <div class="flow-stat-val" id="fstat-pc">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">CONTRACTS</div>
+              <div class="flow-stat-val" id="fstat-count">—</div>
+            </div>
+            <div class="flow-stat-cell">
+              <div class="flow-stat-lbl">SWEEPS</div>
+              <div class="flow-stat-val" style="color:#f59e0b" id="fstat-sweeps">—</div>
+            </div>
+          </div>
           <!-- FLOW TABLE -->
           <div id="flow-table-wrap">
             <table id="flow-table">
@@ -5168,8 +5881,8 @@
                 oninput="stratRecalc()">
             </div>
             <button
-              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;"
-              onclick="stratLoadChain(true)">↻ LOAD CHAIN</button>
+              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
+              onclick="stratLoadChain(true)"><spano>↻</spano> LOAD CHAIN</button>
           </div>
 
           <!-- TWO-COLUMN BUILDER -->
@@ -5338,38 +6051,226 @@
         </div>
 
         <!-- ════════════════════════════════════
-           11. PENNY SCANNER
+           STOCK SCANNER
       ════════════════════════════════════ -->
-        <div id="penny-page" class="page" style="display:none;">
-          <div class="card mb12">
-            <div class="card-header">
-              <span class="card-title">Penny Stock Scanner</span>
-              <span style="font-size:9px;color:var(--text3)">Price &lt; $5 • High volume movers</span>
+        <div id="scanner-page" class="page" style="display:none;">
+          <div class="scanner-pg-wrap">
+
+            <!-- Error banner -->
+            <div class="sc-error-banner" id="sc-error-banner">
+              <span id="sc-error-text" style="flex:1">API request failed.</span>
+              <button onclick="loadScanner()" style="font-size:10px;padding:3px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;">Retry</button>
+              <button onclick="document.getElementById('sc-error-banner').classList.remove('visible')" style="background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;">&times;</button>
             </div>
-            <div class="card-body" style="padding:0;">
-              <table class="penny-table">
+
+            <!-- Filter bar — row 1 -->
+            <div class="sc-filter-bar">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span class="sc-filter-label">Sector</span>
+                <select class="sc-filter-select" id="sc-sector">
+                  <option value="ALL">All Sectors</option>
+                  <option value="XLK">XLK — Technology</option>
+                  <option value="XLF">XLF — Financials</option>
+                  <option value="XLE">XLE — Energy</option>
+                  <option value="XLV">XLV — Health Care</option>
+                  <option value="XLI">XLI — Industrials</option>
+                  <option value="XLY">XLY — Cons. Disc.</option>
+                  <option value="XLP">XLP — Cons. Staples</option>
+                  <option value="XLU">XLU — Utilities</option>
+                  <option value="XLB">XLB — Materials</option>
+                  <option value="XLRE">XLRE — Real Estate</option>
+                  <option value="XLC">XLC — Comm. Svcs</option>
+                </select>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span class="sc-filter-label">Scan</span>
+                <div class="sc-scan-toggles">
+                  <button class="sc-scan-toggle active" data-scan="all">All Anomalies</button>
+                  <button class="sc-scan-toggle" data-scan="vol-spike">Volume Spike</button>
+                  <button class="sc-scan-toggle" data-scan="price-spike">Price Spike</button>
+                  <button class="sc-scan-toggle" data-scan="breakout">Breakout</button>
+                </div>
+              </div>
+              <div class="sc-range-group">
+                <span class="sc-filter-label">Min Vol Ratio</span>
+                <input type="range" class="sc-range" id="sc-vol-ratio-range" min="1" max="10" step="0.5" value="2">
+                <span class="sc-range-val" id="sc-vol-ratio-val">2.0x</span>
+              </div>
+              <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker...">
+              <button class="sc-filters-toggle" id="sc-filters-toggle">&#43; More Filters</button>
+              <div class="sc-filter-spacer"></div>
+              <button class="sc-btn-scan" id="sc-btn-scan">Scan Now</button>
+              <span class="sc-refresh-txt" id="sc-refresh-txt">Next refresh: --</span>
+            </div>
+
+            <!-- Filter bar — row 2 (advanced, collapsible) -->
+            <div class="sc-filter-row2" id="sc-filter-row2" style="display:none;">
+
+              <!-- Price Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Price</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-price-min" placeholder="Min" min="0" step="0.01">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-price-max" placeholder="Max" min="0" step="0.01">
+                </div>
+              </div>
+
+              <!-- Change % Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Chg%</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-chg-min" placeholder="Min" step="0.1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-chg-max" placeholder="Max" step="0.1">
+                </div>
+              </div>
+
+              <!-- Market Cap -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Mkt Cap</span>
+                <div class="sc-mcap-toggles">
+                  <button class="sc-mcap-btn active" data-mcap="ALL">All</button>
+                  <button class="sc-mcap-btn" data-mcap="MEGA">Mega &gt;200B</button>
+                  <button class="sc-mcap-btn" data-mcap="LARGE">Large 10-200B</button>
+                  <button class="sc-mcap-btn" data-mcap="MID">Mid 2-10B</button>
+                  <button class="sc-mcap-btn" data-mcap="SMALL">Small &lt;2B</button>
+                </div>
+              </div>
+
+              <!-- P/E Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">P/E</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-pe-min" placeholder="Min" min="0" step="1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-pe-max" placeholder="Max" min="0" step="1">
+                </div>
+              </div>
+
+              <!-- Beta Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Beta</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-beta-min" placeholder="Min" step="0.1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-beta-max" placeholder="Max" step="0.1">
+                </div>
+              </div>
+
+              <!-- Div Yield -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Div Yield%</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-divy-min" placeholder="Min" min="0" step="0.1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-divy-max" placeholder="Max" min="0" step="0.1">
+                </div>
+              </div>
+
+              <!-- 52W Position -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">52W Range</span>
+                <div class="sc-52w-toggles">
+                  <button class="sc-52w-btn active" data-52w="ALL">All</button>
+                  <button class="sc-52w-btn" data-52w="NEAR_HIGH">Near High &gt;90%</button>
+                  <button class="sc-52w-btn" data-52w="NEAR_LOW">Near Low &lt;10%</button>
+                  <button class="sc-52w-btn" data-52w="MID_RANGE">Mid Range</button>
+                </div>
+              </div>
+
+              <!-- Abs % Move -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">|Move|% Min</span>
+                <input type="number" class="sc-filter-num" id="sc-abschange-min" placeholder="e.g. 5" min="0" step="0.5" style="width:64px">
+              </div>
+
+              <!-- Raw Volume Floor -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Min Vol</span>
+                <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0" step="100000" style="width:100px">
+              </div>
+
+              <!-- Penny Mode -->
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;" id="sc-penny-label">
+                <input type="checkbox" id="sc-penny-mode" style="accent-color:var(--amber);width:12px;height:12px;">
+                <span>🔥 Penny Mode</span>
+              </label>
+
+              <!-- Active filter tags -->
+              <div class="sc-active-filters" id="sc-active-tags"></div>
+
+              <button class="sc-filters-toggle" id="sc-clear-adv" style="color:var(--red);border-color:rgba(255,59,92,0.3);">Clear All</button>
+            </div>
+
+            <!-- KPI cards -->
+            <div class="sc-kpi-row">
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Total Anomalies</div>
+                <div class="sc-kpi-value" style="color:var(--cyan)" id="sc-kpi-total">—</div>
+                <div class="sc-kpi-sub" id="sc-kpi-total-sub">scanning...</div>
+              </div>
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Avg Vol Ratio</div>
+                <div class="sc-kpi-value" style="color:var(--amber)" id="sc-kpi-avolvr">—</div>
+                <div class="sc-kpi-sub">across flagged stocks</div>
+              </div>
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Top Sector</div>
+                <div class="sc-kpi-value" id="sc-kpi-sector">—</div>
+                <div class="sc-kpi-sub" id="sc-kpi-sector-sub">—</div>
+              </div>
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Market Breadth</div>
+                <div class="sc-kpi-value" id="sc-kpi-breadth">—</div>
+                <div class="sc-kpi-sub" id="sc-kpi-breadth-sub">advances / declines</div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="sc-table-wrap">
+              <table class="sc-table" id="sc-table">
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>Symbol</th>
-                    <th>Price</th>
-                    <th>Chg%</th>
-                    <th>Volume</th>
-                    <th>Rel Vol</th>
-                    <th>52W Low</th>
-                    <th>52W High</th>
-                    <th>Signal</th>
+                    <th data-col="symbol">Symbol <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="price" style="text-align:right">Price <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="changePct" style="text-align:right">Chg% <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="volume" style="text-align:right">Volume <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="avgVolume" style="text-align:right">Avg Vol <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="volRatio" style="text-align:right" class="sc-sorted">Vol Ratio <span class="sc-sort-arrow">▼</span></th>
+                    <th data-col="dayRange">Day Range <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="perf20d" style="text-align:right">20D Perf% <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="signals">Signal <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="sector">Sector <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="score" class="sc-sorted" style="text-align:center">Score <span class="sc-sort-arrow">▼</span></th>
                   </tr>
                 </thead>
-                <tbody id="penny-tbody">
-                  <tr>
-                    <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Log in to scan
-                      penny stocks.</td>
-                  </tr>
+                <tbody id="sc-tbody">
+                  <tr class="sc-skeleton"><td><div class="sc-skel-block" style="width:46px"></div></td><td><div class="sc-skel-block" style="width:58px"></div></td><td><div class="sc-skel-block" style="width:44px"></div></td><td><div class="sc-skel-block" style="width:70px"></div></td><td><div class="sc-skel-block" style="width:70px"></div></td><td><div class="sc-skel-block" style="width:44px"></div></td><td><div class="sc-skel-block" style="width:78px"></div></td><td><div class="sc-skel-block" style="width:44px"></div></td><td><div class="sc-skel-block" style="width:90px"></div></td><td><div class="sc-skel-block" style="width:60px"></div></td></tr>
+                  <tr class="sc-skeleton"><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:62px"></div></td><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:65px"></div></td><td><div class="sc-skel-block" style="width:65px"></div></td><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:78px"></div></td><td><div class="sc-skel-block" style="width:40px"></div></td><td><div class="sc-skel-block" style="width:84px"></div></td><td><div class="sc-skel-block" style="width:55px"></div></td></tr>
+                  <tr class="sc-skeleton"><td><div class="sc-skel-block" style="width:50px"></div></td><td><div class="sc-skel-block" style="width:55px"></div></td><td><div class="sc-skel-block" style="width:42px"></div></td><td><div class="sc-skel-block" style="width:72px"></div></td><td><div class="sc-skel-block" style="width:72px"></div></td><td><div class="sc-skel-block" style="width:42px"></div></td><td><div class="sc-skel-block" style="width:78px"></div></td><td><div class="sc-skel-block" style="width:42px"></div></td><td><div class="sc-skel-block" style="width:96px"></div></td><td><div class="sc-skel-block" style="width:58px"></div></td></tr>
                 </tbody>
               </table>
             </div>
+
           </div>
+        </div>
+
+        <!-- Flyout -->
+        <div class="sc-flyout-backdrop" id="sc-flyout-backdrop"></div>
+        <div class="sc-flyout-panel" id="sc-flyout-panel">
+          <div class="sc-flyout-hdr">
+            <div>
+              <div class="sc-flyout-sym" id="sc-flyout-sym">—</div>
+              <div class="sc-flyout-name" id="sc-flyout-name">—</div>
+              <div class="sc-flyout-price-row">
+                <span class="sc-flyout-price" id="sc-flyout-price">—</span>
+                <span class="sc-flyout-chg" id="sc-flyout-chg">—</span>
+              </div>
+            </div>
+            <button class="sc-flyout-close" id="sc-flyout-close">&times;</button>
+          </div>
+          <div id="sc-flyout-content"></div>
         </div>
 
         <!-- ════════════════════════════════════
@@ -5547,7 +6448,9 @@
         page.style.display = (target === 'heat-page') ? 'flex' : 'block';
         page.classList.add('active');
       }
-      document.getElementById('topbar-title').textContent = el.querySelector('.nav-label')?.textContent || '';
+      const rawTitle = el.querySelector('.nav-label')?.textContent || '';
+      const words = rawTitle.trim().split(/\s+/);
+      document.getElementById('topbar-title').innerHTML = words.length === 2 ? words[0] + '<br>' + words[1] : rawTitle;
       // Auto-load pages when navigated to
       if (isConnected || target === 'charting-page' || target === 'calendar-page') autoLoadPage(target);
     }
@@ -5562,13 +6465,13 @@
         case 'calendar-page': loadCalendarPage(); break;
         case 'commodities-page': loadCommodities(); break;
         case 'fx-page': loadFX(); break;
-        case 'penny-page': loadPenny(); break;
         case 'earnings-page': loadEarnings(); break;
         case 'sentiment-page': loadSentiment(); break;
         case 'charting-page': loadCharting(); break;
         case 'treasury-page': loadTreasury(); break;
         case 'smart-page': loadSmartMoney(); break;
         case 'darkpool-page': loadDarkPool(); break;
+        case 'scanner-page': loadScanner(); break;
         case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
       }
     }
@@ -7222,9 +8125,40 @@
       ovSetMetric('ovm-macd', 'ovt-macd', macdTxt, macdTag, macdTone);
       // Stoch
       const sr = sc.stochResult;
-      const stochTxt = sr ? Math.round(sr.k) : '--';
-      const stochTone = sr && sr.k < 20 ? 'positive' : sr && sr.k > 80 ? 'danger' : 'caution';
-      const stochTag = sr && sr.k < 20 ? 'Oversold' : sr && sr.k > 80 ? 'Overbought' : 'Neutral';
+      const slowK = sr ? ovN(sr.k) : null;
+      const slowD = sr ? ovN(sr.d) : null;
+
+      let stochTone = 'neutral';
+      let stochTag = 'N/A';
+
+      if (slowK == null || slowD == null) {
+        stochTone = 'neutral';
+        stochTag = 'N/A';
+      } else if (slowK < 20 && slowK > slowD) {
+        stochTone = 'positive';
+        stochTag = 'OS CROSS UP';
+      } else if (slowK < 20) {
+        stochTone = 'caution';
+        stochTag = 'OVERSOLD';
+      } else if (slowK > 80 && slowK < slowD) {
+        stochTone = 'caution';
+        stochTag = 'OB CROSS DN';
+      } else if (slowK > 80) {
+        stochTone = 'neutral';
+        stochTag = 'OVERBOUGHT';
+      } else if (slowK > slowD) {
+        stochTone = 'positive';
+        stochTag = 'K>D BULLISH';
+      } else {
+        stochTone = 'neutral';
+        stochTag = 'K<D';
+      }
+
+      const stochTxt =
+        slowK == null || slowD == null
+          ? '--'
+          : `K:${slowK.toFixed(0)} D:${slowD.toFixed(0)}`;
+
       ovSetMetric('ovm-stoch', 'ovt-stoch', stochTxt, stochTag, stochTone);
       // Leader
       const lp = ovN(sc.leader?.perf5d);
@@ -9027,41 +9961,691 @@
     }
 
     // ═══════════════════════════════════════════════════════
-    //  11. PENNY SCANNER
+    //  STOCK SCANNER
     // ═══════════════════════════════════════════════════════
-    async function loadPenny() {
-      if (!isConnected) return;
-      try {
-        // Use movers endpoint for high-volume stocks then filter
-        const d = await apiGet('/api/movers?index=$COMPX&sort=VOLUME&frequency=1');
-        if (!d.ok) throw new Error(d.error);
-        const movers = Array.isArray(d.data) ? d.data : (d.data.screeners || []);
-        const penny = movers.filter(m => m.last < 5).slice(0, 20);
+    (function () {
+      // State
+      let scAllAnomalies = [];
+      let scFiltered = [];
+      let scBreadth = { advances: 0, declines: 0, unchanged: 0 };
+      let scSortCol = 'score';
+      let scSortDir = -1;   // -1 = desc
+      let scScanType = 'all';
+      let scMinVolRatio = 2;
+      let scSearchVal = '';
+      let scSectorFilter = 'ALL';
+      let scRefreshTimer = null;
+      let scRefreshSecs = 90;
+      let scCountdown = 90;
+      let scFlyoutOpen = false;
+      let scCurrentFlyoutSym = null;
+      // Advanced filter state
+      let scPriceMin = null, scPriceMax = null;
+      let scChgMin = null, scChgMax = null;
+      let scMcapFilter = 'ALL';
+      let scPeMin = null, scPeMax = null;
+      let scBetaMin = null, scBetaMax = null;
+      let scDivYMin = null, scDivYMax = null;
+      let sc52wFilter = 'ALL';
+      let scAbsChgMin = null;        // abs % move filter
+      let scMinVolume = null;        // raw volume floor
+      let scPennyMode = false;       // penny stock preset
 
-        if (!penny.length) {
-          document.getElementById('penny-tbody').innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">No penny movers found. Market may be closed.</td></tr>`;
+      // ── Helpers ──────────────────────────────────────────
+      function scFmt(n, d = 2) {
+        if (n == null || isNaN(n)) return '—';
+        return Number(n).toFixed(d);
+      }
+
+      function scFmtK(n) {
+        if (n == null || isNaN(n) || n === 0) return '—';
+        if (n >= 1e12) return (n / 1e12).toFixed(2) + 'T';
+        if (n >= 1e9)  return (n / 1e9).toFixed(1) + 'B';
+        if (n >= 1e6)  return (n / 1e6).toFixed(1) + 'M';
+        if (n >= 1e3)  return (n / 1e3).toFixed(0) + 'K';
+        return n.toString();
+      }
+
+      function scMcapLabel(cap) {
+        if (!cap || cap <= 0) return '';
+        const b = cap / 1e9;
+        if (b >= 200) return 'Mega Cap';
+        if (b >= 10)  return 'Large Cap';
+        if (b >= 2)   return 'Mid Cap';
+        return 'Small Cap';
+      }
+
+      function sc52wPos(a) {
+        if (!a || !a.week52High || !a.week52Low || a.week52High === a.week52Low) return 0.5;
+        return (a.price - a.week52Low) / (a.week52High - a.week52Low);
+      }
+
+      function scChgCls(v) { return v > 0 ? 'up' : v < 0 ? 'dn' : 'flat'; }
+      function scChgPfx(v) { return v > 0 ? '+' : ''; }
+
+      function scSignalClass(s) {
+        if (s === 'VOL SPIKE') return 'vol-spike';
+        if (s === 'PRICE SPIKE') return 'price-spike';
+        if (s === 'BREAKOUT') return 'breakout';
+        if (s === 'REL STRENGTH') return 'rel-strength';
+        return '';
+      }
+
+      // ── Filter + Sort ─────────────────────────────────────
+      // ── Composite Score ──────────────────────────────
+      function scComputeScore(a) {
+        let score = 0;
+
+        // Vol ratio component (0–35 pts): log-scaled, caps at 10x
+        const vrCapped = Math.min(a.volRatio, 10);
+        const vrScore = (Math.log(vrCapped) / Math.log(10)) * 35;
+        score += vrScore;
+
+        // Abs % move component (0–30 pts): caps at 15%
+        const absMv = Math.min(Math.abs(a.changePct), 15);
+        const mvScore = (absMv / 15) * 30;
+        score += mvScore;
+
+        // Raw volume component (0–20 pts): log-scaled, caps at 50M
+        const volCapped = Math.min(a.volume, 50e6);
+        const volScore = volCapped > 0 ? (Math.log(volCapped) / Math.log(50e6)) * 20 : 0;
+        score += volScore;
+
+        // Signal bonuses (stacking, max +15)
+        if (a.signals.includes('BREAKOUT'))    score += 7;
+        if (a.signals.includes('VOL SPIKE'))   score += 4;
+        if (a.signals.includes('PRICE SPIKE')) score += 4;
+
+        // 52W near-high bonus (+5 if top 15%)
+        const pos = sc52wPos(a);
+        if (pos >= 0.85) score += 5;
+
+        // Penny stock quality penalty: kills illiquid noise
+        if (a.price < 5 && a.volume < 500000) score *= 0.4;
+
+        return Math.min(Math.round(score), 100);
+      }
+
+      function scScoreGrade(score) {
+        if (score >= 80) return { label: 'S', color: '#ff3b5c' };
+        if (score >= 65) return { label: 'A', color: '#ff8c3b' };
+        if (score >= 50) return { label: 'B', color: '#ffb020' };
+        if (score >= 35) return { label: 'C', color: '#3bdcff' };
+        return           { label: 'D', color: '#7a8099' };
+      }
+
+      function scMcapTier(cap) {
+        if (!cap || cap <= 0) return null;
+        const b = cap / 1e9;
+        if (b >= 200) return 'MEGA';
+        if (b >= 10)  return 'LARGE';
+        if (b >= 2)   return 'MID';
+        return 'SMALL';
+      }
+
+      function scApplyFilters() {
+        scFiltered = scAllAnomalies.filter(a => {
+          // Sector
+          if (scSectorFilter !== 'ALL' && a.sector !== scSectorFilter) return false;
+          // Signal type
+          if (scScanType !== 'all') {
+            const needed = { 'vol-spike': 'VOL SPIKE', 'price-spike': 'PRICE SPIKE', 'breakout': 'BREAKOUT' }[scScanType];
+            if (needed && !a.signals.includes(needed)) return false;
+          }
+          // Vol ratio
+          if (a.volRatio < scMinVolRatio && !a.signals.includes('PRICE SPIKE') && !a.signals.includes('BREAKOUT') && !a.signals.includes('REL STRENGTH')) return false;
+          // Search
+          if (scSearchVal && !a.symbol.includes(scSearchVal.toUpperCase()) && !(a.name || '').toUpperCase().includes(scSearchVal.toUpperCase())) return false;
+          // Price range
+          if (scPriceMin !== null && a.price < scPriceMin) return false;
+          if (scPriceMax !== null && a.price > scPriceMax) return false;
+          // Change % range
+          if (scChgMin !== null && a.changePct < scChgMin) return false;
+          if (scChgMax !== null && a.changePct > scChgMax) return false;
+          // Market cap
+          if (scMcapFilter !== 'ALL') {
+            const tier = scMcapTier(a.marketCap);
+            if (tier !== scMcapFilter) return false;
+          }
+          // P/E
+          if (scPeMin !== null && (a.peRatio == null || a.peRatio < scPeMin)) return false;
+          if (scPeMax !== null && (a.peRatio == null || a.peRatio > scPeMax)) return false;
+          // Beta
+          if (scBetaMin !== null && (a.beta == null || a.beta < scBetaMin)) return false;
+          if (scBetaMax !== null && (a.beta == null || a.beta > scBetaMax)) return false;
+          // Div yield
+          if (scDivYMin !== null && (a.divYield == null || a.divYield < scDivYMin)) return false;
+          if (scDivYMax !== null && (a.divYield == null || a.divYield > scDivYMax)) return false;
+          // 52-week position
+          if (sc52wFilter !== 'ALL') {
+            const pos = sc52wPos(a);
+            if (sc52wFilter === 'NEAR_HIGH' && pos < 0.9) return false;
+            if (sc52wFilter === 'NEAR_LOW'  && pos > 0.1) return false;
+            if (sc52wFilter === 'MID_RANGE' && (pos < 0.1 || pos > 0.9)) return false;
+          }
+          // Abs % move
+          if (scAbsChgMin !== null && Math.abs(a.changePct) < scAbsChgMin) return false;
+          // Raw volume floor
+          if (scMinVolume !== null && a.volume < scMinVolume) return false;
+          // Penny mode preset
+          if (scPennyMode) {
+            if (a.price >= 5)            return false;
+            if (a.volume < 1e6)          return false;
+            if (a.volRatio < 3)          return false;
+            if (Math.abs(a.changePct) < 8) return false;
+            const hasPennySignal = a.signals.some(s => ['VOL SPIKE','PRICE SPIKE','BREAKOUT'].includes(s));
+            if (!hasPennySignal)         return false;
+          }
+          return true;
+        });
+        // Compute scores after filtering
+        scFiltered.forEach(a => { a._score = scComputeScore(a); });
+        scApplySort();
+        scRenderActiveTags();
+      }
+
+      function scRenderActiveTags() {
+        const container = document.getElementById('sc-active-tags');
+        if (!container) return;
+        const tags = [];
+        if (scPriceMin !== null || scPriceMax !== null) {
+          const label = `Price: ${scPriceMin ?? ''}–${scPriceMax ?? ''}`;
+          tags.push({ label, clear: () => { scPriceMin = null; scPriceMax = null; document.getElementById('sc-price-min').value = ''; document.getElementById('sc-price-max').value = ''; } });
+        }
+        if (scChgMin !== null || scChgMax !== null) {
+          const label = `Chg%: ${scChgMin ?? ''}–${scChgMax ?? ''}`;
+          tags.push({ label, clear: () => { scChgMin = null; scChgMax = null; document.getElementById('sc-chg-min').value = ''; document.getElementById('sc-chg-max').value = ''; } });
+        }
+        if (scMcapFilter !== 'ALL') {
+          tags.push({ label: `MCap: ${scMcapFilter}`, clear: () => { scMcapFilter = 'ALL'; document.querySelectorAll('.sc-mcap-btn').forEach(b => b.classList.toggle('active', b.dataset.mcap === 'ALL')); } });
+        }
+        if (scPeMin !== null || scPeMax !== null) {
+          tags.push({ label: `P/E: ${scPeMin ?? ''}–${scPeMax ?? ''}`, clear: () => { scPeMin = null; scPeMax = null; document.getElementById('sc-pe-min').value = ''; document.getElementById('sc-pe-max').value = ''; } });
+        }
+        if (scBetaMin !== null || scBetaMax !== null) {
+          tags.push({ label: `Beta: ${scBetaMin ?? ''}–${scBetaMax ?? ''}`, clear: () => { scBetaMin = null; scBetaMax = null; document.getElementById('sc-beta-min').value = ''; document.getElementById('sc-beta-max').value = ''; } });
+        }
+        if (scDivYMin !== null || scDivYMax !== null) {
+          tags.push({ label: `DivY: ${scDivYMin ?? ''}–${scDivYMax ?? ''}%`, clear: () => { scDivYMin = null; scDivYMax = null; document.getElementById('sc-divy-min').value = ''; document.getElementById('sc-divy-max').value = ''; } });
+        }
+        if (sc52wFilter !== 'ALL') {
+          const lbl = { NEAR_HIGH: '52W Near High', NEAR_LOW: '52W Near Low', MID_RANGE: '52W Mid Range' }[sc52wFilter];
+          tags.push({ label: lbl, clear: () => { sc52wFilter = 'ALL'; document.querySelectorAll('.sc-52w-btn').forEach(b => b.classList.toggle('active', b.dataset['52w'] === 'ALL')); } });
+        }
+        if (scAbsChgMin !== null) {
+          tags.push({ label: `|Chg|≥${scAbsChgMin}%`, clear: () => { scAbsChgMin = null; const el = document.getElementById('sc-abschange-min'); if (el) el.value = ''; } });
+        }
+        if (scMinVolume !== null) {
+          tags.push({ label: `Vol≥${scFmtK(scMinVolume)}`, clear: () => { scMinVolume = null; const el = document.getElementById('sc-minvol'); if (el) el.value = ''; } });
+        }
+        if (scPennyMode) {
+          tags.push({ label: '🔥 Penny Mode', clear: () => { scPennyMode = false; const el = document.getElementById('sc-penny-mode'); if (el) el.checked = false; } });
+        }
+        container.innerHTML = tags.map((t, i) =>
+          `<span class="sc-active-tag">${t.label}<button onclick="scClearTag(${i})">&times;</button></span>`
+        ).join('');
+        // store for onclick
+        window._scTagClearFns = tags.map(t => t.clear);
+      }
+
+      window.scClearTag = function(i) {
+        if (window._scTagClearFns && window._scTagClearFns[i]) window._scTagClearFns[i]();
+        scApplyFilters(); scUpdateKPIs(); scRenderTable();
+      };
+
+      function scApplySort() {
+        scFiltered.sort((a, b) => {
+          let va, vb;
+          switch (scSortCol) {
+            case 'symbol': va = a.symbol; vb = b.symbol; return scSortDir * (va < vb ? -1 : va > vb ? 1 : 0);
+            case 'price': va = a.price; vb = b.price; break;
+            case 'changePct': va = a.changePct; vb = b.changePct; break;
+            case 'volume': va = a.volume; vb = b.volume; break;
+            case 'avgVolume': va = a.avgVolume; vb = b.avgVolume; break;
+            case 'volRatio': va = a.volRatio; vb = b.volRatio; break;
+            case 'dayRange': va = a.dayRangePct; vb = b.dayRangePct; break;
+            case 'perf20d': va = a.perf20d; vb = b.perf20d; break;
+            case 'signals': va = a.signals.length; vb = b.signals.length; break;
+            case 'sector': va = a.sector; vb = b.sector; return scSortDir * (va < vb ? -1 : va > vb ? 1 : 0);
+            case 'score':  va = a._score ?? 0; vb = b._score ?? 0; break;
+            default: va = a.volRatio; vb = b.volRatio;
+          }
+          return scSortDir * (va - vb);
+        });
+      }
+
+      // ── KPIs ─────────────────────────────────────────────
+      function scUpdateKPIs() {
+        const total = scFiltered.length;
+        document.getElementById('sc-kpi-total').textContent = total;
+        document.getElementById('sc-kpi-total-sub').textContent = total > 0 ? `${total} anomal${total === 1 ? 'y' : 'ies'} detected` : 'no signals matched';
+
+        if (total > 0) {
+          const avgVR = scFiltered.reduce((s, a) => s + a.volRatio, 0) / total;
+          document.getElementById('sc-kpi-avolvr').textContent = avgVR.toFixed(1) + 'x';
+        } else {
+          document.getElementById('sc-kpi-avolvr').textContent = '—';
+        }
+
+        // Top sector
+        const sectorCounts = {};
+        scFiltered.forEach(a => { if (a.sector && a.sector !== '—') sectorCounts[a.sector] = (sectorCounts[a.sector] || 0) + 1; });
+        const topSector = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0];
+        document.getElementById('sc-kpi-sector').textContent = topSector ? topSector[0] : '—';
+        document.getElementById('sc-kpi-sector-sub').textContent = topSector ? `${topSector[1]} alert${topSector[1] > 1 ? 's' : ''}` : '—';
+
+        // Breadth
+        const { advances, declines } = scBreadth;
+        const breadthEl = document.getElementById('sc-kpi-breadth');
+        const ratio = declines > 0 ? (advances / declines).toFixed(2) : '∞';
+        breadthEl.textContent = ratio;
+        breadthEl.style.color = advances > declines ? 'var(--green)' : advances < declines ? 'var(--red)' : 'var(--text)';
+        document.getElementById('sc-kpi-breadth-sub').textContent = `${advances} adv / ${declines} decl`;
+      }
+
+      // ── Table Render ──────────────────────────────────────
+      function scRenderTable() {
+        const tbody = document.getElementById('sc-tbody');
+        if (!scFiltered.length) {
+          tbody.innerHTML = `<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--text3);">No anomalies matched your filters. Try adjusting the scan type or vol ratio.</td></tr>`;
           return;
         }
 
-        document.getElementById('penny-tbody').innerHTML = penny.map((m, i) => {
-          const pct = m.change ?? 0;
-          const hot = Math.abs(pct) > 20;
-          return `<tr>
-        <td style="color:var(--text3)">${i + 1}</td>
-        <td class="${hot ? 'penny-hot' : ''}" style="font-weight:700">${m.symbol}</td>
-        <td>${fmt(m.last)}</td>
-        <td class="${chgClass(pct)}" style="font-weight:700">${chgPrefix(pct)}${fmt(pct)}%</td>
-        <td>${fmtK(m.totalVolume)}</td>
-        <td>—</td>
-        <td>—</td>
-        <td>—</td>
-        <td style="color:${hot ? 'var(--red)' : 'var(--text3)'};">${hot ? '🔥 HOT' : '—'}</td>
-      </tr>`;
+        tbody.innerHTML = scFiltered.map(a => {
+          const volBarW = Math.min(a.volRatio / 10, 1) * 100;
+          const volBarCls = a.volRatio > 5 ? 'extreme' : a.volRatio > 3 ? 'high' : '';
+          const dayRangePct = Math.max(0, Math.min(a.dayRangePct * 100, 100));
+          const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${s}</span>`).join('');
+
+          return `<tr onclick="scOpenFlyout(${JSON.stringify(a).replace(/"/g, '&quot;')})">
+            <td>
+              <div class="sc-cell-symbol">
+                ${a.isExtreme ? '<div class="sc-extreme-dot"></div>' : ''}
+                ${a.symbol}
+              </div>
+            </td>
+            <td style="text-align:right">$${scFmt(a.price)}</td>
+            <td style="text-align:right" class="${scChgCls(a.changePct)}">${scChgPfx(a.changePct)}${scFmt(a.changePct)}%</td>
+            <td style="text-align:right">${scFmtK(a.volume)}</td>
+            <td style="text-align:right">${scFmtK(a.avgVolume)}</td>
+            <td style="text-align:right">
+              <div class="sc-vol-ratio-cell" style="justify-content:flex-end">
+                <div class="sc-vol-bar"><div class="sc-vol-fill ${volBarCls}" style="width:${volBarW}%"></div></div>
+                <span>${a.volRatio.toFixed(1)}x</span>
+              </div>
+            </td>
+            <td>
+              <div class="sc-range-bar">
+                <div class="sc-range-fill" style="width:${dayRangePct}%"></div>
+                <div class="sc-range-marker" style="left:${dayRangePct}%"></div>
+              </div>
+              <span style="font-size:9px;color:var(--text3);margin-left:5px;">${scFmt(a.dayRangePct * 100, 0)}%</span>
+            </td>
+            <td style="text-align:right" class="${scChgCls(a.perf20d)}">${scChgPfx(a.perf20d)}${scFmt(a.perf20d)}%</td>
+            <td>${badgeHtml}</td>
+            <td><span class="sc-sector-badge">${a.sector || '—'}</span></td>
+            <td style="text-align:center">
+              ${(() => { const sc = a._score ?? 0; const g = scScoreGrade(sc); return `<span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:20px;border-radius:4px;font-size:10px;font-weight:800;background:${g.color}22;color:${g.color};border:1px solid ${g.color}44;letter-spacing:0.02em">${g.label}</span><span style="font-size:9px;color:var(--text3);margin-left:3px">${sc}</span>`; })()}
+            </td>
+          </tr>`;
         }).join('');
-      } catch (e) {
-        document.getElementById('penny-tbody').innerHTML = `<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">${e.message}</td></tr>`;
       }
-    }
+
+      // ── Flyout ────────────────────────────────────────────
+      window.scOpenFlyout = function (a) {
+        if (typeof a === 'string') {
+          try { a = JSON.parse(a); } catch { return; }
+        }
+        scCurrentFlyoutSym = a.symbol;
+        scFlyoutOpen = true;
+        document.getElementById('sc-flyout-backdrop').classList.add('open');
+        document.getElementById('sc-flyout-panel').classList.add('open');
+
+        const chgCls = a.changePct > 0 ? 'var(--green)' : a.changePct < 0 ? 'var(--red)' : 'var(--text2)';
+
+        document.getElementById('sc-flyout-sym').textContent = a.symbol;
+        document.getElementById('sc-flyout-name').textContent = a.name || a.symbol;
+        document.getElementById('sc-flyout-price').textContent = '$' + scFmt(a.price);
+        document.getElementById('sc-flyout-price').style.color = chgCls;
+        document.getElementById('sc-flyout-chg').textContent = `${scChgPfx(a.changePct)}${scFmt(a.changePct)}%`;
+        document.getElementById('sc-flyout-chg').style.color = chgCls;
+
+        // Build flyout content
+        const volFillW = Math.min((a.volRatio / 5) * 100, 100);
+        const signalBadges = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${s}</span>`).join(' ');
+
+        const unusualText = scBuildNarrative(a);
+
+        const flyScore = a._score ?? scComputeScore(a);
+        const flyGrade = scScoreGrade(flyScore);
+        document.getElementById('sc-flyout-content').innerHTML = `
+          <div class="sc-flyout-sec" style="display:flex;align-items:center;gap:12px;">
+            <div style="flex:1">
+              <div class="sc-flyout-sec-title" style="margin-bottom:4px">Composite Score</div>
+              <div style="display:flex;align-items:baseline;gap:8px;">
+                <span style="font-size:28px;font-weight:800;color:${flyGrade.color};font-feature-settings:'tnum' 1">${flyScore}</span>
+                <span style="font-size:13px;font-weight:700;color:${flyGrade.color};background:${flyGrade.color}20;padding:2px 8px;border-radius:4px;border:1px solid ${flyGrade.color}40">${flyGrade.label}</span>
+              </div>
+            </div>
+            <div style="text-align:right;font-size:9px;color:var(--text3);line-height:1.7">
+              <div>Vol Ratio <b style="color:var(--text2)">${a.volRatio.toFixed(1)}x</b></div>
+              <div>|Move| <b style="color:var(--text2)">${Math.abs(a.changePct).toFixed(1)}%</b></div>
+              <div>Raw Vol <b style="color:var(--text2)">${scFmtK(a.volume)}</b></div>
+              <div>52W Pos <b style="color:var(--text2)">${(sc52wPos(a)*100).toFixed(0)}%</b></div>
+            </div>
+          </div>
+          <div class="sc-flyout-sec">
+            <div class="sc-flyout-sec-title">Signals</div>
+            <div>${signalBadges || '<span style="color:var(--text3)">None</span>'}</div>
+          </div>
+          <div class="sc-flyout-sec">
+            <div class="sc-flyout-sec-title">Key Metrics</div>
+            <div class="sc-flyout-metrics">
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Price</div>
+                <div class="sc-flyout-metric-val">$${scFmt(a.price)}</div>
+                <div class="sc-flyout-metric-sub">Day: $${scFmt(a.dayLow)} – $${scFmt(a.dayHigh)}</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Change</div>
+                <div class="sc-flyout-metric-val" style="color:${chgCls}">${scChgPfx(a.changePct)}${scFmt(a.changePct)}%</div>
+                <div class="sc-flyout-metric-sub">Today's move</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Volume</div>
+                <div class="sc-flyout-metric-val">${scFmtK(a.volume)} <span style="color:var(--text3);font-size:10px">/ ${scFmtK(a.avgVolume)}</span></div>
+                <div class="sc-flyout-metric-sub">${a.volRatio.toFixed(1)}x average</div>
+                <div class="sc-vol-compare-bar"><div class="sc-vol-compare-fill" style="width:${volFillW}%"></div></div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">20D Perf</div>
+                <div class="sc-flyout-metric-val" style="color:${a.perf20d >= 0 ? 'var(--green)' : 'var(--red)'}">${scChgPfx(a.perf20d)}${scFmt(a.perf20d)}%</div>
+                <div class="sc-flyout-metric-sub">vs 20-day avg price</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">52W High</div>
+                <div class="sc-flyout-metric-val">$${scFmt(a.week52High)}</div>
+                <div class="sc-flyout-metric-sub">${a.week52High > 0 ? ((a.price / a.week52High - 1) * 100).toFixed(1) + '% from high' : '—'}</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Sector</div>
+                <div class="sc-flyout-metric-val" style="font-size:12px">${a.sector || '—'}</div>
+                <div class="sc-flyout-metric-sub">${a.sectorRaw || ''}</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">P/E Ratio</div>
+                <div class="sc-flyout-metric-val">${a.peRatio != null ? scFmt(a.peRatio) : '—'}</div>
+                <div class="sc-flyout-metric-sub">trailing twelve months</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Beta</div>
+                <div class="sc-flyout-metric-val" style="color:${a.beta > 1.5 ? 'var(--red)' : a.beta < 0.5 ? 'var(--cyan)' : 'var(--text)'}">${a.beta != null ? scFmt(a.beta) : '—'}</div>
+                <div class="sc-flyout-metric-sub">vs S&amp;P 500</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Market Cap</div>
+                <div class="sc-flyout-metric-val">${a.marketCap != null ? scFmtK(a.marketCap) : '—'}</div>
+                <div class="sc-flyout-metric-sub">${a.marketCap != null ? scMcapLabel(a.marketCap) : ''}</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">Div Yield</div>
+                <div class="sc-flyout-metric-val" style="color:${(a.divYield > 0) ? 'var(--green)' : 'var(--text2)'}">${a.divYield != null && a.divYield > 0 ? scFmt(a.divYield) + '%' : '—'}</div>
+                <div class="sc-flyout-metric-sub">${a.divAmount != null && a.divAmount > 0 ? '$' + scFmt(a.divAmount) + ' / share' : 'no dividend'}</div>
+              </div>
+              <div class="sc-flyout-metric">
+                <div class="sc-flyout-metric-label">52W Position</div>
+                <div class="sc-flyout-metric-val">${a.week52High > 0 ? (sc52wPos(a) * 100).toFixed(0) + '%' : '—'}</div>
+                <div class="sc-flyout-metric-sub">${a.week52Low > 0 ? '$' + scFmt(a.week52Low) + ' – $' + scFmt(a.week52High) : 'of 52-week range'}</div>
+              </div>
+            </div>
+          </div>
+          ${unusualText ? `
+          <div class="sc-flyout-sec">
+            <div class="sc-flyout-callout">
+              <div class="sc-flyout-callout-title">Why This Stock?</div>
+              <div class="sc-flyout-callout-text">${unusualText}</div>
+            </div>
+          </div>` : ''}
+          <div class="sc-flyout-sec" style="border-bottom:none;">
+            <div class="sc-flyout-sec-title">Day Range Position</div>
+            <div style="position:relative;height:8px;border-radius:4px;background:var(--border);margin-top:4px;">
+              <div style="position:absolute;top:0;left:0;height:100%;width:100%;border-radius:4px;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));opacity:0.18;"></div>
+              <div style="position:absolute;top:-4px;left:${Math.max(0,Math.min(100,a.dayRangePct*100))}%;transform:translateX(-50%);width:4px;height:16px;background:var(--cyan);border-radius:2px;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-top:5px;">
+              <span>L $${scFmt(a.dayLow)}</span>
+              <span style="color:var(--cyan)">${(a.dayRangePct*100).toFixed(0)}% of range</span>
+              <span>H $${scFmt(a.dayHigh)}</span>
+            </div>
+          </div>
+        `;
+      };
+
+      function scBuildNarrative(a) {
+        const parts = [];
+        if (a.signals.includes('VOL SPIKE')) {
+          parts.push(`${a.symbol} is trading on ${a.volRatio.toFixed(1)}x its 20-day average volume — a significant volume spike that often precedes a larger move or indicates institutional activity.`);
+        }
+        if (a.signals.includes('PRICE SPIKE')) {
+          parts.push(`The stock is up ${scFmt(Math.abs(a.changePct))}% today, a notable single-day price spike relative to its typical daily range.`);
+        }
+        if (a.signals.includes('BREAKOUT')) {
+          parts.push(`Price has broken above its 20-day high on elevated volume, a classic breakout signal.`);
+        }
+        if (a.signals.includes('REL STRENGTH')) {
+          parts.push(`${a.changePct > 0 ? 'Relative strength detected' : 'Relative weakness detected'}: the stock is showing unusual ${a.changePct > 0 ? 'upside' : 'downside'} momentum versus its recent baseline.`);
+        }
+        return parts.join(' ');
+      }
+
+      function scCloseFlyout() {
+        scFlyoutOpen = false;
+        scCurrentFlyoutSym = null;
+        document.getElementById('sc-flyout-backdrop').classList.remove('open');
+        document.getElementById('sc-flyout-panel').classList.remove('open');
+      }
+
+      // ── Sort Headers ──────────────────────────────────────
+      function scSetupSort() {
+        document.querySelectorAll('#sc-table thead th[data-col]').forEach(th => {
+          th.addEventListener('click', () => {
+            const col = th.dataset.col;
+            if (scSortCol === col) {
+              scSortDir *= -1;
+            } else {
+              scSortCol = col;
+              scSortDir = -1;
+            }
+            document.querySelectorAll('#sc-table thead th').forEach(t => {
+              t.classList.remove('sc-sorted');
+              const arrow = t.querySelector('.sc-sort-arrow');
+              if (arrow) arrow.textContent = '▲';
+            });
+            th.classList.add('sc-sorted');
+            const arrow = th.querySelector('.sc-sort-arrow');
+            if (arrow) arrow.textContent = scSortDir === -1 ? '▼' : '▲';
+            scApplyFilters();
+            scRenderTable();
+          });
+        });
+      }
+
+      // ── Refresh Timer ─────────────────────────────────────
+      function scStartTimer() {
+        scStopTimer();
+        scCountdown = scRefreshSecs;
+        scUpdateRefreshDisplay();
+        scRefreshTimer = setInterval(() => {
+          scCountdown--;
+          scUpdateRefreshDisplay();
+          if (scCountdown <= 0) {
+            loadScanner(false);
+          }
+        }, 1000);
+      }
+
+      function scStopTimer() {
+        if (scRefreshTimer) { clearInterval(scRefreshTimer); scRefreshTimer = null; }
+      }
+
+      function scUpdateRefreshDisplay() {
+        const el = document.getElementById('sc-refresh-txt');
+        if (el) el.textContent = `Next refresh: ${scCountdown}s`;
+      }
+
+      // ── Event Listeners (set up once) ─────────────────────
+      let scEventsSetup = false;
+      function scSetupEvents() {
+        if (scEventsSetup) return;
+        scEventsSetup = true;
+
+        document.getElementById('sc-sector').addEventListener('change', e => {
+          scSectorFilter = e.target.value;
+          scApplyFilters(); scUpdateKPIs(); scRenderTable();
+        });
+
+        document.getElementById('sc-vol-ratio-range').addEventListener('input', e => {
+          scMinVolRatio = parseFloat(e.target.value);
+          document.getElementById('sc-vol-ratio-val').textContent = scMinVolRatio.toFixed(1) + 'x';
+          scApplyFilters(); scUpdateKPIs(); scRenderTable();
+        });
+
+        document.getElementById('sc-search').addEventListener('input', e => {
+          scSearchVal = e.target.value.trim();
+          scApplyFilters(); scRenderTable();
+        });
+
+        document.querySelectorAll('.sc-scan-toggle').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.sc-scan-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            scScanType = btn.dataset.scan;
+            scApplyFilters(); scUpdateKPIs(); scRenderTable();
+          });
+        });
+
+        // Toggle advanced filters
+        document.getElementById('sc-filters-toggle').addEventListener('click', () => {
+          const row = document.getElementById('sc-filter-row2');
+          const btn = document.getElementById('sc-filters-toggle');
+          const visible = row.style.display !== 'none';
+          row.style.display = visible ? 'none' : 'flex';
+          btn.classList.toggle('active', !visible);
+          btn.textContent = visible ? '+ More Filters' : '− More Filters';
+        });
+
+        // Advanced: price range
+        const debounceAdv = (fn) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), 400); }; };
+        const advRefresh = debounceAdv(() => { scApplyFilters(); scUpdateKPIs(); scRenderTable(); });
+
+        document.getElementById('sc-price-min').addEventListener('input', e => { scPriceMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-price-max').addEventListener('input', e => { scPriceMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-chg-min').addEventListener('input', e => { scChgMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-chg-max').addEventListener('input', e => { scChgMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-pe-min').addEventListener('input', e => { scPeMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-pe-max').addEventListener('input', e => { scPeMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-beta-min').addEventListener('input', e => { scBetaMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-beta-max').addEventListener('input', e => { scBetaMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-divy-min').addEventListener('input', e => { scDivYMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        document.getElementById('sc-divy-max').addEventListener('input', e => { scDivYMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+
+        // Market cap toggles
+        document.querySelectorAll('.sc-mcap-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.sc-mcap-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            scMcapFilter = btn.dataset.mcap;
+            scApplyFilters(); scUpdateKPIs(); scRenderTable();
+          });
+        });
+
+        // 52W toggles
+        document.querySelectorAll('.sc-52w-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.sc-52w-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            sc52wFilter = btn.dataset['52w'];
+            scApplyFilters(); scUpdateKPIs(); scRenderTable();
+          });
+        });
+
+        // Clear all advanced
+        document.getElementById('sc-clear-adv').addEventListener('click', () => {
+          scPriceMin = scPriceMax = scChgMin = scChgMax = scPeMin = scPeMax = scBetaMin = scBetaMax = scDivYMin = scDivYMax = null;
+          scAbsChgMin = null; scMinVolume = null; scPennyMode = false;
+          scMcapFilter = 'ALL'; sc52wFilter = 'ALL';
+          ['sc-price-min','sc-price-max','sc-chg-min','sc-chg-max','sc-pe-min','sc-pe-max','sc-beta-min','sc-beta-max','sc-divy-min','sc-divy-max','sc-abschange-min','sc-minvol'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+          const pmEl = document.getElementById('sc-penny-mode'); if (pmEl) pmEl.checked = false;
+          document.querySelectorAll('.sc-mcap-btn').forEach(b => b.classList.toggle('active', b.dataset.mcap === 'ALL'));
+          document.querySelectorAll('.sc-52w-btn').forEach(b => b.classList.toggle('active', b.dataset['52w'] === 'ALL'));
+          scApplyFilters(); scUpdateKPIs(); scRenderTable();
+        });
+
+        // Abs % move min
+        document.getElementById('sc-abschange-min').addEventListener('input', e => { scAbsChgMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        // Raw volume floor
+        document.getElementById('sc-minvol').addEventListener('input', e => { scMinVolume = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        // Penny mode
+        document.getElementById('sc-penny-mode').addEventListener('change', e => {
+          scPennyMode = e.target.checked;
+          if (scPennyMode) {
+            // Auto-show advanced filters row so user can see it's active
+            const row2 = document.getElementById('sc-filter-row2');
+            const toggleBtn = document.getElementById('sc-filters-toggle');
+            if (row2 && row2.style.display === 'none') {
+              row2.style.display = 'flex';
+              toggleBtn.classList.add('active');
+              toggleBtn.textContent = '− More Filters';
+            }
+          }
+          scApplyFilters(); scUpdateKPIs(); scRenderTable();
+        });
+
+        document.getElementById('sc-btn-scan').addEventListener('click', () => loadScanner(true));
+        document.getElementById('sc-flyout-close').addEventListener('click', scCloseFlyout);
+        document.getElementById('sc-flyout-backdrop').addEventListener('click', scCloseFlyout);
+
+        scSetupSort();
+      }
+
+      // ── Main Load ─────────────────────────────────────────
+      window.loadScanner = async function (showSkeletons = true) {
+        if (!isConnected) {
+          document.getElementById('sc-tbody').innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">Log in with Schwab to use the Stock Scanner.</td></tr>`;
+          return;
+        }
+
+        scSetupEvents();
+
+        if (showSkeletons) {
+          document.getElementById('sc-tbody').innerHTML = Array(8).fill(0).map(() =>
+            `<tr class="sc-skeleton">${Array(11).fill(0).map((_, i) => `<td><div class="sc-skel-block" style="width:${[46,58,44,70,70,44,78,44,90,60,30][i]}px"></div></td>`).join('')}</tr>`
+          ).join('');
+        }
+
+        document.getElementById('sc-error-banner').classList.remove('visible');
+        scStopTimer();
+
+        try {
+          const minVR = Math.min(scMinVolRatio, 1.5); // fetch with a lower threshold, filter client-side
+          const d = await apiGet(`/api/scanner?minVolRatio=${minVR}`);
+          if (!d.ok) throw new Error(d.error);
+
+          scAllAnomalies = d.anomalies || [];
+          scBreadth = d.breadth || { advances: 0, declines: 0, unchanged: 0 };
+
+          scApplyFilters();
+          scUpdateKPIs();
+          scRenderTable();
+          scStartTimer();
+        } catch (e) {
+          const banner = document.getElementById('sc-error-banner');
+          document.getElementById('sc-error-text').textContent = e.message || 'Failed to run scanner.';
+          banner.classList.add('visible');
+          document.getElementById('sc-tbody').innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">${e.message}</td></tr>`;
+        }
+      };
+    })();
 
     // ═══════════════════════════════════════════════════════
     //  12. EARNINGS VOLATILITY
