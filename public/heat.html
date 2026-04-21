@@ -8774,7 +8774,7 @@
 
       // ── Create single chart ──
       lwcChart = LightweightCharts.createChart(container, {
-        width: container.clientWidth || 800,
+        autoSize: true,
         height: totalH,
         layout: {
           background: { type: 'solid', color: '#0a0b0d' },
@@ -8946,17 +8946,14 @@
       setTimeout(drawGammaBars, 800);
 
       // ── Handle resize when sidebar collapses ──
-      // Debounce by 300ms — sidebar transition is 250ms, so we wait for it to fully
-      // settle before measuring container width, otherwise the chart gets a stale
-      // mid-transition width and the price axis / gamma bars are pushed off-screen.
+      // autoSize:true lets LightweightCharts manage its own width via its internal
+      // ResizeObserver. We only need to redraw the gamma canvas overlay after the
+      // sidebar transition (250ms) has fully settled — no manual width assignment needed.
       let _roTimer = null;
       const ro = new ResizeObserver(() => {
         clearTimeout(_roTimer);
         _roTimer = setTimeout(() => {
-          if (lwcChart) {
-            lwcChart.applyOptions({ width: container.clientWidth });
-            requestAnimationFrame(drawGammaBars);
-          }
+          if (lwcChart) requestAnimationFrame(drawGammaBars);
         }, 300);
       });
       ro.observe(container);
