@@ -1070,9 +1070,9 @@ app.get("/api/marketoverview", async (req, res) => {
       const lastCandle = histMap['SPY'][histMap['SPY'].length - 1];
       // Only add if last candle is from a prior day (avoid duplicating on weekend/holiday)
       if (!lastCandle || lastCandle.datetime < todayMs) {
-        const open = spyQuote.openPrice ?? spyLast;
-        const high = spyQuote.highPrice ?? spyLast;
-        const low = spyQuote.lowPrice ?? spyLast;
+        const open = spyQuote.openPrice || spyLast;
+        const high = spyQuote.highPrice || spyLast;
+        const low  = spyQuote.lowPrice  || spyLast;  // lowPrice=0 pre-market → fall back to last
         histMap['SPY'].push({
           datetime: todayMs,
           open, high, low,
@@ -1083,7 +1083,10 @@ app.get("/api/marketoverview", async (req, res) => {
         // Update the existing today candle with the latest price
         lastCandle.close = spyLast;
         if (spyQuote.highPrice) lastCandle.high = Math.max(lastCandle.high, spyQuote.highPrice);
-        if (spyQuote.lowPrice) lastCandle.low = Math.min(lastCandle.low, spyQuote.lowPrice);
+        if (spyQuote.lowPrice)  lastCandle.low  = Math.min(lastCandle.low, spyQuote.lowPrice);
+        // If low ended up 0 (Schwab overnight bug), clamp to close
+        if (!lastCandle.low)  lastCandle.low  = Math.min(lastCandle.open, lastCandle.close);
+        if (!lastCandle.high) lastCandle.high = Math.max(lastCandle.open, lastCandle.close);
       }
     }
 
