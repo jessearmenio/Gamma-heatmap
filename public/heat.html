@@ -85,20 +85,13 @@
       /* Updated: {time} ago */
     }
 
-    spanp {
-      padding-top: 2px;
-      /* Pause button */
-    }
-
     spanh {
-      margin-bottom: 2px;
+      margin-bottom: 4px;
       /* Macro Banner Icon */
     }
 
     spanr {
-      transform: scale(1.2);
-      /* refresh button icon */
-      margin-bottom: 2px;
+      transform: scale(1.2); /* refresh and pause button icon */
     }
 
     spano {
@@ -384,6 +377,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
       gap: 6px;
       font-size: 11px;
       min-width: 0;
@@ -392,6 +386,7 @@
     .ticker-row {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 16px;
       min-width: 0;
       overflow: hidden;
@@ -1805,7 +1800,7 @@
     /* ── Overview: Row 1 – Score Ring + Chart ── */
     .ov-row1 {
       display: grid;
-      grid-template-columns: 280px 1fr;
+      grid-template-columns: 300px 1fr;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -1991,13 +1986,13 @@
     }
 
     .ov-section-label {
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text3);
       opacity: 0.6;
-      margin-bottom: 6px;
+      margin-bottom: 9px;
     }
 
     /* ── Top Contributing Factors ── */
@@ -2476,7 +2471,7 @@
     }
 
     .ov-sector-val {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       text-align: right;
     }
@@ -2502,7 +2497,7 @@
       border-radius: 8px;
       overflow: hidden;
       min-width: 0;
-      max-height: 405px;
+      max-height: 412px;
       display: flex;
       flex-direction: column;
     }
@@ -5268,7 +5263,7 @@
             <spanr>↻</spanr>
           </button>
           <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
-            <spanp>⏸</spanp>
+            <spanr>⏸</spanr>
           </button>
         </div>
       </div>
@@ -5463,10 +5458,10 @@
                   <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span
                     style="color:#1848CC;font-size:9px;">PDH/PDL</span>
                 </div>
-                <div class="ov-leg-item" style="gap:6px;">
+                <!--<div class="ov-leg-item" style="gap:6px;">
                   <div style="width:14px;height:0;border-top:1.5px dashed #9C27B0;"></div><span
                     style="color:#9C27B0;font-size:9px;">GBX H/L</span>
-                </div>
+                </div>-->
                 <div class="ov-leg-item" style="gap:6px;">
                   <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span
                     style="color:#F23644;font-size:9px;">ATH</span>
@@ -5649,17 +5644,17 @@
                   <span class="ov-metric-value" id="ovm-tnx">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-tnx">--</span>
                 </div>
-                <div class="ov-metric-row">
+                <!--<div class="ov-metric-row">
                   <span class="ov-metric-label">USD (UUP) &#916;</span>
                   <span class="ov-metric-value" id="ovm-uup">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-uup">--</span>
-                </div>
+                </div>-->
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">Bonds (TLT) &#916;</span>
                   <span class="ov-metric-value" id="ovm-tlt">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-tlt">--</span>
                 </div>
-                <!--<div class="ov-metric-row">
+                <div class="ov-metric-row">
                   <span class="ov-metric-label">FOMC Proximity</span>
                   <span class="ov-metric-value" id="ovm-fomc">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-fomc">--</span>
@@ -5668,17 +5663,17 @@
                   <span class="ov-metric-label">CPI Proximity</span>
                   <span class="ov-metric-value" id="ovm-cpi">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-cpi">--</span>
-                </div>-->
+                </div>
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">Geo Risk</span>
                   <span class="ov-metric-value" id="ovm-geo">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-geo">--</span>
                 </div>
-                <div class="ov-metric-row">
+                <!--<div class="ov-metric-row">
                   <span class="ov-metric-label">Fear &amp; Greed</span>
                   <span class="ov-metric-value" id="ovm-fng">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-fng">--</span>
-                </div>
+                </div>-->
               </div>
             </div>
 
@@ -5861,7 +5856,7 @@
               style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Strikes:</span>
             <input id="heat-strike-count" type="number" value="50" min="5" max="100" step="5" onchange="reloadHeat()">
             <button
-              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
+              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
               class="dte-btn" onclick="reloadHeat()">
               <spano>↻</spano> Load
             </button>
@@ -6043,7 +6038,7 @@
                 <option value="iv">IV%</option>
               </select>
               <button onclick="loadOptionsFlow()"
-                style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
+                style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
                 <spano>↻</spano>
                 REFRESH
               </button>
@@ -6143,7 +6138,7 @@
                 oninput="stratRecalc()">
             </div>
             <button
-              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
+              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
               onclick="stratLoadChain(true)">
               <spano>↻</spano> LOAD CHAIN
             </button>
