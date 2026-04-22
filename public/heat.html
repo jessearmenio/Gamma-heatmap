@@ -1826,6 +1826,14 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+    .ov-row4-left {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    #ov-sector-card {
+      align-self: stretch;
+    }
 
     @media (max-width: 1100px) {
       .ov-row4 {
@@ -5681,24 +5689,18 @@
             </div>
           </div><!-- end ov-row3 -->
 
-          <div class="grid-2 mb12">
-            <div class="card">
-              <div class="card-header"><span class="card-title">Put/Call Ratio</span></div>
-              <div class="card-body" id="sent-pcr-body">
-                <div class="text-muted fs10">—</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
-              <div class="card-body" id="sent-score-body">
-                <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log in
-                  to calculate.</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- ── ROW 4: Execution Window + Sector Performance ── -->
+          <!-- ── ROW 4: Sentiment + Execution Window (left) + Sector Performance (right, full height) ── -->
           <div class="ov-row4">
+
+            <!-- Left column: Sentiment Score + Execution Window -->
+            <div class="ov-row4-left">
+              <div class="card">
+                <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
+                <div class="card-body" id="sent-score-body">
+                  <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log in
+                    to calculate.</div>
+                </div>
+              </div>
 
             <!-- Execution Window -->
             <div id="ov-exec-card">
@@ -5740,6 +5742,7 @@
                 </div>
               </div>
             </div>
+            </div><!-- end ov-row4-left -->
 
             <!-- Sector Performance -->
             <div id="ov-sector-card">
@@ -11146,11 +11149,6 @@
         </div>
       </div>`;
 
-        document.getElementById('sent-pcr-body').innerHTML = pcr
-          ? `<div style="font-size:22px;font-weight:800;color:${Number(pcr) > 1 ? 'var(--accent)' : '#d470ff'}">${pcr}</div>
-         <div style="font-size:10px;color:var(--text2);margin-top:4px;">Put/Call OI Ratio</div>
-         <div style="font-size:10px;color:var(--text3);">Below 0.7 = bullish • Above 1.2 = bearish</div>`
-          : `<div class="text-muted fs10">Load Heat Seeker for SPY first to calculate P/C ratio.</div>`;
 
         const vixEl = document.getElementById('sent-vix-body');
         if (vixEl) vixEl.innerHTML = `
