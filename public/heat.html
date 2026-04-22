@@ -864,6 +864,53 @@
       margin: 12px 0;
     }
 
+    /* ── Overview loading overlay ── */
+    #ov-loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(5, 10, 18, 0.88);
+      backdrop-filter: blur(4px);
+      transition: opacity 0.4s ease;
+      border-radius: 4px;
+    }
+    #ov-loading-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    #ov-loading-bar {
+      width: 220px;
+      height: 3px;
+      background: var(--border2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    #ov-loading-fill {
+      height: 100%;
+      width: 40%;
+      background: var(--accent);
+      border-radius: 99px;
+      animation: ov-load-slide 1.2s ease-in-out infinite;
+    }
+    @keyframes ov-load-slide {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(650%); }
+    }
+    #ov-loading-label {
+      font-size: 11px;
+      color: var(--text3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    #overview-page {
+      position: relative;
+    }
+
     /* ── Loading skeleton ── */
     .skeleton {
       background: linear-gradient(90deg, var(--bg3) 25%, var(--border) 50%, var(--bg3) 75%);
@@ -5208,6 +5255,12 @@
            1. MARKET OVERVIEW
       ════════════════════════════════════ -->
         <div id="overview-page" class="page active">
+          <div id="ov-loading-overlay">
+            <div id="ov-loading-inner">
+              <div id="ov-loading-bar"><div id="ov-loading-fill"></div></div>
+              <div id="ov-loading-label">Loading market data&hellip;</div>
+            </div>
+          </div>
           <div id="overview-error" class="error-banner" style="display:none;"></div>
 
           <!-- Ticker Marquee -->
@@ -7452,6 +7505,7 @@
 
         // Keep Market Overview as the visible landing page
         loadOverview();
+        loadSentiment();
 
         // Also preload Heat Seeker / GEX on initial connected load
         reloadHeat();
@@ -9400,8 +9454,20 @@
       } catch { return null; }
     }
 
+    function ovShowLoading() {
+      const el = document.getElementById('ov-loading-overlay');
+      if (el) el.style.display = 'flex';
+    }
+    function ovHideLoading() {
+      const el = document.getElementById('ov-loading-overlay');
+      if (!el) return;
+      el.style.opacity = '0';
+      setTimeout(() => { el.style.display = 'none'; el.style.opacity = '1'; }, 400);
+    }
+
     async function loadOverview() {
       if (!isConnected) return;
+      ovShowLoading();
       ovInitTicker();
       ovClearTerminalErrors(); // fresh load = clear old errors
       try {
@@ -9452,8 +9518,10 @@
 
         // Also run old overview sections (options key levels + movers) using existing dashboard endpoint
         loadOverviewLegacy();
+        ovHideLoading();
 
       } catch (e) {
+        ovHideLoading();
         const errEl = document.getElementById('overview-error');
         if (errEl) { errEl.style.display = 'flex'; errEl.innerHTML = `<span>\u26a0</span> ${e.message}`; }
         ovLogTerminalError('OVERVIEW', e.message);
