@@ -2430,6 +2430,9 @@
       border-radius: 8px;
       overflow: hidden;
       min-width: 0;
+      max-height: 405px;
+      display: flex;
+      flex-direction: column;
     }
 
     #ov-chart-header {
@@ -2442,7 +2445,8 @@
     }
 
     #ov-spy-chart {
-      height: 460px;
+      flex: 1 1 0;
+      min-height: 0;
       /* total: ~320px candles + 140px RSI */
       border-radius: 0 0 8px 8px;
       overflow: visible;
@@ -5145,8 +5149,8 @@
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>-->
-            <div class="ticker-item" id="tick-BTC">
-              <span class="t-sym">BTC</span>
+            <div class="ticker-item" id="tick-DXY">
+              <span class="t-sym">DXY</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
@@ -5172,8 +5176,8 @@
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
-            <div class="ticker-item" id="tick-DXY">
-              <span class="t-sym">DXY</span>
+            <div class="ticker-item" id="tick-BTC">
+              <span class="t-sym">BTC</span>
               <span class="t-price">—</span>
               <span class="t-chg flat">—</span>
             </div>
