@@ -7538,6 +7538,7 @@
     });
 
     function connectSchwab() {
+      sessionStorage.setItem('ov_from_oauth', '1');
       window.location.href = `${API_BASE}/login`;
     }
 
@@ -11841,6 +11842,13 @@
       // Start client-side session badge and ago timers immediately (no auth needed)
       startSessionTicker();
       startAgoTimer();
+
+      // If we just returned from OAuth callback, show the loading overlay immediately
+      const fromOAuth = sessionStorage.getItem('ov_from_oauth');
+      if (fromOAuth) {
+        sessionStorage.removeItem('ov_from_oauth');
+        ovShowLoading();
+      }
 
       // Check if already connected to Schwab
       const connected = await checkTokenStatus();
