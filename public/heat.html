@@ -877,12 +877,14 @@
       transition: opacity 0.4s ease;
       border-radius: 4px;
     }
+
     #ov-loading-inner {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 14px;
     }
+
     #ov-loading-bar {
       width: 220px;
       height: 3px;
@@ -890,6 +892,7 @@
       border-radius: 99px;
       overflow: hidden;
     }
+
     #ov-loading-fill {
       height: 100%;
       width: 40%;
@@ -897,16 +900,24 @@
       border-radius: 99px;
       animation: ov-load-slide 1.2s ease-in-out infinite;
     }
+
     @keyframes ov-load-slide {
-      0%   { transform: translateX(-100%); }
-      100% { transform: translateX(650%); }
+      0% {
+        transform: translateX(-100%);
+      }
+
+      100% {
+        transform: translateX(650%);
+      }
     }
+
     #ov-loading-label {
       font-size: 11px;
       color: var(--text3);
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
+
     #overview-page {
       position: relative;
     }
@@ -1826,11 +1837,13 @@
       gap: 12px;
       margin-bottom: 12px;
     }
+
     .ov-row4-left {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
+
     #ov-sector-card {
       align-self: stretch;
     }
@@ -2417,36 +2430,40 @@
     }
 
     .ov-sector-body {
-      padding: 8px 12px;
+      padding: 10px 12px 12px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 10px;
+      height: 100%;
+      justify-content: space-between;
     }
 
     .ov-sector-row {
       display: grid;
-      grid-template-columns: 42px 1fr 44px;
+      grid-template-columns: 48px 1fr 56px;
       align-items: center;
-      gap: 6px;
+      gap: 10px;
+      flex: 1 1 auto;
+      min-height: 18px;
     }
 
     .ov-sector-sym {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       color: var(--text2);
       letter-spacing: 0.04em;
     }
 
     .ov-sector-bar-track {
-      height: 5px;
+      height: 7px;
       background: var(--bg3);
-      border-radius: 3px;
+      border-radius: 4px;
       overflow: hidden;
     }
 
     .ov-sector-bar-fill {
       height: 100%;
-      border-radius: 3px;
+      border-radius: 4px;
       transition: width 0.4s ease;
     }
 
@@ -2459,7 +2476,7 @@
     }
 
     .ov-sector-val {
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
       text-align: right;
     }
@@ -5265,7 +5282,9 @@
         <div id="overview-page" class="page active">
           <div id="ov-loading-overlay" style="display:none;">
             <div id="ov-loading-inner">
-              <div id="ov-loading-bar"><div id="ov-loading-fill"></div></div>
+              <div id="ov-loading-bar">
+                <div id="ov-loading-fill"></div>
+              </div>
               <div id="ov-loading-label">Loading market data&hellip;</div>
             </div>
           </div>
@@ -5697,51 +5716,52 @@
               <div class="card">
                 <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
                 <div class="card-body" id="sent-score-body">
-                  <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log in
+                  <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log
+                    in
                     to calculate.</div>
                 </div>
               </div>
 
-            <!-- Execution Window -->
-            <div id="ov-exec-card">
-              <div class="ov-exec-header">
-                <span class="card-title">Execution Window</span>
-                <span style="font-size:10px;color:var(--text3);">Score: <b id="ov-exec-score"
-                    style="color:var(--text);">--</b></span>
-              </div>
-              <div class="ov-exec-body">
-                <div class="ov-exec-main">
-                  <div class="ov-exec-verdict sit-out" id="ov-exec-verdict">SIT OUT</div>
-                  <div class="ov-exec-conf-row">
-                    <span
-                      style="color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Confidence:</span>
-                    <span class="ov-exec-conf medium" id="ov-exec-conf">MEDIUM</span>
-                  </div>
-                  <div
-                    style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
-                    Active Signals</div>
-                  <ul class="ov-exec-signals" id="ov-exec-signals">
-                    <li>Waiting for data...</li>
-                  </ul>
+              <!-- Execution Window -->
+              <div id="ov-exec-card">
+                <div class="ov-exec-header">
+                  <span class="card-title">Execution Window</span>
+                  <span style="font-size:10px;color:var(--text3);">Score: <b id="ov-exec-score"
+                      style="color:var(--text);">--</b></span>
                 </div>
-                <div class="ov-exec-side">
-                  <div class="ov-exec-kv">
-                    <span class="ov-exec-kv-label">Position Size</span>
-                    <span class="ov-exec-kv-val" id="ov-exec-size">--</span>
+                <div class="ov-exec-body">
+                  <div class="ov-exec-main">
+                    <div class="ov-exec-verdict sit-out" id="ov-exec-verdict">SIT OUT</div>
+                    <div class="ov-exec-conf-row">
+                      <span
+                        style="color:var(--text3);font-size:9px;text-transform:uppercase;letter-spacing:0.06em;">Confidence:</span>
+                      <span class="ov-exec-conf medium" id="ov-exec-conf">MEDIUM</span>
+                    </div>
+                    <div
+                      style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
+                      Active Signals</div>
+                    <ul class="ov-exec-signals" id="ov-exec-signals">
+                      <li>Waiting for data...</li>
+                    </ul>
                   </div>
-                  <div class="ov-exec-kv">
-                    <span class="ov-exec-kv-label">Bias</span>
-                    <span class="ov-exec-kv-val ov-exec-bias neutral" id="ov-exec-bias">NEUTRAL</span>
-                  </div>
-                  <div
-                    style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
-                    Risk Notes</div>
-                  <div class="ov-exec-risks" id="ov-exec-risks">
-                    <div class="ov-exec-risk-note">--</div>
+                  <div class="ov-exec-side">
+                    <div class="ov-exec-kv">
+                      <span class="ov-exec-kv-label">Position Size</span>
+                      <span class="ov-exec-kv-val" id="ov-exec-size">--</span>
+                    </div>
+                    <div class="ov-exec-kv">
+                      <span class="ov-exec-kv-label">Bias</span>
+                      <span class="ov-exec-kv-val ov-exec-bias neutral" id="ov-exec-bias">NEUTRAL</span>
+                    </div>
+                    <div
+                      style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
+                      Risk Notes</div>
+                    <div class="ov-exec-risks" id="ov-exec-risks">
+                      <div class="ov-exec-risk-note">--</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
             </div><!-- end ov-row4-left -->
 
             <!-- Sector Performance -->
