@@ -5100,13 +5100,13 @@
         <li class="nav-item" data-page="treasury-page" onclick="navTo(this)">
           <span class="nav-icon">🏦</span><span class="nav-label">Treasury &amp; Risk</span>
         </li>
-        <!--<li class="nav-section-label">Analytics</li>
+        <li class="nav-section-label">Analytics</li>
         <li class="nav-item" data-page="earnings-page" onclick="navTo(this)">
           <span class="nav-icon">🤑</span><span class="nav-label">Earnings Vol</span>
         </li>
         <li class="nav-item" data-page="sentiment-page" onclick="navTo(this)">
           <span class="nav-icon">🤔</span><span class="nav-label">Sentiment</span>
-        </li>-->
+        </li>
       </ul>
     </nav>
 
@@ -5627,25 +5627,22 @@
               </div>
             </div>
           </div><!-- end ov-row3 -->
-          <div class="ov-row5">
-            <div class="grid-2 mb12">
-              <div class="card">
-                <div class="card-header"><span class="card-title">Put/Call Ratio</span></div>
-                <div class="card-body" id="sent-pcr-body">
-                  <div class="text-muted fs10">—</div>
-                </div>
+
+          <div class="grid-2 mb12">
+            <div class="card">
+              <div class="card-header"><span class="card-title">Put/Call Ratio</span></div>
+              <div class="card-body" id="sent-pcr-body">
+                <div class="text-muted fs10">—</div>
               </div>
-              <div class="card">
-                <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
-                <div class="card-body" id="sent-score-body">
-                  <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log
-                    in
-                    to calculate.</div>
-                </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
+              <div class="card-body" id="sent-score-body">
+                <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log in
+                  to calculate.</div>
               </div>
             </div>
           </div>
-
 
           <!-- ── ROW 4: Execution Window + Sector Performance ── -->
           <div class="ov-row4">
@@ -6584,22 +6581,6 @@
            13. SENTIMENT
       ════════════════════════════════════ -->
         <div id="sentiment-page" class="page" style="display:none;">
-          <div class="grid-2 mb12">
-            <div class="card">
-              <div class="card-header"><span class="card-title">Put/Call Ratio</span></div>
-              <div class="card-body" id="sent-pcr-body">
-                <div class="text-muted fs10">—</div>
-              </div>
-            </div>
-            <div class="card">
-              <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
-              <div class="card-body" id="sent-score-body">
-                <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log
-                  in
-                  to calculate.</div>
-              </div>
-            </div>
-          </div>
         </div>
         <!-- ════════════════════════════════════
            14. CHARTING
@@ -6761,7 +6742,7 @@
 
     function autoLoadPage(pageId) {
       switch (pageId) {
-        case 'overview-page': loadOverview(); break;
+        case 'overview-page': loadOverview(); loadSentiment(); break;
         case 'heat-page': reloadHeat(); break;
         case 'flow-page': loadOptionsFlow(); break;
         case 'mag7-page': loadMag7(); break;
@@ -11102,7 +11083,8 @@
          <div style="font-size:10px;color:var(--text3);">Below 0.7 = bullish • Above 1.2 = bearish</div>`
           : `<div class="text-muted fs10">Load Heat Seeker for SPY first to calculate P/C ratio.</div>`;
 
-        document.getElementById('sent-vix-body').innerHTML = `
+        const vixEl = document.getElementById('sent-vix-body');
+        if (vixEl) vixEl.innerHTML = `
       <div style="font-size:22px;font-weight:800;color:${vixLevel > 30 ? 'var(--red)' : vixLevel > 20 ? 'var(--orange)' : 'var(--green)'}">${fmt(vixLevel)}</div>
       <div style="font-size:10px;color:var(--text2);margin-top:4px;">CBOE Volatility Index</div>
       <div style="font-size:10px;color:var(--text3);">< 15: Calm • 15-25: Normal • > 30: Fear</div>`;
