@@ -5100,13 +5100,13 @@
         <li class="nav-item" data-page="treasury-page" onclick="navTo(this)">
           <span class="nav-icon">🏦</span><span class="nav-label">Treasury &amp; Risk</span>
         </li>
-        <li class="nav-section-label">Analytics</li>
+        <!--<li class="nav-section-label">Analytics</li>
         <li class="nav-item" data-page="earnings-page" onclick="navTo(this)">
           <span class="nav-icon">🤑</span><span class="nav-label">Earnings Vol</span>
         </li>
         <li class="nav-item" data-page="sentiment-page" onclick="navTo(this)">
           <span class="nav-icon">🤔</span><span class="nav-label">Sentiment</span>
-        </li>
+        </li>-->
       </ul>
     </nav>
 
@@ -5627,6 +5627,25 @@
               </div>
             </div>
           </div><!-- end ov-row3 -->
+          <div class="ov-row5">
+            <div class="grid-2 mb12">
+              <div class="card">
+                <div class="card-header"><span class="card-title">Put/Call Ratio</span></div>
+                <div class="card-body" id="sent-pcr-body">
+                  <div class="text-muted fs10">—</div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
+                <div class="card-body" id="sent-score-body">
+                  <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log
+                    in
+                    to calculate.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
 
           <!-- ── ROW 4: Execution Window + Sector Performance ── -->
           <div class="ov-row4">
@@ -6573,17 +6592,12 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-header"><span class="card-title">VIX Term Structure</span></div>
-              <div class="card-body" id="sent-vix-body">
-                <div class="text-muted fs10">—</div>
+              <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
+              <div class="card-body" id="sent-score-body">
+                <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log
+                  in
+                  to calculate.</div>
               </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Market Sentiment Score</span></div>
-            <div class="card-body" id="sent-score-body">
-              <div class="text-muted fs10">Sentiment score derived from VIX, P/C ratio, and options positioning. Log in
-                to calculate.</div>
             </div>
           </div>
         </div>
