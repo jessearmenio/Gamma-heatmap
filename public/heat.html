@@ -5119,6 +5119,360 @@
     .fs18 {
       font-size: 18px;
     }
+
+    /* ══════════════════════════════════════
+       JOURNAL PAGE
+    ══════════════════════════════════════ */
+    #journal-page {
+      padding-bottom: 40px;
+    }
+
+    .jnl-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .jnl-header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .jnl-trade-count {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .jnl-trade-count span {
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .jnl-year-select {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .jnl-upload-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .jnl-upload-btn:hover { opacity: 0.85; }
+
+    /* heatmap card */
+    .jnl-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+
+    .jnl-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .jnl-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .jnl-card-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .jnl-card-meta {
+      font-size: 11px;
+      color: var(--text3);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .jnl-card-meta strong {
+      color: var(--text);
+    }
+
+    /* toggle pills */
+    .jnl-toggle {
+      display: flex;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .jnl-toggle button {
+      padding: 5px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .jnl-toggle button.active {
+      background: var(--border2);
+      color: var(--text);
+    }
+
+    /* GitHub-style heatmap grid */
+    .jnl-heatmap-wrap {
+      overflow-x: auto;
+    }
+
+    .jnl-heatmap {
+      display: grid;
+      grid-template-rows: repeat(7, 13px);
+      grid-auto-flow: column;
+      gap: 3px;
+      width: max-content;
+    }
+
+    .jnl-heatmap-months {
+      display: flex;
+      gap: 3px;
+      margin-bottom: 4px;
+      padding-left: 22px;
+      width: max-content;
+    }
+
+    .jnl-month-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      min-width: 0;
+    }
+
+    .jnl-heatmap-outer {
+      display: flex;
+      gap: 4px;
+    }
+
+    .jnl-dow-labels {
+      display: grid;
+      grid-template-rows: repeat(7, 13px);
+      gap: 3px;
+      margin-top: 0;
+    }
+
+    .jnl-dow-label {
+      font-size: 9px;
+      color: var(--text3);
+      line-height: 13px;
+      letter-spacing: 0.04em;
+    }
+
+    .jnl-cell {
+      width: 13px;
+      height: 13px;
+      border-radius: 2px;
+      background: var(--bg3);
+      cursor: default;
+      transition: opacity 0.1s;
+      position: relative;
+    }
+
+    .jnl-cell:hover { opacity: 0.8; }
+
+    /* trade-activity greens */
+    .jnl-cell.lv1 { background: #0e4429; }
+    .jnl-cell.lv2 { background: #006d32; }
+    .jnl-cell.lv3 { background: #26a641; }
+    .jnl-cell.lv4 { background: #39d353; }
+
+    /* SPY heatmap — red/green */
+    .jnl-cell.spy-up1 { background: #0d3321; }
+    .jnl-cell.spy-up2 { background: #006d32; }
+    .jnl-cell.spy-up3 { background: #26a641; }
+    .jnl-cell.spy-up4 { background: #39d353; }
+    .jnl-cell.spy-dn1 { background: #3d0d0d; }
+    .jnl-cell.spy-dn2 { background: #7a1a1a; }
+    .jnl-cell.spy-dn3 { background: #b72626; }
+    .jnl-cell.spy-dn4 { background: #ff3b5c; }
+
+    /* legend */
+    .jnl-legend {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .jnl-legend-cell {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    /* flags / insights */
+    .jnl-flags {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .jnl-flag {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .jnl-flag.warn  { border-left: 3px solid var(--amber); }
+    .jnl-flag.danger { border-left: 3px solid var(--red); }
+    .jnl-flag.info  { border-left: 3px solid var(--cyan); }
+    .jnl-flag.ok    { border-left: 3px solid var(--green); }
+
+    .jnl-flag-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+    .jnl-flag-body {}
+    .jnl-flag-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+    .jnl-flag-desc {
+      font-size: 10px;
+      color: var(--text3);
+      line-height: 1.4;
+    }
+
+    /* trade matrix */
+    .jnl-table-wrap {
+      overflow-x: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .jnl-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .jnl-table th {
+      background: var(--bg3);
+      color: var(--text3);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .jnl-table th:hover { color: var(--text); }
+
+    .jnl-table th.sort-asc::after  { content: ' ▲'; font-size: 9px; }
+    .jnl-table th.sort-desc::after { content: ' ▼'; font-size: 9px; }
+
+    .jnl-table td {
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      color: var(--text);
+    }
+
+    .jnl-table tbody tr:hover td { background: var(--bg3); }
+    .jnl-table tbody tr:last-child td { border-bottom: none; }
+
+    .jnl-tag {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .jnl-tag.stock  { background: rgba(59,140,255,0.15); color: var(--blue); }
+    .jnl-tag.option { background: rgba(180,35,240,0.15); color: var(--purple3); }
+    .jnl-tag.buy    { background: rgba(34,221,136,0.12); color: var(--green); }
+    .jnl-tag.sell   { background: rgba(255,59,92,0.12);  color: var(--red); }
+
+    .jnl-result-pos { color: var(--green); font-weight: 700; }
+    .jnl-result-neg { color: var(--red);   font-weight: 700; }
+
+    .jnl-flag-row td {
+      background: rgba(255,176,32,0.06) !important;
+    }
+
+    .jnl-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text3);
+    }
+
+    .jnl-empty-icon { font-size: 36px; margin-bottom: 10px; }
+    .jnl-empty-title { font-size: 14px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+    .jnl-empty-desc  { font-size: 11px; line-height: 1.5; }
+
+    .jnl-tooltip {
+      position: fixed;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 10px;
+      color: var(--text);
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 
@@ -5168,6 +5522,9 @@
         </li>
         <li class="nav-item" data-page="strat-page" onclick="navTo(this)">
           <span class="nav-icon">⚖️</span><span class="nav-label">Strategy Tester</span>
+        </li>
+        <li class="nav-item" data-page="journal-page" onclick="navTo(this)">
+          <span class="nav-icon">📓</span><span class="nav-label">Journal</span>
         </li>
         <li class="nav-section-label">Equities</li>
         <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
@@ -6779,6 +7136,140 @@
             </div>
           </div>
         </div>
+        <!-- ════════════════════════════════════════════════
+             JOURNAL PAGE
+        ════════════════════════════════════════════════ -->
+        <div id="journal-page" class="page">
+
+          <!-- hidden file input -->
+          <input type="file" id="jnl-file-input" accept=".csv" style="display:none">
+          <div id="jnl-tooltip" class="jnl-tooltip"></div>
+
+          <!-- header row -->
+          <div class="jnl-header">
+            <div class="jnl-header-left">
+              <div class="jnl-trade-count" id="jnl-trade-count">0 <span>trades in <span id="jnl-year-label">--</span></span></div>
+              <select class="jnl-year-select" id="jnl-year-select" onchange="jnlChangeYear(this.value)">
+                <option>2026</option>
+                <option>2025</option>
+                <option>2024</option>
+              </select>
+            </div>
+            <button class="jnl-upload-btn" onclick="document.getElementById('jnl-file-input').click()">
+              ↑ Upload CSV
+            </button>
+          </div>
+
+          <!-- TRADE ACTIVITY HEATMAP -->
+          <div class="jnl-card" id="jnl-activity-card">
+            <div class="jnl-card-header">
+              <div>
+                <div class="jnl-card-title">Trade activity</div>
+                <div class="jnl-card-sub" id="jnl-activity-sub">Charles Schwab · upload a CSV to begin</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="jnl-card-meta" id="jnl-activity-meta"></div>
+                <div class="jnl-toggle" id="jnl-metric-toggle">
+                  <button class="active" onclick="jnlSetMetric('trades',this)">Trades</button>
+                  <button onclick="jnlSetMetric('shares',this)">Shares</button>
+                  <button onclick="jnlSetMetric('notional',this)">Notional</button>
+                </div>
+              </div>
+            </div>
+            <div class="jnl-heatmap-wrap">
+              <div id="jnl-months-row" class="jnl-heatmap-months"></div>
+              <div class="jnl-heatmap-outer">
+                <div class="jnl-dow-labels">
+                  <div class="jnl-dow-label">Sun</div>
+                  <div class="jnl-dow-label">Mon</div>
+                  <div class="jnl-dow-label">Tue</div>
+                  <div class="jnl-dow-label">Wed</div>
+                  <div class="jnl-dow-label">Thu</div>
+                  <div class="jnl-dow-label">Fri</div>
+                  <div class="jnl-dow-label">Sat</div>
+                </div>
+                <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
+              <div class="jnl-legend">
+                Less
+                <div class="jnl-legend-cell" style="background:#1a1e2a"></div>
+                <div class="jnl-legend-cell" style="background:#0e4429"></div>
+                <div class="jnl-legend-cell" style="background:#006d32"></div>
+                <div class="jnl-legend-cell" style="background:#26a641"></div>
+                <div class="jnl-legend-cell" style="background:#39d353"></div>
+                More
+              </div>
+            </div>
+          </div>
+
+          <!-- SPY DAILY PERFORMANCE HEATMAP -->
+          <div class="jnl-card">
+            <div class="jnl-card-header">
+              <div>
+                <div class="jnl-card-title">SPY daily performance</div>
+                <div class="jnl-card-sub" id="jnl-spy-sub"><span id="jnl-year-label2">--</span> YTD · intensity = daily % change (open to close)</div>
+              </div>
+              <div class="jnl-card-meta" id="jnl-spy-meta"></div>
+            </div>
+            <div class="jnl-heatmap-wrap">
+              <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
+              <div class="jnl-heatmap-outer">
+                <div class="jnl-dow-labels">
+                  <div class="jnl-dow-label">Sun</div>
+                  <div class="jnl-dow-label">Mon</div>
+                  <div class="jnl-dow-label">Tue</div>
+                  <div class="jnl-dow-label">Wed</div>
+                  <div class="jnl-dow-label">Thu</div>
+                  <div class="jnl-dow-label">Fri</div>
+                  <div class="jnl-dow-label">Sat</div>
+                </div>
+                <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+              <div class="jnl-card-sub" id="jnl-spy-footer">Loading SPY data…</div>
+              <div class="jnl-legend">
+                &minus;2%
+                <div class="jnl-legend-cell" style="background:#ff3b5c"></div>
+                <div class="jnl-legend-cell" style="background:#b72626"></div>
+                <div class="jnl-legend-cell" style="background:#1a1e2a"></div>
+                <div class="jnl-legend-cell" style="background:#006d32"></div>
+                <div class="jnl-legend-cell" style="background:#39d353"></div>
+                +2%
+              </div>
+            </div>
+          </div>
+
+          <!-- BEHAVIORAL FLAGS -->
+          <div class="jnl-flags" id="jnl-flags"></div>
+
+          <!-- TRADE MATRIX -->
+          <div class="jnl-card" style="padding:0;overflow:hidden;">
+            <div style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <div class="jnl-card-title">Trade Log</div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input id="jnl-search" placeholder="Filter ticker…" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;width:140px;" oninput="jnlRenderTable()">
+                <select id="jnl-filter-type" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;" onchange="jnlRenderTable()">
+                  <option value="">All Types</option>
+                  <option value="Buy to Open">Buy to Open</option>
+                  <option value="Sell to Close">Sell to Close</option>
+                </select>
+              </div>
+            </div>
+            <div class="jnl-table-wrap" id="jnl-table-wrap">
+              <div class="jnl-empty">
+                <div class="jnl-empty-icon">📂</div>
+                <div class="jnl-empty-title">No trades loaded</div>
+                <div class="jnl-empty-desc">Upload a CSV from Charles Schwab to view your trade log.</div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /journal-page -->
+
       </div><!-- /page-content -->
     </div><!-- /main -->
   </div><!-- /app -->
@@ -6866,7 +7357,577 @@
         case 'darkpool-page': loadDarkPool(); break;
         case 'scanner-page': loadScanner(); break;
         case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
+        case 'journal-page': jnlInit(); break;
       }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  JOURNAL
+    // ═══════════════════════════════════════════════════════
+    let jnlTrades      = [];     // all parsed rows
+    let jnlYear        = new Date().getFullYear();
+    let jnlMetric      = 'trades';  // 'trades' | 'shares' | 'notional'
+    let jnlSortCol     = 'date';
+    let jnlSortDir     = 'asc';
+    let jnlSpyData     = {};     // { 'YYYY-MM-DD': pct }
+    let jnlInited      = false;
+
+    function jnlInit() {
+      if (jnlInited) return;
+      jnlInited = true;
+      // wire file input
+      document.getElementById('jnl-file-input').addEventListener('change', e => {
+        const f = e.target.files[0];
+        if (!f) return;
+        const reader = new FileReader();
+        reader.onload = ev => jnlParseCSV(ev.target.result);
+        reader.readAsText(f);
+        e.target.value = '';
+      });
+      // set year
+      jnlYear = parseInt(document.getElementById('jnl-year-select').value);
+      document.getElementById('jnl-year-label').textContent  = jnlYear;
+      document.getElementById('jnl-year-label2').textContent = jnlYear;
+      // render empty heatmaps so structure is visible
+      jnlRenderActivityHeatmap();
+      // fetch SPY data
+      jnlFetchSpy();
+    }
+
+    function jnlChangeYear(y) {
+      jnlYear = parseInt(y);
+      document.getElementById('jnl-year-label').textContent  = jnlYear;
+      document.getElementById('jnl-year-label2').textContent = jnlYear;
+      jnlRenderActivityHeatmap();
+      jnlRenderSpyHeatmap();
+      jnlRenderTable();
+      jnlRenderFlags();
+      jnlUpdateHeader();
+    }
+
+    function jnlSetMetric(m, btn) {
+      jnlMetric = m;
+      document.querySelectorAll('#jnl-metric-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      jnlRenderActivityHeatmap();
+    }
+
+    // ─── CSV Parser ────────────────────────────────────────────────────
+    function jnlParseCSV(text) {
+      // Normalize line endings, split
+      const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
+      if (lines.length < 2) { alert('CSV appears empty.'); return; }
+
+      // Parse header
+      const header = jnlCSVRow(lines[0]).map(h => h.trim().toLowerCase());
+
+      // Column index helpers (flexible naming)
+      const col = (names) => {
+        for (const n of names) {
+          const i = header.indexOf(n.toLowerCase());
+          if (i !== -1) return i;
+        }
+        return -1;
+      };
+
+      const iDate   = col(['date', 'trade date', 'tradedate', 'settlement date']);
+      const iTime   = col(['time', 'trade time', 'tradetime', 'execution time']);
+      const iTicker = col(['symbol', 'ticker', 'security']);
+      const iDesc   = col(['description', 'action', 'type']);
+      const iQty    = col(['quantity', 'qty', 'shares']);
+      const iPrice  = col(['price', 'exec price', 'execution price']);
+      const iAmount = col(['amount', 'total amount', 'net amount', 'proceeds']);
+
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cells = jnlCSVRow(lines[i]);
+        if (cells.length < 3) continue;
+
+        const raw = (idx) => idx >= 0 ? (cells[idx] || '').trim() : '';
+
+        const dateStr  = raw(iDate);
+        const timeStr  = raw(iTime);
+        const ticker   = raw(iTicker).replace(/["']/g, '').toUpperCase();
+        const descRaw  = raw(iDesc);
+        const qtyRaw   = raw(iQty).replace(/,/g, '');
+        const priceRaw = raw(iPrice).replace(/[$,]/g, '');
+        const amtRaw   = raw(iAmount).replace(/[$,]/g, '');
+
+        if (!ticker || !dateStr) continue;
+
+        // Determine method: Options = ticker has space/C/P pattern or desc mentions option
+        const isOption = /\s+[CP]\d|option|call|put/i.test(descRaw + ' ' + ticker);
+        const method   = isOption ? 'Options' : 'Common Stock';
+
+        // Determine type: Buy to Open / Sell to Close
+        let tradeType = 'Buy to Open';
+        if (/sell|close|sold|sld/i.test(descRaw)) tradeType = 'Sell to Close';
+        else if (/buy|open|bought|bgt/i.test(descRaw)) tradeType = 'Buy to Open';
+
+        const qty      = parseFloat(qtyRaw) || 0;
+        let   price    = parseFloat(priceRaw) || 0;
+        const amount   = parseFloat(amtRaw) || 0;
+
+        // Options: notional = price * qty * 100
+        const notional = isOption ? (price * qty * 100) : (price * qty);
+        const costBasis = Math.abs(amount) || notional;
+
+        // Result: positive for sells (cash in), negative for buys (cash out)
+        let result = 0;
+        if (tradeType === 'Sell to Close') result = +Math.abs(amount || notional);
+        else result = -Math.abs(amount || notional);
+
+        rows.push({ date: dateStr, time: timeStr, ticker, method, type: tradeType,
+          qty, price, notional, costBasis, result, isOption });
+      }
+
+      jnlTrades = rows;
+      jnlUpdateHeader();
+      jnlRenderActivityHeatmap();
+      jnlRenderTable();
+      jnlRenderFlags();
+      const activeDays = new Set(rows.map(r => r.date)).size;
+      document.getElementById('jnl-activity-sub').textContent =
+        `Charles Schwab · ${activeDays} active days`;
+    }
+
+    // Robust CSV row parser (handles quoted commas)
+    function jnlCSVRow(line) {
+      const result = [];
+      let cur = '', inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
+        else { cur += ch; }
+      }
+      result.push(cur);
+      return result;
+    }
+
+    // ─── Update header count ────────────────────────────────────────
+    function jnlUpdateHeader() {
+      const yr = jnlTrades.filter(t => t.date.includes(String(jnlYear)));
+      document.getElementById('jnl-trade-count').innerHTML =
+        `${yr.length} <span>trades in <span id="jnl-year-label">${jnlYear}</span></span>`;
+    }
+
+    // ─── Heatmap helpers ────────────────────────────────────────
+    // Build a full-year grid of Date objects starting Sunday of the week Jan 1 falls in
+    function jnlBuildGrid(year) {
+      const jan1 = new Date(year, 0, 1);
+      const startDay = jan1.getDay(); // 0=Sun
+      const start = new Date(jan1);
+      start.setDate(jan1.getDate() - startDay);
+      const cells = [];
+      let cur = new Date(start);
+      while (cur.getFullYear() <= year) {
+        cells.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      // ensure we go through Dec 31
+      const dec31 = new Date(year, 11, 31);
+      while (cur <= dec31) {
+        cells.push(new Date(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return cells;
+    }
+
+    function jnlIsoDate(d) {
+      return d.toISOString().split('T')[0];
+    }
+
+    function jnlBuildMonthLabels(cells, el) {
+      // positions are columns; each column = 7 cells = one week
+      el.innerHTML = '';
+      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      let lastMonth = -1;
+      for (let col = 0; col < Math.ceil(cells.length / 7); col++) {
+        const cellDate = cells[col * 7];
+        if (!cellDate) continue;
+        const m = cellDate.getMonth();
+        const span = document.createElement('div');
+        span.className = 'jnl-month-label';
+        // Each column = 16px (13 + 3 gap)
+        span.style.minWidth = '16px';
+        span.textContent = (m !== lastMonth) ? MONTHS[m] : '';
+        if (m !== lastMonth) lastMonth = m;
+        el.appendChild(span);
+      }
+    }
+
+    // ─── Render Trade Activity Heatmap ──────────────────────────
+    function jnlRenderActivityHeatmap() {
+      const grid = jnlBuildGrid(jnlYear);
+      const hm   = document.getElementById('jnl-activity-heatmap');
+      const mr   = document.getElementById('jnl-months-row');
+      hm.innerHTML = '';
+
+      // Build per-day map
+      const dayMap = {};
+      for (const t of jnlTrades) {
+        const d = jnlNormaliseDate(t.date);
+        if (!d || !d.startsWith(String(jnlYear))) continue;
+        if (!dayMap[d]) dayMap[d] = { trades: 0, shares: 0, notional: 0 };
+        dayMap[d].trades++;
+        dayMap[d].shares   += t.qty;
+        dayMap[d].notional += t.notional;
+      }
+
+      // Max for scaling
+      const vals = Object.values(dayMap).map(v => v[jnlMetric] || 0);
+      const maxVal = vals.length ? Math.max(...vals) : 1;
+
+      // Render cells
+      for (const d of grid) {
+        const iso  = jnlIsoDate(d);
+        const data = dayMap[iso];
+        const cell = document.createElement('div');
+        cell.className = 'jnl-cell';
+
+        if (data) {
+          const v = data[jnlMetric] || 0;
+          const pct = v / maxVal;
+          if      (pct > 0.75) cell.classList.add('lv4');
+          else if (pct > 0.50) cell.classList.add('lv3');
+          else if (pct > 0.25) cell.classList.add('lv2');
+          else if (pct > 0)    cell.classList.add('lv1');
+
+          // tooltip
+          const label = jnlMetric === 'trades' ? `${data.trades} trade${data.trades!==1?'s':''}`
+            : jnlMetric === 'shares' ? `${data.shares.toLocaleString()} shares`
+            : `$${data.notional.toLocaleString(undefined,{maximumFractionDigits:0})} notional`;
+          cell.setAttribute('data-tip', `${iso} · ${label}`);
+        } else {
+          cell.setAttribute('data-tip', iso);
+        }
+
+        cell.addEventListener('mouseenter', jnlShowTip);
+        cell.addEventListener('mousemove',  jnlMoveTip);
+        cell.addEventListener('mouseleave', jnlHideTip);
+        hm.appendChild(cell);
+      }
+
+      jnlBuildMonthLabels(grid, mr);
+
+      // stats
+      const activeDays = Object.keys(dayMap).length;
+      const total      = Object.values(dayMap).reduce((s,v) => s + v.trades, 0);
+      document.getElementById('jnl-activity-footer').textContent =
+        jnlTrades.length
+          ? `${activeDays} active days · ${total} total trades`
+          : 'Upload a CSV to see your trade activity';
+
+      // meta stats
+      const metaEl = document.getElementById('jnl-activity-meta');
+      if (jnlTrades.length) {
+        const tickers = new Set(jnlTrades.map(t => t.ticker)).size;
+        metaEl.innerHTML = `<strong>${activeDays}</strong> active days &nbsp;·&nbsp; <strong>${tickers}</strong> tickers`;
+      } else {
+        metaEl.innerHTML = '';
+      }
+    }
+
+    function jnlNormaliseDate(s) {
+      if (!s) return null;
+      // Handle MM/DD/YYYY, YYYY-MM-DD, MM-DD-YYYY
+      s = s.trim();
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+      const parts = s.split(/[\/\-]/);
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+        return `${parts[2]}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+      }
+      return null;
+    }
+
+    // ─── SPY Heatmap ───────────────────────────────────────────────
+    async function jnlFetchSpy() {
+      try {
+        // Use Finnhub candles for SPY for the current year
+        const key = typeof FINNHUB_API_KEY !== 'undefined' ? FINNHUB_API_KEY : '';
+        if (!key) throw new Error('no key');
+        const from = Math.floor(new Date(jnlYear, 0, 1).getTime() / 1000);
+        const to   = Math.floor(Math.min(new Date(jnlYear, 11, 31).getTime() / 1000, Date.now() / 1000));
+        const url  = `https://finnhub.io/api/v1/stock/candle?symbol=SPY&resolution=D&from=${from}&to=${to}&token=${key}`;
+        const res  = await fetch(url);
+        const json = await res.json();
+        if (json.s !== 'ok') throw new Error('bad response');
+        jnlSpyData = {};
+        for (let i = 0; i < json.t.length; i++) {
+          const iso = new Date(json.t[i] * 1000).toISOString().split('T')[0];
+          const pct = ((json.c[i] - json.o[i]) / json.o[i]) * 100;
+          jnlSpyData[iso] = pct;
+        }
+        jnlRenderSpyHeatmap();
+      } catch(e) {
+        // Fallback: try the API_BASE proxy
+        try {
+          const from = Math.floor(new Date(jnlYear, 0, 1).getTime() / 1000);
+          const to   = Math.floor(Math.min(new Date(jnlYear, 11, 31).getTime() / 1000, Date.now() / 1000));
+          const res  = await fetch(`${API_BASE}/api/candle?symbol=SPY&resolution=D&from=${from}&to=${to}`);
+          const json = await res.json();
+          if (json.s === 'ok') {
+            jnlSpyData = {};
+            for (let i = 0; i < json.t.length; i++) {
+              const iso = new Date(json.t[i] * 1000).toISOString().split('T')[0];
+              jnlSpyData[iso] = ((json.c[i] - json.o[i]) / json.o[i]) * 100;
+            }
+            jnlRenderSpyHeatmap();
+            return;
+          }
+        } catch(e2) {}
+        document.getElementById('jnl-spy-footer').textContent = 'SPY data unavailable — connect Finnhub to enable';
+        jnlRenderSpyHeatmap(); // render empty
+      }
+    }
+
+    function jnlRenderSpyHeatmap() {
+      const grid = jnlBuildGrid(jnlYear);
+      const hm   = document.getElementById('jnl-spy-heatmap');
+      const mr   = document.getElementById('jnl-spy-months-row');
+      hm.innerHTML = '';
+
+      let upDays = 0, dnDays = 0, totalPct = 0, count = 0;
+
+      for (const d of grid) {
+        const iso  = jnlIsoDate(d);
+        const pct  = jnlSpyData[iso];
+        const cell = document.createElement('div');
+        cell.className = 'jnl-cell';
+
+        if (pct !== undefined) {
+          const abs = Math.abs(pct);
+          if (pct > 0) {
+            upDays++;
+            if      (abs > 1.5) cell.classList.add('spy-up4');
+            else if (abs > 1.0) cell.classList.add('spy-up3');
+            else if (abs > 0.5) cell.classList.add('spy-up2');
+            else                cell.classList.add('spy-up1');
+          } else if (pct < 0) {
+            dnDays++;
+            if      (abs > 1.5) cell.classList.add('spy-dn4');
+            else if (abs > 1.0) cell.classList.add('spy-dn3');
+            else if (abs > 0.5) cell.classList.add('spy-dn2');
+            else                cell.classList.add('spy-dn1');
+          }
+          totalPct += pct;
+          count++;
+          cell.setAttribute('data-tip', `${iso} · SPY ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`);
+        } else {
+          cell.setAttribute('data-tip', iso);
+        }
+
+        cell.addEventListener('mouseenter', jnlShowTip);
+        cell.addEventListener('mousemove',  jnlMoveTip);
+        cell.addEventListener('mouseleave', jnlHideTip);
+        hm.appendChild(cell);
+      }
+
+      jnlBuildMonthLabels(grid, mr);
+
+      if (count) {
+        const avg = (totalPct / count).toFixed(2);
+        document.getElementById('jnl-spy-footer').textContent = '';
+        document.getElementById('jnl-spy-meta').innerHTML =
+          `${count} trading days YTD &nbsp;·&nbsp; <strong>${upDays}</strong> up &nbsp;·&nbsp; <strong>${dnDays}</strong> <span style="color:var(--red)">down</span> &nbsp;·&nbsp; avg <strong style="color:${parseFloat(avg)>=0?'var(--green)':'var(--red)'}">${parseFloat(avg)>=0?'+':''}${avg}%</strong>`;
+      }
+    }
+
+    // ─── Tooltip ───────────────────────────────────────────────
+    function jnlShowTip(e) {
+      const tip = document.getElementById('jnl-tooltip');
+      tip.textContent = e.currentTarget.getAttribute('data-tip');
+      tip.style.display = 'block';
+    }
+    function jnlMoveTip(e) {
+      const tip = document.getElementById('jnl-tooltip');
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top  = (e.clientY - 28) + 'px';
+    }
+    function jnlHideTip() {
+      document.getElementById('jnl-tooltip').style.display = 'none';
+    }
+
+    // ─── Behavioral Flags ───────────────────────────────────────
+    function jnlRenderFlags() {
+      const el = document.getElementById('jnl-flags');
+      el.innerHTML = '';
+      if (!jnlTrades.length) return;
+
+      const yr = jnlTrades.filter(t => t.date.includes(String(jnlYear)));
+      if (!yr.length) return;
+
+      const flags = [];
+
+      // ─ 1. Overtrading: days with >= 10 trades
+      const byDay = {};
+      for (const t of yr) {
+        const d = jnlNormaliseDate(t.date) || t.date;
+        if (!byDay[d]) byDay[d] = [];
+        byDay[d].push(t);
+      }
+      const overtradeDays = Object.entries(byDay).filter(([,v]) => v.length >= 10);
+      if (overtradeDays.length) {
+        flags.push({ cls: 'danger', icon: '⚠️', title: 'Overtrading Detected',
+          desc: `${overtradeDays.length} day${overtradeDays.length>1?'s':''} with 10+ trades. High frequency often signals emotional/reactive trading.` });
+      }
+
+      // ─ 2. Activity spikes: a day with 2× the average
+      const avgTrades = yr.length / Object.keys(byDay).length;
+      const spikeDays = Object.entries(byDay).filter(([,v]) => v.length > avgTrades * 2);
+      if (spikeDays.length && !overtradeDays.length) {
+        flags.push({ cls: 'warn', icon: '📈', title: 'Activity Spikes',
+          desc: `${spikeDays.length} day${spikeDays.length>1?'s':''} had 2×+ your daily average of ${avgTrades.toFixed(1)} trades. Review what triggered the spike.` });
+      }
+
+      // ─ 3. Trading against the trend: trades on SPY down-days
+      const downDayTrades = yr.filter(t => {
+        const iso = jnlNormaliseDate(t.date);
+        return iso && jnlSpyData[iso] !== undefined && jnlSpyData[iso] < -1.0 && t.type === 'Buy to Open';
+      });
+      const pctFighting = downDayTrades.length / yr.length;
+      if (pctFighting > 0.15) {
+        flags.push({ cls: 'danger', icon: '🔄', title: 'Fighting the Trend',
+          desc: `${downDayTrades.length} buys (${(pctFighting*100).toFixed(0)}% of trades) on SPY down-days >1%. Consider waiting for confirmation.` });
+      } else if (downDayTrades.length > 0) {
+        flags.push({ cls: 'warn', icon: '⚠️', title: 'Trend Awareness',
+          desc: `${downDayTrades.length} buy${downDayTrades.length>1?'s':''} executed on strong SPY down-days (>1% drop). Monitor for pattern.` });
+      }
+
+      // ─ 4. Concentration risk: single ticker > 40% of trades
+      const byTicker = {};
+      for (const t of yr) byTicker[t.ticker] = (byTicker[t.ticker] || 0) + 1;
+      const topTicker = Object.entries(byTicker).sort((a,b) => b[1]-a[1])[0];
+      if (topTicker && topTicker[1] / yr.length > 0.4) {
+        flags.push({ cls: 'warn', icon: '🎯', title: 'Ticker Concentration',
+          desc: `${topTicker[0]} represents ${((topTicker[1]/yr.length)*100).toFixed(0)}% of all trades. Heavy concentration in one name.` });
+      }
+
+      // ─ 5. Weekend / pre-post market activity
+      const offHours = yr.filter(t => {
+        if (!t.time) return false;
+        const parts = t.time.split(':');
+        const h = parseInt(parts[0]);
+        // Market is 8:30-15:00 CST (9:30-16:00 EST)
+        return h < 8 || h >= 16;
+      });
+      if (offHours.length > 0) {
+        flags.push({ cls: 'info', icon: '🌙', title: 'Pre/Post Market Activity',
+          desc: `${offHours.length} trade${offHours.length>1?'s':''} outside regular market hours. Extended hours carry higher risk and wider spreads.` });
+      }
+
+      // ─ 6. Good: diversified and measured
+      if (!flags.length) {
+        flags.push({ cls: 'ok', icon: '✅', title: 'Clean Session',
+          desc: 'No overtrading, trend-fighting, or concentration issues detected. Keep it up.' });
+      }
+
+      for (const f of flags) {
+        const div = document.createElement('div');
+        div.className = `jnl-flag ${f.cls}`;
+        div.innerHTML = `<div class="jnl-flag-icon">${f.icon}</div><div class="jnl-flag-body"><div class="jnl-flag-title">${f.title}</div><div class="jnl-flag-desc">${f.desc}</div></div>`;
+        el.appendChild(div);
+      }
+    }
+
+    // ─── Trade Table ───────────────────────────────────────────────
+    function jnlRenderTable() {
+      const wrap = document.getElementById('jnl-table-wrap');
+      const search    = (document.getElementById('jnl-search')?.value || '').toLowerCase();
+      const typeFilter = document.getElementById('jnl-filter-type')?.value || '';
+
+      let rows = jnlTrades.filter(t => {
+        const d = jnlNormaliseDate(t.date) || '';
+        if (!d.startsWith(String(jnlYear))) return false;
+        if (search && !t.ticker.toLowerCase().includes(search)) return false;
+        if (typeFilter && t.type !== typeFilter) return false;
+        return true;
+      });
+
+      if (!rows.length) {
+        wrap.innerHTML = `<div class="jnl-empty"><div class="jnl-empty-icon">📂</div><div class="jnl-empty-title">No trades</div><div class="jnl-empty-desc">${jnlTrades.length ? 'No trades match your filter.' : 'Upload a CSV from Charles Schwab to view your trade log.'}</div></div>`;
+        return;
+      }
+
+      // sort
+      rows.sort((a, b) => {
+        let av = a[jnlSortCol], bv = b[jnlSortCol];
+        if (jnlSortCol === 'date') { av = jnlNormaliseDate(av) || av; bv = jnlNormaliseDate(bv) || bv; }
+        if (typeof av === 'string') return jnlSortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+        return jnlSortDir === 'asc' ? av - bv : bv - av;
+      });
+
+      // build table
+      const COLS = [
+        { key: 'date',      label: 'Date' },
+        { key: 'time',      label: 'Time' },
+        { key: 'ticker',    label: 'Ticker' },
+        { key: 'method',    label: 'Method' },
+        { key: 'type',      label: 'Type' },
+        { key: 'qty',       label: 'Quantity' },
+        { key: 'price',     label: 'Price' },
+        { key: 'costBasis', label: 'Cost Basis' },
+        { key: 'result',    label: 'Result' },
+      ];
+
+      let html = '<table class="jnl-table"><thead><tr>';
+      for (const c of COLS) {
+        const cls = jnlSortCol === c.key ? (jnlSortDir === 'asc' ? 'sort-asc' : 'sort-desc') : '';
+        html += `<th class="${cls}" onclick="jnlSortBy('${c.key}')">${c.label}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+
+      // Build day-activity map to flag overtrade rows
+      const byDay = {};
+      for (const t of rows) {
+        const d = jnlNormaliseDate(t.date) || t.date;
+        byDay[d] = (byDay[d] || 0) + 1;
+      }
+      const avgTrades = rows.length / Math.max(Object.keys(byDay).length, 1);
+
+      for (const t of rows) {
+        const d         = jnlNormaliseDate(t.date) || t.date;
+        const isSpike   = byDay[d] >= 10 || byDay[d] > avgTrades * 2;
+        const isFight   = jnlSpyData[d] !== undefined && jnlSpyData[d] < -1.0 && t.type === 'Buy to Open';
+        const rowCls    = (isSpike || isFight) ? ' class="jnl-flag-row"' : '';
+        const methTag   = t.isOption
+          ? '<span class="jnl-tag option">Options</span>'
+          : '<span class="jnl-tag stock">Stock</span>';
+        const typeTag   = t.type.toLowerCase().includes('buy')
+          ? `<span class="jnl-tag buy">${t.type}</span>`
+          : `<span class="jnl-tag sell">${t.type}</span>`;
+        const priceDisp = t.isOption
+          ? `$${(t.price * 100).toFixed(2)}<span style="color:var(--text3);font-size:9px"> x${t.qty}</span>`
+          : `$${t.price.toFixed(2)}`;
+        const cbDisp    = `$${t.costBasis.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+        const resDisp   = t.result >= 0
+          ? `<span class="jnl-result-pos">+$${t.result.toLocaleString(undefined,{maximumFractionDigits:2})}</span>`
+          : `<span class="jnl-result-neg">-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
+        const flagIcon  = isFight ? ' 🔄' : isSpike ? ' ⚠️' : '';
+
+        html += `<tr${rowCls}>
+          <td>${d}${flagIcon}</td>
+          <td>${t.time || '—'}</td>
+          <td><strong>${t.ticker}</strong></td>
+          <td>${methTag}</td>
+          <td>${typeTag}</td>
+          <td>${t.qty.toLocaleString()}</td>
+          <td>${priceDisp}</td>
+          <td>${cbDisp}</td>
+          <td>${resDisp}</td>
+        </tr>`;
+      }
+
+      html += '</tbody></table>';
+      wrap.innerHTML = html;
+    }
+
+    function jnlSortBy(col) {
+      if (jnlSortCol === col) jnlSortDir = jnlSortDir === 'asc' ? 'desc' : 'asc';
+      else { jnlSortCol = col; jnlSortDir = 'asc'; }
+      jnlRenderTable();
     }
 
     const CALENDAR_EVENT_META = {
