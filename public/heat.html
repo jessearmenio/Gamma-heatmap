@@ -109,11 +109,6 @@
       /* pause button home icon */
     }
 
-    spano {
-      font-size: 16px !important;
-      /* flow refresh button, strategy & gex load button */
-    }
-
     /* ── Scrollbars ── */
     ::-webkit-scrollbar {
       width: 4px;
@@ -4806,7 +4801,7 @@
 
     /* ─────────────────────────────────────────────
    EARNINGS VOL
-───────────────────────────────────────────── */
+─────────────────────────────────────────────
     .earnings-card {
       background: var(--bg3);
       border: 1px solid var(--border);
@@ -4841,9 +4836,9 @@
       text-align: right;
     }
 
-    /* ─────────────────────────────────────────────
+─────────────────────────────────────────────
    SENTIMENT PAGE
-───────────────────────────────────────────── */
+───────────────────────────────────────────── 
     .sentiment-gauge {
       height: 8px;
       background: var(--bg3);
@@ -4866,9 +4861,9 @@
       background: linear-gradient(to right, var(--red), var(--purple));
     }
 
-    /* ─────────────────────────────────────────────
+─────────────────────────────────────────────
    TREASURY PAGE
-───────────────────────────────────────────── */
+───────────────────────────────────────────── 
     .yield-curve-wrap {
       display: flex;
       align-items: flex-end;
@@ -4906,7 +4901,7 @@
       font-weight: 700;
       white-space: nowrap;
     }
-
+*/
     /* ─────────────────────────────────────────────
    DARK POOL PAGE
 ───────────────────────────────────────────── */
@@ -5203,13 +5198,13 @@
         <li class="nav-item" data-page="treasury-page" onclick="navTo(this)">
           <span class="nav-icon">🏦</span><span class="nav-label">Treasury &amp; Risk</span>
         </li>
-        <li class="nav-section-label">Analytics</li>
+        <!--<li class="nav-section-label">Analytics</li>
         <li class="nav-item" data-page="earnings-page" onclick="navTo(this)">
           <span class="nav-icon">🤑</span><span class="nav-label">Earnings Vol</span>
         </li>
         <li class="nav-item" data-page="sentiment-page" onclick="navTo(this)">
           <span class="nav-icon">🤔</span><span class="nav-label">Sentiment</span>
-        </li>
+        </li>-->
       </ul>
     </nav>
 
@@ -5900,7 +5895,7 @@
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
               class="dte-btn" onclick="reloadHeat()">
-              <spano>↻</spano> Load
+              ↻ Load
             </button>
           </div>
 
@@ -6081,7 +6076,7 @@
               </select>
               <button onclick="loadOptionsFlow()"
                 style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
-                <spano>↻</spano>
+                ↻
                 REFRESH
               </button>
             </div>
@@ -6182,7 +6177,7 @@
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
               onclick="stratLoadChain(true)">
-              <spano>↻</spano> LOAD CHAIN
+              ↻ LOAD CHAIN
             </button>
           </div>
 
@@ -7056,8 +7051,17 @@
       return `IN ${days}D`;
     }
 
+    /*   --- no date ---
     function buildBannerText(ev) {
       return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time}`;
+    }
+    */
+
+    /*   --- with date ---   */
+    function buildBannerText(ev) {
+      const d = ev.releaseDate instanceof Date ? ev.releaseDate : new Date(ev.releaseDate);
+      const md = `${d.getMonth() + 1}/${d.getDate()}`;
+      return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time} (${md})`;
     }
 
     function eventTierRank(tier) {
@@ -8557,7 +8561,7 @@
       const rsi = sc.spyRsi;
       const rsiTone = rsi == null ? 'neutral' : rsi > 70 ? 'danger' : rsi > 55 ? 'positive' : rsi < 30 ? 'danger' : 'caution';
       const rsiTag = rsi == null ? '--' : rsi > 70 ? 'Overbought' : rsi > 55 ? 'Bullish' : rsi < 30 ? 'Oversold' : 'Neutral';
-      ovSetMetric('ovm-rsi', 'ovt-rsi', rsi != null ? rsi.toFixed(0) : '--', rsiTag, rsiTone);
+      ovSetMetric('ovm-rsi', 'ovt-rsi', rsi != null ? rsi.toFixed(2) : '--', rsiTag, rsiTone);
       // MACD
       const mr = sc.macdResult;
       const macdTxt = mr ? mr.macd.toFixed(2) : '--';
@@ -8746,13 +8750,67 @@
           return `${icon} ${label}: ${Math.round(score)}/100 \u2014 ${tone}`;
         });
       const riskNotes = [];
-      if (scores.fomc && scores.fomc.days <= 3) riskNotes.push(`FOMC in ${scores.fomc.days}d \u2014 expect volatility`);
-      if (scores.cpi && scores.cpi.days <= 3) riskNotes.push(`CPI in ${scores.cpi.days}d \u2014 potential whipsaw`);
-      if (VIX > 30) riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} \u2014 reduce all`);
-      else if (VIX > 25) riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} \u2014 reduce size`);
-      if (scores.spyRsi && scores.spyRsi > 75) riskNotes.push(`RSI overbought at ${Math.round(scores.spyRsi)}`);
-      if (scores.spyRsi && scores.spyRsi < 25) riskNotes.push(`RSI oversold at ${Math.round(scores.spyRsi)}`);
-      if (!riskNotes.length) riskNotes.push('No major risk flags');
+
+      // ── Volatility / tape risk ─────────────────────────
+      if (VIX > 30) {
+        riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} — expect unstable tape and reduce aggressively`);
+      } else if (VIX > 25) {
+        riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} — expect wider swings and smaller size`);
+      }
+
+      // ── Near-term macro event risk (<= 3 days) ─────────
+      const eventRisks = [];
+      if (scores.fomc && scores.fomc.days <= 3) {
+        eventRisks.push(`FOMC ${scores.fomc.days === 0 ? 'today' : `in ${scores.fomc.days}d`}`);
+      }
+      if (scores.cpi && scores.cpi.days <= 3) {
+        eventRisks.push(`CPI ${scores.cpi.days === 0 ? 'today' : `in ${scores.cpi.days}d`}`);
+      }
+      if (scores.jolts && scores.jolts.days <= 3) {
+        eventRisks.push(`JOLTS ${scores.jolts.days === 0 ? 'today' : `in ${scores.jolts.days}d`}`);
+      }
+      if (eventRisks.length) {
+        riskNotes.push(`${eventRisks.join(' + ')} — event risk can create whiplash`);
+      }
+
+      // ── Danger-state dashboard metrics ──────────────────
+      const dangerFlags = [];
+
+      if (scores.spyRsi > 75) dangerFlags.push(`RSI overheated (${Math.round(scores.spyRsi)})`);
+      if (scores.spyRsi < 25) dangerFlags.push(`RSI washed out (${Math.round(scores.spyRsi)})`);
+
+      if (scores.putCallRatio > 1.15) dangerFlags.push(`put/call defensive (${scores.putCallRatio.toFixed(2)})`);
+      if (scores.pctAbove20 < 35) dangerFlags.push(`breadth weak (${Math.round(scores.pctAbove20)}% > 20MA)`);
+      if (scores.pctAbove20 > 80) dangerFlags.push(`breadth stretched (${Math.round(scores.pctAbove20)}% > 20MA)`);
+
+      if (scores.aad && scores.aad < -1200) dangerFlags.push(`A/D line weak (${Math.round(scores.aad)})`);
+      if (scores.trin && scores.trin > 1.3) dangerFlags.push(`TRIN risk-on sellers (${scores.trin.toFixed(2)})`);
+      if (scores.voldRatio && scores.voldRatio < 0.85) dangerFlags.push(`volume skew defensive (${scores.voldRatio.toFixed(2)})`);
+
+      if (dangerFlags.length) {
+        riskNotes.push(dangerFlags.slice(0, 3).join(' • '));
+      }
+
+      // ── Notable positioning / structure ────────────────
+      const structureFlags = [];
+      if (scores.netGex != null && scores.netGex < 0) structureFlags.push('net GEX negative');
+      if (scores.zeroGamma != null && scores.SPY != null && Math.abs(scores.SPY - scores.zeroGamma) <= 3) {
+        structureFlags.push(`near zero-gamma (${scores.zeroGamma.toFixed(0)})`);
+      }
+      if (scores.gammaFlip != null && scores.SPY != null && Math.abs(scores.SPY - scores.gammaFlip) <= 3) {
+        structureFlags.push(`near gamma flip (${scores.gammaFlip.toFixed(0)})`);
+      }
+      if (scores.geoRisk && scores.geoRisk.topic && scores.geoRisk.topic !== 'Normal') {
+        structureFlags.push(`geo risk: ${scores.geoRisk.topic}`);
+      }
+
+      if (structureFlags.length) {
+        riskNotes.push(structureFlags.slice(0, 2).join(' • '));
+      }
+
+      // Keep the box tight and readable
+      const finalRiskNotes = riskNotes.filter(Boolean).slice(0, 4);
+      if (!finalRiskNotes.length) finalRiskNotes.push('No major risk flags on volatility, events, breadth, or structure');
 
       const vEl = document.getElementById('ov-exec-verdict');
       if (vEl) { vEl.textContent = verdict; vEl.className = 'ov-exec-verdict ' + verdictCls; }
@@ -8761,11 +8819,11 @@
       const sigEl = document.getElementById('ov-exec-signals');
       if (sigEl) sigEl.innerHTML = sigs.map(s => `<li>${s}</li>`).join('');
       const szEl = document.getElementById('ov-exec-size');
-      if (szEl) szEl.textContent = posSize + '%';
+      if (szEl) szEl.textContent = posSize + '% of Portfolio';
       const bEl = document.getElementById('ov-exec-bias');
       if (bEl) { bEl.textContent = bias; bEl.className = 'ov-exec-kv-val ov-exec-bias ' + biasCls; }
       const rEl = document.getElementById('ov-exec-risks');
-      if (rEl) rEl.innerHTML = riskNotes.map(n => `<div class="ov-exec-risk-note">${n}</div>`).join('');
+      if (rEl) rEl.innerHTML = finalRiskNotes.map(n => `<div class="ov-exec-risk-note">${n}</div>`).join('');
       const scoreEl = document.getElementById('ov-exec-score');
       if (scoreEl) scoreEl.textContent = Math.round(composite);
     }
@@ -9392,18 +9450,49 @@
         { sym: 'XLV', key: 'XLV' }, { sym: 'XLRE', key: 'XLRE' }, { sym: 'XLP', key: 'XLP' },
         { sym: 'XLB', key: 'XLB' }, { sym: 'XLU', key: 'XLU' }
       ];
+
+      const session = getMarketSession();
+      const freezeDailyChange = session === 'closed';
+
       TICKER_SYMS.forEach(({ sym, key }) => {
         const q = quotes[key];
         if (!q) return;
+
         const qd = q.quote || q;
         const price = ovN(qd.lastPrice) || ovN(qd.closePrice) || ovN(qd.mark);
         const pct = ovN(qd.netPercentChange);
+
         document.querySelectorAll(`[id^="ovt-${sym}-"]`).forEach(el => {
           const suffix = el.id.split('-').pop();
-          if (suffix === 'price' && price != null) el.textContent = price.toFixed(2);
-          if (suffix === 'chg' && pct != null) {
-            el.textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-            el.className = 'ov-tick-chg ' + (pct > 0 ? 'up' : pct < 0 ? 'dn' : 'flat');
+
+          if (suffix === 'price' && price != null) {
+            el.textContent = price.toFixed(2);
+          }
+
+          if (suffix === 'chg') {
+            const cacheKeyText = `ovTickerPctText_${sym}`;
+            const cacheKeyTone = `ovTickerPctTone_${sym}`;
+
+            if (freezeDailyChange) {
+              const savedText = localStorage.getItem(cacheKeyText);
+              const savedTone = localStorage.getItem(cacheKeyTone);
+              if (savedText) {
+                el.textContent = savedText;
+                el.className = 'ov-tick-chg ' + (savedTone || 'flat');
+              }
+              return;
+            }
+
+            if (pct != null) {
+              const nextText = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+              const nextTone = pct > 0 ? 'up' : pct < 0 ? 'dn' : 'flat';
+
+              el.textContent = nextText;
+              el.className = 'ov-tick-chg ' + nextTone;
+
+              localStorage.setItem(cacheKeyText, nextText);
+              localStorage.setItem(cacheKeyTone, nextTone);
+            }
           }
         });
       });
@@ -11967,6 +12056,7 @@
       if (fromOAuth) {
         sessionStorage.removeItem('ov_from_oauth');
         localStorage.removeItem('macroAlertDismissed');
+        localStorage.setItem('sidebarCollapsed', 'true');
         ovShowLoading();
       }
 
