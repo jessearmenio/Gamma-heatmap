@@ -7984,14 +7984,21 @@
     }
     function ovRsi(closes, period = 14) {
       if (!closes || closes.length < period + 1) return null;
-      let gains = 0, losses = 0;
-      for (let i = closes.length - period; i < closes.length; i++) {
+      // Wilder's smoothed RSI (same method as the chart calcRSI)
+      let avgGain = 0, avgLoss = 0;
+      for (let i = 1; i <= period; i++) {
         const d = closes[i] - closes[i - 1];
-        if (d > 0) gains += d; else losses += Math.abs(d);
+        if (d > 0) avgGain += d; else avgLoss += Math.abs(d);
       }
-      const ag = gains / period, al = losses / period;
-      if (al === 0) return 100;
-      return 100 - (100 / (1 + (ag / al)));
+      avgGain /= period;
+      avgLoss /= period;
+      for (let i = period + 1; i < closes.length; i++) {
+        const d = closes[i] - closes[i - 1];
+        avgGain = (avgGain * (period - 1) + Math.max(d, 0)) / period;
+        avgLoss = (avgLoss * (period - 1) + Math.max(-d, 0)) / period;
+      }
+      if (avgLoss === 0) return 100;
+      return 100 - (100 / (1 + avgGain / avgLoss));
     }
     function ovMacd(closes, fast = 12, slow = 26, sig = 9) {
       function ema(arr, p) {
@@ -11135,12 +11142,23 @@
         const spy = q['SPY']?.quote || {};
         const vixLevel = vix.lastPrice || 20;
 
-        // Load heat for SPY to get P/C ratio
+        // Load heat for SPY to get P/C ratio — fetch directly if not yet cached
         let pcr = null;
-        if (lastHeatData) {
-          const strikes = lastHeatData.strikes || [];
-          const totalCallOI = strikes.reduce((s, r) => s + r.callOpenInterest, 0);
-          const totalPutOI = strikes.reduce((s, r) => s + r.putOpenInterest, 0);
+        let heatSource = lastHeatData;
+        if (!heatSource) {
+          try {
+            const today = new Date();
+            const toDate = new Date(today); toDate.setDate(toDate.getDate() + 30);
+            const fromDate = today.toISOString().slice(0, 10);
+            const toDateStr = toDate.toISOString().slice(0, 10);
+            const hd = await apiGet(`/api/heat?symbol=SPY&strikeCount=50&fromDate=${fromDate}&toDate=${toDateStr}`);
+            if (hd.ok) { lastHeatData = hd; heatSource = hd; updateOvmPc(); }
+          } catch (_) {}
+        }
+        if (heatSource) {
+          const strikes = heatSource.strikes || [];
+          const totalCallOI = strikes.reduce((s, r) => s + (r.callOpenInterest || 0), 0);
+          const totalPutOI = strikes.reduce((s, r) => s + (r.putOpenInterest || 0), 0);
           pcr = totalCallOI > 0 ? (totalPutOI / totalCallOI).toFixed(2) : null;
         }
 
