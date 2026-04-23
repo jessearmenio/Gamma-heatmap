@@ -78,7 +78,7 @@
     }
 
     spana {
-      padding-bottom: 1px;
+      padding-bottom: 3px;
       transform: scale(1.2);
       /* refresh button home icon */
     }
@@ -86,6 +86,12 @@
     spanb {
       margin-bottom: 2px;
       /* Brand Icon, Calendar Back/Forward buttons */
+    }
+
+    spanc {
+      margin-bottom: 1px;
+      transform: scale(1.4);
+      /* hamburger nav icon */
     }
 
     spanu {
@@ -5211,7 +5217,9 @@
     <div id="main">
       <!-- topbar -->
       <div id="topbar">
-        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar"><spana>&#9776;</spana></button>
+        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">
+          <spanc>&#9776;</spanc>
+        </button>
         <div id="topbar-title" id="page-title">Market<br>Overview</div>
         <div class="ov-panel-divider-vertical"></div>
         <div id="ticker-strip">
@@ -7886,6 +7894,11 @@
       snapshot: null,
       spyCandles: [],
       intraday: {}, // cache: { '5m': [...], '10m': [...], '1H': [...] }
+      keyLevels: {
+        callWall: null,
+        putWall: null,
+        king: null
+      },
       tickerRafId: null,
       tickerOffset: 0,
       tickerGroupWidth: 0,
@@ -9231,7 +9244,17 @@
           addLine(pdl, '#1848CC', 'PDL');
         }
 
+        // Options key strikes from Overview pills
+        const callWall = Number(ovState.keyLevels?.callWall);
+        const putWall = Number(ovState.keyLevels?.putWall);
+        const king = Number(ovState.keyLevels?.king);
+
+        if (callWall) addLine(callWall, '#DCFF1E', 'CALL WALL', LightweightCharts.LineStyle.Solid);
+        if (putWall) addLine(putWall, '#d470ff', 'PUT WALL', LightweightCharts.LineStyle.Solid);
+        if (king) addLine(king, '#f5a623', 'KING GEX', LightweightCharts.LineStyle.Solid);
+
         if (renderToken !== ovChartRenderToken) return;
+
 
         // All-time high (Fetch from full 1Y candles)
         // Use the full snapshot candles if we have them; otherwise use a static fallback
@@ -9607,6 +9630,11 @@
         const king = s.kingStrike?.strike;
         const posGex = s.strongestPositiveGex?.strike;
         const negGex = s.strongestNegativeGex?.strike;
+        ovState.keyLevels = {
+          callWall: callWall ?? null,
+          putWall: putWall ?? null,
+          king: king ?? null
+        };
         document.getElementById('ov-key-levels').innerHTML = `
           <span class="kl-pill spot">Spot: ${fmt(heat.underlyingPrice)}</span>
           ${callWall ? `<span class="kl-pill call">Call Wall: ${callWall}</span>` : ''}
