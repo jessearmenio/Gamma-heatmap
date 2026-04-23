@@ -5708,7 +5708,7 @@
           <div class="ov-row3">
             <div class="card">
               <div class="card-header">
-                <span class="card-title">Options Key Levels &#8212; SPY</span>
+                <span class="card-title">Options Key Strikes &#8212; SPY</span>
                 <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: &#8212;</span>
               </div>
               <div class="card-body">
@@ -5721,7 +5721,7 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-header"><span class="card-title">Market Movers &#8212; $SPX</span></div>
+              <div class="card-header"><span class="card-title">Highest Volume Market Movers</span></div>
               <div class="card-body" id="ov-movers-body" style="padding:0;">
                 <div style="padding:12px;font-size:10px;color:var(--text3);">Waiting for data…</div>
               </div>
@@ -7729,6 +7729,7 @@
     function toggleNav() {
       const sidebar = document.getElementById('sidebar');
       const isCollapsed = sidebar.classList.toggle('collapsed');
+      localStorage.setItem('sidebarCollapsed', isCollapsed);
       const btn = document.getElementById('nav-toggle');
       btn.title = isCollapsed ? 'Open sidebar' : 'Close sidebar';
       // Fire resize after the 250ms sidebar CSS transition fully settles
@@ -11891,6 +11892,16 @@
     (async function init() {
       // Show placeholder until Schwab data loads
       ovRenderChart(null);
+
+      // ── Sidebar state (persisted) ─────────────────────
+      const sidebar = document.getElementById('sidebar');
+      const savedSidebarState = localStorage.getItem('sidebarCollapsed');
+
+      if (sidebar) {
+        if (savedSidebarState === null || savedSidebarState === 'true') {
+          sidebar.classList.add('collapsed');
+        }
+      }
 
       // Start client-side session badge and ago timers immediately (no auth needed)
       startSessionTicker();
