@@ -77,6 +77,12 @@
       letter-spacing: 0.02em;
     }
 
+    spana {
+      padding-bottom: 1px;
+      transform: scale(1.2);
+      /* refresh button home icon */
+    }
+
     spanb {
       margin-bottom: 2px;
       /* Brand Icon, Calendar Back/Forward buttons */
@@ -94,7 +100,7 @@
 
     spanr {
       transform: scale(1.2);
-      /* refresh and pause button icon */
+      /* pause button home icon */
     }
 
     spano {
@@ -5205,7 +5211,7 @@
     <div id="main">
       <!-- topbar -->
       <div id="topbar">
-        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
+        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar"><spana>&#9776;</spana></button>
         <div id="topbar-title" id="page-title">Market<br>Overview</div>
         <div class="ov-panel-divider-vertical"></div>
         <div id="ticker-strip">
@@ -5284,7 +5290,7 @@
             <spanu>updated</spanu><b id="ago-val">--</b>
           </span>
           <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()" title="Refresh now">
-            <spanr>↻</spanr>
+            <spana>↻</spana>
           </button>
           <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
             <spanr>⏸</spanr>
