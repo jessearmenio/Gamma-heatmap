@@ -7423,16 +7423,52 @@
     }
 
     // ─── CSV Parser ────────────────────────────────────────────────────
+    // ─── CSV tokeniser — handles quoted fields that contain commas AND newlines
+    // Returns an array of row-arrays: [ [cell,cell,...], [cell,...], ... ]
+    function jnlTokeniseCSV(text) {
+      const rows = [];
+      let row = [], cur = '', inQ = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === '"') {
+          // doubled-quote inside a quoted field = literal quote
+          if (inQ && text[i + 1] === '"') { cur += '"'; i++; }
+          else inQ = !inQ;
+        } else if (ch === ',' && !inQ) {
+          row.push(cur.trim()); cur = '';
+        } else if ((ch === '\n' || ch === '\r') && !inQ) {
+          // real row boundary
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          row.push(cur.trim()); cur = '';
+          if (row.some(c => c !== '')) rows.push(row);
+          row = [];
+        } else {
+          // newline inside a quoted field — collapse to a space
+          if ((ch === '\n' || ch === '\r') && inQ) { cur += ' '; }
+          else cur += ch;
+        }
+      }
+      // flush last row
+      row.push(cur.trim());
+      if (row.some(c => c !== '')) rows.push(row);
+      return rows;
+    }
+
+    // Strip currency formatting: "($1,760.04)" -> -1760.04,  "$509.91" -> 509.91
+    function jnlParseDollar(s) {
+      if (!s) return 0;
+      const neg = s.includes('(');
+      const n   = parseFloat(s.replace(/[^0-9.]/g, '')) || 0;
+      return neg ? -n : n;
+    }
+
     function jnlParseCSV(text) {
-      // Normalize line endings, split
-      const lines = text.replace(/\r/g, '').split('\n').filter(l => l.trim());
-      if (lines.length < 2) { alert('CSV appears empty.'); return; }
+      const allRows = jnlTokeniseCSV(text);
+      if (allRows.length < 2) { alert('CSV appears empty or unreadable.'); return; }
 
-      // Parse header
-      const header = jnlCSVRow(lines[0]).map(h => h.trim().toLowerCase());
-
-      // Column index helpers (flexible naming)
-      const col = (names) => {
+      // ── header: find column indexes ────────────────────────────
+      const header = allRows[0].map(h => h.toLowerCase());
+      const col = (...names) => {
         for (const n of names) {
           const i = header.indexOf(n.toLowerCase());
           if (i !== -1) return i;
@@ -7440,55 +7476,83 @@
         return -1;
       };
 
-      const iDate   = col(['date', 'trade date', 'tradedate', 'settlement date']);
-      const iTime   = col(['time', 'trade time', 'tradetime', 'execution time']);
-      const iTicker = col(['symbol', 'ticker', 'security']);
-      const iDesc   = col(['description', 'action', 'type']);
-      const iQty    = col(['quantity', 'qty', 'shares']);
-      const iPrice  = col(['price', 'exec price', 'execution price']);
-      const iAmount = col(['amount', 'total amount', 'net amount', 'proceeds']);
+      // Robinhood export columns
+      const iDate      = col('activity date', 'date', 'trade date', 'tradedate');
+      const iTicker    = col('instrument', 'symbol', 'ticker', 'security');
+      const iDesc      = col('description');
+      const iTransCode = col('trans code', 'transcode', 'action', 'type');
+      const iQty       = col('quantity', 'qty', 'shares');
+      const iPrice     = col('price', 'exec price');
+      const iAmount    = col('amount', 'net amount', 'total amount', 'proceeds');
+
+      // Trans codes that are actual trades (skip everything else)
+      const TRADE_CODES = new Set(['BTO','STC','BTC','STO','Buy','Sell','OEXP','ASSIGN']);
 
       const rows = [];
-      for (let i = 1; i < lines.length; i++) {
-        const cells = jnlCSVRow(lines[i]);
-        if (cells.length < 3) continue;
+      for (let i = 1; i < allRows.length; i++) {
+        const cells = allRows[i];
+        const raw   = (idx) => idx >= 0 ? (cells[idx] || '') : '';
 
-        const raw = (idx) => idx >= 0 ? (cells[idx] || '').trim() : '';
+        const dateStr   = raw(iDate);
+        const ticker    = raw(iTicker).toUpperCase();
+        const descRaw   = raw(iDesc);               // e.g. "INTC 1/16/2026 Call $35.00"
+        const transCode = raw(iTransCode).trim();   // BTO / STC / Buy / Sell
+        const qtyStr    = raw(iQty).replace(/,/g, '');
+        const priceStr  = raw(iPrice);
+        const amtStr    = raw(iAmount);
 
-        const dateStr  = raw(iDate);
-        const timeStr  = raw(iTime);
-        const ticker   = raw(iTicker).replace(/["']/g, '').toUpperCase();
-        const descRaw  = raw(iDesc);
-        const qtyRaw   = raw(iQty).replace(/,/g, '');
-        const priceRaw = raw(iPrice).replace(/[$,]/g, '');
-        const amtRaw   = raw(iAmount).replace(/[$,]/g, '');
+        // Skip non-trade rows (ACH, FUTSWP, DCF, RTP, footer text, etc.)
+        if (!ticker || !dateStr || !TRADE_CODES.has(transCode)) continue;
 
-        if (!ticker || !dateStr) continue;
-
-        // Determine method: Options = ticker has space/C/P pattern or desc mentions option
-        const isOption = /\s+[CP]\d|option|call|put/i.test(descRaw + ' ' + ticker);
+        // ── Detect options vs stock ────────────────────────────
+        // Options descriptions look like: "INTC 1/16/2026 Call $35.00"
+        //                                 "KVUE 10/3/2025 Put $18.00"
+        const isOption = /\b(Call|Put)\b/i.test(descRaw);
         const method   = isOption ? 'Options' : 'Common Stock';
 
-        // Determine type: Buy to Open / Sell to Close
-        let tradeType = 'Buy to Open';
-        if (/sell|close|sold|sld/i.test(descRaw)) tradeType = 'Sell to Close';
-        else if (/buy|open|bought|bgt/i.test(descRaw)) tradeType = 'Buy to Open';
+        // ── Trade type ─────────────────────────────────────────
+        // BTO = Buy to Open, STC = Sell to Close
+        // Buy/Sell = common stock transaction
+        let tradeType;
+        if      (transCode === 'BTO' || transCode === 'BTC') tradeType = 'Buy to Open';
+        else if (transCode === 'STC' || transCode === 'STO') tradeType = 'Sell to Close';
+        else if (transCode === 'Buy')                         tradeType = 'Buy to Open';
+        else if (transCode === 'Sell')                        tradeType = 'Sell to Close';
+        else tradeType = 'Buy to Open'; // fallback
 
-        const qty      = parseFloat(qtyRaw) || 0;
-        let   price    = parseFloat(priceRaw) || 0;
-        const amount   = parseFloat(amtRaw) || 0;
+        const qty    = parseFloat(qtyStr)  || 0;
+        const price  = jnlParseDollar(priceStr);
+        const amount = jnlParseDollar(amtStr);  // negative = money out, positive = money in
 
-        // Options: notional = price * qty * 100
-        const notional = isOption ? (price * qty * 100) : (price * qty);
+        // Notional: options multiply by 100 per contract
+        const notional  = isOption ? Math.abs(price) * qty * 100 : Math.abs(price) * qty;
+
+        // Cost basis = what you actually paid/received (use Amount if available)
         const costBasis = Math.abs(amount) || notional;
 
-        // Result: positive for sells (cash in), negative for buys (cash out)
-        let result = 0;
-        if (tradeType === 'Sell to Close') result = +Math.abs(amount || notional);
-        else result = -Math.abs(amount || notional);
+        // Result: money received (sells = positive) / money spent (buys = negative)
+        // Amount column already has the sign encoded via parentheses
+        const result = amount; // negative for buys, positive for sells
 
-        rows.push({ date: dateStr, time: timeStr, ticker, method, type: tradeType,
-          qty, price, notional, costBasis, result, isOption });
+        rows.push({
+          date:      dateStr,
+          time:      '',           // Robinhood CSV has no time column
+          ticker,
+          method,
+          type:      tradeType,
+          qty,
+          price:     Math.abs(price),
+          notional,
+          costBasis,
+          result,
+          isOption,
+          desc:      descRaw
+        });
+      }
+
+      if (!rows.length) {
+        alert('No trade rows found. Make sure this is a Robinhood activity export CSV.');
+        return;
       }
 
       jnlTrades = rows;
@@ -7496,23 +7560,10 @@
       jnlRenderActivityHeatmap();
       jnlRenderTable();
       jnlRenderFlags();
-      const activeDays = new Set(rows.map(r => r.date)).size;
-      document.getElementById('jnl-activity-sub').textContent =
-        `Charles Schwab · ${activeDays} active days`;
-    }
 
-    // Robust CSV row parser (handles quoted commas)
-    function jnlCSVRow(line) {
-      const result = [];
-      let cur = '', inQ = false;
-      for (let i = 0; i < line.length; i++) {
-        const ch = line[i];
-        if (ch === '"') { inQ = !inQ; }
-        else if (ch === ',' && !inQ) { result.push(cur); cur = ''; }
-        else { cur += ch; }
-      }
-      result.push(cur);
-      return result;
+      const activeDays = new Set(rows.map(r => jnlNormaliseDate(r.date)).filter(Boolean)).size;
+      document.getElementById('jnl-activity-sub').textContent =
+        `Robinhood · ${activeDays} active days`;
     }
 
     // ─── Update header count ────────────────────────────────────────
