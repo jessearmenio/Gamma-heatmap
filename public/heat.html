@@ -241,8 +241,8 @@
     }
 
     #connect-btn.connected {
-      background: var(--green);
-      color: #000;
+      background: #2a2e3d;
+      color: var(--green);
     }
 
     #connect-btn.disconnected {
@@ -267,8 +267,9 @@
     }
 
     #status-dot.online {
-      background: var(--gold);
+      background: var(--green);
       box-shadow: 0 0 6px var(--bg);
+      animation: pulse-extreme 2s ease-in-out infinite;
     }
 
     #status-dot.offline {
@@ -854,6 +855,12 @@
       color: #d470ff;
       border: 1px solid rgba(180, 35, 240, 0.2);
     }
+
+    /* Market Key Movers 
+    #ov-movers-body{
+
+    }
+    */
 
     /* ── Separator ── */
     .sep {
@@ -5686,7 +5693,7 @@
           <div class="ov-row3">
             <div class="card">
               <div class="card-header">
-                <span class="card-title">Options Key Levels &#8212; SPY</span>
+                <span class="card-title">Options Key Strikes &#8212; SPY</span>
                 <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: &#8212;</span>
               </div>
               <div class="card-body">
@@ -5699,7 +5706,7 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-header"><span class="card-title">Market Movers &#8212; $SPX</span></div>
+              <div class="card-header"><span class="card-title">Market Movers &#8212; by Volume</span></div>
               <div class="card-body" id="ov-movers-body" style="padding:0;">
                 <div style="padding:12px;font-size:10px;color:var(--text3);">Waiting for data…</div>
               </div>
@@ -7984,21 +7991,14 @@
     }
     function ovRsi(closes, period = 14) {
       if (!closes || closes.length < period + 1) return null;
-      // Wilder's smoothed RSI (same method as the chart calcRSI)
-      let avgGain = 0, avgLoss = 0;
-      for (let i = 1; i <= period; i++) {
+      let gains = 0, losses = 0;
+      for (let i = closes.length - period; i < closes.length; i++) {
         const d = closes[i] - closes[i - 1];
-        if (d > 0) avgGain += d; else avgLoss += Math.abs(d);
+        if (d > 0) gains += d; else losses += Math.abs(d);
       }
-      avgGain /= period;
-      avgLoss /= period;
-      for (let i = period + 1; i < closes.length; i++) {
-        const d = closes[i] - closes[i - 1];
-        avgGain = (avgGain * (period - 1) + Math.max(d, 0)) / period;
-        avgLoss = (avgLoss * (period - 1) + Math.max(-d, 0)) / period;
-      }
-      if (avgLoss === 0) return 100;
-      return 100 - (100 / (1 + avgGain / avgLoss));
+      const ag = gains / period, al = losses / period;
+      if (al === 0) return 100;
+      return 100 - (100 / (1 + (ag / al)));
     }
     function ovMacd(closes, fast = 12, slow = 26, sig = 9) {
       function ema(arr, p) {
@@ -9061,7 +9061,7 @@
         priceScaleId: 'rsi',
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
-        lastValueVisible: true,
+        lastValueVisible: false,
         priceLineVisible: false,
         autoscaleInfoProvider: () => ({
           priceRange: { minValue: 0, maxValue: 100 },
@@ -9074,6 +9074,20 @@
       rsiSeries.createPriceLine({ price: 70, color: 'rgba(255,59,92,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '70' });
       rsiSeries.createPriceLine({ price: 30, color: 'rgba(34,221,136,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '30' });
       rsiSeries.createPriceLine({ price: 50, color: 'rgba(255,255,255,0.1)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false });
+
+      // Live RSI value line — pulls from the same spyRsi used in the Momentum panel
+      const liveRsi = ovState.snapshot?.scores?.spyRsi ?? (rsiData.length ? rsiData[rsiData.length - 1].value : null);
+      if (liveRsi != null) {
+        const rsiColor = liveRsi > 70 ? 'rgba(255,59,92,0.9)' : liveRsi < 30 ? 'rgba(34,221,136,0.9)' : 'rgba(192,132,252,0.9)';
+        rsiSeries.createPriceLine({
+          price: liveRsi,
+          color: rsiColor,
+          lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: '',
+        });
+      }
 
       // RSI label (static text overlay)
       const rsiLabel = document.createElement('div');

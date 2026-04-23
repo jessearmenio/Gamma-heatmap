@@ -1085,32 +1085,27 @@ app.get("/api/marketoverview", async (req, res) => {
     const spyQuote = quotes['SPY']?.quote || {};
     const spyLast = spyQuote.lastPrice ?? spyQuote.mark ?? spyQuote.closePrice;
     if (spyLast && histMap['SPY']?.length) {
-      // Use ET midnight to match Schwab's candle datetime convention (ET-based)
-      const nowET = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
-      const todayMsET = new Date(nowET.getFullYear(), nowET.getMonth(), nowET.getDate()).getTime();
+      const todayMs = new Date().setHours(0, 0, 0, 0);
       const lastCandle = histMap['SPY'][histMap['SPY'].length - 1];
-      // Schwab datetime is ms since epoch for ET midnight of that trading day
-      // Compare dates in ET by normalising both to ET midnight
-      const lastCandleDateET = new Date(new Date(lastCandle.datetime).toLocaleString('en-US', { timeZone: 'America/New_York' }));
-      const lastCandleMidnightET = new Date(lastCandleDateET.getFullYear(), lastCandleDateET.getMonth(), lastCandleDateET.getDate()).getTime();
-      if (lastCandleMidnightET < todayMsET) {
-        // Today's candle is missing — append it
+      // Only add if last candle is from a prior day (avoid duplicating on weekend/holiday)
+      if (!lastCandle || lastCandle.datetime < todayMs) {
         const open = spyQuote.openPrice || spyLast;
         const high = spyQuote.highPrice || spyLast;
-        const low = spyQuote.lowPrice || spyLast;
+        const low = spyQuote.lowPrice || spyLast;  // lowPrice=0 pre-market → fall back to last
         histMap['SPY'].push({
-          datetime: todayMsET,
-          open, high, low: low || spyLast,
+          datetime: todayMs,
+          open, high, low,
           close: spyLast,
           volume: spyQuote.totalVolume ?? 0
         });
       } else {
-        // Today's candle already present — update with latest price
+        // Update the existing today candle with the latest price
         lastCandle.close = spyLast;
         if (spyQuote.highPrice) lastCandle.high = Math.max(lastCandle.high, spyQuote.highPrice);
-        if (spyQuote.lowPrice && spyQuote.lowPrice > 0) lastCandle.low = Math.min(lastCandle.low, spyQuote.lowPrice);
-        if (!lastCandle.low || lastCandle.low === 0) lastCandle.low = Math.min(lastCandle.open, lastCandle.close);
-        if (!lastCandle.high || lastCandle.high === 0) lastCandle.high = Math.max(lastCandle.open, lastCandle.close);
+        if (spyQuote.lowPrice) lastCandle.low = Math.min(lastCandle.low, spyQuote.lowPrice);
+        // If low ended up 0 (Schwab overnight bug), clamp to close
+        if (!lastCandle.low) lastCandle.low = Math.min(lastCandle.open, lastCandle.close);
+        if (!lastCandle.high) lastCandle.high = Math.max(lastCandle.open, lastCandle.close);
       }
     }
 
