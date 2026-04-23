@@ -5160,6 +5160,7 @@
       border: 1px solid var(--border2);
       color: var(--text);
       padding: 5px 10px;
+      margin-top: 4px;
       border-radius: 6px;
       font-size: 12px;
       font-family: inherit;
@@ -5381,7 +5382,6 @@
 
     .jnl-flag-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 
-    .jnl-flag-body {}
     .jnl-flag-title {
       font-size: 11px;
       font-weight: 700;
@@ -5832,10 +5832,10 @@
                   <!--<button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
                   <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
                   <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>-->
-                  <button class="ov-chart-tf-btn" data-ovctf="1D" onclick="ovSetChartTf('1D',this)">1D</button>
+                  <button class="ov-chart-tf-btn active" data-ovctf="1D" onclick="ovSetChartTf('1D',this)">1D</button>
                   <button class="ov-chart-tf-btn" data-ovctf="5D" onclick="ovSetChartTf('5D',this)">5D</button>
                   <button class="ov-chart-tf-btn" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
-                  <button class="ov-chart-tf-btn active" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
                   <button class="ov-chart-tf-btn" data-ovctf="1Y" onclick="ovSetChartTf('1Y',this)">1Y</button>
                 </div>
               </div>
@@ -6088,7 +6088,7 @@
             <div class="card">
               <div class="card-header">
                 <span class="card-title">Options Key Strikes &#8212; SPY</span>
-                <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying: &#8212;</span>
+                <span style="font-size:9px;color:var(--text3)" id="ov-underlying">Underlying Spot: &#8212;</span>
               </div>
               <div class="card-body">
                 <div class="kl-row" id="ov-key-levels">
@@ -6274,7 +6274,7 @@
               <span
                 style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-right:4px;">KEY
                 LEVELS</span>
-              <span class="kl-pill spot" id="hl-spot">Spot: —</span>
+              <!--<span class="kl-pill spot" id="hl-spot">Spot: —</span>-->
               <span class="kl-pill call" id="hl-call-wall">Call Wall: —</span>
               <span class="kl-pill put" id="hl-put-wall">Put Wall: —</span>
               <span class="kl-pill king" id="hl-king">King Strike: —</span>
@@ -7175,7 +7175,7 @@
             <div class="jnl-card-header">
               <div>
                 <div class="jnl-card-title">Trade activity</div>
-                <div class="jnl-card-sub" id="jnl-activity-sub">Charles Schwab · upload a CSV to begin</div>
+                <div class="jnl-card-sub" id="jnl-activity-sub">Trading Account · upload a CSV to begin</div>
               </div>
               <div style="display:flex;align-items:center;gap:12px;">
                 <div class="jnl-card-meta" id="jnl-activity-meta"></div>
@@ -7273,7 +7273,7 @@
               <div class="jnl-empty">
                 <div class="jnl-empty-icon">📂</div>
                 <div class="jnl-empty-title">No trades loaded</div>
-                <div class="jnl-empty-desc">Upload a CSV from Charles Schwab to view your trade log.</div>
+                <div class="jnl-empty-desc">Upload a CSV from your brokerage to view your trade log.</div>
               </div>
             </div>
           </div>
@@ -8999,7 +8999,7 @@
     let ovState = {
       mode: sessionStorage.getItem('ovMode') || 'swing',
       sectorTf: '1d',
-      chartTf: '6M',
+      chartTf: '1D',
       snapshot: null,
       spyCandles: [],
       intraday: {}, // cache: { '5m': [...], '10m': [...], '1H': [...] }
