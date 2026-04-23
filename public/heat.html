@@ -5258,11 +5258,13 @@
     /* GitHub-style heatmap grid */
     .jnl-heatmap-wrap {
       overflow-x: auto;
+      padding-bottom: 4px;
     }
 
+    /* GitHub-exact grid: 11px cells, 3px gap, column-flow */
     .jnl-heatmap {
       display: grid;
-      grid-template-rows: repeat(7, 13px);
+      grid-template-rows: repeat(7, 11px);
       grid-auto-flow: column;
       gap: 3px;
       width: max-content;
@@ -5270,66 +5272,73 @@
 
     .jnl-heatmap-months {
       display: flex;
-      gap: 3px;
-      margin-bottom: 4px;
-      padding-left: 22px;
+      margin-bottom: 6px;
+      padding-left: 28px;  /* aligns with grid after dow-labels */
       width: max-content;
     }
 
     .jnl-month-label {
-      font-size: 9px;
+      font-size: 10px;
       color: var(--text3);
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      min-width: 0;
+      letter-spacing: 0.04em;
+      /* each week col = 11px cell + 3px gap = 14px; label shown at month boundary */
     }
 
     .jnl-heatmap-outer {
       display: flex;
-      gap: 4px;
+      gap: 6px;
+      align-items: flex-start;
     }
 
     .jnl-dow-labels {
       display: grid;
-      grid-template-rows: repeat(7, 13px);
+      grid-template-rows: repeat(7, 11px);
       gap: 3px;
-      margin-top: 0;
+      flex-shrink: 0;
+      width: 22px;
     }
 
     .jnl-dow-label {
       font-size: 9px;
       color: var(--text3);
-      line-height: 13px;
+      line-height: 11px;
       letter-spacing: 0.04em;
+      text-align: right;
+      padding-right: 2px;
     }
 
     .jnl-cell {
-      width: 13px;
-      height: 13px;
+      width: 11px;
+      height: 11px;
       border-radius: 2px;
-      background: var(--bg3);
+      /* empty cells: very subtle box so grid is always visible */
+      background: #161b27;
+      border: 1px solid #1e2535;
       cursor: default;
-      transition: opacity 0.1s;
-      position: relative;
+      transition: outline 0.05s;
+      box-sizing: border-box;
     }
 
-    .jnl-cell:hover { opacity: 0.8; }
+    .jnl-cell:hover {
+      outline: 1px solid rgba(255,255,255,0.35);
+      outline-offset: 0;
+    }
 
-    /* trade-activity greens */
-    .jnl-cell.lv1 { background: #0e4429; }
-    .jnl-cell.lv2 { background: #006d32; }
-    .jnl-cell.lv3 { background: #26a641; }
-    .jnl-cell.lv4 { background: #39d353; }
+    /* trade-activity greens — matches site accent palette */
+    .jnl-cell.lv1 { background: #0d3a20; border-color: #0d3a20; }
+    .jnl-cell.lv2 { background: #1a6b35; border-color: #1a6b35; }
+    .jnl-cell.lv3 { background: #22dd88; border-color: #22dd88; opacity: 0.6; }
+    .jnl-cell.lv4 { background: #22dd88; border-color: #22dd88; }
 
-    /* SPY heatmap — red/green */
-    .jnl-cell.spy-up1 { background: #0d3321; }
-    .jnl-cell.spy-up2 { background: #006d32; }
-    .jnl-cell.spy-up3 { background: #26a641; }
-    .jnl-cell.spy-up4 { background: #39d353; }
-    .jnl-cell.spy-dn1 { background: #3d0d0d; }
-    .jnl-cell.spy-dn2 { background: #7a1a1a; }
-    .jnl-cell.spy-dn3 { background: #b72626; }
-    .jnl-cell.spy-dn4 { background: #ff3b5c; }
+    /* SPY heatmap — red/green on dark base */
+    .jnl-cell.spy-up1 { background: #0d3a20; border-color: #0d3a20; }
+    .jnl-cell.spy-up2 { background: #1a6b35; border-color: #1a6b35; }
+    .jnl-cell.spy-up3 { background: #22dd88; border-color: #22dd88; opacity: 0.6; }
+    .jnl-cell.spy-up4 { background: #22dd88; border-color: #22dd88; }
+    .jnl-cell.spy-dn1 { background: #3a1020; border-color: #3a1020; }
+    .jnl-cell.spy-dn2 { background: #7a1a2e; border-color: #7a1a2e; }
+    .jnl-cell.spy-dn3 { background: #ff3b5c; border-color: #ff3b5c; opacity: 0.6; }
+    .jnl-cell.spy-dn4 { background: #ff3b5c; border-color: #ff3b5c; }
 
     /* legend */
     .jnl-legend {
@@ -5341,9 +5350,10 @@
     }
 
     .jnl-legend-cell {
-      width: 12px;
-      height: 12px;
+      width: 11px;
+      height: 11px;
       border-radius: 2px;
+      box-sizing: border-box;
     }
 
     /* flags / insights */
@@ -7180,26 +7190,26 @@
               <div id="jnl-months-row" class="jnl-heatmap-months"></div>
               <div class="jnl-heatmap-outer">
                 <div class="jnl-dow-labels">
-                  <div class="jnl-dow-label">Sun</div>
+                  <div class="jnl-dow-label"></div>
                   <div class="jnl-dow-label">Mon</div>
                   <div class="jnl-dow-label">Tue</div>
                   <div class="jnl-dow-label">Wed</div>
                   <div class="jnl-dow-label">Thu</div>
                   <div class="jnl-dow-label">Fri</div>
-                  <div class="jnl-dow-label">Sat</div>
+                  <div class="jnl-dow-label"></div>
                 </div>
                 <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
               </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
               <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
               <div class="jnl-legend">
                 Less
-                <div class="jnl-legend-cell" style="background:#1a1e2a"></div>
-                <div class="jnl-legend-cell" style="background:#0e4429"></div>
-                <div class="jnl-legend-cell" style="background:#006d32"></div>
-                <div class="jnl-legend-cell" style="background:#26a641"></div>
-                <div class="jnl-legend-cell" style="background:#39d353"></div>
+                <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
+                <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
+                <div class="jnl-legend-cell" style="background:#22dd88;"></div>
                 More
               </div>
             </div>
@@ -7218,26 +7228,26 @@
               <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
               <div class="jnl-heatmap-outer">
                 <div class="jnl-dow-labels">
-                  <div class="jnl-dow-label">Sun</div>
+                  <div class="jnl-dow-label"></div>
                   <div class="jnl-dow-label">Mon</div>
                   <div class="jnl-dow-label">Tue</div>
                   <div class="jnl-dow-label">Wed</div>
                   <div class="jnl-dow-label">Thu</div>
                   <div class="jnl-dow-label">Fri</div>
-                  <div class="jnl-dow-label">Sat</div>
+                  <div class="jnl-dow-label"></div>
                 </div>
                 <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
               </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-              <div class="jnl-card-sub" id="jnl-spy-footer">Loading SPY data…</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+              <div class="jnl-card-sub" id="jnl-spy-footer"></div>
               <div class="jnl-legend">
                 &minus;2%
-                <div class="jnl-legend-cell" style="background:#ff3b5c"></div>
-                <div class="jnl-legend-cell" style="background:#b72626"></div>
-                <div class="jnl-legend-cell" style="background:#1a1e2a"></div>
-                <div class="jnl-legend-cell" style="background:#006d32"></div>
-                <div class="jnl-legend-cell" style="background:#39d353"></div>
+                <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                <div class="jnl-legend-cell" style="background:#22dd88;"></div>
                 +2%
               </div>
             </div>
@@ -7513,46 +7523,59 @@
     }
 
     // ─── Heatmap helpers ────────────────────────────────────────
-    // Build a full-year grid of Date objects starting Sunday of the week Jan 1 falls in
+    // Build full-year grid starting from Sunday of the week containing Jan 1.
+    // Ends on Saturday of the week containing Dec 31.
     function jnlBuildGrid(year) {
       const jan1 = new Date(year, 0, 1);
-      const startDay = jan1.getDay(); // 0=Sun
-      const start = new Date(jan1);
-      start.setDate(jan1.getDate() - startDay);
+      const start = new Date(year, 0, 1 - jan1.getDay()); // back to Sunday
+      const dec31 = new Date(year, 11, 31);
+      const end   = new Date(year, 11, 31 + (6 - dec31.getDay())); // forward to Saturday
       const cells = [];
       let cur = new Date(start);
-      while (cur.getFullYear() <= year) {
-        cells.push(new Date(cur));
-        cur.setDate(cur.getDate() + 1);
-      }
-      // ensure we go through Dec 31
-      const dec31 = new Date(year, 11, 31);
-      while (cur <= dec31) {
+      while (cur <= end) {
         cells.push(new Date(cur));
         cur.setDate(cur.getDate() + 1);
       }
       return cells;
     }
 
+    // Use LOCAL date string (avoids UTC-shift bugs with toISOString)
     function jnlIsoDate(d) {
-      return d.toISOString().split('T')[0];
+      const y  = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const dy = String(d.getDate()).padStart(2, '0');
+      return `${y}-${mo}-${dy}`;
     }
 
+    // Month labels positioned pixel-accurately over the grid.
+    // Cell size = 11px, gap = 3px  =>  each column = 14px wide.
     function jnlBuildMonthLabels(cells, el) {
-      // positions are columns; each column = 7 cells = one week
       el.innerHTML = '';
       const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-      let lastMonth = -1;
-      for (let col = 0; col < Math.ceil(cells.length / 7); col++) {
-        const cellDate = cells[col * 7];
-        if (!cellDate) continue;
-        const m = cellDate.getMonth();
-        const span = document.createElement('div');
+      const COL_W  = 14; // 11px cell + 3px gap
+      const numCols = Math.ceil(cells.length / 7);
+
+      // find first column where each month starts
+      const monthCols = {}; // month -> col index
+      for (let col = 0; col < numCols; col++) {
+        const d = cells[col * 7];
+        if (!d) continue;
+        const m = d.getMonth();
+        if (monthCols[m] === undefined) monthCols[m] = col;
+      }
+
+      // Build a fixed-width container using absolute positioning
+      el.style.position = 'relative';
+      el.style.height   = '16px';
+      el.style.width    = (numCols * COL_W) + 'px';
+
+      for (const [m, col] of Object.entries(monthCols)) {
+        const span = document.createElement('span');
         span.className = 'jnl-month-label';
-        // Each column = 16px (13 + 3 gap)
-        span.style.minWidth = '16px';
-        span.textContent = (m !== lastMonth) ? MONTHS[m] : '';
-        if (m !== lastMonth) lastMonth = m;
+        span.textContent = MONTHS[parseInt(m)];
+        span.style.position = 'absolute';
+        span.style.left     = (col * COL_W) + 'px';
+        span.style.top      = '0';
         el.appendChild(span);
       }
     }
@@ -7614,12 +7637,16 @@
       // stats
       const activeDays = Object.keys(dayMap).length;
       const total      = Object.values(dayMap).reduce((s,v) => s + v.trades, 0);
-      document.getElementById('jnl-activity-footer').textContent =
-        jnlTrades.length
-          ? `${activeDays} active days · ${total} total trades`
-          : 'Upload a CSV to see your trade activity';
 
-      // meta stats
+      // Footer: "Sample data · 509 trades imported" style
+      const footerEl = document.getElementById('jnl-activity-footer');
+      if (jnlTrades.length) {
+        footerEl.innerHTML = `Charles Schwab &nbsp;·&nbsp; <strong>${total}</strong> trades imported`;
+      } else {
+        footerEl.textContent = 'Upload a CSV to see your trade activity';
+      }
+
+      // Meta pill: active days + tickers in the card header
       const metaEl = document.getElementById('jnl-activity-meta');
       if (jnlTrades.length) {
         const tickers = new Set(jnlTrades.map(t => t.ticker)).size;
@@ -7643,43 +7670,55 @@
     }
 
     // ─── SPY Heatmap ───────────────────────────────────────────────
+    // Pulls SPY daily candles from our Schwab backend (/api/pricehistory).
+    // Schwab returns { ok, data: { candles: [{open,high,low,close,datetime}] } }
+    // datetime is ms epoch (ET midnight).  We convert to a local YYYY-MM-DD key.
     async function jnlFetchSpy() {
+      const footerEl = document.getElementById('jnl-spy-footer');
+      footerEl.textContent = 'Loading SPY data…';
+
+      // Schwab date range: Jan 1 of jnlYear through today (or Dec 31 if past year)
+      const startDate = new Date(jnlYear, 0, 1).getTime();            // ms
+      const endDate   = Math.min(new Date(jnlYear, 11, 31).getTime(), Date.now());
+
       try {
-        // Use Finnhub candles for SPY for the current year
-        const key = typeof FINNHUB_API_KEY !== 'undefined' ? FINNHUB_API_KEY : '';
-        if (!key) throw new Error('no key');
-        const from = Math.floor(new Date(jnlYear, 0, 1).getTime() / 1000);
-        const to   = Math.floor(Math.min(new Date(jnlYear, 11, 31).getTime() / 1000, Date.now() / 1000));
-        const url  = `https://finnhub.io/api/v1/stock/candle?symbol=SPY&resolution=D&from=${from}&to=${to}&token=${key}`;
-        const res  = await fetch(url);
+        const params = new URLSearchParams({
+          symbol:        'SPY',
+          periodType:    'year',
+          period:        '1',
+          frequencyType: 'daily',
+          frequency:     '1',
+          startDate:     startDate,
+          endDate:       endDate,
+          needExtendedHoursData: 'false'
+        });
+
+        const res  = await fetch(`${API_BASE}/api/pricehistory?${params}`);
         const json = await res.json();
-        if (json.s !== 'ok') throw new Error('bad response');
+
+        if (!json.ok || !json.data?.candles?.length) throw new Error(json.error || 'no candles');
+
         jnlSpyData = {};
-        for (let i = 0; i < json.t.length; i++) {
-          const iso = new Date(json.t[i] * 1000).toISOString().split('T')[0];
-          const pct = ((json.c[i] - json.o[i]) / json.o[i]) * 100;
-          jnlSpyData[iso] = pct;
+        for (const c of json.data.candles) {
+          // Schwab datetime is ms since epoch.
+          // Format to CST date string to avoid local-timezone drift.
+          const iso = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'America/Chicago',
+            year: 'numeric', month: '2-digit', day: '2-digit'
+          }).format(new Date(c.datetime)); // gives YYYY-MM-DD (CST)
+          jnlSpyData[iso] = ((c.close - c.open) / c.open) * 100;
         }
+
+        footerEl.textContent = '';
         jnlRenderSpyHeatmap();
-      } catch(e) {
-        // Fallback: try the API_BASE proxy
-        try {
-          const from = Math.floor(new Date(jnlYear, 0, 1).getTime() / 1000);
-          const to   = Math.floor(Math.min(new Date(jnlYear, 11, 31).getTime() / 1000, Date.now() / 1000));
-          const res  = await fetch(`${API_BASE}/api/candle?symbol=SPY&resolution=D&from=${from}&to=${to}`);
-          const json = await res.json();
-          if (json.s === 'ok') {
-            jnlSpyData = {};
-            for (let i = 0; i < json.t.length; i++) {
-              const iso = new Date(json.t[i] * 1000).toISOString().split('T')[0];
-              jnlSpyData[iso] = ((json.c[i] - json.o[i]) / json.o[i]) * 100;
-            }
-            jnlRenderSpyHeatmap();
-            return;
-          }
-        } catch(e2) {}
-        document.getElementById('jnl-spy-footer').textContent = 'SPY data unavailable — connect Finnhub to enable';
-        jnlRenderSpyHeatmap(); // render empty
+
+      } catch (err) {
+        console.warn('SPY price history error:', err);
+        const notConnected = err.message?.includes('401') || err.message?.includes('No access token');
+        footerEl.textContent = notConnected
+          ? 'Connect Schwab to load SPY performance data'
+          : 'SPY data unavailable — reconnect Schwab';
+        jnlRenderSpyHeatmap(); // render the empty grid so boxes still show
       }
     }
 
