@@ -89,7 +89,7 @@
     }
 
     spanc {
-      margin-bottom: 1px;
+      margin-bottom: 3px;
       transform: scale(1.4);
       /* hamburger nav icon */
     }
@@ -5482,6 +5482,9 @@
                   style="color:var(--text3);font-size:9px;">+GEX</span>
                 <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
                   style="color:var(--text3);font-size:9px;">−GEX</span>
+                <span id="ov-legend-callwall" class="ov-legend-item"></span>
+                <span id="ov-legend-putwall" class="ov-legend-item"></span>
+                <span id="ov-legend-king" class="ov-legend-item"></span>
                 <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
                   <div class="ov-leg-item">
                     <div class="ov-leg-line" style="background:#11C81A;"></div>EMA 8
@@ -9222,7 +9225,7 @@
           // rough: today up to ~9:30 ET + 4h offset
         );
 
-        const addLine = (price, color, title, style = LightweightCharts.LineStyle.Dashed) => {
+        const addLine = (price, color, title, style = LightweightCharts.LineStyle.Dashed, showAxisLabel = true) => {
           if (!price || !isFinite(price)) return;
           try {
             lwcCandleSeries.createPriceLine({
@@ -9230,8 +9233,8 @@
               color,
               lineWidth: 1,
               lineStyle: style,
-              axisLabelVisible: true,
-              title,
+              axisLabelVisible: showAxisLabel,
+              title: showAxisLabel ? title : '',
             });
           } catch (e) { /* chart may have been destroyed */ }
         };
@@ -9249,9 +9252,9 @@
         const putWall = Number(ovState.keyLevels?.putWall);
         const king = Number(ovState.keyLevels?.king);
 
-        if (callWall) addLine(callWall, '#DCFF1E', 'CALL WALL', LightweightCharts.LineStyle.Solid);
-        if (putWall) addLine(putWall, '#d470ff', 'PUT WALL', LightweightCharts.LineStyle.Solid);
-        if (king) addLine(king, '#f5a623', 'KING GEX', LightweightCharts.LineStyle.Solid);
+        if (callWall) addLine(callWall, '#DCFF1E', 'CALL WALL', LightweightCharts.LineStyle.Solid, false);
+        if (putWall) addLine(putWall, '#d470ff', 'PUT WALL', LightweightCharts.LineStyle.Solid, false);
+        if (king) addLine(king, '#f5a623', 'KING GEX', LightweightCharts.LineStyle.Solid, false);
 
         if (renderToken !== ovChartRenderToken) return;
 
@@ -9635,6 +9638,24 @@
           putWall: putWall ?? null,
           king: king ?? null
         };
+
+        const callEl = document.getElementById('ov-legend-callwall');
+        const putEl = document.getElementById('ov-legend-putwall');
+        const kingEl = document.getElementById('ov-legend-king');
+
+        if (callEl) {
+          callEl.textContent = callWall ? `CALL ${Math.round(callWall)}` : '';
+          callEl.style.color = '#DCFF1E';
+        }
+        if (putEl) {
+          putEl.textContent = putWall ? `PUT ${Math.round(putWall)}` : '';
+          putEl.style.color = '#d470ff';
+        }
+        if (kingEl) {
+          kingEl.textContent = king ? `KING ${Math.round(king)}` : '';
+          kingEl.style.color = '#f5a623';
+        }
+
         document.getElementById('ov-key-levels').innerHTML = `
           <span class="kl-pill spot">Spot: ${fmt(heat.underlyingPrice)}</span>
           ${callWall ? `<span class="kl-pill call">Call Wall: ${callWall}</span>` : ''}
