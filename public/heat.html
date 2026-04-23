@@ -241,8 +241,8 @@
     }
 
     #connect-btn.connected {
-      background: var(--green);
-      color: #000;
+      background: #2a2e3d;
+      color: var(--green);
     }
 
     #connect-btn.disconnected {
@@ -267,8 +267,9 @@
     }
 
     #status-dot.online {
-      background: var(--gold);
+      background: var(--green);
       box-shadow: 0 0 6px var(--bg);
+      animation: pulse-extreme 2s ease-in-out infinite;
     }
 
     #status-dot.offline {
@@ -1782,6 +1783,26 @@
       font-size: 11px;
       color: var(--sand);
       font-weight: 600;
+      position: relative;
+    }
+
+    #ov-macro-close {
+      position: absolute;
+      right: 10px;
+      top: 8px;
+
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      font-size: 12px;
+      cursor: pointer;
+
+      transition: color 0.15s ease, transform 0.1s ease;
+    }
+
+    #ov-macro-close:hover {
+      color: var(--red);
+      transform: scale(1.15);
     }
 
     #ov-macro-alert.danger {
@@ -5331,6 +5352,7 @@
 
           <!-- Macro Alert Banner -->
           <div id="ov-macro-alert">
+            <button id="ov-macro-close" title="Dismiss">✕</button>
             <span id="ov-macro-alert-icon">
               <spanh>⚠</spanh>
             </span>
@@ -8534,13 +8556,13 @@
         stochTone = 'positive';
         stochTag = 'OS CROSS UP';
       } else if (slowK < 20) {
-        stochTone = 'caution';
+        stochTone = 'danger';
         stochTag = 'OVERSOLD';
       } else if (slowK > 80 && slowK < slowD) {
         stochTone = 'caution';
         stochTag = 'OB CROSS DN';
       } else if (slowK > 80) {
-        stochTone = 'neutral';
+        stochTone = 'danger';
         stochTag = 'OVERBOUGHT';
       } else if (slowK > slowD) {
         stochTone = 'positive';
@@ -8642,6 +8664,11 @@
       const banner = document.getElementById('ov-macro-alert');
       const textEl = document.getElementById('ov-macro-alert-text');
       if (!banner || !textEl) return;
+
+      if (localStorage.getItem('macroAlertDismissed') === 'true') {
+        banner.style.display = 'none';
+        return;
+      }
 
       const parts = [];
       const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 7);
@@ -9195,14 +9222,6 @@
           const pdl = Math.min(...prevDayCandles.map(c => c.low));
           addLine(pdh, '#1848CC', 'PDH');
           addLine(pdl, '#1848CC', 'PDL');
-        }
-
-        // Globex H/L (pre-market)
-        if (globexCandles.length) {
-          const gh = Math.max(...globexCandles.map(c => c.high));
-          const gl = Math.min(...globexCandles.map(c => c.low));
-          addLine(gh, '#9C27B0', 'GBX H');
-          addLine(gl, '#9C27B0', 'GBX L');
         }
 
         if (renderToken !== ovChartRenderToken) return;
@@ -11153,7 +11172,7 @@
             const toDateStr = toDate.toISOString().slice(0, 10);
             const hd = await apiGet(`/api/heat?symbol=SPY&strikeCount=50&fromDate=${fromDate}&toDate=${toDateStr}`);
             if (hd.ok) { lastHeatData = hd; heatSource = hd; updateOvmPc(); }
-          } catch (_) {}
+          } catch (_) { }
         }
         if (heatSource) {
           const strikes = heatSource.strikes || [];
@@ -11881,6 +11900,7 @@
       const fromOAuth = sessionStorage.getItem('ov_from_oauth');
       if (fromOAuth) {
         sessionStorage.removeItem('ov_from_oauth');
+        localStorage.removeItem('macroAlertDismissed');
         ovShowLoading();
       }
 
@@ -11890,6 +11910,18 @@
         startAutoRefresh();
         loadMarketHours();
       }
+
+      // ── Macro alert dismiss ─────────────────────
+      const macroAlert = document.getElementById('ov-macro-alert');
+      const macroClose = document.getElementById('ov-macro-close');
+
+      if (macroClose && macroAlert) {
+        macroClose.addEventListener('click', () => {
+          macroAlert.style.display = 'none';
+          localStorage.setItem('macroAlertDismissed', 'true');
+        });
+      }
+
     })();
 
     // ═══════════════════════════════════════════════════════
