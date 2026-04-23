@@ -267,8 +267,8 @@
     }
 
     #status-dot.online {
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
+      background: var(--gold);
+      box-shadow: 0 0 6px var(--bg);
     }
 
     #status-dot.offline {
@@ -1803,7 +1803,7 @@
     /* ── Overview: Row 1 – Score Ring + Chart ── */
     .ov-row1 {
       display: grid;
-      grid-template-columns: 300px 1fr;
+      grid-template-columns: 295px 1fr;
       gap: 12px;
       margin-bottom: 12px;
     }
@@ -3845,7 +3845,7 @@
     }
 
     .future-desc {
-      font-size: 9px;
+      font-size: 12px;
       color: var(--text3);
       margin-bottom: 8px;
     }
@@ -8891,7 +8891,7 @@
 
       // Need actual candle data
       if (!candles || candles.length < 10) {
-        container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Connect Schwab to load chart data</div>';
+        container.innerHTML = '<canvas id="ov-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Log in to load chart data</div>';
         return;
       }
 
