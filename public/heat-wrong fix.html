@@ -77,21 +77,9 @@
       letter-spacing: 0.02em;
     }
 
-    spana {
-      padding-bottom: 3px;
-      transform: scale(1.2);
-      /* refresh button home icon */
-    }
-
     spanb {
       margin-bottom: 2px;
       /* Brand Icon, Calendar Back/Forward buttons */
-    }
-
-    spanc {
-      margin-bottom: 3px;
-      transform: scale(1.4);
-      /* hamburger nav icon */
     }
 
     spanu {
@@ -106,7 +94,12 @@
 
     spanr {
       transform: scale(1.2);
-      /* pause button home icon */
+      /* refresh and pause button icon */
+    }
+
+    spano {
+      font-size: 16px !important;
+      /* flow refresh button, strategy & gex load button */
     }
 
     /* ── Scrollbars ── */
@@ -862,6 +855,12 @@
       color: #d470ff;
       border: 1px solid rgba(180, 35, 240, 0.2);
     }
+
+    /* Market Key Movers 
+    #ov-movers-body{
+
+    }
+    */
 
     /* ── Separator ── */
     .sep {
@@ -1790,26 +1789,6 @@
       font-size: 11px;
       color: var(--sand);
       font-weight: 600;
-      position: relative;
-    }
-
-    #ov-macro-close {
-      position: absolute;
-      right: 10px;
-      top: 8px;
-
-      background: transparent;
-      border: none;
-      color: var(--text3);
-      font-size: 12px;
-      cursor: pointer;
-
-      transition: color 0.15s ease, transform 0.1s ease;
-    }
-
-    #ov-macro-close:hover {
-      color: var(--red);
-      transform: scale(1.15);
     }
 
     #ov-macro-alert.danger {
@@ -4801,7 +4780,7 @@
 
     /* ─────────────────────────────────────────────
    EARNINGS VOL
-─────────────────────────────────────────────
+───────────────────────────────────────────── */
     .earnings-card {
       background: var(--bg3);
       border: 1px solid var(--border);
@@ -4836,9 +4815,9 @@
       text-align: right;
     }
 
-─────────────────────────────────────────────
+    /* ─────────────────────────────────────────────
    SENTIMENT PAGE
-───────────────────────────────────────────── 
+───────────────────────────────────────────── */
     .sentiment-gauge {
       height: 8px;
       background: var(--bg3);
@@ -4861,9 +4840,9 @@
       background: linear-gradient(to right, var(--red), var(--purple));
     }
 
-─────────────────────────────────────────────
+    /* ─────────────────────────────────────────────
    TREASURY PAGE
-───────────────────────────────────────────── 
+───────────────────────────────────────────── */
     .yield-curve-wrap {
       display: flex;
       align-items: flex-end;
@@ -4901,7 +4880,7 @@
       font-weight: 700;
       white-space: nowrap;
     }
-*/
+
     /* ─────────────────────────────────────────────
    DARK POOL PAGE
 ───────────────────────────────────────────── */
@@ -5198,13 +5177,13 @@
         <li class="nav-item" data-page="treasury-page" onclick="navTo(this)">
           <span class="nav-icon">🏦</span><span class="nav-label">Treasury &amp; Risk</span>
         </li>
-        <!--<li class="nav-section-label">Analytics</li>
+        <li class="nav-section-label">Analytics</li>
         <li class="nav-item" data-page="earnings-page" onclick="navTo(this)">
           <span class="nav-icon">🤑</span><span class="nav-label">Earnings Vol</span>
         </li>
         <li class="nav-item" data-page="sentiment-page" onclick="navTo(this)">
           <span class="nav-icon">🤔</span><span class="nav-label">Sentiment</span>
-        </li>-->
+        </li>
       </ul>
     </nav>
 
@@ -5212,9 +5191,7 @@
     <div id="main">
       <!-- topbar -->
       <div id="topbar">
-        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">
-          <spanc>&#9776;</spanc>
-        </button>
+        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
         <div id="topbar-title" id="page-title">Market<br>Overview</div>
         <div class="ov-panel-divider-vertical"></div>
         <div id="ticker-strip">
@@ -5293,7 +5270,7 @@
             <spanu>updated</spanu><b id="ago-val">--</b>
           </span>
           <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()" title="Refresh now">
-            <spana>↻</spana>
+            <spanr>↻</spanr>
           </button>
           <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
             <spanr>⏸</spanr>
@@ -5361,7 +5338,6 @@
 
           <!-- Macro Alert Banner -->
           <div id="ov-macro-alert">
-            <button id="ov-macro-close" title="Dismiss">✕</button>
             <span id="ov-macro-alert-icon">
               <spanh>⚠</spanh>
             </span>
@@ -5477,9 +5453,6 @@
                   style="color:var(--text3);font-size:9px;">+GEX</span>
                 <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
                   style="color:var(--text3);font-size:9px;">−GEX</span>
-                <span id="ov-legend-callwall" class="ov-legend-item"></span>
-                <span id="ov-legend-putwall" class="ov-legend-item"></span>
-                <span id="ov-legend-king" class="ov-legend-item"></span>
                 <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
                   <div class="ov-leg-item">
                     <div class="ov-leg-line" style="background:#11C81A;"></div>EMA 8
@@ -5733,7 +5706,7 @@
               </div>
             </div>
             <div class="card">
-              <div class="card-header"><span class="card-title">Highest Volume Market Movers</span></div>
+              <div class="card-header"><span class="card-title">Market Movers &#8212; by Volume</span></div>
               <div class="card-body" id="ov-movers-body" style="padding:0;">
                 <div style="padding:12px;font-size:10px;color:var(--text3);">Waiting for data…</div>
               </div>
@@ -5895,7 +5868,7 @@
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
               class="dte-btn" onclick="reloadHeat()">
-              ↻ Load
+              <spano>↻</spano> Load
             </button>
           </div>
 
@@ -6076,7 +6049,7 @@
               </select>
               <button onclick="loadOptionsFlow()"
                 style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">
-                ↻
+                <spano>↻</spano>
                 REFRESH
               </button>
             </div>
@@ -6177,7 +6150,7 @@
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
               onclick="stratLoadChain(true)">
-              ↻ LOAD CHAIN
+              <spano>↻</spano> LOAD CHAIN
             </button>
           </div>
 
@@ -7051,17 +7024,8 @@
       return `IN ${days}D`;
     }
 
-    /*   --- no date ---
     function buildBannerText(ev) {
       return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time}`;
-    }
-    */
-
-    /*   --- with date ---   */
-    function buildBannerText(ev) {
-      const d = ev.releaseDate instanceof Date ? ev.releaseDate : new Date(ev.releaseDate);
-      const md = `${d.getMonth() + 1}/${d.getDate()}`;
-      return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time} (${md})`;
     }
 
     function eventTierRank(tier) {
@@ -7750,7 +7714,6 @@
     function toggleNav() {
       const sidebar = document.getElementById('sidebar');
       const isCollapsed = sidebar.classList.toggle('collapsed');
-      localStorage.setItem('sidebarCollapsed', isCollapsed);
       const btn = document.getElementById('nav-toggle');
       btn.title = isCollapsed ? 'Open sidebar' : 'Close sidebar';
       // Fire resize after the 250ms sidebar CSS transition fully settles
@@ -7894,8 +7857,6 @@
     // ═══════════════════════════════════════════════════════
     //  MARKET OVERVIEW — scoring engine state
     // ═══════════════════════════════════════════════════════
-    const ovTickerCache = {};
-
     let ovState = {
       mode: sessionStorage.getItem('ovMode') || 'swing',
       sectorTf: '1d',
@@ -7903,11 +7864,6 @@
       snapshot: null,
       spyCandles: [],
       intraday: {}, // cache: { '5m': [...], '10m': [...], '1H': [...] }
-      keyLevels: {
-        callWall: null,
-        putWall: null,
-        king: null
-      },
       tickerRafId: null,
       tickerOffset: 0,
       tickerGroupWidth: 0,
@@ -8035,21 +7991,14 @@
     }
     function ovRsi(closes, period = 14) {
       if (!closes || closes.length < period + 1) return null;
-      // Wilder's smoothed RSI (same method as the chart calcRSI)
-      let avgGain = 0, avgLoss = 0;
-      for (let i = 1; i <= period; i++) {
+      let gains = 0, losses = 0;
+      for (let i = closes.length - period; i < closes.length; i++) {
         const d = closes[i] - closes[i - 1];
-        if (d > 0) avgGain += d; else avgLoss += Math.abs(d);
+        if (d > 0) gains += d; else losses += Math.abs(d);
       }
-      avgGain /= period;
-      avgLoss /= period;
-      for (let i = period + 1; i < closes.length; i++) {
-        const d = closes[i] - closes[i - 1];
-        avgGain = (avgGain * (period - 1) + Math.max(d, 0)) / period;
-        avgLoss = (avgLoss * (period - 1) + Math.max(-d, 0)) / period;
-      }
-      if (avgLoss === 0) return 100;
-      return 100 - (100 / (1 + avgGain / avgLoss));
+      const ag = gains / period, al = losses / period;
+      if (al === 0) return 100;
+      return 100 - (100 / (1 + (ag / al)));
     }
     function ovMacd(closes, fast = 12, slow = 26, sig = 9) {
       function ema(arr, p) {
@@ -8585,13 +8534,13 @@
         stochTone = 'positive';
         stochTag = 'OS CROSS UP';
       } else if (slowK < 20) {
-        stochTone = 'danger';
+        stochTone = 'caution';
         stochTag = 'OVERSOLD';
       } else if (slowK > 80 && slowK < slowD) {
         stochTone = 'caution';
         stochTag = 'OB CROSS DN';
       } else if (slowK > 80) {
-        stochTone = 'danger';
+        stochTone = 'neutral';
         stochTag = 'OVERBOUGHT';
       } else if (slowK > slowD) {
         stochTone = 'positive';
@@ -8694,11 +8643,6 @@
       const textEl = document.getElementById('ov-macro-alert-text');
       if (!banner || !textEl) return;
 
-      if (localStorage.getItem('macroAlertDismissed') === 'true') {
-        banner.style.display = 'none';
-        return;
-      }
-
       const parts = [];
       const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 7);
 
@@ -8752,67 +8696,13 @@
           return `${icon} ${label}: ${Math.round(score)}/100 \u2014 ${tone}`;
         });
       const riskNotes = [];
-
-      // ── Volatility / tape risk ─────────────────────────
-      if (VIX > 30) {
-        riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} — expect unstable tape and reduce aggressively`);
-      } else if (VIX > 25) {
-        riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} — expect wider swings and smaller size`);
-      }
-
-      // ── Near-term macro event risk (<= 3 days) ─────────
-      const eventRisks = [];
-      if (scores.fomc && scores.fomc.days <= 3) {
-        eventRisks.push(`FOMC ${scores.fomc.days === 0 ? 'today' : `in ${scores.fomc.days}d`}`);
-      }
-      if (scores.cpi && scores.cpi.days <= 3) {
-        eventRisks.push(`CPI ${scores.cpi.days === 0 ? 'today' : `in ${scores.cpi.days}d`}`);
-      }
-      if (scores.jolts && scores.jolts.days <= 3) {
-        eventRisks.push(`JOLTS ${scores.jolts.days === 0 ? 'today' : `in ${scores.jolts.days}d`}`);
-      }
-      if (eventRisks.length) {
-        riskNotes.push(`${eventRisks.join(' + ')} — event risk can create whiplash`);
-      }
-
-      // ── Danger-state dashboard metrics ──────────────────
-      const dangerFlags = [];
-
-      if (scores.spyRsi > 75) dangerFlags.push(`RSI overheated (${Math.round(scores.spyRsi)})`);
-      if (scores.spyRsi < 25) dangerFlags.push(`RSI washed out (${Math.round(scores.spyRsi)})`);
-
-      if (scores.putCallRatio > 1.15) dangerFlags.push(`put/call defensive (${scores.putCallRatio.toFixed(2)})`);
-      if (scores.pctAbove20 < 35) dangerFlags.push(`breadth weak (${Math.round(scores.pctAbove20)}% > 20MA)`);
-      if (scores.pctAbove20 > 80) dangerFlags.push(`breadth stretched (${Math.round(scores.pctAbove20)}% > 20MA)`);
-
-      if (scores.aad && scores.aad < -1200) dangerFlags.push(`A/D line weak (${Math.round(scores.aad)})`);
-      if (scores.trin && scores.trin > 1.3) dangerFlags.push(`TRIN risk-on sellers (${scores.trin.toFixed(2)})`);
-      if (scores.voldRatio && scores.voldRatio < 0.85) dangerFlags.push(`volume skew defensive (${scores.voldRatio.toFixed(2)})`);
-
-      if (dangerFlags.length) {
-        riskNotes.push(dangerFlags.slice(0, 3).join(' • '));
-      }
-
-      // ── Notable positioning / structure ────────────────
-      const structureFlags = [];
-      if (scores.netGex != null && scores.netGex < 0) structureFlags.push('net GEX negative');
-      if (scores.zeroGamma != null && scores.SPY != null && Math.abs(scores.SPY - scores.zeroGamma) <= 3) {
-        structureFlags.push(`near zero-gamma (${scores.zeroGamma.toFixed(0)})`);
-      }
-      if (scores.gammaFlip != null && scores.SPY != null && Math.abs(scores.SPY - scores.gammaFlip) <= 3) {
-        structureFlags.push(`near gamma flip (${scores.gammaFlip.toFixed(0)})`);
-      }
-      if (scores.geoRisk && scores.geoRisk.topic && scores.geoRisk.topic !== 'Normal') {
-        structureFlags.push(`geo risk: ${scores.geoRisk.topic}`);
-      }
-
-      if (structureFlags.length) {
-        riskNotes.push(structureFlags.slice(0, 2).join(' • '));
-      }
-
-      // Keep the box tight and readable
-      const finalRiskNotes = riskNotes.filter(Boolean).slice(0, 4);
-      if (!finalRiskNotes.length) finalRiskNotes.push('No major risk flags on volatility, events, breadth, or structure');
+      if (scores.fomc && scores.fomc.days <= 3) riskNotes.push(`FOMC in ${scores.fomc.days}d \u2014 expect volatility`);
+      if (scores.cpi && scores.cpi.days <= 3) riskNotes.push(`CPI in ${scores.cpi.days}d \u2014 potential whipsaw`);
+      if (VIX > 30) riskNotes.push(`VIX extreme at ${VIX.toFixed(1)} \u2014 reduce all`);
+      else if (VIX > 25) riskNotes.push(`VIX elevated at ${VIX.toFixed(1)} \u2014 reduce size`);
+      if (scores.spyRsi && scores.spyRsi > 75) riskNotes.push(`RSI overbought at ${Math.round(scores.spyRsi)}`);
+      if (scores.spyRsi && scores.spyRsi < 25) riskNotes.push(`RSI oversold at ${Math.round(scores.spyRsi)}`);
+      if (!riskNotes.length) riskNotes.push('No major risk flags');
 
       const vEl = document.getElementById('ov-exec-verdict');
       if (vEl) { vEl.textContent = verdict; vEl.className = 'ov-exec-verdict ' + verdictCls; }
@@ -8821,11 +8711,11 @@
       const sigEl = document.getElementById('ov-exec-signals');
       if (sigEl) sigEl.innerHTML = sigs.map(s => `<li>${s}</li>`).join('');
       const szEl = document.getElementById('ov-exec-size');
-      if (szEl) szEl.textContent = posSize + '% of Portfolio';
+      if (szEl) szEl.textContent = posSize + '%';
       const bEl = document.getElementById('ov-exec-bias');
       if (bEl) { bEl.textContent = bias; bEl.className = 'ov-exec-kv-val ov-exec-bias ' + biasCls; }
       const rEl = document.getElementById('ov-exec-risks');
-      if (rEl) rEl.innerHTML = finalRiskNotes.map(n => `<div class="ov-exec-risk-note">${n}</div>`).join('');
+      if (rEl) rEl.innerHTML = riskNotes.map(n => `<div class="ov-exec-risk-note">${n}</div>`).join('');
       const scoreEl = document.getElementById('ov-exec-score');
       if (scoreEl) scoreEl.textContent = Math.round(composite);
     }
@@ -9142,8 +9032,24 @@
       makeEMA(ema50vals, '#01BCD4', 1.5);
 
       // ── RSI series (separate price scale — overlay at bottom of same chart) ──
-      // We use a second price scale 'rsi' pinned to the bottom 28% of the chart
-      const rsiVals = calcRSI(allCloses, 14).slice(si, si + display.length);
+      // Always compute RSI from full daily candles so the line + last value match
+      // the Momentum panel's spyRsi (which also uses daily closes from histMap).
+      const dailyRsiCandles = ovState.snapshot?.scores?.spyCandles || candles;
+      const dailyRsiCloses = dailyRsiCandles.map(c => c.close);
+      const fullDailyRsi = calcRSI(dailyRsiCloses, 14); // one RSI value per daily candle
+
+      // Build a lookup: day-midnight-ms → RSI value
+      const dailyRsiMap = {};
+      dailyRsiCandles.forEach((c, idx) => {
+        const dayKey = new Date(c.datetime).setHours(0, 0, 0, 0);
+        if (fullDailyRsi[idx] != null) dailyRsiMap[dayKey] = fullDailyRsi[idx];
+      });
+
+      // Map each display candle to its daily RSI by rounding its datetime to midnight
+      const rsiValsAligned = display.map(c => {
+        const dayKey = new Date(c.datetime).setHours(0, 0, 0, 0);
+        return dailyRsiMap[dayKey] ?? null;
+      });
 
       // Divider line (visual separator between candles and RSI)
       const dividerSeries = lwcChart.addLineSeries({
@@ -9161,7 +9067,7 @@
       });
 
       // RSI 70/30 bands
-      const rsiData = rsiVals
+      const rsiData = rsiValsAligned
         .map((v, i) => v !== null ? { time: Math.floor(display[i].datetime / 1000), value: v } : null)
         .filter(Boolean);
 
@@ -9171,7 +9077,7 @@
         priceScaleId: 'rsi',
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
-        lastValueVisible: true,
+        lastValueVisible: false,
         priceLineVisible: false,
         autoscaleInfoProvider: () => ({
           priceRange: { minValue: 0, maxValue: 100 },
@@ -9184,6 +9090,20 @@
       rsiSeries.createPriceLine({ price: 70, color: 'rgba(255,59,92,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '70' });
       rsiSeries.createPriceLine({ price: 30, color: 'rgba(34,221,136,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '30' });
       rsiSeries.createPriceLine({ price: 50, color: 'rgba(255,255,255,0.1)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false });
+
+      // Live RSI value line — pulls from the same spyRsi used in the Momentum panel
+      const liveRsi = ovState.snapshot?.scores?.spyRsi ?? (rsiData.length ? rsiData[rsiData.length - 1].value : null);
+      if (liveRsi != null) {
+        const rsiColor = liveRsi > 70 ? 'rgba(255,59,92,0.9)' : liveRsi < 30 ? 'rgba(34,221,136,0.9)' : 'rgba(192,132,252,0.9)';
+        rsiSeries.createPriceLine({
+          price: liveRsi,
+          color: rsiColor,
+          lineWidth: 1,
+          lineStyle: LightweightCharts.LineStyle.Solid,
+          axisLabelVisible: true,
+          title: '',
+        });
+      }
 
       // RSI label (static text overlay)
       const rsiLabel = document.createElement('div');
@@ -9285,7 +9205,7 @@
           // rough: today up to ~9:30 ET + 4h offset
         );
 
-        const addLine = (price, color, title, style = LightweightCharts.LineStyle.Dashed, showAxisLabel = true) => {
+        const addLine = (price, color, title, style = LightweightCharts.LineStyle.Dashed) => {
           if (!price || !isFinite(price)) return;
           try {
             lwcCandleSeries.createPriceLine({
@@ -9293,8 +9213,8 @@
               color,
               lineWidth: 1,
               lineStyle: style,
-              axisLabelVisible: showAxisLabel,
-              title: showAxisLabel ? title : '',
+              axisLabelVisible: true,
+              title,
             });
           } catch (e) { /* chart may have been destroyed */ }
         };
@@ -9307,17 +9227,15 @@
           addLine(pdl, '#1848CC', 'PDL');
         }
 
-        // Options key strikes from Overview pills
-        const callWall = Number(ovState.keyLevels?.callWall);
-        const putWall = Number(ovState.keyLevels?.putWall);
-        const king = Number(ovState.keyLevels?.king);
-
-        if (callWall) addLine(callWall, '#DCFF1E', 'CALL WALL', LightweightCharts.LineStyle.Solid, false);
-        if (putWall) addLine(putWall, '#d470ff', 'PUT WALL', LightweightCharts.LineStyle.Solid, false);
-        if (king) addLine(king, '#f5a623', 'KING GEX', LightweightCharts.LineStyle.Solid, false);
+        // Globex H/L (pre-market)
+        if (globexCandles.length) {
+          const gh = Math.max(...globexCandles.map(c => c.high));
+          const gl = Math.min(...globexCandles.map(c => c.low));
+          addLine(gh, '#9C27B0', 'GBX H');
+          addLine(gl, '#9C27B0', 'GBX L');
+        }
 
         if (renderToken !== ovChartRenderToken) return;
-
 
         // All-time high (Fetch from full 1Y candles)
         // Use the full snapshot candles if we have them; otherwise use a static fallback
@@ -9461,31 +9379,9 @@
         document.querySelectorAll(`[id^="ovt-${sym}-"]`).forEach(el => {
           const suffix = el.id.split('-').pop();
           if (suffix === 'price' && price != null) el.textContent = price.toFixed(2);
-          if (suffix === 'chg') {
-            const session = getMarketSession();
-
-            // treat 0 or null as invalid during closed session
-            const isBad = pct == null || pct === 0;
-
-            // During CLOSED → ignore bad updates
-            if (session === 'closed' && isBad && ovTickerCache[sym]) {
-              el.textContent = ovTickerCache[sym].text;
-              el.className = 'ov-tick-chg ' + ovTickerCache[sym].tone;
-              return;
-            }
-
-            if (pct != null) {
-              const text = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
-              const tone = pct > 0 ? 'up' : pct < 0 ? 'dn' : 'flat';
-
-              el.textContent = text;
-              el.className = 'ov-tick-chg ' + tone;
-
-              // store last GOOD value in memory
-              if (!(session === 'closed' && isBad)) {
-                ovTickerCache[sym] = { text, tone };
-              }
-            }
+          if (suffix === 'chg' && pct != null) {
+            el.textContent = (pct > 0 ? '+' : '') + pct.toFixed(2) + '%';
+            el.className = 'ov-tick-chg ' + (pct > 0 ? 'up' : pct < 0 ? 'dn' : 'flat');
           }
         });
       });
@@ -9715,29 +9611,6 @@
         const king = s.kingStrike?.strike;
         const posGex = s.strongestPositiveGex?.strike;
         const negGex = s.strongestNegativeGex?.strike;
-        ovState.keyLevels = {
-          callWall: callWall ?? null,
-          putWall: putWall ?? null,
-          king: king ?? null
-        };
-
-        const callEl = document.getElementById('ov-legend-callwall');
-        const putEl = document.getElementById('ov-legend-putwall');
-        const kingEl = document.getElementById('ov-legend-king');
-
-        if (callEl) {
-          callEl.textContent = callWall ? `CALL ${Math.round(callWall)}` : '';
-          callEl.style.color = '#DCFF1E';
-        }
-        if (putEl) {
-          putEl.textContent = putWall ? `PUT ${Math.round(putWall)}` : '';
-          putEl.style.color = '#d470ff';
-        }
-        if (kingEl) {
-          kingEl.textContent = king ? `KING ${Math.round(king)}` : '';
-          kingEl.style.color = '#f5a623';
-        }
-
         document.getElementById('ov-key-levels').innerHTML = `
           <span class="kl-pill spot">Spot: ${fmt(heat.underlyingPrice)}</span>
           ${callWall ? `<span class="kl-pill call">Call Wall: ${callWall}</span>` : ''}
@@ -9802,14 +9675,6 @@
 
     async function loadMovers() {
       try {
-        const moversEl = document.getElementById('ov-movers-body');
-        const session = getMarketSession();
-
-        if (session === 'closed') {
-          moversEl.innerHTML = `<div style="padding:12px;font-size:10px;color:var(--text3);">Awaiting Market Open...</div>`;
-          return;
-        }
-
         const d = await apiGet('/api/movers?index=$SPX');
         if (!d.ok || !d.data) {
           ovLogTerminalError('MOVERS', d?.error || 'Movers endpoint returned no data', d?.details);
@@ -11318,7 +11183,7 @@
             const toDateStr = toDate.toISOString().slice(0, 10);
             const hd = await apiGet(`/api/heat?symbol=SPY&strikeCount=50&fromDate=${fromDate}&toDate=${toDateStr}`);
             if (hd.ok) { lastHeatData = hd; heatSource = hd; updateOvmPc(); }
-          } catch (_) { }
+          } catch (_) {}
         }
         if (heatSource) {
           const strikes = heatSource.strikes || [];
@@ -12038,16 +11903,6 @@
       // Show placeholder until Schwab data loads
       ovRenderChart(null);
 
-      // ── Sidebar state (persisted) ─────────────────────
-      const sidebar = document.getElementById('sidebar');
-      const savedSidebarState = localStorage.getItem('sidebarCollapsed');
-
-      if (sidebar) {
-        if (savedSidebarState === null || savedSidebarState === 'true') {
-          sidebar.classList.add('collapsed');
-        }
-      }
-
       // Start client-side session badge and ago timers immediately (no auth needed)
       startSessionTicker();
       startAgoTimer();
@@ -12056,8 +11911,6 @@
       const fromOAuth = sessionStorage.getItem('ov_from_oauth');
       if (fromOAuth) {
         sessionStorage.removeItem('ov_from_oauth');
-        localStorage.removeItem('macroAlertDismissed');
-        localStorage.setItem('sidebarCollapsed', 'true');
         ovShowLoading();
       }
 
@@ -12067,18 +11920,6 @@
         startAutoRefresh();
         loadMarketHours();
       }
-
-      // ── Macro alert dismiss ─────────────────────
-      const macroAlert = document.getElementById('ov-macro-alert');
-      const macroClose = document.getElementById('ov-macro-close');
-
-      if (macroClose && macroAlert) {
-        macroClose.addEventListener('click', () => {
-          macroAlert.style.display = 'none';
-          localStorage.setItem('macroAlertDismissed', 'true');
-        });
-      }
-
     })();
 
     // ═══════════════════════════════════════════════════════
