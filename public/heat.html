@@ -8512,7 +8512,7 @@
       const rsi = sc.spyRsi;
       const rsiTone = rsi == null ? 'neutral' : rsi > 70 ? 'danger' : rsi > 55 ? 'positive' : rsi < 30 ? 'danger' : 'caution';
       const rsiTag = rsi == null ? '--' : rsi > 70 ? 'Overbought' : rsi > 55 ? 'Bullish' : rsi < 30 ? 'Oversold' : 'Neutral';
-      ovSetMetric('ovm-rsi', 'ovt-rsi', rsi != null ? rsi.toFixed(0) : '--', rsiTag, rsiTone);
+      ovSetMetric('ovm-rsi', 'ovt-rsi', rsi != null ? rsi.toFixed(2) : '--', rsiTag, rsiTone);
       // MACD
       const mr = sc.macdResult;
       const macdTxt = mr ? mr.macd.toFixed(2) : '--';
@@ -9032,8 +9032,24 @@
       makeEMA(ema50vals, '#01BCD4', 1.5);
 
       // ── RSI series (separate price scale — overlay at bottom of same chart) ──
-      // We use a second price scale 'rsi' pinned to the bottom 28% of the chart
-      const rsiVals = calcRSI(allCloses, 14).slice(si, si + display.length);
+      // Always compute RSI from full daily candles so the line + last value match
+      // the Momentum panel's spyRsi (which also uses daily closes from histMap).
+      const dailyRsiCandles = ovState.snapshot?.scores?.spyCandles || candles;
+      const dailyRsiCloses = dailyRsiCandles.map(c => c.close);
+      const fullDailyRsi = calcRSI(dailyRsiCloses, 14); // one RSI value per daily candle
+
+      // Build a lookup: day-midnight-ms → RSI value
+      const dailyRsiMap = {};
+      dailyRsiCandles.forEach((c, idx) => {
+        const dayKey = new Date(c.datetime).setHours(0, 0, 0, 0);
+        if (fullDailyRsi[idx] != null) dailyRsiMap[dayKey] = fullDailyRsi[idx];
+      });
+
+      // Map each display candle to its daily RSI by rounding its datetime to midnight
+      const rsiValsAligned = display.map(c => {
+        const dayKey = new Date(c.datetime).setHours(0, 0, 0, 0);
+        return dailyRsiMap[dayKey] ?? null;
+      });
 
       // Divider line (visual separator between candles and RSI)
       const dividerSeries = lwcChart.addLineSeries({
@@ -9051,7 +9067,7 @@
       });
 
       // RSI 70/30 bands
-      const rsiData = rsiVals
+      const rsiData = rsiValsAligned
         .map((v, i) => v !== null ? { time: Math.floor(display[i].datetime / 1000), value: v } : null)
         .filter(Boolean);
 
