@@ -7534,6 +7534,21 @@
         // Amount column already has the sign encoded via parentheses
         const result = amount; // negative for buys, positive for sells
 
+        // ── Parse strike / put-call / expiry from description ──────────────────
+        // Format: "BBAI 1/16/2026 Call $7.00"  or  "GOOGL 10/10/2025 Put $240.00"
+        let strike = '', putCall = '', expiry = '';
+        if (isOption) {
+          // expiry: first date-like token  e.g. 1/16/2026
+          const expiryMatch = descRaw.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+          if (expiryMatch) expiry = expiryMatch[1];
+          // put/call keyword
+          const pcMatch = descRaw.match(/\b(Call|Put)\b/i);
+          if (pcMatch) putCall = pcMatch[1];
+          // strike: dollar amount after Call/Put keyword  e.g. $7.00  $240.00
+          const strikeMatch = descRaw.match(/\b(?:Call|Put)\s+\$(([\d,]+(?:\.\d+)?))/i);
+          if (strikeMatch) strike = '$' + strikeMatch[1];
+        }
+
         rows.push({
           date:      dateStr,
           time:      '',           // Robinhood CSV has no time column
@@ -7546,7 +7561,10 @@
           costBasis,
           result,
           isOption,
-          desc:      descRaw
+          desc:      descRaw,
+          strike,
+          putCall,
+          expiry
         });
       }
 
@@ -7952,8 +7970,10 @@
       // build table
       const COLS = [
         { key: 'date',      label: 'Date' },
-        { key: 'time',      label: 'Time' },
         { key: 'ticker',    label: 'Ticker' },
+        { key: 'putCall',   label: 'C/P' },
+        { key: 'expiry',    label: 'Expiry' },
+        { key: 'strike',    label: 'Strike' },
         { key: 'method',    label: 'Method' },
         { key: 'type',      label: 'Type' },
         { key: 'qty',       label: 'Quantity' },
@@ -7997,10 +8017,18 @@
           : `<span class="jnl-result-neg">-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
         const flagIcon  = isFight ? ' 🔄' : isSpike ? ' ⚠️' : '';
 
+        const pcDisp     = t.putCall
+          ? `<span class="jnl-tag ${t.putCall.toLowerCase() === 'call' ? 'buy' : 'sell'}">${t.putCall}</span>`
+          : '<span style="color:var(--text3)">—</span>';
+        const expiryDisp = t.expiry  || '<span style="color:var(--text3)">—</span>';
+        const strikeDisp = t.strike  || '<span style="color:var(--text3)">—</span>';
+
         html += `<tr${rowCls}>
           <td>${d}${flagIcon}</td>
-          <td>${t.time || '—'}</td>
           <td><strong>${t.ticker}</strong></td>
+          <td>${pcDisp}</td>
+          <td style="color:var(--text2)">${expiryDisp}</td>
+          <td style="color:var(--text2)">${strikeDisp}</td>
           <td>${methTag}</td>
           <td>${typeTag}</td>
           <td>${t.qty.toLocaleString()}</td>
