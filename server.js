@@ -32,6 +32,75 @@ const FINNHUB_TOP_100_SP500 = [
 // Starter-only memory storage.
 let schwabTokens = null;
 
+// Refresh token after login
+async function refreshSchwabAccessToken() {
+  if (!schwabTokens?.refresh_token) {
+    throw new Error("No refresh token available.");
+  }
+
+  if (!SCHWAB_APP_KEY || !SCHWAB_APP_SECRET) {
+    throw new Error("Missing Schwab app credentials.");
+  }
+
+  const basicAuth = Buffer.from(
+    `${SCHWAB_APP_KEY}:${SCHWAB_APP_SECRET}`
+  ).toString("base64");
+
+  const tokenResponse = await axios.post(
+    "https://api.schwabapi.com/v1/oauth/token",
+    new URLSearchParams({
+      grant_type: "refresh_token",
+      refresh_token: schwabTokens.refresh_token
+    }).toString(),
+    {
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      timeout: 30000
+    }
+  );
+
+  schwabTokens = {
+    ...schwabTokens,
+    ...tokenResponse.data
+  };
+
+  return schwabTokens.access_token;
+}
+
+async function schwabGet(url, config = {}) {
+  if (!schwabTokens?.access_token) {
+    throw new Error("No access token found.");
+  }
+
+  try {
+    return await axios.get(url, {
+      ...config,
+      headers: {
+        ...(config.headers || {}),
+        Authorization: `Bearer ${schwabTokens.access_token}`
+      }
+    });
+  } catch (error) {
+    const status = error.response?.status;
+
+    if (status === 401 && schwabTokens?.refresh_token) {
+      await refreshSchwabAccessToken();
+
+      return await axios.get(url, {
+        ...config,
+        headers: {
+          ...(config.headers || {}),
+          Authorization: `Bearer ${schwabTokens.access_token}`
+        }
+      });
+    }
+
+    throw error;
+  }
+}
+
 // Fear & Greed cache
 let fearGreedCache = {
   data: null,
@@ -273,13 +342,10 @@ app.get("/api/quotes", async (req, res) => {
     const requestedSymbols = req.query.symbols || "SPY,SPX,VIX";
     const symbols = mapQuoteSymbolsParam(requestedSymbols);
 
-    const response = await axios.get(
+    const response = await schwabGet(
       "https://api.schwabapi.com/marketdata/v1/quotes",
       {
         params: { symbols },
-        headers: {
-          Authorization: `Bearer ${schwabTokens.access_token}`
-        },
         timeout: 30000
       }
     );
@@ -379,7 +445,7 @@ function addQuoteAliases(data) {
   return out;
 }
 
-async function fetchChain(symbol, accessToken, overrides = {}) {
+async function fetchChain(symbol, overrides = {}) {
   const normalizedSymbol = mapChainSymbol(symbol);
 
   const params = {
@@ -399,11 +465,8 @@ async function fetchChain(symbol, accessToken, overrides = {}) {
     params.strike = overrides.strike;
   }
 
-  return axios.get("https://api.schwabapi.com/marketdata/v1/chains", {
+  return schwabGet("https://api.schwabapi.com/marketdata/v1/chains", {
     params,
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
     timeout: 30000
   });
 }
@@ -421,7 +484,7 @@ app.get("/api/chain", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const response = await fetchChain(requestedSymbol, schwabTokens.access_token, {
+    const response = await fetchChain(requestedSymbol, {
       contractType: req.query.contractType,
       strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : undefined,
       includeUnderlyingQuote:
@@ -632,7 +695,7 @@ app.get("/api/heat", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const response = await fetchChain(requestedSymbol, schwabTokens.access_token, {
+    const response = await fetchChain(requestedSymbol, {
       contractType: req.query.contractType,
       strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
       includeUnderlyingQuote: false,
@@ -821,14 +884,11 @@ app.get("/api/dashboard", async (req, res) => {
     const toDate = req.query.toDate || getFutureISO(10);
 
     const [quotesResponse, chainResponse] = await Promise.all([
-      axios.get("https://api.schwabapi.com/marketdata/v1/quotes", {
+      schwabGet("https://api.schwabapi.com/marketdata/v1/quotes", {
         params: { symbols: mapQuoteSymbolsParam("SPY,SPX,VIX") },
-        headers: {
-          Authorization: `Bearer ${schwabTokens.access_token}`
-        },
         timeout: 30000
       }),
-      fetchChain(requestedSymbol, schwabTokens.access_token, {
+      fetchChain(requestedSymbol, {
         strikeCount,
         fromDate,
         toDate,
@@ -871,11 +931,10 @@ app.get("/api/movers", async (req, res) => {
     const sort = req.query.sort || "PERCENT_CHANGE_UP";
     const frequency = req.query.frequency || "0";
 
-    const response = await axios.get(
+    const response = await schwabGet(
       `https://api.schwabapi.com/marketdata/v1/movers/${encodeURIComponent(index)}`,
       {
         params: { sort, frequency },
-        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
         timeout: 30000
       }
     );
@@ -889,9 +948,9 @@ app.get("/api/movers", async (req, res) => {
     if (movers.length) {
       const symbols = movers.map(m => m.symbol).filter(Boolean).join(',');
       try {
-        const qRes = await axios.get(
+        const qRes = await schwabGet(
           'https://api.schwabapi.com/marketdata/v1/quotes',
-          { params: { symbols, fields: 'quote' }, headers: { Authorization: `Bearer ${schwabTokens.access_token}` }, timeout: 15000 }
+          { params: { symbols, fields: 'quote' }, timeout: 15000 }
         );
         const qData = qRes.data || {};
         movers.forEach(m => {
@@ -936,9 +995,9 @@ app.get("/api/pricehistory", async (req, res) => {
     if (req.query.startDate) params.startDate = req.query.startDate;
     if (req.query.endDate) params.endDate = req.query.endDate;
 
-    const response = await axios.get(
+    const response = await schwabGet(
       "https://api.schwabapi.com/marketdata/v1/pricehistory",
-      { params, headers: { Authorization: `Bearer ${schwabTokens.access_token}` }, timeout: 30000 }
+      { params, timeout: 30000 }
     );
     const candles = response.data?.candles || [];
 
@@ -966,11 +1025,10 @@ app.get("/api/instruments", async (req, res) => {
     }
     const symbol = req.query.symbol || "AAPL";
     const projection = req.query.projection || "fundamental";
-    const response = await axios.get(
+    const response = await schwabGet(
       "https://api.schwabapi.com/marketdata/v1/instruments",
       {
         params: { symbol, projection },
-        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
         timeout: 30000
       }
     );
@@ -993,11 +1051,10 @@ app.get("/api/markets", async (req, res) => {
     }
     const markets = req.query.markets || "equity,option,future,forex";
     const date = req.query.date || getTodayISO();
-    const response = await axios.get(
+    const response = await schwabGet(
       "https://api.schwabapi.com/marketdata/v1/markets",
       {
         params: { markets, date },
-        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
         timeout: 30000
       }
     );
@@ -1020,11 +1077,10 @@ app.get("/api/expirationchain", async (req, res) => {
     }
     const symbol = (req.query.symbol || "SPY").toUpperCase();
     const normalizedSymbol = mapChainSymbol(symbol);
-    const response = await axios.get(
+    const response = await schwabGet(
       "https://api.schwabapi.com/marketdata/v1/expirationchain",
       {
         params: { symbol: normalizedSymbol },
-        headers: { Authorization: `Bearer ${schwabTokens.access_token}` },
         timeout: 30000
       }
     );
@@ -1050,8 +1106,6 @@ app.get("/api/marketoverview", async (req, res) => {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({ ok: false, error: "No access token found. Try to reconnect." });
     }
-    const token = schwabTokens.access_token;
-    const headers = { Authorization: `Bearer ${token}` };
     const timeout = 30000;
     const base = "https://api.schwabapi.com/marketdata/v1";
 
@@ -1061,14 +1115,13 @@ app.get("/api/marketoverview", async (req, res) => {
 
     // Fetch all in parallel
     const [quotesRes, moversRes, ...histResponses] = await Promise.all([
-      axios.get(`${base}/quotes`, { params: { symbols: quoteSymbols }, headers, timeout }),
-      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, { params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, headers, timeout }).catch(() => ({ data: [] })),
+      schwabGet(`${base}/quotes`, { params: { symbols: quoteSymbols }, timeout }),
+      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, { params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, timeout }).catch(() => ({ data: [] })),
       ...histSymbols.map(sym =>
-        axios.get(`${base}/pricehistory`, {
+        schwabGet(`${base}/pricehistory`, {
           params: { symbol: sym, periodType: "year", period: "1", frequencyType: "daily", frequency: "1" },
-          headers, timeout
+          timeout
         }).then(r => ({ sym, candles: r.data?.candles || [] }))
-          .catch(() => ({ sym, candles: [] }))
       )
     ]);
 
@@ -1134,22 +1187,20 @@ app.get("/api/scanner", async (req, res) => {
     if (!schwabTokens?.access_token) {
       return res.status(401).json({ ok: false, error: "No access token found. Try to reconnect." });
     }
-    const token = schwabTokens.access_token;
-    const headers = { Authorization: `Bearer ${token}` };
     const timeout = 30000;
     const base = "https://api.schwabapi.com/marketdata/v1";
     const minVolRatio = parseFloat(req.query.minVolRatio) || 1.5;
 
     // Step 1: Fetch top movers from all three major indices (by volume and pct change)
     const [volMovers, pcUpMovers, pcDnMovers] = await Promise.all([
-      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, {
-        params: { sort: "VOLUME", frequency: "0" }, headers, timeout
+      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, {
+        params: { sort: "VOLUME", frequency: "0" }, timeout
       }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
-      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, {
-        params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, headers, timeout
+      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, {
+        params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, timeout
       }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
-      axios.get(`${base}/movers/${encodeURIComponent("$SPX")}`, {
-        params: { sort: "PERCENT_CHANGE_DOWN", frequency: "0" }, headers, timeout
+      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, {
+        params: { sort: "PERCENT_CHANGE_DOWN", frequency: "0" }, timeout
       }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
     ]);
 
@@ -1170,9 +1221,9 @@ app.get("/api/scanner", async (req, res) => {
     const symbols = allMovers.map(m => m.symbol).filter(Boolean);
 
     // Step 2: Batch quotes for all symbols (price, volume, hi/lo, 52w range, etc.)
-    const quotesRes = await axios.get(`${base}/quotes`, {
+    const quotesRes = await schwabGet(`${base}/quotes`, {
       params: { symbols: symbols.join(","), fields: "quote,fundamental" },
-      headers, timeout: 45000
+      timeout: 45000
     }).catch(() => ({ data: {} }));
     const quotesData = quotesRes.data || {};
 
@@ -1180,9 +1231,9 @@ app.get("/api/scanner", async (req, res) => {
     const histSymbols = symbols.slice(0, 40);
     const histResults = await Promise.all(
       histSymbols.map(sym =>
-        axios.get(`${base}/pricehistory`, {
+        schwabGet(`${base}/pricehistory`, {
           params: { symbol: sym, periodType: "month", period: "1", frequencyType: "daily", frequency: "1" },
-          headers, timeout: 20000
+          timeout: 20000
         }).then(r => ({ sym, candles: r.data?.candles || [] }))
           .catch(() => ({ sym, candles: [] }))
       )
