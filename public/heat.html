@@ -5341,6 +5341,16 @@
     .jnl-cell.spy-dn3 { background: #ff3b5c; border-color: #ff3b5c; opacity: 0.6; }
     .jnl-cell.spy-dn4 { background: #ff3b5c; border-color: #ff3b5c; }
 
+    /* Trade performance heatmap — same red/green scale as SPY */
+    .jnl-cell.pnl-up1 { background: #0d3a20; border-color: #0d3a20; }
+    .jnl-cell.pnl-up2 { background: #1a6b35; border-color: #1a6b35; }
+    .jnl-cell.pnl-up3 { background: #22dd88; border-color: #22dd88; opacity: 0.6; }
+    .jnl-cell.pnl-up4 { background: #22dd88; border-color: #22dd88; }
+    .jnl-cell.pnl-dn1 { background: #3a1020; border-color: #3a1020; }
+    .jnl-cell.pnl-dn2 { background: #7a1a2e; border-color: #7a1a2e; }
+    .jnl-cell.pnl-dn3 { background: #ff3b5c; border-color: #ff3b5c; opacity: 0.6; }
+    .jnl-cell.pnl-dn4 { background: #ff3b5c; border-color: #ff3b5c; }
+
     /* legend */
     .jnl-legend {
       display: flex;
@@ -5469,6 +5479,97 @@
     .jnl-empty-icon { font-size: 36px; margin-bottom: 10px; }
     .jnl-empty-title { font-size: 14px; font-weight: 700; color: var(--text2); margin-bottom: 6px; }
     .jnl-empty-desc  { font-size: 11px; line-height: 1.5; }
+
+    /* 75/25 heatmap + pie layout */
+    .jnl-hm-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: stretch;
+    }
+    .jnl-hm-cards {
+      flex: 0 0 75%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 0;
+    }
+    .jnl-hm-cards .jnl-card {
+      margin-bottom: 0;
+    }
+    .jnl-pie-panel {
+      flex: 0 0 calc(25% - 16px);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    .jnl-pie-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .jnl-pie-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+    #jnl-pie-canvas {
+      width: 100% !important;
+      max-width: 200px;
+      height: auto !important;
+      margin: 0 auto;
+      display: block;
+    }
+    .jnl-pie-legend {
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow-y: auto;
+      max-height: 180px;
+    }
+    .jnl-pie-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      color: var(--text2);
+    }
+    .jnl-pie-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .jnl-pie-pct {
+      margin-left: auto;
+      color: var(--text3);
+      font-size: 10px;
+    }
+
+    /* matrix summary bar */
+    .jnl-matrix-summary {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 8px 18px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text3);
+      background: var(--bg3);
+    }
+    .jnl-matrix-summary strong {
+      color: var(--text);
+    }
+    .jnl-matrix-summary .pos { color: var(--green); font-weight: 700; }
+    .jnl-matrix-summary .neg { color: var(--red);   font-weight: 700; }
 
     .jnl-tooltip {
       position: fixed;
@@ -7171,88 +7272,142 @@
             </button>
           </div>
 
-          <!-- TRADE ACTIVITY HEATMAP -->
-          <div class="jnl-card" id="jnl-activity-card">
-            <div class="jnl-card-header">
-              <div>
-                <div class="jnl-card-title">Trade activity</div>
-                <div class="jnl-card-sub" id="jnl-activity-sub">Trading Account · upload a CSV to begin</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;">
-                <div class="jnl-card-meta" id="jnl-activity-meta"></div>
-                <div class="jnl-toggle" id="jnl-metric-toggle">
-                  <button class="active" onclick="jnlSetMetric('trades',this)">Trades</button>
-                  <button onclick="jnlSetMetric('shares',this)">Shares</button>
-                  <button onclick="jnlSetMetric('notional',this)">Notional</button>
-                </div>
-              </div>
-            </div>
-            <div class="jnl-heatmap-wrap">
-              <div id="jnl-months-row" class="jnl-heatmap-months"></div>
-              <div class="jnl-heatmap-outer">
-                <div class="jnl-dow-labels">
-                  <div class="jnl-dow-label"></div>
-                  <div class="jnl-dow-label">Mon</div>
-                  <div class="jnl-dow-label">Tue</div>
-                  <div class="jnl-dow-label">Wed</div>
-                  <div class="jnl-dow-label">Thu</div>
-                  <div class="jnl-dow-label">Fri</div>
-                  <div class="jnl-dow-label"></div>
-                </div>
-                <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-              <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
-              <div class="jnl-legend">
-                Less
-                <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
-                <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
-                <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                More
-              </div>
-            </div>
-          </div>
+          <!-- 75/25 LAYOUT: 3 heatmaps | ticker pie chart -->
+          <div class="jnl-hm-row">
+            <div class="jnl-hm-cards">
 
-          <!-- SPY DAILY PERFORMANCE HEATMAP -->
-          <div class="jnl-card">
-            <div class="jnl-card-header">
-              <div>
-                <div class="jnl-card-title">SPY daily performance</div>
-                <div class="jnl-card-sub" id="jnl-spy-sub"><span id="jnl-year-label2">--</span> YTD · intensity = daily % change (open to close)</div>
-              </div>
-              <div class="jnl-card-meta" id="jnl-spy-meta"></div>
-            </div>
-            <div class="jnl-heatmap-wrap">
-              <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
-              <div class="jnl-heatmap-outer">
-                <div class="jnl-dow-labels">
-                  <div class="jnl-dow-label"></div>
-                  <div class="jnl-dow-label">Mon</div>
-                  <div class="jnl-dow-label">Tue</div>
-                  <div class="jnl-dow-label">Wed</div>
-                  <div class="jnl-dow-label">Thu</div>
-                  <div class="jnl-dow-label">Fri</div>
-                  <div class="jnl-dow-label"></div>
+              <!-- TRADE ACTIVITY HEATMAP -->
+              <div class="jnl-card" id="jnl-activity-card">
+                <div class="jnl-card-header">
+                  <div>
+                    <div class="jnl-card-title">Trade activity</div>
+                    <div class="jnl-card-sub" id="jnl-activity-sub">Trading Account · upload a CSV to begin</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div class="jnl-card-meta" id="jnl-activity-meta"></div>
+                    <div class="jnl-toggle" id="jnl-metric-toggle">
+                      <button class="active" onclick="jnlSetMetric('trades',this)">Trades</button>
+                      <button onclick="jnlSetMetric('shares',this)">Shares</button>
+                      <button onclick="jnlSetMetric('notional',this)">Notional</button>
+                    </div>
+                  </div>
                 </div>
-                <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
+                <div class="jnl-heatmap-wrap">
+                  <div id="jnl-months-row" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
+                  <div class="jnl-legend">
+                    Less
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    More
+                  </div>
+                </div>
               </div>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-              <div class="jnl-card-sub" id="jnl-spy-footer"></div>
-              <div class="jnl-legend">
-                &minus;2%
-                <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
-                <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
-                <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                +2%
+
+              <!-- TRADE PERFORMANCE HEATMAP -->
+              <div class="jnl-card">
+                <div class="jnl-card-header">
+                  <div>
+                    <div class="jnl-card-title">Trade performance</div>
+                    <div class="jnl-card-sub" id="jnl-pnl-sub"><span id="jnl-year-label3">--</span> YTD · daily net P&amp;L</div>
+                  </div>
+                  <div class="jnl-card-meta" id="jnl-pnl-meta"></div>
+                </div>
+                <div class="jnl-heatmap-wrap">
+                  <div id="jnl-pnl-months-row" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="jnl-pnl-heatmap" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="jnl-pnl-footer">Upload a CSV to see your performance</div>
+                  <div class="jnl-legend">
+                    Loss
+                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    Profit
+                  </div>
+                </div>
               </div>
+
+              <!-- SPY DAILY PERFORMANCE HEATMAP -->
+              <div class="jnl-card">
+                <div class="jnl-card-header">
+                  <div>
+                    <div class="jnl-card-title">SPY daily performance</div>
+                    <div class="jnl-card-sub" id="jnl-spy-sub"><span id="jnl-year-label2">--</span> YTD · intensity = daily % change (open to close)</div>
+                  </div>
+                  <div class="jnl-card-meta" id="jnl-spy-meta"></div>
+                </div>
+                <div class="jnl-heatmap-wrap">
+                  <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="jnl-spy-footer"></div>
+                  <div class="jnl-legend">
+                    &minus;2%
+                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    +2%
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /.jnl-hm-cards -->
+
+            <!-- TICKER PIE CHART PANEL -->
+            <div class="jnl-pie-panel">
+              <div class="jnl-pie-title">Ticker mix</div>
+              <div class="jnl-pie-sub" id="jnl-pie-sub">% of trades by ticker</div>
+              <canvas id="jnl-pie-canvas" width="180" height="180"></canvas>
+              <div class="jnl-pie-legend" id="jnl-pie-legend"></div>
             </div>
-          </div>
+
+          </div><!-- /.jnl-hm-row -->
 
           <!-- BEHAVIORAL FLAGS -->
           <div class="jnl-flags" id="jnl-flags"></div>
@@ -7261,15 +7416,21 @@
           <div class="jnl-card" style="padding:0;overflow:hidden;">
             <div style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
               <div class="jnl-card-title">Trade Log</div>
-              <div style="display:flex;gap:8px;align-items:center;">
-                <input id="jnl-search" placeholder="Filter ticker…" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;width:140px;" oninput="jnlRenderTable()">
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input id="jnl-search" placeholder="Filter ticker…" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;width:120px;" oninput="jnlRenderTable()">
                 <select id="jnl-filter-type" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;" onchange="jnlRenderTable()">
                   <option value="">All Types</option>
                   <option value="Buy to Open">Buy to Open</option>
                   <option value="Sell to Close">Sell to Close</option>
                 </select>
+                <span style="font-size:10px;color:var(--text3);">—</span>
+                <input type="date" id="jnl-date-from" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;" onchange="jnlRenderTable()" title="From date">
+                <span style="font-size:10px;color:var(--text3);">to</span>
+                <input type="date" id="jnl-date-to" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;" onchange="jnlRenderTable()" title="To date">
+                <button onclick="document.getElementById('jnl-date-from').value='';document.getElementById('jnl-date-to').value='';jnlRenderTable();" style="background:transparent;border:1px solid var(--border2);color:var(--text3);padding:5px 9px;border-radius:5px;font-size:10px;font-family:inherit;cursor:pointer;" title="Clear date range">&times;</button>
               </div>
             </div>
+            <div class="jnl-matrix-summary" id="jnl-matrix-summary" style="display:none;"></div>
             <div class="jnl-table-wrap" id="jnl-table-wrap">
               <div class="jnl-empty">
                 <div class="jnl-empty-icon">📂</div>
@@ -7399,8 +7560,11 @@
       jnlYear = parseInt(document.getElementById('jnl-year-select').value);
       document.getElementById('jnl-year-label').textContent  = jnlYear;
       document.getElementById('jnl-year-label2').textContent = jnlYear;
+      document.getElementById('jnl-year-label3').textContent = jnlYear;
       // render empty heatmaps so structure is visible
       jnlRenderActivityHeatmap();
+      jnlRenderPnlHeatmap();
+      jnlRenderPie();
       // fetch SPY data
       jnlFetchSpy();
     }
@@ -7409,11 +7573,14 @@
       jnlYear = parseInt(y);
       document.getElementById('jnl-year-label').textContent  = jnlYear;
       document.getElementById('jnl-year-label2').textContent = jnlYear;
+      document.getElementById('jnl-year-label3').textContent = jnlYear;
       jnlRenderActivityHeatmap();
+      jnlRenderPnlHeatmap();
       jnlRenderSpyHeatmap();
       jnlRenderTable();
       jnlRenderFlags();
       jnlUpdateHeader();
+      jnlRenderPie();
     }
 
     function jnlSetMetric(m, btn) {
@@ -7561,6 +7728,7 @@
           notional,
           costBasis,
           result,
+          amount,
           isOption,
           desc:      descRaw,
           strike,
@@ -7577,8 +7745,10 @@
       jnlTrades = rows;
       jnlUpdateHeader();
       jnlRenderActivityHeatmap();
+      jnlRenderPnlHeatmap();
       jnlRenderTable();
       jnlRenderFlags();
+      jnlRenderPie();
 
       const activeDays = new Set(rows.map(r => jnlNormaliseDate(r.date)).filter(Boolean)).size;
       document.getElementById('jnl-activity-sub').textContent =
@@ -7662,10 +7832,19 @@
       for (const t of jnlTrades) {
         const d = jnlNormaliseDate(t.date);
         if (!d || !d.startsWith(String(jnlYear))) continue;
-        if (!dayMap[d]) dayMap[d] = { trades: 0, shares: 0, notional: 0 };
+        if (!dayMap[d]) dayMap[d] = { trades: 0, shares: 0, notional: 0, wins: 0, losses: 0, buyDollar: 0 };
         dayMap[d].trades++;
         dayMap[d].shares   += t.qty;
         dayMap[d].notional += t.notional;
+        // wins/losses counted on sell/close legs (result != 0)
+        if (t.type === 'Sell to Close' || t.type === 'Buy to Close') {
+          if (t.result > 0) dayMap[d].wins++;
+          else if (t.result < 0) dayMap[d].losses++;
+        }
+        // total dollars bought (BTO only)
+        if (t.type === 'Buy to Open') {
+          dayMap[d].buyDollar += (t.costBasis || 0);
+        }
       }
 
       // Max for scaling
@@ -7688,10 +7867,14 @@
           else if (pct > 0)    cell.classList.add('lv1');
 
           // tooltip
-          const label = jnlMetric === 'trades' ? `${data.trades} trade${data.trades!==1?'s':''}`
+          const metricLabel = jnlMetric === 'trades' ? `${data.trades} trade${data.trades!==1?'s':''}`
             : jnlMetric === 'shares' ? `${data.shares.toLocaleString()} shares`
             : `$${data.notional.toLocaleString(undefined,{maximumFractionDigits:0})} notional`;
-          cell.setAttribute('data-tip', `${iso} · ${label}`);
+          const winStr  = data.wins   ? `${data.wins}W` : '';
+          const lossStr = data.losses ? `${data.losses}L` : '';
+          const wlStr   = (winStr || lossStr) ? ` · ${[winStr,lossStr].filter(Boolean).join('/')}` : '';
+          const buyStr  = data.buyDollar ? ` · $${data.buyDollar.toLocaleString(undefined,{maximumFractionDigits:0})} bought` : '';
+          cell.setAttribute('data-tip', `${iso} · ${metricLabel}${wlStr}${buyStr}`);
         } else {
           cell.setAttribute('data-tip', iso);
         }
@@ -7722,6 +7905,85 @@
         const tickers = new Set(jnlTrades.map(t => t.ticker)).size;
         metaEl.innerHTML = `<strong>${activeDays}</strong> active days &nbsp;·&nbsp; <strong>${tickers}</strong> tickers`;
       } else {
+        metaEl.innerHTML = '';
+      }
+    }
+
+    // ─── Trade Performance (P&L) Heatmap ───────────────────────────────────
+    // Shows daily net P&L in same red/green scale as SPY heatmap.
+    // Uses pnl-up1..4 / pnl-dn1..4 CSS classes.
+    function jnlRenderPnlHeatmap() {
+      const grid = jnlBuildGrid(jnlYear);
+      const hm   = document.getElementById('jnl-pnl-heatmap');
+      const mr   = document.getElementById('jnl-pnl-months-row');
+      hm.innerHTML = '';
+
+      // Build daily P&L map from result column
+      const pnlMap = {};
+      for (const t of jnlTrades) {
+        const d = jnlNormaliseDate(t.date);
+        if (!d || !d.startsWith(String(jnlYear))) continue;
+        pnlMap[d] = (pnlMap[d] || 0) + (t.result || 0);
+      }
+
+      // Scale: find max absolute value for intensity thresholds
+      const absVals = Object.values(pnlMap).map(v => Math.abs(v));
+      const maxAbs  = absVals.length ? Math.max(...absVals) : 1;
+
+      let winDays = 0, lossDays = 0, totalPnl = 0, pnlCount = 0;
+
+      for (const d of grid) {
+        const iso  = jnlIsoDate(d);
+        const pnl  = pnlMap[iso];
+        const cell = document.createElement('div');
+        cell.className = 'jnl-cell';
+
+        if (pnl !== undefined && pnl !== 0) {
+          const abs = Math.abs(pnl);
+          const ratio = abs / maxAbs;
+          if (pnl > 0) {
+            winDays++;
+            if      (ratio > 0.75) cell.classList.add('pnl-up4');
+            else if (ratio > 0.50) cell.classList.add('pnl-up3');
+            else if (ratio > 0.25) cell.classList.add('pnl-up2');
+            else                   cell.classList.add('pnl-up1');
+          } else {
+            lossDays++;
+            if      (ratio > 0.75) cell.classList.add('pnl-dn4');
+            else if (ratio > 0.50) cell.classList.add('pnl-dn3');
+            else if (ratio > 0.25) cell.classList.add('pnl-dn2');
+            else                   cell.classList.add('pnl-dn1');
+          }
+          totalPnl += pnl;
+          pnlCount++;
+          const sign = pnl >= 0 ? '+' : '-';
+          const pct  = maxAbs ? ((pnl / maxAbs) * 100).toFixed(1) : '0.0';
+          cell.setAttribute('data-tip',
+            `${iso} · ${sign}$${Math.abs(pnl).toLocaleString(undefined,{maximumFractionDigits:2})} net P&L`);
+        } else if (pnl === 0 && pnlMap[iso] !== undefined) {
+          cell.setAttribute('data-tip', `${iso} · $0.00 net P&L`);
+        } else {
+          cell.setAttribute('data-tip', iso);
+        }
+
+        cell.addEventListener('mouseenter', jnlShowTip);
+        cell.addEventListener('mousemove',  jnlMoveTip);
+        cell.addEventListener('mouseleave', jnlHideTip);
+        hm.appendChild(cell);
+      }
+
+      jnlBuildMonthLabels(grid, mr);
+
+      const footerEl = document.getElementById('jnl-pnl-footer');
+      const metaEl   = document.getElementById('jnl-pnl-meta');
+      if (pnlCount) {
+        footerEl.textContent = '';
+        const netSign = totalPnl >= 0 ? '+' : '-';
+        const netColor = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+        metaEl.innerHTML =
+          `${pnlCount} trading days &nbsp;·&nbsp; <strong>${winDays}</strong> <span style="color:var(--green)">profitable</span> &nbsp;·&nbsp; <strong>${lossDays}</strong> <span style="color:var(--red)">loss</span> &nbsp;·&nbsp; net <strong style="color:${netColor}">${netSign}$${Math.abs(totalPnl).toLocaleString(undefined,{maximumFractionDigits:2})}</strong>`;
+      } else {
+        footerEl.textContent = 'Upload a CSV to see your performance';
         metaEl.innerHTML = '';
       }
     }
@@ -7860,6 +8122,94 @@
     }
 
     // ─── Behavioral Flags ───────────────────────────────────────
+    // ─── Ticker Pie Chart ───────────────────────────────────────────────
+    // Draws a simple canvas donut chart showing % of trades per ticker.
+    const PIE_COLORS = [
+      '#22dd88','#3b8cff','#ff3b5c','#ffb020','#b423f0',
+      '#00d4d4','#ff7f2a','#a78bfa','#f472b6','#34d399',
+      '#60a5fa','#fb923c','#e879f9','#4ade80','#facc15',
+    ];
+
+    function jnlRenderPie() {
+      const canvas = document.getElementById('jnl-pie-canvas');
+      const legendEl = document.getElementById('jnl-pie-legend');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      // Count trades per ticker for the selected year
+      const counts = {};
+      for (const t of jnlTrades) {
+        const d = jnlNormaliseDate(t.date);
+        if (!d || !d.startsWith(String(jnlYear))) continue;
+        counts[t.ticker] = (counts[t.ticker] || 0) + 1;
+      }
+      const total = Object.values(counts).reduce((s,v) => s+v, 0);
+
+      // Sort descending
+      const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+
+      // Clear canvas
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      if (!entries.length) {
+        ctx.fillStyle = '#1e2535';
+        ctx.beginPath();
+        ctx.arc(W/2, H/2, W/2 - 6, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#141923';
+        ctx.beginPath();
+        ctx.arc(W/2, H/2, W/4, 0, Math.PI*2);
+        ctx.fill();
+        legendEl.innerHTML = '<div style="font-size:10px;color:var(--text3);text-align:center;padding-top:8px;">Upload a CSV to see ticker mix</div>';
+        return;
+      }
+
+      // Draw donut slices
+      const cx = W / 2, cy = H / 2;
+      const outerR = W / 2 - 4;
+      const innerR = outerR * 0.5;
+      let startAngle = -Math.PI / 2;
+
+      entries.forEach(([ticker, count], i) => {
+        const slice = (count / total) * Math.PI * 2;
+        const color = PIE_COLORS[i % PIE_COLORS.length];
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, outerR, startAngle, startAngle + slice);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        startAngle += slice;
+      });
+
+      // Donut hole
+      ctx.beginPath();
+      ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+      ctx.fillStyle = '#141923';
+      ctx.fill();
+
+      // Center label
+      ctx.fillStyle = '#b0bec5';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(entries.length + ' tickers', cx, cy);
+
+      // Legend (top 10 + others)
+      const topN = entries.slice(0, 10);
+      const othersCount = entries.slice(10).reduce((s,[,v]) => s+v, 0);
+      legendEl.innerHTML = [
+        ...topN.map(([ticker, count], i) => {
+          const pct = ((count / total) * 100).toFixed(1);
+          const color = PIE_COLORS[i % PIE_COLORS.length];
+          return '<div class="jnl-pie-legend-item"><div class="jnl-pie-dot" style="background:' + color + '"></div><span>' + ticker + '</span><span class="jnl-pie-pct">' + pct + '%</span></div>';
+        }),
+        othersCount ? '<div class="jnl-pie-legend-item"><div class="jnl-pie-dot" style="background:#555"></div><span>Others</span><span class="jnl-pie-pct">' + ((othersCount/total)*100).toFixed(1) + '%</span></div>' : ''
+      ].join('');
+    }
+
     function jnlRenderFlags() {
       const el = document.getElementById('jnl-flags');
       el.innerHTML = '';
@@ -7899,10 +8249,10 @@
       const pctFighting = downDayTrades.length / yr.length;
       if (pctFighting > 0.15) {
         flags.push({ cls: 'danger', icon: '🔄', title: 'Fighting the Trend',
-          desc: `${downDayTrades.length} buys (${(pctFighting*100).toFixed(0)}% of trades) on SPY down-days >1%. Consider waiting for confirmation.` });
+          desc: `${downDayTrades.length} Buy to Open trade${downDayTrades.length>1?'s':''} (${(pctFighting*100).toFixed(0)}% of trades) on SPY down-days >1%. Consider waiting for confirmation.` });
       } else if (downDayTrades.length > 0) {
         flags.push({ cls: 'warn', icon: '⚠️', title: 'Trend Awareness',
-          desc: `${downDayTrades.length} buy${downDayTrades.length>1?'s':''} executed on strong SPY down-days (>1% drop). Monitor for pattern.` });
+          desc: `${downDayTrades.length} Buy to Open trade${downDayTrades.length>1?'s':''} executed on strong SPY down-days (>1% drop). Monitor for pattern.` });
       }
 
       // ─ 4. Concentration risk: single ticker > 40% of trades
@@ -7944,19 +8294,25 @@
     // ─── Trade Table ───────────────────────────────────────────────
     function jnlRenderTable() {
       const wrap = document.getElementById('jnl-table-wrap');
-      const search    = (document.getElementById('jnl-search')?.value || '').toLowerCase();
+      const summaryEl = document.getElementById('jnl-matrix-summary');
+      const search     = (document.getElementById('jnl-search')?.value || '').toLowerCase();
       const typeFilter = document.getElementById('jnl-filter-type')?.value || '';
+      const dateFrom   = document.getElementById('jnl-date-from')?.value || '';  // YYYY-MM-DD
+      const dateTo     = document.getElementById('jnl-date-to')?.value   || '';  // YYYY-MM-DD
 
       let rows = jnlTrades.filter(t => {
         const d = jnlNormaliseDate(t.date) || '';
         if (!d.startsWith(String(jnlYear))) return false;
         if (search && !t.ticker.toLowerCase().includes(search)) return false;
         if (typeFilter && t.type !== typeFilter) return false;
+        if (dateFrom && d < dateFrom) return false;
+        if (dateTo   && d > dateTo)   return false;
         return true;
       });
 
       if (!rows.length) {
-        wrap.innerHTML = `<div class="jnl-empty"><div class="jnl-empty-icon">📂</div><div class="jnl-empty-title">No trades</div><div class="jnl-empty-desc">${jnlTrades.length ? 'No trades match your filter.' : 'Upload a CSV from Charles Schwab to view your trade log.'}</div></div>`;
+        wrap.innerHTML = `<div class="jnl-empty"><div class="jnl-empty-icon">📂</div><div class="jnl-empty-title">No trades</div><div class="jnl-empty-desc">${jnlTrades.length ? 'No trades match your filter.' : 'Upload a CSV from your brokerage to view your trade log.'}</div></div>`;
+        if (summaryEl) summaryEl.style.display = 'none';
         return;
       }
 
@@ -7972,9 +8328,9 @@
       const COLS = [
         { key: 'date',      label: 'Date' },
         { key: 'ticker',    label: 'Ticker' },
-        { key: 'putCall',   label: 'C/P' },
-        { key: 'expiry',    label: 'Expiry' },
         { key: 'strike',    label: 'Strike' },
+        { key: 'expiry',    label: 'Expiry' },
+        { key: 'putCall',   label: 'C/P' },
         { key: 'method',    label: 'Method' },
         { key: 'type',      label: 'Type' },
         { key: 'qty',       label: 'Quantity' },
@@ -8027,9 +8383,9 @@
         html += `<tr${rowCls}>
           <td>${d}${flagIcon}</td>
           <td><strong>${t.ticker}</strong></td>
-          <td>${pcDisp}</td>
-          <td style="color:var(--text2)">${expiryDisp}</td>
           <td style="color:var(--text2)">${strikeDisp}</td>
+          <td style="color:var(--text2)">${expiryDisp}</td>
+          <td>${pcDisp}</td>
           <td>${methTag}</td>
           <td>${typeTag}</td>
           <td>${t.qty.toLocaleString()}</td>
@@ -8041,6 +8397,24 @@
 
       html += '</tbody></table>';
       wrap.innerHTML = html;
+
+      // ─ Summary bar: BTO total / STC total / net return ─
+      if (summaryEl) {
+        let btoTotal = 0, stcTotal = 0, netReturn = 0;
+        for (const t of rows) {
+          if (t.type === 'Buy to Open')    btoTotal  += (t.costBasis || 0);
+          if (t.type === 'Sell to Close')  stcTotal  += Math.abs(t.amount || t.costBasis || 0);
+          netReturn += (t.result || 0);
+        }
+        const netColor = netReturn >= 0 ? 'pos' : 'neg';
+        const netSign  = netReturn >= 0 ? '+' : '-';
+        summaryEl.style.display = 'flex';
+        summaryEl.innerHTML =
+          `<span>${rows.length} rows shown</span>` +
+          `<span>BTO: <strong>$${btoTotal.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></span>` +
+          `<span>STC: <strong>$${stcTotal.toLocaleString(undefined,{maximumFractionDigits:2})}</strong></span>` +
+          `<span>Net: <span class="${netColor}">${netSign}$${Math.abs(netReturn).toLocaleString(undefined,{maximumFractionDigits:2})}</span></span>`;
+      }
     }
 
     function jnlSortBy(col) {
