@@ -7762,53 +7762,59 @@
           : t.ticker;
 
         if (t.type === 'Buy to Open') {
-          // Push onto the FIFO queue: cost = costBasis (what was paid for the whole lot)
+          // Push onto the FIFO queue
           if (!fifoQueues[key]) fifoQueues[key] = [];
           fifoQueues[key].push({ costBasis: t.costBasis, qty: t.qty });
-          t.result = 0;   // open — no realized P&L yet
+          t.result      = 0;     // open — no realized P&L yet
           t.realizedPnl = null;
+          t.matchedCost = null;  // not applicable for BTO
 
         } else if (t.type === 'Sell to Close') {
           // Match against the oldest BTO lots (FIFO)
           const queue = fifoQueues[key] || [];
-          let qtyToMatch = t.qty;  // contracts/shares being closed
-          let totalCost  = 0;      // sum of cost basis from matched BTO lots
+          let qtyToMatch = t.qty;
+          let totalCost  = 0;
 
           while (qtyToMatch > 0 && queue.length > 0) {
             const oldest = queue[0];
             if (oldest.qty <= qtyToMatch) {
-              // consume entire oldest lot
+              // consume entire lot
               totalCost  += oldest.costBasis;
               qtyToMatch -= oldest.qty;
               queue.shift();
             } else {
-              // partial consume: take a proportional slice of the lot
-              const frac    = qtyToMatch / oldest.qty;
+              // partial consume — proportional slice
+              const frac     = qtyToMatch / oldest.qty;
               const partCost = oldest.costBasis * frac;
-              totalCost      += partCost;
-              oldest.costBasis -= partCost;
-              oldest.qty       -= qtyToMatch;
+              totalCost            += partCost;
+              oldest.costBasis     -= partCost;
+              oldest.qty           -= qtyToMatch;
               qtyToMatch = 0;
             }
           }
 
-          // Proceeds = what we received for this sell (positive amount)
-          const proceeds = Math.abs(t.amount) || t.costBasis;
-          const realizedPnl = proceeds - totalCost;
-          t.result     = realizedPnl;
-          t.realizedPnl = realizedPnl;
+          // Proceeds = net amount received (amount column already has fees deducted)
+          const proceeds = Math.abs(t.amount);
 
-          // If there were no open BTO lots to match (e.g. opened before CSV start)
-          // fall back to amount column so the row isn't misleadingly $0
-          if (totalCost === 0) {
-            t.result = t.amount;  // raw amount (positive for sells)
-            t.realizedPnl = null;  // mark as unmatched
+          if (totalCost > 0) {
+            // Fully or partially matched — show true realized P&L
+            const realizedPnl  = proceeds - totalCost;
+            t.result           = realizedPnl;
+            t.realizedPnl      = realizedPnl;
+            t.matchedCost      = totalCost;   // shown in Cost Basis column for STC
+          } else {
+            // No open BTO lots found (position opened before CSV window)
+            // Fall back to raw proceeds — mark as unmatched with ~ prefix
+            t.result      = proceeds;   // positive number
+            t.realizedPnl = null;       // signals unmatched
+            t.matchedCost = null;
           }
 
         } else {
-          // OEXP, ASSIGN, etc. — zero out result (handled separately if needed)
-          t.result = 0;
+          // OEXP, ASSIGN, etc.
+          t.result      = 0;
           t.realizedPnl = null;
+          t.matchedCost = null;
         }
       }
 
@@ -8441,21 +8447,23 @@
         const priceDisp = t.isOption
           ? `$${(t.price * 100).toFixed(2)}<span style="color:var(--text3);font-size:9px"> x${t.qty}</span>`
           : `$${t.price.toFixed(2)}`;
-        const cbDisp    = `$${t.costBasis.toLocaleString(undefined,{maximumFractionDigits:2})}`;
+        // Cost Basis: BTO shows what was paid; STC shows the FIFO-matched BTO cost
+        const cbVal  = (t.type === 'Sell to Close' && t.matchedCost != null)
+          ? t.matchedCost
+          : t.costBasis;
+        const cbDisp = `$${cbVal.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}`;
         let resDisp;
         if (t.type === 'Buy to Open') {
-          // Open position — no realized P&L yet
           resDisp = '<span style="color:var(--text3)">open</span>';
-        } else if (t.realizedPnl === null && t.result !== 0) {
-          // STC with no matched BTO in CSV (position opened before import window)
-          const unmatched = t.result >= 0
-            ? `<span class="jnl-result-pos">~+$${t.result.toLocaleString(undefined,{maximumFractionDigits:2})}</span>`
-            : `<span class="jnl-result-neg">~-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
-          resDisp = `<span title="Cost basis not found in CSV window — showing proceeds only">${unmatched}</span>`;
+        } else if (t.realizedPnl === null) {
+          // STC with no matched BTO in CSV — show proceeds with ~ to signal unmatched
+          const v = Math.abs(t.result);
+          resDisp = `<span class="jnl-result-pos" title="BTO not found in CSV window — showing proceeds only">~+$${v.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
         } else {
+          // True realized P&L from FIFO match
           resDisp = t.result >= 0
-            ? `<span class="jnl-result-pos">+$${t.result.toLocaleString(undefined,{maximumFractionDigits:2})}</span>`
-            : `<span class="jnl-result-neg">-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
+            ? `<span class="jnl-result-pos">+$${t.result.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`
+            : `<span class="jnl-result-neg">-$${Math.abs(t.result).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span>`;
         }
         const flagIcon  = isFight ? ' 🔄' : isSpike ? ' ⚠️' : '';
 
