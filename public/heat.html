@@ -7743,12 +7743,21 @@
       }
 
       // ── FIFO P&L matching ─────────────────────────────────────────────────
-      // Sort all rows chronologically before matching so FIFO is applied in
-      // trade-date order regardless of CSV row order.
+      // Sort chronologically before FIFO matching.
+      // On same-day ties: BTO always before STC so the queue is populated first.
+      // Preserve original CSV row index as a tiebreaker within same type+date.
+      rows.forEach((r, i) => r._csvIdx = i);
       rows.sort((a, b) => {
         const da = jnlNormaliseDate(a.date) || a.date;
         const db = jnlNormaliseDate(b.date) || b.date;
-        return da < db ? -1 : da > db ? 1 : 0;
+        if (da < db) return -1;
+        if (da > db) return  1;
+        // Same date: BTO before STC
+        const aIsBuy = a.type === 'Buy to Open' ? 0 : 1;
+        const bIsBuy = b.type === 'Buy to Open' ? 0 : 1;
+        if (aIsBuy !== bIsBuy) return aIsBuy - bIsBuy;
+        // Same date + same type: preserve original CSV order
+        return a._csvIdx - b._csvIdx;
       });
 
       // Queue key: for options  →  "TICKER|strike|expiry|putCall"
