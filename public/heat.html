@@ -7742,6 +7742,76 @@
         return;
       }
 
+      // ── FIFO P&L matching ─────────────────────────────────────────────────
+      // Sort all rows chronologically before matching so FIFO is applied in
+      // trade-date order regardless of CSV row order.
+      rows.sort((a, b) => {
+        const da = jnlNormaliseDate(a.date) || a.date;
+        const db = jnlNormaliseDate(b.date) || b.date;
+        return da < db ? -1 : da > db ? 1 : 0;
+      });
+
+      // Queue key: for options  →  "TICKER|strike|expiry|putCall"
+      //            for stocks   →  "TICKER"
+      // Each queue entry: { costBasis: number, qty: number }
+      const fifoQueues = {};  // key → [ {costBasis, qty}, ... ]
+
+      for (const t of rows) {
+        const key = t.isOption
+          ? `${t.ticker}|${t.strike}|${t.expiry}|${(t.putCall||'').toLowerCase()}`
+          : t.ticker;
+
+        if (t.type === 'Buy to Open') {
+          // Push onto the FIFO queue: cost = costBasis (what was paid for the whole lot)
+          if (!fifoQueues[key]) fifoQueues[key] = [];
+          fifoQueues[key].push({ costBasis: t.costBasis, qty: t.qty });
+          t.result = 0;   // open — no realized P&L yet
+          t.realizedPnl = null;
+
+        } else if (t.type === 'Sell to Close') {
+          // Match against the oldest BTO lots (FIFO)
+          const queue = fifoQueues[key] || [];
+          let qtyToMatch = t.qty;  // contracts/shares being closed
+          let totalCost  = 0;      // sum of cost basis from matched BTO lots
+
+          while (qtyToMatch > 0 && queue.length > 0) {
+            const oldest = queue[0];
+            if (oldest.qty <= qtyToMatch) {
+              // consume entire oldest lot
+              totalCost  += oldest.costBasis;
+              qtyToMatch -= oldest.qty;
+              queue.shift();
+            } else {
+              // partial consume: take a proportional slice of the lot
+              const frac    = qtyToMatch / oldest.qty;
+              const partCost = oldest.costBasis * frac;
+              totalCost      += partCost;
+              oldest.costBasis -= partCost;
+              oldest.qty       -= qtyToMatch;
+              qtyToMatch = 0;
+            }
+          }
+
+          // Proceeds = what we received for this sell (positive amount)
+          const proceeds = Math.abs(t.amount) || t.costBasis;
+          const realizedPnl = proceeds - totalCost;
+          t.result     = realizedPnl;
+          t.realizedPnl = realizedPnl;
+
+          // If there were no open BTO lots to match (e.g. opened before CSV start)
+          // fall back to amount column so the row isn't misleadingly $0
+          if (totalCost === 0) {
+            t.result = t.amount;  // raw amount (positive for sells)
+            t.realizedPnl = null;  // mark as unmatched
+          }
+
+        } else {
+          // OEXP, ASSIGN, etc. — zero out result (handled separately if needed)
+          t.result = 0;
+          t.realizedPnl = null;
+        }
+      }
+
       jnlTrades = rows;
       jnlUpdateHeader();
       jnlRenderActivityHeatmap();
@@ -7836,8 +7906,8 @@
         dayMap[d].trades++;
         dayMap[d].shares   += t.qty;
         dayMap[d].notional += t.notional;
-        // wins/losses counted on sell/close legs (result != 0)
-        if (t.type === 'Sell to Close' || t.type === 'Buy to Close') {
+        // wins/losses: only realized STC trades with a matched cost basis
+        if ((t.type === 'Sell to Close' || t.type === 'Buy to Close') && t.realizedPnl !== null) {
           if (t.result > 0) dayMap[d].wins++;
           else if (t.result < 0) dayMap[d].losses++;
         }
@@ -7918,12 +7988,15 @@
       const mr   = document.getElementById('jnl-pnl-months-row');
       hm.innerHTML = '';
 
-      // Build daily P&L map from result column
+      // Build daily realized P&L map — only matched STC trades
       const pnlMap = {};
       for (const t of jnlTrades) {
         const d = jnlNormaliseDate(t.date);
         if (!d || !d.startsWith(String(jnlYear))) continue;
-        pnlMap[d] = (pnlMap[d] || 0) + (t.result || 0);
+        // Only include trades with a real realized P&L (FIFO-matched STC)
+        if (t.realizedPnl !== null) {
+          pnlMap[d] = (pnlMap[d] || 0) + (t.result || 0);
+        }
       }
 
       // Scale: find max absolute value for intensity thresholds
@@ -8369,9 +8442,21 @@
           ? `$${(t.price * 100).toFixed(2)}<span style="color:var(--text3);font-size:9px"> x${t.qty}</span>`
           : `$${t.price.toFixed(2)}`;
         const cbDisp    = `$${t.costBasis.toLocaleString(undefined,{maximumFractionDigits:2})}`;
-        const resDisp   = t.result >= 0
-          ? `<span class="jnl-result-pos">+$${t.result.toLocaleString(undefined,{maximumFractionDigits:2})}</span>`
-          : `<span class="jnl-result-neg">-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
+        let resDisp;
+        if (t.type === 'Buy to Open') {
+          // Open position — no realized P&L yet
+          resDisp = '<span style="color:var(--text3)">open</span>';
+        } else if (t.realizedPnl === null && t.result !== 0) {
+          // STC with no matched BTO in CSV (position opened before import window)
+          const unmatched = t.result >= 0
+            ? `<span class="jnl-result-pos">~+$${t.result.toLocaleString(undefined,{maximumFractionDigits:2})}</span>`
+            : `<span class="jnl-result-neg">~-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
+          resDisp = `<span title="Cost basis not found in CSV window — showing proceeds only">${unmatched}</span>`;
+        } else {
+          resDisp = t.result >= 0
+            ? `<span class="jnl-result-pos">+$${t.result.toLocaleString(undefined,{maximumFractionDigits:2})}</span>`
+            : `<span class="jnl-result-neg">-$${Math.abs(t.result).toLocaleString(undefined,{maximumFractionDigits:2})}</span>`;
+        }
         const flagIcon  = isFight ? ' 🔄' : isSpike ? ' ⚠️' : '';
 
         const pcDisp     = t.putCall
@@ -8402,9 +8487,10 @@
       if (summaryEl) {
         let btoTotal = 0, stcTotal = 0, netReturn = 0;
         for (const t of rows) {
-          if (t.type === 'Buy to Open')    btoTotal  += (t.costBasis || 0);
-          if (t.type === 'Sell to Close')  stcTotal  += Math.abs(t.amount || t.costBasis || 0);
-          netReturn += (t.result || 0);
+          if (t.type === 'Buy to Open')   btoTotal  += (t.costBasis || 0);
+          if (t.type === 'Sell to Close') stcTotal  += Math.abs(t.amount || t.costBasis || 0);
+          // Only count realized P&L (matched STC trades)
+          if (t.realizedPnl !== null) netReturn += (t.result || 0);
         }
         const netColor = netReturn >= 0 ? 'pos' : 'neg';
         const netSign  = netReturn >= 0 ? '+' : '-';
