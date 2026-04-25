@@ -1354,6 +1354,47 @@ app.get("/api/scanner", async (req, res) => {
       });
     }
 
+    // Enrich anomaly sectors using Schwab Instruments fundamentals
+    if (anomalies.length) {
+      try {
+        const anomalySymbols = anomalies.map(a => a.symbol).filter(Boolean);
+
+        const instrumentsRes = await schwabGet(`${base}/instruments`, {
+          params: {
+            symbol: anomalySymbols.join(","),
+            projection: "fundamental"
+          },
+          timeout: 45000
+        });
+
+        const instruments = instrumentsRes.data?.instruments || [];
+        const sectorBySymbol = {};
+
+        for (const inst of instruments) {
+          const sym = inst.symbol;
+          const fund = inst.fundamental || {};
+
+          const sectorRaw =
+            fund.sector ||
+            fund.industryGroup ||
+            fund.industry ||
+            "";
+
+          if (sym && sectorRaw) {
+            sectorBySymbol[sym.toUpperCase()] = sectorRaw;
+          }
+        }
+
+        for (const a of anomalies) {
+          const rawSector = sectorBySymbol[a.symbol.toUpperCase()] || a.sectorRaw || "";
+          a.sectorRaw = rawSector;
+          a.sector = SECTOR_ETF_MAP[rawSector] || rawSector || "—";
+        }
+      } catch (sectorErr) {
+        console.error("SCANNER SECTOR ENRICH ERROR:", sectorErr.response?.data || sectorErr.message);
+      }
+    }
+
     // Sort by volRatio desc by default
     anomalies.sort((a, b) => b.volRatio - a.volRatio);
 
