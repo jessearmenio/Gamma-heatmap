@@ -172,9 +172,9 @@
     }
 
     #nav-toggle:hover {
-      background: rgba(220, 255, 30, 0.08);
-      color: var(--accent);
-      border-color: rgba(220, 255, 30, 0.3);
+      color: var(--text, #e6edf7);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: var(--text, #e6edf7);
     }
 
     #sidebar-logo {
@@ -256,6 +256,11 @@
       color: var(--text, #e6edf7);
       background: rgba(255, 255, 255, 0.05);
       border-color: var(--text, #e6edf7);
+    }
+
+    #connect-btn.disconnected:hover #status-dot {
+      background: var(--text, #e6edf7);
+      transition: background 0.1s !important;
     }
 
     #status-dot {
