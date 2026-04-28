@@ -626,6 +626,7 @@
       white-space: nowrap;
       overflow: hidden;
       transition: left 0.6s ease, width 0.6s ease, opacity 0.3s ease;
+      z-index: 1;
     }
 
     .ss-bar.active {
@@ -642,7 +643,7 @@
 
     /* Per-session colors */
     .ss-bar.sydney {
-      background: #4dd0e1;
+      background: var(--accent);
       color: #00343a;
     }
 
@@ -664,6 +665,12 @@
     .ss-bar.cash {
       background: var(--accent);
       color: #1a1f00;
+      z-index: 2;
+    }
+
+    .ss-bar.globex {
+      background: #3b8cff;
+      color: #001b3a;
     }
 
     #ss-now-line {
@@ -9719,11 +9726,12 @@
 
     // Each session: open/close in CT minutes from midnight; close>1440 means rolls past midnight
     const SS_SESSIONS = [
-      { id: 'sydney', label: 'SYD', row: 0, open: 16 * 60, close: 24 * 60 + 1 * 60 },   // 4pm–1am
-      { id: 'tokyo', label: 'TKY', row: 1, open: 18 * 60, close: 24 * 60 + 3 * 60 },   // 6pm–3am
-      { id: 'london', label: 'LDN', row: 1, open: 2 * 60, close: 11 * 60 },          // 2am–11am
+      { id: 'sydney', label: 'SYDNEY', row: 0, open: 16 * 60, close: 24 * 60 + 1 * 60 },   // 4pm–1am
+      { id: 'tokyo', label: 'TOKYO', row: 1, open: 18 * 60, close: 24 * 60 + 3 * 60 },   // 6pm–3am
+      { id: 'london', label: 'LONDON', row: 1, open: 2 * 60, close: 11 * 60 },          // 2am–11am
       { id: 'newyork', label: 'NY', row: 2, open: 7 * 60, close: 16 * 60 },          // 7am–4pm (NY session)
-      { id: 'cash', label: 'NYSE/NQ', row: 2, open: 8 * 60 + 30, close: 15 * 60 }           // 8:30–3pm
+      { id: 'cash', label: 'NYSE/NQ', row: 2, open: 8 * 60 + 30, close: 15 * 60 },           // 8:30–3pm
+      { id: 'globex', label: 'GLOBEX', row: 2, open: 17 * 60, close: 24 * 60 + 8 * 60 + 30 } // Globex
     ];
 
     function ssMinutesNowCT() {
