@@ -93,11 +93,6 @@
       /* Updated: {time} ago */
     }
 
-    spanh {
-      margin-bottom: 6px;
-      /* Macro Banner Icon */
-    }
-
     spanr {
       transform: scale(1.2);
       /* pause button home icon */
@@ -2335,6 +2330,7 @@
     #ov-macro-alert-icon {
       font-size: 14px;
       flex-shrink: 0;
+      margin-bottom: 1px;
     }
 
     #ov-macro-alert-text {
@@ -4364,6 +4360,112 @@
     }
 
     /* ─────────────────────────────────────────────
+   ETFs PAGE
+───────────────────────────────────────────── */
+
+    #etfs-page {
+      height: calc(100vh - var(--header-h) - 32px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #etf-chart-card {
+      height: 360px;
+      flex-shrink: 0;
+    }
+
+    #etf-chart-card .card-body {
+      padding: 0;
+      height: calc(100% - 39px);
+    }
+
+    #etf-tv-widget {
+      width: 100%;
+      height: 100%;
+      min-height: 310px;
+    }
+
+    .etf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
+    .etf-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #0d1016;
+      padding: 7px 9px;
+      text-align: right;
+      color: var(--text2);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      border-bottom: 2px solid var(--border2);
+      white-space: nowrap;
+    }
+
+    .etf-table thead th:first-child,
+    .etf-table thead th:nth-child(2) {
+      text-align: left;
+    }
+
+    .etf-table tbody td {
+      padding: 7px 9px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .etf-table tbody td:first-child,
+    .etf-table tbody td:nth-child(2) {
+      text-align: left;
+    }
+
+    .etf-table tbody tr {
+      cursor: pointer;
+    }
+
+    .etf-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .etf-table tbody tr.active td {
+      background: rgba(17, 201, 216, 0.08);
+      color: var(--cyan);
+    }
+
+    .etf-symbol {
+      font-weight: 900;
+      color: var(--text);
+    }
+
+    .etf-name {
+      color: var(--text2);
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .etf-up {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .etf-dn {
+      color: var(--red);
+      font-weight: 800;
+    }
+
+    .etf-flat {
+      color: var(--text3);
+      font-weight: 800;
+    }
+
+    /* ─────────────────────────────────────────────
    FUTURES PAGE
 ───────────────────────────────────────────── */
     .futures-grid {
@@ -6322,6 +6424,9 @@
           <span class="nav-icon">📓</span><span class="nav-label">Journal</span>
         </li>
         <li class="nav-section-label">Equities</li>
+        <li class="nav-item" data-page="etfs-page" onclick="navTo(this)">
+          <span class="nav-icon">🔄</span><span class="nav-label">ETFs</span>
+        </li>
         <li class="nav-item" data-page="charting-page" onclick="navTo(this)">
           <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
         </li>
@@ -6532,7 +6637,7 @@
           <div id="ov-macro-alert">
             <button id="ov-macro-close" title="Dismiss">✕</button>
             <span id="ov-macro-alert-icon">
-              <spanh>⚠</spanh>
+              ⚠
             </span>
             <span id="ov-macro-alert-text"></span>
           </div>
@@ -7459,7 +7564,54 @@
         </div>
 
         <!-- ════════════════════════════════════
-           8. FUTURES
+           8. ETFs
+      ════════════════════════════════════ -->
+        <div id="etfs-page" class="page" style="display:none;">
+          <div class="card mb12" id="etf-chart-card">
+            <div class="card-header">
+              <span class="card-title">ETF Chart</span>
+              <span id="etf-chart-label" style="font-size:9px;color:var(--text3)">Click a row below to chart</span>
+            </div>
+            <div class="card-body">
+              <div id="etf-tv-widget"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">ETF Performance Matrix</span>
+              <span style="font-size:9px;color:var(--text3)">Sorted best to worst by % change</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table class="etf-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Fund / Theme</th>
+                    <th>Last</th>
+                    <th>% Chg</th>
+                    <th>Net</th>
+                    <th>Volume</th>
+                    <th>Avg Vol</th>
+                    <th>Rel Vol</th>
+                    <th>Day Range</th>
+                    <th>52W Pos</th>
+                  </tr>
+                </thead>
+                <tbody id="etf-tbody">
+                  <tr>
+                    <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
+                      Log in to view ETFs.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+           9. FUTURES
       ════════════════════════════════════ -->
         <div id="futures-page" class="page" style="display:none;">
           <div class="futures-grid mb12" id="futures-grid">
@@ -7475,7 +7627,7 @@
         </div>
 
         <!-- ════════════════════════════════════
-           9. COMMODITIES & METALS
+           10. COMMODITIES & METALS
       ════════════════════════════════════ -->
         <div id="commodities-page" class="page" style="display:none;">
           <div class="card mb12">
@@ -7507,7 +7659,7 @@
         </div>
 
         <!-- ════════════════════════════════════
-           10. FX MARKETS
+           11. FX MARKETS
       ════════════════════════════════════ -->
         <div id="fx-page" class="page" style="display:none;">
           <div class="fx-grid" id="fx-grid">
@@ -8239,6 +8391,7 @@
         case 'earnings-page': loadEarnings(); break;
         case 'sentiment-page': loadSentiment(); break;
         case 'charting-page': loadCharting(); break;
+        case 'etfs-page': loadEtfs(); break;
         case 'treasury-page': loadTreasury(); break;
         case 'smart-page': loadSmartMoney(); break;
         case 'darkpool-page': loadDarkPool(); break;
@@ -12915,7 +13068,202 @@
     }
 
     // ═══════════════════════════════════════════════════════
-    //  7. MAG 7
+    // ETFs
+    // ═══════════════════════════════════════════════════════
+    const ETF_LIST = [
+      { symbol: 'BOTZ', name: 'Global X Robotics & A.I. ETF', tv: 'NASDAQ:BOTZ' },
+      { symbol: 'GDX', name: 'Gold Miners', tv: 'AMEX:GDX' },
+      { symbol: 'IBB', name: 'Biotechnology', tv: 'NASDAQ:IBB' },
+      { symbol: 'KIE', name: 'Insurance Sector', tv: 'AMEX:KIE' },
+      { symbol: 'MOO', name: 'Agribusiness', tv: 'AMEX:MOO' },
+      { symbol: 'PBW', name: 'Clean Energy Sector', tv: 'AMEX:PBW' },
+      { symbol: 'SMH', name: 'Semiconductors Sector', tv: 'NASDAQ:SMH' },
+      { symbol: 'TAN', name: 'Solar Sector', tv: 'AMEX:TAN' },
+      { symbol: 'XLB', name: 'Materials', tv: 'AMEX:XLB' },
+      { symbol: 'XLC', name: 'Communication Services', tv: 'AMEX:XLC' },
+      { symbol: 'NLR', name: 'Uranium Energy', tv: 'AMEX:NLR' },
+      { symbol: 'XLE', name: 'Energy', tv: 'AMEX:XLE' },
+      { symbol: 'XLF', name: 'Financial', tv: 'AMEX:XLF' },
+      { symbol: 'XLI', name: 'Industrial', tv: 'AMEX:XLI' },
+      { symbol: 'XLK', name: 'Technology', tv: 'AMEX:XLK' },
+      { symbol: 'XLP', name: 'Consumer Staples', tv: 'AMEX:XLP' },
+      { symbol: 'XLRE', name: 'Real Estate', tv: 'AMEX:XLRE' },
+      { symbol: 'XLU', name: 'Utilities', tv: 'AMEX:XLU' },
+      { symbol: 'XLV', name: 'Health Care', tv: 'AMEX:XLV' },
+      { symbol: 'XLY', name: 'Consumer Discretionary', tv: 'AMEX:XLY' },
+      { symbol: 'XME', name: 'Metals and Mining', tv: 'AMEX:XME' }
+    ];
+
+    let etfSelectedSymbol = 'SMH';
+    let etfTvReady = false;
+
+    function etfTone(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return 'etf-flat';
+      return n > 0 ? 'etf-up' : n < 0 ? 'etf-dn' : 'etf-flat';
+    }
+
+    function etfNum(v, digits = 2) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '—';
+      return n.toLocaleString('en-US', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      });
+    }
+
+    function etfCompact(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '—';
+      const abs = Math.abs(n);
+      if (abs >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+      if (abs >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+      if (abs >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return String(Math.round(n));
+    }
+
+    function etfPct(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '—';
+      return `${n > 0 ? '+' : ''}${n.toFixed(2)}%`;
+    }
+
+    function getEtfQuotePayload(data, sym) {
+      return data?.[sym] || data?.[`$${sym}`] || Object.values(data || {}).find(x => {
+        const ref = x?.reference || {};
+        return ref.symbol === sym || ref.htbQuantity === sym;
+      }) || null;
+    }
+
+    function initEtfChart(symbol = etfSelectedSymbol) {
+      const cfg = ETF_LIST.find(x => x.symbol === symbol) || ETF_LIST[0];
+      etfSelectedSymbol = cfg.symbol;
+
+      const label = document.getElementById('etf-chart-label');
+      if (label) label.textContent = `${cfg.symbol} — ${cfg.name}`;
+
+      const mount = document.getElementById('etf-tv-widget');
+      if (!mount || !window.TradingView) return;
+
+      mount.innerHTML = '';
+
+      new TradingView.widget({
+        autosize: true,
+        symbol: cfg.tv,
+        interval: "15",
+        timezone: "America/Chicago",
+        theme: "dark",
+        style: "1",
+        locale: "en",
+        enable_publishing: false,
+        allow_symbol_change: true,
+        withdateranges: true,
+        hide_side_toolbar: false,
+        save_image: false,
+        container_id: "etf-tv-widget"
+      });
+
+      etfTvReady = true;
+    }
+
+    function etfSelect(symbol) {
+      etfSelectedSymbol = symbol;
+      initEtfChart(symbol);
+
+      document.querySelectorAll('#etf-tbody tr').forEach(tr => {
+        tr.classList.toggle('active', tr.dataset.symbol === symbol);
+      });
+    }
+
+    async function loadEtfs() {
+      if (!isConnected) return;
+
+      initEtfChart(etfSelectedSymbol);
+
+      const tbody = document.getElementById('etf-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = `
+    <tr>
+      <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
+        Loading ETF quotes...
+      </td>
+    </tr>
+  `;
+
+      try {
+        const symbols = ETF_LIST.map(x => x.symbol).join(',');
+        const resp = await apiGet('/api/quotes?symbols=' + encodeURIComponent(symbols));
+        const data = resp?.data || {};
+
+        const rows = ETF_LIST.map(etf => {
+          const item = getEtfQuotePayload(data, etf.symbol) || {};
+          const q = item.quote || {};
+          const f = item.fundamental || {};
+          const r = item.reference || {};
+
+          const last = q.lastPrice ?? q.mark ?? q.closePrice;
+          const pct = q.netPercentChange ?? q.regularMarketPercentChange ?? 0;
+          const net = q.netChange ?? q.regularMarketNetChange ?? 0;
+          const volume = q.totalVolume ?? q.volume;
+          const avgVol = q.avgVolume ?? q.averageVolume ?? f.avgVolume ?? f.averageVolume;
+          const relVol = Number.isFinite(Number(volume)) && Number(avgVol) > 0 ? Number(volume) / Number(avgVol) : null;
+          const low = q.lowPrice ?? q.regularMarketDayLow;
+          const high = q.highPrice ?? q.regularMarketDayHigh;
+          const wLow = q['52WeekLow'] ?? q.week52Low;
+          const wHigh = q['52WeekHigh'] ?? q.week52High;
+          const wPos = Number.isFinite(Number(last)) && Number.isFinite(Number(wLow)) && Number.isFinite(Number(wHigh)) && Number(wHigh) > Number(wLow)
+            ? ((Number(last) - Number(wLow)) / (Number(wHigh) - Number(wLow))) * 100
+            : null;
+
+          return {
+            ...etf,
+            displayName: r.description || etf.name,
+            last,
+            pct,
+            net,
+            volume,
+            avgVol,
+            relVol,
+            low,
+            high,
+            wPos
+          };
+        }).sort((a, b) => Number(b.pct || 0) - Number(a.pct || 0));
+
+        tbody.innerHTML = rows.map(row => {
+          const tone = etfTone(row.pct);
+          const active = row.symbol === etfSelectedSymbol ? 'active' : '';
+
+          return `
+        <tr class="${active}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
+          <td><span class="etf-symbol">${row.symbol}</span></td>
+          <td class="etf-name">${row.displayName}</td>
+          <td>${etfNum(row.last, 2)}</td>
+          <td class="${tone}">${etfPct(row.pct)}</td>
+          <td class="${etfTone(row.net)}">${Number(row.net) > 0 ? '+' : ''}${etfNum(row.net, 2)}</td>
+          <td>${etfCompact(row.volume)}</td>
+          <td>${etfCompact(row.avgVol)}</td>
+          <td>${row.relVol == null ? '—' : row.relVol.toFixed(2) + 'x'}</td>
+          <td>${etfNum(row.low, 2)} / ${etfNum(row.high, 2)}</td>
+          <td>${row.wPos == null ? '—' : row.wPos.toFixed(0) + '%'}</td>
+        </tr>
+      `;
+        }).join('');
+
+      } catch (err) {
+        tbody.innerHTML = `
+      <tr>
+        <td colspan="10" style="text-align:center;padding:24px;color:var(--red);">
+          ETF load failed: ${err.message}
+        </td>
+      </tr>
+    `;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  MAG 7
     // ═══════════════════════════════════════════════════════
     const MAG7_SYMBOLS = ['META', 'TSLA', 'AAPL', 'GOOGL', 'AMZN', 'NVDA', 'MSFT'];
     const MAG7_NAMES = { META: 'Meta Platforms', TSLA: 'Tesla', AAPL: 'Apple', GOOGL: 'Alphabet', AMZN: 'Amazon', NVDA: 'NVIDIA', MSFT: 'Microsoft' };
