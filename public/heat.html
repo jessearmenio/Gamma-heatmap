@@ -160,7 +160,7 @@
       border: 1px solid var(--border2);
       border-radius: 5px;
       color: var(--text2);
-      font-size: 15px;
+      font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -373,12 +373,58 @@
       flex-shrink: 0;
     }
 
+    #nav-toggle-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    #nav-top-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    #nav-top-controls .topbar-icon-btn {
+      width: 24px;
+      height: 22px;
+      font-size: 11px;
+    }
+
+    #topbar-left-stack {
+      width: 120px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      margin-top: -3px;
+    }
+
     #topbar-title {
       font-size: 13px;
       font-weight: 700;
       color: var(--text);
       letter-spacing: 0.04em;
       line-height: 1.2;
+      text-align: center;
+    }
+
+    #topbar-left-stack #market-status-badge {
+      transform: scale(1.1);
+      transform-origin: center;
+      margin: 2px 0px;
+    }
+
+    #topbar-left-stack #updated-ago {
+      margin-right: 0;
+      font-size: 8px;
+      line-height: 1;
     }
 
     #ticker-strip {
@@ -502,38 +548,343 @@
     #market-status-badge.open {
       background: rgba(34, 221, 136, 0.12);
       color: var(--green);
+      position: relative;
+      overflow: hidden;
+      animation: open-pill-breathe 2.4s ease-in-out infinite;
     }
 
     #market-status-badge.open .ms-dot {
       background: var(--green);
       box-shadow: 0 0 5px var(--green);
+      animation: open-dot-pulse 1.4s ease-in-out infinite;
     }
 
     #market-status-badge.closed {
       background: rgba(255, 59, 92, 0.10);
       color: var(--red);
+      position: relative;
+      overflow: hidden;
+      animation: closed-pill-breathe 3s ease-in-out infinite;
     }
 
     #market-status-badge.closed .ms-dot {
       background: var(--red);
+      animation: closed-dot-pulse 1.8s ease-in-out infinite;
     }
 
     #market-status-badge.pre {
       background: var(--lightpre);
       color: var(--accent);
+      position: relative;
+      overflow: hidden;
+      animation: pre-pill-breathe 2.6s ease-in-out infinite
     }
 
     #market-status-badge.pre .ms-dot {
       background: var(--pre);
+      animation: pre-dot-pulse 1.5s ease-in-out infinite;
     }
 
     #market-status-badge.post {
       background: var(--lightpost);
       color: var(--text3);
+      border: 1px solid rgba(41, 98, 255, 0.22);
+      position: relative;
+      box-shadow: inset 0 0 10px rgba(41, 98, 255, 0.08);
+      overflow: hidden;
+      animation: post-pill-breathe 2.8s ease-in-out infinite
     }
 
     #market-status-badge.post .ms-dot {
       background: var(--post);
+      box-shadow: 0 0 7px rgba(41, 98, 255, 0.9);
+      animation: post-dot-pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes post-pill-sheen {
+      0% {
+        transform: translateX(-120%);
+      }
+
+      45%,
+      100% {
+        transform: translateX(120%);
+      }
+    }
+
+    /* OPEN — green */
+
+    @keyframes open-dot-pulse {
+
+      0%,
+      100% {
+
+        transform: scale(1);
+        opacity: 0.85;
+        box-shadow: 0 0 5px rgba(34, 221, 136, 0.7);
+
+      }
+
+      50% {
+
+        transform: scale(1.35);
+        opacity: 1;
+        box-shadow: 0 0 12px rgba(34, 221, 136, 1);
+
+      }
+
+    }
+
+    @keyframes open-pill-breathe {
+
+      0%,
+      100% {
+
+        box-shadow: inset 0 0 10px rgba(34, 221, 136, 0.08);
+
+      }
+
+      50% {
+
+        box-shadow: inset 0 0 14px rgba(34, 221, 136, 0.16),
+
+          0 0 10px rgba(34, 221, 136, 0.12);
+
+      }
+
+    }
+
+    /* PRE-MARKET — orange */
+
+    @keyframes pre-dot-pulse {
+
+      0%,
+      100% {
+
+        transform: scale(1);
+        opacity: 0.85;
+        box-shadow: 0 0 5px rgba(255, 152, 1, 0.7);
+
+      }
+
+      50% {
+
+        transform: scale(1.35);
+        opacity: 1;
+        box-shadow: 0 0 12px rgba(255, 152, 1, 1);
+
+      }
+
+    }
+
+    @keyframes pre-pill-breathe {
+
+      0%,
+      100% {
+
+        box-shadow: inset 0 0 10px rgba(255, 152, 1, 0.08);
+
+      }
+
+      50% {
+
+        box-shadow: inset 0 0 14px rgba(255, 152, 1, 0.16),
+          0 0 10px rgba(255, 152, 1, 0.12);
+
+      }
+
+    }
+
+    /* POST-MARKET — blue */
+
+    @keyframes post-dot-pulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 0.85;
+        box-shadow: 0 0 5px rgba(41, 98, 255, 0.7);
+      }
+
+      50% {
+        transform: scale(1.35);
+        opacity: 1;
+        box-shadow: 0 0 12px rgba(41, 98, 255, 1);
+      }
+    }
+
+    @keyframes post-pill-breathe {
+
+      0%,
+      100% {
+        border-color: rgba(41, 98, 255, 0.22);
+        box-shadow: inset 0 0 10px rgba(41, 98, 255, 0.08);
+      }
+
+      50% {
+        border-color: rgba(41, 98, 255, 0.42);
+        box-shadow: inset 0 0 14px rgba(41, 98, 255, 0.16),
+          0 0 10px rgba(41, 98, 255, 0.12);
+      }
+    }
+
+    /* CLOSED — red */
+
+    @keyframes closed-dot-pulse {
+
+      0%,
+      100% {
+
+        transform: scale(1);
+        opacity: 0.75;
+        box-shadow: 0 0 4px rgba(255, 59, 92, 0.5);
+
+      }
+
+      50% {
+
+        transform: scale(1.25);
+        opacity: 1;
+        box-shadow: 0 0 10px rgba(255, 59, 92, 0.9);
+
+      }
+
+    }
+
+    @keyframes closed-pill-breathe {
+
+      0%,
+      100% {
+
+        box-shadow: inset 0 0 8px rgba(255, 59, 92, 0.06);
+
+      }
+
+      50% {
+
+        box-shadow: inset 0 0 12px rgba(255, 59, 92, 0.13),
+          0 0 8px rgba(255, 59, 92, 0.1);
+
+      }
+
+    }
+
+    /* allow traveling dot animation */
+    #market-status-badge {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* text can "erase/rebuild" */
+    #market-status-badge .ms-label {
+      display: inline-block;
+      position: relative;
+      animation: text-wipe-cycle 10s infinite;
+    }
+
+    /* dot keeps pulse + flight */
+    #market-status-badge .ms-dot {
+      position: relative;
+      z-index: 3;
+      animation:
+        open-dot-pulse 1.4s ease-in-out infinite,
+        dot-flight-cycle 10s infinite;
+    }
+
+    /* ghost tracer behind dot */
+    #market-status-badge::after {
+      content: "";
+      position: absolute;
+      left: -30%;
+      top: 50%;
+      width: 40%;
+      height: 140%;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg,
+          transparent,
+          rgba(255, 255, 255, .18),
+          transparent);
+      opacity: 0;
+      animation: sweep-trail 10s infinite;
+    }
+
+
+    /* DOT flies across label, pauses, returns */
+    @keyframes dot-flight-cycle {
+
+      0%,
+      82%,
+      100% {
+        transform: translateX(0) scale(1);
+      }
+
+      86% {
+        transform: translateX(64px) scale(1.35);
+      }
+
+      90% {
+        transform: translateX(64px) scale(.85);
+      }
+
+      96% {
+        transform: translateX(0) scale(1.15);
+      }
+    }
+
+    /* text erases while dot passes */
+    @keyframes text-wipe-cycle {
+
+      0%,
+      83% {
+        opacity: 1;
+        clip-path: inset(0 0 0 0);
+        filter: none;
+      }
+
+      87% {
+        clip-path: inset(0 100% 0 0);
+        opacity: .25;
+        filter: blur(1px);
+      }
+
+      92% {
+        clip-path: inset(0 100% 0 0);
+        opacity: .05;
+      }
+
+      98% {
+        clip-path: inset(0 0 0 0);
+        opacity: 1;
+        filter: none;
+      }
+
+      100% {
+        opacity: 1;
+      }
+    }
+
+    /* sweeping light follows dot */
+    @keyframes sweep-trail {
+
+      0%,
+      82% {
+        opacity: 0;
+        left: -35%;
+      }
+
+      84% {
+        opacity: 1;
+      }
+
+      91% {
+        opacity: 1;
+        left: 100%;
+      }
+
+      96%,
+      100% {
+        opacity: 0;
+      }
     }
 
     /* ── Topbar right controls cluster ── */
@@ -547,17 +898,10 @@
       min-width: 280px;
     }
 
-    #topbar-controls-row {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 6px;
-    }
-
     /* ── Sessions mini-timeline ── */
     #sessions-strip {
-      width: 70%;
-      margin-left: 85px;
+      width: 90%;
+      margin-left: 30px;
       margin-right: 0;
       background: rgba(255, 255, 255, 0.015);
       border: 1px solid var(--border);
@@ -658,15 +1002,21 @@
       font-size: 9px;
     }
 
-    .ss-bar.newyork {
-      background: #66bb6a;
-      color: #00270b;
+    .ss-bar.pre {
+      background: #ff9801;
+      color: #3a1d00;
+      font-size: 9px;
+    }
+
+    .ss-bar.post {
+      background: #2962FF;
+      color: #001b3a;
       font-size: 9px;
     }
 
     .ss-bar.cash {
-      background: var(--accent);
-      color: #1a1f00;
+      background: #66bb6a;
+      color: #00270b;
       font-size: 9px;
     }
 
@@ -2514,7 +2864,7 @@
 
     .ov-exec-signals li {
       font-size: 10px;
-      color: var(--text2);
+      color: var(--white_text);
       padding: 2px 0;
       border-bottom: 1px solid var(--border);
     }
@@ -2948,7 +3298,7 @@
     }
 
     .ov-terminal-detail {
-      font-size: 10px;
+      font-size: 11px;
       line-height: 1.6;
       padding: 6px 10px;
       background: var(--bg3);
@@ -6014,10 +6364,30 @@
     <div id="main">
       <!-- topbar -->
       <div id="topbar">
-        <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">
-          &#9776;
-        </button>
-        <div id="topbar-title" id="page-title">Market<br>Overview</div>
+        <div id="nav-toggle-stack">
+          <div id="nav-top-controls">
+            <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()" title="Refresh now">
+              <spana>↻</spana>
+            </button>
+            <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
+              <spanr>⏸</spanr>
+            </button>
+          </div>
+
+          <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">
+            &#9776;
+          </button>
+        </div>
+        <div id="topbar-left-stack">
+          <div id="topbar-title" id="page-title">Market<br>Overview</div>
+          <div id="market-status-badge" class="closed">
+            <span class="ms-dot"></span>
+            <span id="ms-label" class="ms-label">Market Closed</span>
+          </div>
+          <span id="updated-ago" style="display:none;">
+            <spanu>updated</spanu><b id="ago-val">--</b>
+          </span>
+        </div>
         <div class="ov-panel-divider-vertical"></div>
         <div id="ticker-strip">
           <div class="ticker-row">
@@ -6087,27 +6457,13 @@
         </div>
         <!-- Right-side controls cluster -->
         <div id="topbar-controls">
-          <div id="topbar-controls-row">
-            <div id="market-status-badge" class="closed">
-              <span class="ms-dot"></span>
-              <span id="ms-label">Market Closed</span>
-            </div>
-            <span id="updated-ago" style="display:none;">
-              <spanu>updated</spanu><b id="ago-val">--</b>
-            </span>
-            <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()" title="Refresh now">
-              <spana>↻</spana>
-            </button>
-            <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
-              <spanr>⏸</spanr>
-            </button>
-          </div>
           <div id="sessions-strip" title="Global market sessions (CT)">
             <div id="ss-axis"></div>
             <div id="ss-rows">
               <div class="ss-row" data-row="0"></div>
               <div class="ss-row" data-row="1"></div>
               <div class="ss-row" data-row="2"></div>
+              <div class="ss-row" data-row="3"></div>
               <div id="ss-now-line"></div>
             </div>
           </div>
@@ -9697,8 +10053,8 @@
       const pauseLabel = isPaused ? ' (PAUSED)' : '';
       if (!badge || !label) return session;
       badge.className = session; // 'open' | 'pre' | 'post' | 'closed'
-      const labels = { open: 'US Market Open', pre: 'US Pre-Market', post: 'US Post-Market', closed: 'US Market Closed' };
-      label.textContent = (labels[session] || 'US Market Closed') + pauseLabel;
+      const labels = { open: 'Market Open', pre: 'Pre-Market', post: 'Post-Market', closed: 'Market Closed' };
+      label.textContent = (labels[session] || 'Market Closed') + pauseLabel;
       return session;
     }
 
@@ -9730,12 +10086,15 @@
 
     // Each session: open/close in CT minutes from midnight; close>1440 means rolls past midnight
     const SS_SESSIONS = [
-      { id: 'sydney', label: 'SYDNEY', row: 0, open: 16 * 60, close: 24 * 60 + 1 * 60 },   // 4pm–1am
-      { id: 'tokyo', label: 'TOKYO', row: 1, open: 18 * 60, close: 24 * 60 + 3 * 60 },   // 6pm–3am
-      { id: 'london', label: 'LONDON', row: 1, open: 2 * 60, close: 11 * 60 },          // 2am–11am
-      { id: 'newyork', label: 'NY', row: 2, open: 7 * 60, close: 16 * 60 },          // 7am–4pm (NY session)
-      { id: 'cash', label: 'NYSE/NQ', row: 2, open: 8 * 60 + 30, close: 15 * 60 },           // 8:30–3pm
-      { id: 'globex', label: 'GLOBEX', row: 2, open: 17 * 60, close: 24 * 60 + 8 * 60 + 30 } // Globex
+      { id: 'sydney', label: 'SYDNEY', row: 0, open: 16 * 60, close: 24 * 60 + 1 * 60 }, // 4pm–1am
+      { id: 'tokyo', label: 'TOKYO', row: 1, open: 18 * 60, close: 24 * 60 + 3 * 60 }, // 6pm–3am
+      { id: 'london', label: 'LONDON', row: 2, open: 2 * 60, close: 11 * 60 },           // 2am–11am
+
+      { id: 'pre', label: 'PRE', row: 2, open: 3 * 60, close: 8 * 60 + 30 },       // 3am–8:30am
+      { id: 'cash', label: 'RTH', row: 2, open: 8 * 60 + 30, close: 15 * 60 },       // 8:30am–3pm
+      { id: 'post', label: 'POST', row: 2, open: 15 * 60, close: 19 * 60 },           // 3pm–7pm
+
+      { id: 'globex', label: 'GLOBEX', row: 3, open: 17 * 60, close: 24 * 60 + 7 * 60 }   // 5pm–7am
     ];
 
     function ssMinutesNowCT() {
@@ -9776,7 +10135,7 @@
       // ── Build axis ticks every 1 hour across the full visible window
       axis.innerHTML = '';
       const firstTick = winStart;
-      for (let t = firstTick; t <= winEnd; t += 120) {
+      for (let t = firstTick; t <= winEnd; t += 60) {
         const pct = ((t - winStart) / SS_WINDOW_MIN) * 100;
         if (pct < 0 || pct > 100) continue;
         const tick = document.createElement('div');
