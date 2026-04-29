@@ -4370,20 +4370,162 @@
       gap: 12px;
     }
 
-    #etf-chart-card {
+    #etf-rrg-card {
       height: 360px;
       flex-shrink: 0;
     }
 
-    #etf-chart-card .card-body {
-      padding: 0;
+    #etf-rrg-card .card-body {
       height: calc(100% - 39px);
+      padding: 12px;
     }
 
-    #etf-tv-widget {
+    #etf-rrg-wrap {
+      position: relative;
       width: 100%;
       height: 100%;
       min-height: 310px;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.035), transparent 60%),
+        #07101d;
+      background-size: 44px 44px, 44px 44px, auto, auto;
+    }
+
+    .rrg-quad {
+      position: absolute;
+      z-index: 1;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .rrg-improving {
+      left: 12px;
+      top: 10px;
+      color: var(--blue);
+    }
+
+    .rrg-leading {
+      right: 12px;
+      top: 10px;
+      color: var(--green);
+    }
+
+    .rrg-lagging {
+      left: 12px;
+      bottom: 10px;
+      color: var(--red);
+    }
+
+    .rrg-weakening {
+      right: 12px;
+      bottom: 10px;
+      color: var(--yellow);
+    }
+
+    .rrg-axis-v,
+    .rrg-axis-h {
+      position: absolute;
+      z-index: 2;
+      background: rgba(255, 255, 255, 0.18);
+      pointer-events: none;
+    }
+
+    .rrg-axis-v {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+    }
+
+    .rrg-axis-h {
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+    }
+
+    #etf-rrg-points {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+    }
+
+    .rrg-point {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: rgba(5, 10, 18, 0.88);
+      border: 1px solid var(--border2);
+      font-size: 9px;
+      font-weight: 900;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .rrg-point::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .rrg-point.improving {
+      color: var(--blue);
+      border-color: rgba(59, 140, 255, 0.45);
+    }
+
+    .rrg-point.improving::before {
+      background: var(--blue);
+      box-shadow: 0 0 7px rgba(59, 140, 255, 0.8);
+    }
+
+    .rrg-point.leading {
+      color: var(--green);
+      border-color: rgba(34, 221, 136, 0.45);
+    }
+
+    .rrg-point.leading::before {
+      background: var(--green);
+      box-shadow: 0 0 7px rgba(34, 221, 136, 0.8);
+    }
+
+    .rrg-point.lagging {
+      color: var(--red);
+      border-color: rgba(255, 59, 92, 0.45);
+    }
+
+    .rrg-point.lagging::before {
+      background: var(--red);
+      box-shadow: 0 0 7px rgba(255, 59, 92, 0.8);
+    }
+
+    .rrg-point.weakening {
+      color: var(--yellow);
+      border-color: rgba(255, 215, 0, 0.45);
+    }
+
+    .rrg-point.weakening::before {
+      background: var(--yellow);
+      box-shadow: 0 0 7px rgba(255, 215, 0, 0.8);
+    }
+
+    .rrg-point.active {
+      background: rgba(17, 201, 216, 0.16);
+      border-color: var(--cyan);
+      color: var(--cyan);
     }
 
     .etf-table {
@@ -7567,13 +7709,23 @@
            8. ETFs
       ════════════════════════════════════ -->
         <div id="etfs-page" class="page" style="display:none;">
-          <div class="card mb12" id="etf-chart-card">
+          <div class="card mb12" id="etf-rrg-card">
             <div class="card-header">
-              <span class="card-title">ETF Chart</span>
-              <span id="etf-chart-label" style="font-size:9px;color:var(--text3)">Click a row below to chart</span>
+              <span class="card-title">ETF Relative Rotation</span>
+              <span style="font-size:9px;color:var(--text3)">Relative strength vs momentum</span>
             </div>
             <div class="card-body">
-              <div id="etf-tv-widget"></div>
+              <div id="etf-rrg-wrap">
+                <div class="rrg-quad rrg-improving">IMPROVING</div>
+                <div class="rrg-quad rrg-leading">LEADING</div>
+                <div class="rrg-quad rrg-lagging">LAGGING</div>
+                <div class="rrg-quad rrg-weakening">WEAKENING</div>
+
+                <div class="rrg-axis-v"></div>
+                <div class="rrg-axis-h"></div>
+
+                <div id="etf-rrg-points"></div>
+              </div>
             </div>
           </div>
 
@@ -13095,7 +13247,6 @@
     ];
 
     let etfSelectedSymbol = 'SMH';
-    let etfTvReady = false;
 
     function etfTone(v) {
       const n = Number(v);
@@ -13135,50 +13286,60 @@
       }) || null;
     }
 
-    function initEtfChart(symbol = etfSelectedSymbol) {
-      const cfg = ETF_LIST.find(x => x.symbol === symbol) || ETF_LIST[0];
-      etfSelectedSymbol = cfg.symbol;
+    function etfQuadrant(row) {
+      const strength = Number(row.rrgStrength);
+      const momentum = Number(row.rrgMomentum);
 
-      const label = document.getElementById('etf-chart-label');
-      if (label) label.textContent = `${cfg.symbol} — ${cfg.name}`;
+      if (strength >= 0 && momentum >= 0) return 'leading';
+      if (strength < 0 && momentum >= 0) return 'improving';
+      if (strength < 0 && momentum < 0) return 'lagging';
+      return 'weakening';
+    }
 
-      const mount = document.getElementById('etf-tv-widget');
-      if (!mount || !window.TradingView) return;
+    function renderEtfRrg(rows) {
+      const mount = document.getElementById('etf-rrg-points');
+      if (!mount) return;
 
-      mount.innerHTML = '';
+      const maxAbsStrength = Math.max(1, ...rows.map(r => Math.abs(Number(r.rrgStrength) || 0)));
+      const maxAbsMomentum = Math.max(1, ...rows.map(r => Math.abs(Number(r.rrgMomentum) || 0)));
 
-      new TradingView.widget({
-        autosize: true,
-        symbol: cfg.tv,
-        interval: "15",
-        timezone: "America/Chicago",
-        theme: "dark",
-        style: "1",
-        locale: "en",
-        enable_publishing: false,
-        allow_symbol_change: true,
-        withdateranges: true,
-        hide_side_toolbar: false,
-        save_image: false,
-        container_id: "etf-tv-widget"
-      });
+      mount.innerHTML = rows.map(row => {
+        const q = etfQuadrant(row);
 
-      etfTvReady = true;
+        const xNorm = Math.max(-1, Math.min(1, (Number(row.rrgMomentum) || 0) / maxAbsMomentum));
+        const yNorm = Math.max(-1, Math.min(1, (Number(row.rrgStrength) || 0) / maxAbsStrength));
+
+        const left = 50 + xNorm * 42;
+        const top = 50 - yNorm * 42;
+        const active = row.symbol === etfSelectedSymbol ? 'active' : '';
+
+        return `
+      <div
+        class="rrg-point ${q} ${active}"
+        style="left:${left}%;top:${top}%"
+        title="${row.symbol} | Strength ${row.rrgStrength.toFixed(2)} | Momentum ${row.rrgMomentum.toFixed(2)}"
+        onclick="etfSelect('${row.symbol}')"
+      >
+        ${row.symbol}
+      </div>
+    `;
+      }).join('');
     }
 
     function etfSelect(symbol) {
       etfSelectedSymbol = symbol;
-      initEtfChart(symbol);
 
       document.querySelectorAll('#etf-tbody tr').forEach(tr => {
         tr.classList.toggle('active', tr.dataset.symbol === symbol);
+      });
+
+      document.querySelectorAll('.rrg-point').forEach(pt => {
+        pt.classList.toggle('active', pt.textContent.trim() === symbol);
       });
     }
 
     async function loadEtfs() {
       if (!isConnected) return;
-
-      initEtfChart(etfSelectedSymbol);
 
       const tbody = document.getElementById('etf-tbody');
       if (!tbody) return;
@@ -13227,13 +13388,26 @@
             relVol,
             low,
             high,
-            wPos
+            wPos,
+            rrgStrength: 0,
+            rrgMomentum: 0
           };
         }).sort((a, b) => Number(b.pct || 0) - Number(a.pct || 0));
+
+        const avgPct = rows.reduce((sum, r) => sum + (Number(r.pct) || 0), 0) / Math.max(1, rows.length);
+        const avgRelVol = rows.reduce((sum, r) => sum + (Number(r.relVol) || 0), 0) / Math.max(1, rows.length);
+
+        rows.forEach(r => {
+          r.rrgStrength = (Number(r.pct) || 0) - avgPct;
+          r.rrgMomentum = ((Number(r.relVol) || 0) - avgRelVol) * 2;
+        });
+
+        renderEtfRrg(rows);
 
         tbody.innerHTML = rows.map(row => {
           const tone = etfTone(row.pct);
           const active = row.symbol === etfSelectedSymbol ? 'active' : '';
+          const quadrant = etfQuadrant(row);
 
           return `
         <tr class="${active}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
@@ -13259,9 +13433,11 @@
         </td>
       </tr>
     `;
+
+        const mount = document.getElementById('etf-rrg-points');
+        if (mount) mount.innerHTML = '';
       }
     }
-
     // ═══════════════════════════════════════════════════════
     //  MAG 7
     // ═══════════════════════════════════════════════════════
