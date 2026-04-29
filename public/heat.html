@@ -895,13 +895,12 @@
       gap: 6px;
       flex-shrink: 0;
       margin-left: auto;
-      min-width: 280px;
+      min-width: 230px;
     }
 
     /* ── Sessions mini-timeline ── */
     #sessions-strip {
-      width: 90%;
-      margin-left: 30px;
+      width: 100%;
       margin-right: 0;
       background: rgba(255, 255, 255, 0.015);
       border: 1px solid var(--border);
@@ -9349,12 +9348,12 @@
       PMI_MANUFACTURING_EVENTS.forEach(ev => {
         events.push({
           type: 'Manufacturing PMI',
-          title: `${ev.labelMonth} Manufacturing PMI`,
+          title: `${ev.labelMonth} Mfg PMI`,
           releaseDate: ev.releaseDate,
           labelMonth: ev.labelMonth,
-          time: CALENDAR_EVENT_META['Manufacturing PMI'].time,
-          tier: CALENDAR_EVENT_META['Manufacturing PMI'].tier,
-          color: CALENDAR_EVENT_META['Manufacturing PMI'].color,
+          time: CALENDAR_EVENT_META['Mfg PMI'].time,
+          tier: CALENDAR_EVENT_META['Mfg PMI'].tier,
+          color: CALENDAR_EVENT_META['Mfg PMI'].color,
           spanDays
         });
       });
@@ -11215,9 +11214,10 @@
       const parts = [];
       const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 7);
 
-      if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {
+      // Geo risk removed from macro banner
+      /*if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {
         parts.push('Geo Risk: ' + geoRisk.topic);
-      }
+      }*/
 
       upcoming.forEach(ev => {
         parts.push(buildBannerText(ev));
