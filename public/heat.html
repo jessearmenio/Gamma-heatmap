@@ -10271,11 +10271,11 @@
     }
 
     // ── Ticker compact mode: watch #topbar width, not viewport width ──
-    // When topbar ≤ 803px, hide % change and colorize the price instead.
+    // When topbar ≤ 1160px, hide % change and colorize the price instead.
     (function () {
       const topbar = document.getElementById('topbar');
       if (!topbar) return;
-      const BREAKPOINT = 803;
+      const BREAKPOINT = 1160;
 
       function applyTickerMode() {
         const compact = topbar.offsetWidth <= BREAKPOINT;
