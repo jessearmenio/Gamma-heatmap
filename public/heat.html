@@ -779,6 +779,7 @@
     #market-status-badge .ms-label {
       display: inline-block;
       position: relative;
+      margin-top: 1px;
       animation: text-wipe-cycle 10s infinite;
     }
 
@@ -6632,10 +6633,10 @@
                 <div id="ov-spy-chart-tf">
                   <!--<button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
                   <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>-->
-                  <button class="ov-chart-tf-btn active" data-ovctf="1D" onclick="ovSetChartTf('1D',this)">1D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="5D" onclick="ovSetChartTf('5D',this)">5D</button>
-                  <button class="ov-chart-tf-btn" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1H"  onclick="ovSetChartTf('1H',this)">1H</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="1D" onclick="ovSetChartTf('1D',this)">1D</button>
+                  <button class="ov-chart-tf-btn" data-ovctf="5D" onclick="ovSetChartTf('5D',this)">5D</button>-->
+                  <button class="ov-chart-tf-btn active" data-ovctf="3M" onclick="ovSetChartTf('3M',this)">3M</button>
                   <button class="ov-chart-tf-btn" data-ovctf="6M" onclick="ovSetChartTf('6M',this)">6M</button>
                   <button class="ov-chart-tf-btn" data-ovctf="1Y" onclick="ovSetChartTf('1Y',this)">1Y</button>
                 </div>
@@ -11212,7 +11213,7 @@
       }
 
       const parts = [];
-      const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 7);
+      const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 5);
 
       // Geo risk removed from macro banner
       /*if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {
