@@ -396,7 +396,7 @@
     }
 
     #topbar-left-stack {
-      width: 120px;
+      width: 100px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -10271,11 +10271,11 @@
     }
 
     // ── Ticker compact mode: watch #topbar width, not viewport width ──
-    // When topbar ≤ 1160px, hide % change and colorize the price instead.
+    // When topbar ≤ 1295px, hide % change and colorize the price instead.
     (function () {
       const topbar = document.getElementById('topbar');
       if (!topbar) return;
-      const BREAKPOINT = 1160;
+      const BREAKPOINT = 1275;
 
       function applyTickerMode() {
         const compact = topbar.offsetWidth <= BREAKPOINT;
