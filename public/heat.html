@@ -13360,6 +13360,30 @@
       });
     }
 
+    const ETF_NAME_MAP = {
+      BOTZ: 'Global X Robotics & A.I. ETF',
+      GDX: 'VanEck Gold Miners ETF',
+      IBB: 'iShares Biotechnology ETF',
+      KIE: 'State Street Insurance Sector ETF',
+      MOO: 'VanEck Agribusiness ETF',
+      PBW: 'Invesco Clean Energy Sector ETF',
+      SMH: 'VanEck Semiconductors Sector ETF',
+      TAN: 'Invesco Solar Sector ETF',
+      XLB: 'State Street Materials ETF',
+      XLC: 'State Street Communication Services ETF',
+      NLR: 'VanEck Uranium + Nuclear Energy ETF',
+      XLE: 'State Street Energy ETF',
+      XLF: 'State Street Financial ETF',
+      XLI: 'State Street Industrial ETF',
+      XLK: 'State Street Technology ETF',
+      XLP: 'State Street Consumer Staples ETF',
+      XLRE: 'State Street Real Estate ETF',
+      XLU: 'State Street Utilities ETF',
+      XLV: 'State Street Health Care ETF',
+      XLY: 'State Street Consumer Discretionary ETF',
+      XME: 'State Street Metals and Mining ETF'
+    };
+
     async function loadEtfs() {
       if (!isConnected) return;
 
@@ -13434,7 +13458,7 @@
           return `
         <tr class="${active}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
           <td><span class="etf-symbol">${row.symbol}</span></td>
-          <td class="etf-name">${row.displayName}</td>
+          <td class="etf-name">${ETF_NAME_MAP[row.symbol] || row.displayName}</td>
           <td>${etfNum(row.last, 2)}</td>
           <td class="${tone}">${etfPct(row.pct)}</td>
           <td class="${etfTone(row.net)}">${Number(row.net) > 0 ? '+' : ''}${etfNum(row.net, 2)}</td>
