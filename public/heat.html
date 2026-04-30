@@ -11490,7 +11490,13 @@
       const fomc = sc.fomc;
       if (fomc) {
         const fTone = ovEventTone(fomc.days);
-        ovSetMetric('ovm-fomc', 'ovt-fomc', fomc.days + 'd', fomc.days <= 1 ? 'Tomorrow' : fomc.days <= 4 ? 'This Week' : 'Approaching', fTone);
+        ovSetMetric(
+          'ovm-fomc',
+          'ovt-fomc',
+          fomc.days + 'd',
+          fomc.days === 0 ? 'Today' : fomc.days === 1 ? 'Tomorrow' : fomc.days <= 4 ? 'This Week' : 'Approaching',
+          fTone
+        );
       } else {
         ovSetMetric('ovm-fomc', 'ovt-fomc', '--', 'No Event', 'neutral');
       }
