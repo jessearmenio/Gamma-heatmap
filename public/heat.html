@@ -768,13 +768,14 @@
     #market-status-badge {
       position: relative;
       overflow: hidden;
+      text-align: center;
     }
 
     /* text can "erase/rebuild" */
     #market-status-badge .ms-label {
       display: inline-block;
       position: relative;
-      margin-top: 1px;
+      margin-top: 0.0625rem;
       animation: text-wipe-cycle 10s infinite;
     }
 
@@ -13032,15 +13033,30 @@
 
       try {
         // 30 calendar days gives 14+ trading days
-        const [priceRes, chainRes] = await Promise.all([
+        const [priceRes, chainRes, quoteRes] = await Promise.all([
           apiGet('/api/pricehistory?symbol=SPY&periodType=month&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false'),
-          apiGet('/api/chain?symbol=SPY&strikeCount=100&contractType=ALL&includeUnderlyingQuote=true')
+          apiGet('/api/chain?symbol=SPY&strikeCount=100&contractType=ALL&includeUnderlyingQuote=true'),
+          apiGet('/api/quotes?symbols=SPY')
         ]);
         if (!priceRes.ok) throw new Error(priceRes.error);
 
         // Price candles (daily), most recent first
         const candles = (priceRes.data?.candles || priceRes.candles || []).slice().reverse();
-        const last14 = candles.slice(0, 14);
+        const liveToday = quoteRes?.ok ? quoteRes.data?.SPY?.quote : null;
+        const liveLast = Number(liveToday?.lastPrice || liveToday?.mark);
+
+        const todayRow = liveLast ? {
+          datetime: Date.now(),
+          high: Number(liveToday?.highPrice || liveLast),
+          low: Number(liveToday?.lowPrice || liveLast),
+          close: liveLast,
+          volume: Number(liveToday?.totalVolume || candles[0]?.volume || 0),
+          isLiveToday: true
+        } : null;
+
+        const last14 = todayRow
+          ? [todayRow, ...candles].slice(0, 14)
+          : candles.slice(0, 14);
 
         // Compute 30-day avg volume from all available candles
         const vol30Avg = candles.length >= 2
@@ -13108,7 +13124,7 @@
           const netPremClass = isToday && chainToday ? (chainToday.netPrem >= 0 ? 'netpos' : 'netneg') : '';
 
           return `<tr>
-            <td>${fmtDate(c.datetime)}</td>
+            <td>${c.isLiveToday ? 'Today' : fmtDate(c.datetime)}</td>
             <td>$${c.high.toFixed(2)}</td>
             <td>$${c.low.toFixed(2)}</td>
             <td>$${c.close.toFixed(2)}</td>
