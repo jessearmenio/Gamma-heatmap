@@ -7496,9 +7496,9 @@
                       <th>Put OI</th>
                       <th>IVR</th>
                       <th>Vol 30D</th>
-                      <th>Impl 30D</th>
+                      <!--<th>Impl 30D</th>
                       <th>Vol 60D</th>
-                      <th>Impl 60D</th>
+                      <th>Impl 60D</th>-->
                       <th>Net Prem</th>
                       <th>Total Prem</th>
                     </tr>
@@ -12954,7 +12954,7 @@
           <td style="color:var(--text3);white-space:nowrap">${now}</td>
           <td><span class="flow-side-badge ${isCall ? 'call' : 'put'}">${r.sym}</span></td>
           <td class="flow-side ${r.isBullish ? 'ask' : r.isBearish ? 'bid' : 'mid'}">
-          ${r.isBullish ? 'ASK' : r.isBearish ? 'BID' : 'MID'}
+           ${r.isBullish ? 'ASK' : r.isBearish ? 'BID' : 'MID'}
           </td>
           <td class="flow-strike">
           <span class="strike-main">${r.strike}</span>
@@ -12962,7 +12962,7 @@
           </td>
           <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
           <td class="flow-bidask">
-          $${r.bid?.toFixed(2) ?? '—'} - $${r.ask?.toFixed(2) ?? '—'}
+           $${r.bid?.toFixed(2) ?? '—'} - $${r.ask?.toFixed(2) ?? '—'}
           </td>
           <td>${fmt(r.underlyingPrice)}</td>
           <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}</td>
@@ -12977,8 +12977,12 @@
               <div class="flow-bar-fill ${isCall ? 'call' : 'put'}" style="width:${barPct}%"></div>
             </div>
           </td>
-          <td style="color:var(--text2)">${r.volatility ? (r.volatility).toFixed(1) + '%' : '—'}</td>
-          <td style="white-space:nowrap">${flags || '<span style="color:var(--text3)">—</span>'}</td>
+          <td class="flow-iv-cell" style="color:var(--text2)">
+           ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
+          </td>
+          <td class="flow-flags-cell" style="white-space:nowrap">
+           ${flags || '<span style="color:var(--text3)">—</span>'}
+          </td>
         </tr>`;
       }).join('');
     }
