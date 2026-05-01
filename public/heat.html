@@ -11378,9 +11378,15 @@
       bRow('ovm-above20', 'ovt-above20', sc.pctAbove20);
       bRow('ovm-above50', 'ovt-above50', sc.pctAbove50);
       bRow('ovm-above200', 'ovt-above200', sc.pctAbove200);
+      const thrustValue = sc.thrustRatio != null
+        ? sc.thrustRatio.toFixed(2)
+        : sc.upDownVolRatio != null
+          ? sc.upDownVolRatio.toFixed(2)
+          : '--';
+
       const thrustTag = sc.thrustBull ? 'Bullish Thrust' : sc.thrustBear ? 'Washout' : 'Neutral';
       const thrustTone = sc.thrustBull ? 'positive' : sc.thrustBear ? 'danger' : 'neutral';
-      ovSetMetric('ovm-thrust', 'ovt-thrust', thrustTag, thrustTag, thrustTone);
+      ovSetMetric('ovm-thrust', 'ovt-thrust', thrustValue, thrustTag, thrustTone);
     }
 
     function ovRenderMomentum(sc) {
@@ -13065,12 +13071,18 @@
         const liveToday = quoteRes?.ok ? quoteRes.data?.SPY?.quote : null;
         const liveLast = Number(liveToday?.lastPrice || liveToday?.mark);
 
+        const latestCandle = candles[0] || null;
+        const latestTradeDate = latestCandle?.datetime
+          ? new Date(latestCandle.datetime).toLocaleDateString('en-CA')
+          : new Date().toLocaleDateString('en-CA');
+
         const todayRow = liveLast ? {
-          datetime: Date.now(),
-          high: Number(liveToday?.highPrice || liveLast),
-          low: Number(liveToday?.lowPrice || liveLast),
+          datetime: latestCandle?.datetime || Date.now(),
+          tradeDate: latestTradeDate,
+          high: Number(liveToday?.highPrice || latestCandle?.high || liveLast),
+          low: Number(liveToday?.lowPrice || latestCandle?.low || liveLast),
           close: liveLast,
-          volume: Number(liveToday?.totalVolume || candles[0]?.volume || 0),
+          volume: Number(liveToday?.totalVolume || latestCandle?.volume || 0),
           isLiveToday: true
         } : null;
 
@@ -13078,7 +13090,7 @@
           ? dbHistRes.rows
           : [];
 
-        const todayTradeDate = new Date().toLocaleDateString('en-CA');
+        const todayTradeDate = latestTradeDate;
 
         const dbHistoryRows = dbRows
           .filter(r => r.tradeDate !== todayTradeDate)
@@ -13141,7 +13153,7 @@
         };
 
         const todayHistoryRow = last14[0] ? {
-          tradeDate: new Date(last14[0].datetime).toLocaleDateString('en-CA'),
+          tradeDate: last14[0].tradeDate || new Date(last14[0].datetime).toLocaleDateString('en-CA'),
           high: last14[0].high,
           low: last14[0].low,
           close: last14[0].close,
@@ -13167,42 +13179,62 @@
 
         const rows = last14.map((c, i) => {
           const prevClose = last14[i + 1]?.close ?? c.close;
-          const chgPct = prevClose ? ((c.close - prevClose) / prevClose) * 100 : 0;
-          const vol30Ratio = vol30Avg ? (c.volume / vol30Avg).toFixed(2) : '—';
+          const chgPct = c.changePct ?? (prevClose ? ((c.close - prevClose) / prevClose) * 100 : 0);
+
+          const rawVol30Ratio = c.volume30dRatio ?? (vol30Avg ? c.volume / vol30Avg : null);
+          const vol30Ratio = rawVol30Ratio != null && Number.isFinite(Number(rawVol30Ratio))
+            ? Number(rawVol30Ratio).toFixed(2)
+            : '—';
+
           const isToday = i === 0;
 
-          // OI and premium data only available for today (live chain)
-          const totalOI = isToday && chainToday ? fmtM(chainToday.totalOI) : '—';
-          const oiChgPct = '—';
-          const callOI = isToday && chainToday ? fmtM(chainToday.callOI) : '—';
-          const putOI = isToday && chainToday ? fmtM(chainToday.putOI) : '—';
-          const netPrem = isToday && chainToday ? fmtDollar(chainToday.netPrem) : '—';
-          const totPrem = isToday && chainToday ? fmtDollar(chainToday.totalPrem) : '—';
-          const iv30 = isToday && chainToday?.iv30 != null ? Math.round(chainToday.iv30 * 100) + '%' : '—';
+          const totalOiRaw = isToday && chainToday ? chainToday.totalOI : c.totalOi;
+          const callOiRaw = isToday && chainToday ? chainToday.callOI : c.callOi;
+          const putOiRaw = isToday && chainToday ? chainToday.putOI : c.putOi;
+          const netPremRaw = isToday && chainToday ? chainToday.netPrem : c.netPrem;
+          const totalPremRaw = isToday && chainToday ? chainToday.totalPrem : c.totalPrem;
+          const vol30Raw = isToday && chainToday?.iv30 != null ? chainToday.iv30 : c.vol30d;
+
+          const totalOI = totalOiRaw != null ? fmtM(Number(totalOiRaw)) : '—';
+          const oiChgPct = c.oiChangePct != null ? fmtPct(Number(c.oiChangePct)) : '—';
+          const callOI = callOiRaw != null ? fmtM(Number(callOiRaw)) : '—';
+          const putOI = putOiRaw != null ? fmtM(Number(putOiRaw)) : '—';
+          const netPrem = netPremRaw != null ? fmtDollar(Number(netPremRaw)) : '—';
+          const totPrem = totalPremRaw != null ? fmtDollar(Number(totalPremRaw)) : '—';
+
+          const ivr = c.ivr != null ? fmtPct(Number(c.ivr)) : '—';
+
+          const vol30 = vol30Raw != null
+            ? (Number(vol30Raw) > 1 ? Math.round(Number(vol30Raw)) + '%' : Math.round(Number(vol30Raw) * 100) + '%')
+            : '—';
+
+          const impl30 = c.impl30d != null ? fmtPct(Number(c.impl30d)) : '—';
+          const vol60 = c.vol60d != null ? fmtPct(Number(c.vol60d)) : '—';
+          const impl60 = c.impl60d != null ? fmtPct(Number(c.impl60d)) : '—';
 
           const chgClass = chgPct > 0 ? 'up' : chgPct < 0 ? 'dn' : '';
-          const netPremClass = isToday && chainToday ? (chainToday.netPrem >= 0 ? 'netpos' : 'netneg') : '';
+          const netPremClass = netPremRaw != null ? (Number(netPremRaw) >= 0 ? 'netpos' : 'netneg') : '';
 
           return `<tr>
-            <td>${c.isLiveToday ? 'Today' : fmtDate(c.datetime)}</td>
-            <td>$${c.high.toFixed(2)}</td>
-            <td>$${c.low.toFixed(2)}</td>
-            <td>$${c.close.toFixed(2)}</td>
-            <td class="${chgClass}">${fmtPct(chgPct)}</td>
-            <td>${c.volume.toLocaleString()}</td>
-            <td>${vol30Ratio}</td>
-            <td>${totalOI}</td>
-            <td>${oiChgPct}</td>
-            <td>${callOI}</td>
-            <td>${putOI}</td>
-            <td>—</td>
-            <td>${iv30}</td>
-            <td>—</td>
-            <td>—</td>
-            <td>—</td>
-            <td class="${netPremClass}">${netPrem}</td>
-            <td>${totPrem}</td>
-          </tr>`;
+    <td>${c.isLiveToday ? 'Today' : fmtDate(c.datetime)}</td>
+    <td>$${Number(c.high).toFixed(2)}</td>
+    <td>$${Number(c.low).toFixed(2)}</td>
+    <td>$${Number(c.close).toFixed(2)}</td>
+    <td class="${chgClass}">${fmtPct(chgPct)}</td>
+    <td>${Number(c.volume || 0).toLocaleString()}</td>
+    <td>${vol30Ratio}</td>
+    <td>${totalOI}</td>
+    <td>${oiChgPct}</td>
+    <td>${callOI}</td>
+    <td>${putOI}</td>
+    <td>${ivr}</td>
+    <td>${vol30}</td>
+    <td>${impl30}</td>
+    <td>${vol60}</td>
+    <td>${impl60}</td>
+    <td class="${netPremClass}">${netPrem}</td>
+    <td>${totPrem}</td>
+  </tr>`;
         });
 
         if (tbody) {
