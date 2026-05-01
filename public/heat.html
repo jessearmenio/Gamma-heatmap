@@ -13026,6 +13026,19 @@
     }
 
     // ─── Historical SPY Data (14 trading days) ──────────────────────────────────
+
+    async function saveSpyDailyHistorySnapshot(row) {
+      try {
+        await fetch('/api/spy-daily-history/snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ row })
+        });
+      } catch (err) {
+        console.warn('SPY daily history snapshot save failed:', err.message);
+      }
+    }
+
     async function loadSpyHistory() {
       if (!isConnected) return;
       const tbody = document.getElementById('spy-hist-body');
@@ -13104,6 +13117,31 @@
           const d = new Date(ts);
           return `${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getDate().toString().padStart(2, '0')}`;
         };
+
+        const todayHistoryRow = last14[0] ? {
+          tradeDate: new Date(last14[0].datetime).toLocaleDateString('en-CA'),
+          high: last14[0].high,
+          low: last14[0].low,
+          close: last14[0].close,
+          changePct: last14[1]?.close ? ((last14[0].close - last14[1].close) / last14[1].close) * 100 : null,
+          volume: last14[0].volume,
+          volume30dRatio: vol30Avg ? last14[0].volume / vol30Avg : null,
+          totalOi: chainToday?.totalOI ?? null,
+          oiChangePct: null,
+          callOi: chainToday?.callOI ?? null,
+          putOi: chainToday?.putOI ?? null,
+          ivr: null,
+          vol30d: chainToday?.iv30 ?? null,
+          impl30d: null,
+          vol60d: null,
+          impl60d: null,
+          netPrem: chainToday?.netPrem ?? null,
+          totalPrem: chainToday?.totalPrem ?? null
+        } : null;
+
+        if (todayHistoryRow) {
+          saveSpyDailyHistorySnapshot(todayHistoryRow);
+        }
 
         const rows = last14.map((c, i) => {
           const prevClose = last14[i + 1]?.close ?? c.close;

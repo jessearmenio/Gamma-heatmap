@@ -57,6 +57,34 @@ async function initTurso() {
     )
   `);
 
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS spy_daily_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      trade_date TEXT NOT NULL UNIQUE,
+      high REAL,
+      low REAL,
+      close REAL,
+      change_pct REAL,
+      volume REAL,
+      volume_30d_ratio REAL,
+      total_oi REAL,
+      oi_change_pct REAL,
+      call_oi REAL,
+      put_oi REAL,
+      ivr REAL,
+      vol_30d REAL,
+      impl_30d REAL,
+      vol_60d REAL,
+      impl_60d REAL,
+      net_prem REAL,
+      total_prem REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  console.log("Turso SPY daily history table ready.");
+
   console.log("Turso ETF history table ready.");
 }
 
@@ -90,6 +118,77 @@ async function saveEtfSnapshot({ symbol, price, changePct, volume }) {
       Number.isFinite(Number(changePct)) ? Number(changePct) : null,
       Number.isFinite(Number(volume)) ? Number(volume) : null
     ]
+  });
+}
+
+async function saveSpyDailySnapshot(row) {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return;
+
+  await turso.execute({
+    sql: `
+      INSERT INTO spy_daily_history (
+        trade_date,
+        high,
+        low,
+        close,
+        change_pct,
+        volume,
+        volume_30d_ratio,
+        total_oi,
+        oi_change_pct,
+        call_oi,
+        put_oi,
+        ivr,
+        vol_30d,
+        impl_30d,
+        vol_60d,
+        impl_60d,
+        net_prem,
+        total_prem,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(trade_date)
+      DO UPDATE SET
+        high = excluded.high,
+        low = excluded.low,
+        close = excluded.close,
+        change_pct = excluded.change_pct,
+        volume = excluded.volume,
+        volume_30d_ratio = excluded.volume_30d_ratio,
+        total_oi = excluded.total_oi,
+        oi_change_pct = excluded.oi_change_pct,
+        call_oi = excluded.call_oi,
+        put_oi = excluded.put_oi,
+        ivr = excluded.ivr,
+        vol_30d = excluded.vol_30d,
+        impl_30d = excluded.impl_30d,
+        vol_60d = excluded.vol_60d,
+        impl_60d = excluded.impl_60d,
+        net_prem = excluded.net_prem,
+        total_prem = excluded.total_prem,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [
+      row.tradeDate,
+      row.high,
+      row.low,
+      row.close,
+      row.changePct,
+      row.volume,
+      row.volume30dRatio,
+      row.totalOi,
+      row.oiChangePct,
+      row.callOi,
+      row.putOi,
+      row.ivr,
+      row.vol30d,
+      row.impl30d,
+      row.vol60d,
+      row.impl60d,
+      row.netPrem,
+      row.totalPrem
+    ].map(v => Number.isFinite(Number(v)) ? Number(v) : v ?? null)
   });
 }
 
@@ -1533,6 +1632,33 @@ app.post("/api/etf-history/snapshot", async (req, res) => {
     res.status(500).json({
       ok: false,
       error: "Failed to save ETF history snapshot."
+    });
+  }
+});
+
+app.post("/api/spy-daily-history/snapshot", async (req, res) => {
+  try {
+    const row = req.body?.row;
+
+    if (!row?.tradeDate) {
+      return res.status(400).json({
+        ok: false,
+        error: "Missing SPY daily row or tradeDate."
+      });
+    }
+
+    await saveSpyDailySnapshot(row);
+
+    res.json({
+      ok: true,
+      saved: 1,
+      tradeDate: row.tradeDate
+    });
+  } catch (error) {
+    console.error("SPY DAILY HISTORY SNAPSHOT ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to save SPY daily history snapshot."
     });
   }
 });
