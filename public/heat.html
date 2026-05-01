@@ -11378,14 +11378,13 @@
       bRow('ovm-above20', 'ovt-above20', sc.pctAbove20);
       bRow('ovm-above50', 'ovt-above50', sc.pctAbove50);
       bRow('ovm-above200', 'ovt-above200', sc.pctAbove200);
-      const thrustValue = sc.thrustRatio != null
-        ? sc.thrustRatio.toFixed(2)
-        : sc.upDownVolRatio != null
-          ? sc.upDownVolRatio.toFixed(2)
-          : '--';
+      const thrustValue = sc.upDownVolRatio != null
+        ? sc.upDownVolRatio.toFixed(2)
+        : '--';
 
       const thrustTag = sc.thrustBull ? 'Bullish Thrust' : sc.thrustBear ? 'Washout' : 'Neutral';
       const thrustTone = sc.thrustBull ? 'positive' : sc.thrustBear ? 'danger' : 'neutral';
+
       ovSetMetric('ovm-thrust', 'ovt-thrust', thrustValue, thrustTag, thrustTone);
     }
 
@@ -13092,8 +13091,10 @@
 
         const todayTradeDate = latestTradeDate;
 
+        const liveTradeDate = todayRow?.tradeDate || todayTradeDate;
+
         const dbHistoryRows = dbRows
-          .filter(r => r.tradeDate !== todayTradeDate)
+          .filter(r => r.tradeDate !== liveTradeDate)
           .slice(0, 13)
           .map(r => ({
             ...r,
@@ -13216,7 +13217,7 @@
           const netPremClass = netPremRaw != null ? (Number(netPremRaw) >= 0 ? 'netpos' : 'netneg') : '';
 
           return `<tr>
-    <td>${c.isLiveToday ? 'Today' : fmtDate(c.datetime)}</td>
+    <td>${c.isLiveToday ? 'Today' : (c.tradeDate ? c.tradeDate.slice(5).replace('-', '/') : fmtDate(c.datetime))}</td>
     <td>$${Number(c.high).toFixed(2)}</td>
     <td>$${Number(c.low).toFixed(2)}</td>
     <td>$${Number(c.close).toFixed(2)}</td>
