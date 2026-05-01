@@ -8535,7 +8535,10 @@
       switch (pageId) {
         case 'overview-page': loadOverview(); loadSentiment(); break;
         case 'heat-page': reloadHeat(); break;
-        case 'flow-page': loadOptionsFlow(); break;
+        case 'flow-page':
+          loadOptionsFlow();
+          loadSpyHistory();
+          break;
         case 'mag7-page': loadMag7(); break;
         case 'futures-page': loadFutures(); break;
         case 'calendar-page': loadCalendarPage(); break;
