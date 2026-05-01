@@ -3398,6 +3398,46 @@
     /* ─────────────────────────────────────────────
    OPTIONS FLOW PAGE
 ───────────────────────────────────────────── */
+    .flow-strike {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .strike-main {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .strike-sub {
+      font-size: 11px;
+      color: var(--text3);
+      text-transform: lowercase;
+    }
+
+    .flow-side {
+      font-weight: 700;
+      font-size: 11px;
+    }
+
+    .flow-side.ask {
+      color: #22c55e;
+    }
+
+    .flow-side.bid {
+      color: #ef4444;
+    }
+
+    .flow-side.mid {
+      color: #a78bfa;
+    }
+
+    .flow-bidask {
+      color: var(--text2);
+      font-size: 11px;
+    }
+
     #flow-top-bar {
       display: flex;
       align-items: center;
@@ -12906,14 +12946,24 @@
         if (r.isSweep) flags += `<span class="flow-flag sweep">SWEEP</span>`;
         if (r.isFloor) flags += `<span class="flow-flag floor">FLOOR</span>`;
         if (r.isUnusual) flags += `<span class="flow-flag unusual">UNUSUAL</span>`;
-        if (r.isEarnings) flags += `<span class="flow-flag earnings">EARN</span>`;
+        if (r.isEarnings && r.sym !== 'SPY' && r.sym !== 'SPX' && r.sym !== 'SPXW') {
+          flags += `<span class="flow-flag earnings">EARN</span>`;
+        }
 
         return `<tr class="flow-row-${r.side.toLowerCase()}">
           <td style="color:var(--text3);white-space:nowrap">${now}</td>
           <td><span class="flow-side-badge ${isCall ? 'call' : 'put'}">${r.sym}</span></td>
-          <td style="font-weight:700;color:${sideColor}">${r.side}</td>
-          <td style="color:var(--text2);white-space:nowrap">${expLabel} C${r.strike}</td>
+          <td class="flow-side ${r.isBullish ? 'ask' : r.isBearish ? 'bid' : 'mid'}">
+          ${r.isBullish ? 'ASK' : r.isBearish ? 'BID' : 'MID'}
+          </td>
+          <td class="flow-strike">
+          <span class="strike-main">${r.strike}</span>
+          <span class="strike-sub">${isCall ? 'call' : 'put'}</span>
+          </td>
           <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
+          <td class="flow-bidask">
+          $${r.bid?.toFixed(2) ?? '—'} - $${r.ask?.toFixed(2) ?? '—'}
+          </td>
           <td>${fmt(r.underlyingPrice)}</td>
           <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}</td>
           <td style="color:var(--text2)">${fmt(r.bid)} / ${fmt(r.ask)}</td>
@@ -13290,7 +13340,13 @@
                 const isUnusual = size > oi * 2 && oi > 0;
                 const isBullish = side === 'CALL' && ask > 0 && ask >= bid;
                 const isBearish = side === 'PUT' && ask > 0 && ask >= bid;
-                const isEarnings = (c.daysToExpiration ?? 99) <= 7;
+                const isEarnings = (
+                  c.daysToExpiration !== null &&
+                  c.daysToExpiration <= 2 &&
+                  sym !== 'SPY' &&
+                  sym !== 'SPX' &&
+                  sym !== 'SPXW'
+                );
                 rows.push({
                   sym, expKey, strike,
                   side, bid, ask, last: c.last ?? 0,
