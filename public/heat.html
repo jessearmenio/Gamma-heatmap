@@ -10268,6 +10268,9 @@
 
         // Also preload Heat Seeker / GEX on initial connected load
         reloadHeat();
+        // Capture SPY daily history on initial connected site load.
+        // Keep DB capture independent from manually opening the Options Flow page.
+        loadSpyHistory();
       } else {
         btn.className = 'disconnected';
         dot.className = 'offline';
@@ -13049,10 +13052,11 @@
 
       try {
         // 30 calendar days gives 14+ trading days
-        const [priceRes, chainRes, quoteRes] = await Promise.all([
+        const [priceRes, chainRes, quoteRes, dbHistRes] = await Promise.all([
           apiGet('/api/pricehistory?symbol=SPY&periodType=month&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false'),
           apiGet('/api/chain?symbol=SPY&strikeCount=100&contractType=ALL&includeUnderlyingQuote=true'),
-          apiGet('/api/quotes?symbols=SPY')
+          apiGet('/api/quotes?symbols=SPY'),
+          apiGet('/api/spy-daily-history?limit=13')
         ]);
         if (!priceRes.ok) throw new Error(priceRes.error);
 
@@ -13070,9 +13074,24 @@
           isLiveToday: true
         } : null;
 
+        const dbRows = dbHistRes?.ok && Array.isArray(dbHistRes.rows)
+          ? dbHistRes.rows
+          : [];
+
+        const todayTradeDate = new Date().toLocaleDateString('en-CA');
+
+        const dbHistoryRows = dbRows
+          .filter(r => r.tradeDate !== todayTradeDate)
+          .slice(0, 13)
+          .map(r => ({
+            ...r,
+            datetime: new Date(`${r.tradeDate}T12:00:00`).getTime(),
+            isDbHistory: true
+          }));
+
         const last14 = todayRow
-          ? [todayRow, ...candles].slice(0, 14)
-          : candles.slice(0, 14);
+          ? [todayRow, ...dbHistoryRows].slice(0, 14)
+          : dbHistoryRows.slice(0, 14);
 
         // Compute 30-day avg volume from all available candles
         const vol30Avg = candles.length >= 2

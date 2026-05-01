@@ -1663,6 +1663,55 @@ app.post("/api/spy-daily-history/snapshot", async (req, res) => {
   }
 });
 
+app.get("/api/spy-daily-history", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+
+    const limit = Math.min(Number(req.query.limit || 13), 60);
+
+    const result = await turso.execute({
+      sql: `
+        SELECT
+          trade_date AS tradeDate,
+          high,
+          low,
+          close,
+          change_pct AS changePct,
+          volume,
+          volume_30d_ratio AS volume30dRatio,
+          total_oi AS totalOi,
+          oi_change_pct AS oiChangePct,
+          call_oi AS callOi,
+          put_oi AS putOi,
+          ivr,
+          vol_30d AS vol30d,
+          impl_30d AS impl30d,
+          vol_60d AS vol60d,
+          impl_60d AS impl60d,
+          net_prem AS netPrem,
+          total_prem AS totalPrem
+        FROM spy_daily_history
+        ORDER BY trade_date DESC
+        LIMIT ?
+      `,
+      args: [limit]
+    });
+
+    res.json({
+      ok: true,
+      rows: result.rows || []
+    });
+  } catch (error) {
+    console.error("SPY DAILY HISTORY READ ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to load SPY daily history."
+    });
+  }
+});
+
 // Root route — serve dashboard
 app.get("/", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "heat.html"));
