@@ -1589,7 +1589,7 @@ function shouldSaveEtfCloseSnapshot() {
   if (weekday === "Sat" || weekday === "Sun") return false;
 
   // Save only after regular market close: 3:00pm CST/CT
-  return nowMinutes >= 15 * 60;
+  return true;
 }
 
 app.post("/api/etf-history/snapshot", async (req, res) => {
