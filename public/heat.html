@@ -7496,9 +7496,9 @@
                       <th>Put OI</th>
                       <th>IVR</th>
                       <th>Vol 30D</th>
-                      <!--<th>Impl 30D</th>
+                      <th>Impl 30D</th>
                       <th>Vol 60D</th>
-                      <th>Impl 60D</th>-->
+                      <th>Impl 60D</th>
                       <th>Net Prem</th>
                       <th>Total Prem</th>
                     </tr>
@@ -12914,6 +12914,34 @@
       flowRenderTable();
     }
 
+    function inferFlowSide(last, bid, ask) {
+      const l = Number(last);
+      const b = Number(bid);
+      const a = Number(ask);
+
+      if (!Number.isFinite(l) || l <= 0 || !Number.isFinite(b) || !Number.isFinite(a) || a <= 0) {
+        return { label: 'MID', className: 'mid' };
+      }
+
+      const spread = a - b;
+      if (spread <= 0) return { label: 'MID', className: 'mid' };
+
+      const askDist = Math.abs(l - a);
+      const bidDist = Math.abs(l - b);
+      const nearAsk = askDist <= spread * 0.25;
+      const nearBid = bidDist <= spread * 0.25;
+
+      if (nearAsk || l >= a) return { label: 'ASK', className: 'ask' };
+      if (nearBid || l <= b) return { label: 'BID', className: 'bid' };
+
+      return { label: 'MID', className: 'mid' };
+    }
+
+    function fmtContracts(n) {
+      const v = Math.trunc(Number(n) || 0);
+      return v.toLocaleString();
+    }
+
     function flowRenderTable() {
       let rows = flowAllRows.slice();
 
@@ -12935,10 +12963,10 @@
 
       document.getElementById('flow-tbody').innerHTML = display.map(r => {
         const isCall = r.side === 'CALL';
-        const sideColor = isCall ? 'var(--accent)' : 'var(--purple)';
         const expLabel = r.expKey?.split(':')[0]?.slice(5) ?? '—';
         const premClass = r.premium > 500000 ? 'flow-premium lg' : r.premium > 100000 ? 'flow-premium md' : 'flow-premium sm';
         const barPct = Math.min(100, (r.premium / maxPremium) * 100).toFixed(1);
+        const sideRead = inferFlowSide(r.last, r.bid, r.ask);
 
         // Sentiment flags
         let flags = '';
@@ -12952,39 +12980,53 @@
         }
 
         return `<tr class="flow-row-${r.side.toLowerCase()}">
-          <td style="color:var(--text3);white-space:nowrap">${now}</td>
-          <td><span class="flow-side-badge ${isCall ? 'call' : 'put'}">${r.sym}</span></td>
-          <td class="flow-side ${r.isBullish ? 'ask' : r.isBearish ? 'bid' : 'mid'}">
-           ${r.isBullish ? 'ASK' : r.isBearish ? 'BID' : 'MID'}
-          </td>
-          <td class="flow-strike">
-          <span class="strike-main">${r.strike}</span>
-          <span class="strike-sub">${isCall ? 'call' : 'put'}</span>
-          </td>
-          <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
-          <td class="flow-bidask">
-           $${r.bid?.toFixed(2) ?? '—'} - $${r.ask?.toFixed(2) ?? '—'}
-          </td>
-          <td>${fmt(r.underlyingPrice)}</td>
-          <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}</td>
-          <td style="color:var(--text2)">${fmt(r.bid)} / ${fmt(r.ask)}</td>
-          <td>${fmt(r.last)}</td>
-          <td style="font-weight:600">${fmtK(r.totalVolume)}</td>
-          <td class="${premClass}">${fmtDollar(r.premium)}</td>
-          <td>${fmtK(r.totalVolume)}</td>
-          <td>${fmtK(r.openInterest)}</td>
-          <td>
-            <div class="flow-bar-wrap">
-              <div class="flow-bar-fill ${isCall ? 'call' : 'put'}" style="width:${barPct}%"></div>
-            </div>
-          </td>
-          <td class="flow-iv-cell" style="color:var(--text2)">
-           ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
-          </td>
-          <td class="flow-flags-cell" style="white-space:nowrap">
-           ${flags || '<span style="color:var(--text3)">—</span>'}
-          </td>
-        </tr>`;
+  <td style="color:var(--text3);white-space:nowrap">${now}</td>
+
+  <td><span class="flow-side-badge ${isCall ? 'call' : 'put'}">${r.sym}</span></td>
+
+  <td class="flow-side ${sideRead.className}">
+    ${sideRead.label}
+  </td>
+  <td class="flow-strike">
+    <span class="strike-main">${Number(r.strike).toFixed(r.strike % 1 ? 1 : 0)}</span>
+    <span class="strike-sub">${isCall ? 'call' : 'put'}</span>
+  </td>
+  <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
+  <td>${fmt(r.underlyingPrice)}</td>
+  <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">
+    ${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}
+  </td>
+  <td style="color:var(--text2);white-space:nowrap">
+    ${fmt(r.bid)} / ${fmt(r.ask)}
+  </td>
+  <td style="font-weight:700;color:var(--text)">
+    ${fmt(r.last)}
+  </td>
+  <td style="font-weight:700">
+    ${fmtContracts(r.totalVolume)}
+  </td>
+  <td class="${premClass}">
+    ${fmtDollar(r.premium)}
+  </td>
+  <td>
+    ${fmtContracts(r.totalVolume)}
+  </td>
+  <td>
+    ${fmtK(r.openInterest)}
+  </td>
+  <td>
+    <div class="flow-bar-wrap">
+      <div class="flow-bar-fill ${isCall ? 'call' : 'put'}" style="width:${barPct}%"></div>
+    </div>
+  </td>
+  <td class="flow-iv-cell" style="color:var(--text2)">
+    ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
+  </td>
+
+  <td class="flow-flags-cell" style="white-space:nowrap">
+    ${flags || '<span style="color:var(--text3)">—</span>'}
+  </td>
+</tr>`;
       }).join('');
     }
 
@@ -13331,20 +13373,23 @@
                 const strike = c.strikePrice || parseFloat(strikeStr);
                 const bid = c.bid ?? 0;
                 const ask = c.ask ?? 0;
+                const last = Number(c.last ?? 0);
                 const mid = (bid + ask) / 2;
-                const size = c.totalVolume || 0;
-                const oi = c.openInterest || 0;
-                const premium = mid * size * 100;
+                const volume = Math.trunc(Number(c.totalVolume || 0));
+                const oi = Math.trunc(Number(c.openInterest || 0));
+                const priceForPremium = last > 0 ? last : mid;
+                const premium = priceForPremium * volume * 100;
                 const otmPct = underlyingPrice > 0
                   ? side === 'CALL'
                     ? ((strike - underlyingPrice) / underlyingPrice) * 100
                     : ((underlyingPrice - strike) / underlyingPrice) * 100
                   : null;
-                const isSweep = size > oi * 0.5 && size > 100;
-                const isFloor = size >= 5000;
-                const isUnusual = size > oi * 2 && oi > 0;
-                const isBullish = side === 'CALL' && ask > 0 && ask >= bid;
-                const isBearish = side === 'PUT' && ask > 0 && ask >= bid;
+                const inferredSide = inferFlowSide(last, bid, ask);
+                const isSweep = volume > oi * 0.5 && volume > 100;
+                const isFloor = volume >= 5000;
+                const isUnusual = volume > oi * 2 && oi > 0;
+                const isBullish = inferredSide.label === 'ASK';
+                const isBearish = inferredSide.label === 'BID';
                 const isEarnings = (
                   c.daysToExpiration !== null &&
                   c.daysToExpiration <= 2 &&
@@ -13354,8 +13399,8 @@
                 );
                 rows.push({
                   sym, expKey, strike,
-                  side, bid, ask, last: c.last ?? 0,
-                  openInterest: oi, totalVolume: size,
+                  side, bid, ask, last,
+                  openInterest: oi, totalVolume: volume,
                   volatility: c.volatility ?? 0,
                   delta: c.delta, gamma: c.gamma,
                   inTheMoney: c.inTheMoney,
