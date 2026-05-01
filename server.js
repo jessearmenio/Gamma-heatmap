@@ -4,6 +4,7 @@ const dotenv = require("dotenv");
 const axios = require("axios");
 const path = require("path");
 const fs = require("fs/promises");
+const { createClient } = require("@libsql/client");
 
 dotenv.config();
 
@@ -15,6 +16,13 @@ const SCHWAB_APP_SECRET = process.env.SCHWAB_APP_SECRET;
 const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI;
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const FEAR_GREED_API_KEY = process.env.FEAR_GREED_API_KEY;
+const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL;
+const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN;
+
+const turso = createClient({
+  url: TURSO_DATABASE_URL,
+  authToken: TURSO_AUTH_TOKEN
+});
 
 const FINNHUB_TOP_100_SP500 = [
   "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "BRK.B", "LLY", "AVGO",
@@ -28,6 +36,66 @@ const FINNHUB_TOP_100_SP500 = [
   "BSX", "DUK", "ICE", "BDX", "CL", "CSX", "PYPL", "ITW", "WM", "EOG",
   "PNC", "APD", "SHW", "MPC", "HCA", "AON", "MS", "FDX", "MAR", "SNPS"
 ];
+
+async function initTurso() {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+    console.warn("Turso env vars missing. ETF history storage disabled.");
+    return;
+  }
+
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS etf_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      symbol TEXT NOT NULL,
+      trade_date TEXT NOT NULL,
+      price REAL,
+      change_pct REAL,
+      volume REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(symbol, trade_date)
+    )
+  `);
+
+  console.log("Turso ETF history table ready.");
+}
+
+async function saveEtfSnapshot({ symbol, price, changePct, volume }) {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return;
+
+  const tradeDate = getCstDateKey();
+
+  await turso.execute({
+    sql: `
+      INSERT INTO etf_history (
+        symbol,
+        trade_date,
+        price,
+        change_pct,
+        volume,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(symbol, trade_date)
+      DO UPDATE SET
+        price = excluded.price,
+        change_pct = excluded.change_pct,
+        volume = excluded.volume,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [
+      symbol,
+      tradeDate,
+      Number.isFinite(Number(price)) ? Number(price) : null,
+      Number.isFinite(Number(changePct)) ? Number(changePct) : null,
+      Number.isFinite(Number(volume)) ? Number(volume) : null
+    ]
+  });
+}
+
+initTurso().catch(err => {
+  console.error("TURSO INIT ERROR:", err.message);
+});
 
 // Starter-only memory storage.
 let schwabTokens = null;
@@ -1408,6 +1476,63 @@ app.get("/api/scanner", async (req, res) => {
     res.status(error.response?.status || 500).json({
       ok: false, error: "Failed to run scanner.",
       details: error.response?.data || error.message
+    });
+  }
+});
+
+function shouldSaveEtfCloseSnapshot() {
+  const p = getCstParts();
+  const weekday = p.weekday;
+  const hour = Number(p.hour);
+  const minute = Number(p.minute);
+  const nowMinutes = hour * 60 + minute;
+
+  if (weekday === "Sat" || weekday === "Sun") return false;
+
+  // Save only after regular market close: 3:00pm CST/CT
+  return nowMinutes >= 15 * 60;
+}
+
+app.post("/api/etf-history/snapshot", async (req, res) => {
+  try {
+    if (!shouldSaveEtfCloseSnapshot()) {
+      return res.json({
+        ok: true,
+        saved: 0,
+        skipped: true,
+        reason: "ETF close snapshot only saves after 3:00pm CT."
+      });
+    }
+
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+
+    if (!rows.length) {
+      return res.status(400).json({
+        ok: false,
+        error: "No ETF rows provided."
+      });
+    }
+
+    const cleanRows = rows
+      .filter(r => r?.symbol)
+      .map(r => ({
+        symbol: String(r.symbol).toUpperCase(),
+        price: r.last,
+        changePct: r.pct,
+        volume: r.volume
+      }));
+
+    await Promise.all(cleanRows.map(saveEtfSnapshot));
+
+    res.json({
+      ok: true,
+      saved: cleanRows.length
+    });
+  } catch (error) {
+    console.error("ETF HISTORY SNAPSHOT ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to save ETF history snapshot."
     });
   }
 });

@@ -13449,6 +13449,7 @@
         });
 
         renderEtfRrg(rows);
+        saveEtfHistorySnapshot(rows);
 
         tbody.innerHTML = rows.map(row => {
           const tone = etfTone(row.pct);
@@ -13482,6 +13483,18 @@
 
         const mount = document.getElementById('etf-rrg-points');
         if (mount) mount.innerHTML = '';
+      }
+    }
+
+    async function saveEtfHistorySnapshot(rows) {
+      try {
+        await fetch('/api/etf-history/snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows })
+        });
+      } catch (err) {
+        console.warn('ETF history snapshot save failed:', err.message);
       }
     }
     // ═══════════════════════════════════════════════════════
