@@ -13071,13 +13071,16 @@
         const liveLast = Number(liveToday?.lastPrice || liveToday?.mark);
 
         const latestCandle = candles[0] || null;
-        const latestTradeDate = latestCandle?.datetime
-          ? new Date(latestCandle.datetime).toLocaleDateString('en-CA')
-          : new Date().toLocaleDateString('en-CA');
+        const todayCT = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'America/Chicago',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        }).format(new Date());
 
         const todayRow = liveLast ? {
           datetime: latestCandle?.datetime || Date.now(),
-          tradeDate: latestTradeDate,
+          tradeDate: todayCT,
           high: Number(liveToday?.highPrice || latestCandle?.high || liveLast),
           low: Number(liveToday?.lowPrice || latestCandle?.low || liveLast),
           close: liveLast,
@@ -13092,7 +13095,8 @@
         const liveTradeDate = String(todayRow?.tradeDate || latestTradeDate || '').slice(0, 10);
 
         const dbHistoryRows = dbRows
-          .filter(r => String(r.tradeDate || '').slice(0, 10) !== liveTradeDate)
+          .filter(r => r.tradeDate !== todayCT)
+          .sort((a, b) => new Date(b.tradeDate) - new Date(a.tradeDate))
           .slice(0, 13)
           .map(r => ({
             ...r,
