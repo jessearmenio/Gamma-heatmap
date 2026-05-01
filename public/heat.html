@@ -3644,33 +3644,66 @@
     }
 
     /* Chain fill bar (IV/OTM%) */
-    .flow-bar-wrap {
-      display: flex;
+    /* Fill location bar: Bid -> Last -> Ask */
+    .flow-fill-bar {
+      display: grid;
+      grid-template-columns: 10px 1fr 10px;
       align-items: center;
-      gap: 5px;
-      min-width: 70px;
+      gap: 4px;
+      min-width: 86px;
     }
 
-    .flow-bar-bg {
-      flex: 1;
-      height: 6px;
-      background: var(--bg3);
-      border-radius: 3px;
-      overflow: hidden;
+    .flow-fill-edge {
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--text3);
+      line-height: 1;
     }
 
-    .flow-bar-fill {
-      height: 100%;
-      border-radius: 3px;
-      transition: width 0.3s;
+    .flow-fill-edge.left {
+      text-align: right;
     }
 
-    .flow-bar-fill.call-fill {
-      background: var(--accent);
+    .flow-fill-edge.right {
+      text-align: left;
     }
 
-    .flow-bar-fill.put-fill {
-      background: #B423F0;
+    .flow-fill-track {
+      position: relative;
+      height: 5px;
+      border-radius: 999px;
+      background: linear-gradient(90deg,
+          rgba(255, 59, 92, 0.7),
+          rgba(167, 139, 250, 0.45),
+          rgba(34, 221, 136, 0.7));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .flow-fill-dot {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.35);
+    }
+
+    .flow-fill-dot.ask {
+      background: var(--green);
+      box-shadow: 0 0 7px rgba(34, 221, 136, 0.65);
+    }
+
+    .flow-fill-dot.bid {
+      background: var(--red);
+      box-shadow: 0 0 7px rgba(255, 59, 92, 0.65);
+    }
+
+    .flow-fill-dot.mid {
+      background: #a78bfa;
+      box-shadow: 0 0 7px rgba(167, 139, 250, 0.65);
     }
 
     .flow-bar-fill.iv-fill {
@@ -7583,7 +7616,7 @@
                   <th data-col="premium">Premium</th>
                   <th data-col="volume">Volume</th>
                   <th data-col="oi">OI</th>
-                  <th data-col="chain">Chain Bar</th>
+                  <th data-col="fill">Fill</th>
                   <th data-col="iv">IV%</th>
                   <th data-col="flags">Flags</th>
                 </tr>
@@ -12958,15 +12991,17 @@
       const display = rows.slice(0, 80);
       const now = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-      // Max premium for bar scaling
-      const maxPremium = Math.max(...display.map(r => r.premium), 1);
-
       document.getElementById('flow-tbody').innerHTML = display.map(r => {
         const isCall = r.side === 'CALL';
         const expLabel = r.expKey?.split(':')[0]?.slice(5) ?? '—';
         const premClass = r.premium > 500000 ? 'flow-premium lg' : r.premium > 100000 ? 'flow-premium md' : 'flow-premium sm';
-        const barPct = Math.min(100, (r.premium / maxPremium) * 100).toFixed(1);
         const sideRead = inferFlowSide(r.last, r.bid, r.ask);
+        const bidNum = Number(r.bid);
+        const askNum = Number(r.ask);
+        const lastNum = Number(r.last);
+        const fillPct = Number.isFinite(bidNum) && Number.isFinite(askNum) && Number.isFinite(lastNum) && askNum > bidNum
+          ? Math.max(0, Math.min(100, ((lastNum - bidNum) / (askNum - bidNum)) * 100))
+          : 50;
 
         // Sentiment flags
         let flags = '';
@@ -13014,11 +13049,15 @@
   <td>
     ${fmtK(r.openInterest)}
   </td>
-  <td>
-    <div class="flow-bar-wrap">
-      <div class="flow-bar-fill ${isCall ? 'call' : 'put'}" style="width:${barPct}%"></div>
+<td>
+  <div class="flow-fill-bar" title="Bid ${fmt(r.bid)} / Last ${fmt(r.last)} / Ask ${fmt(r.ask)}">
+    <span class="flow-fill-edge left">B</span>
+    <div class="flow-fill-track">
+      <span class="flow-fill-dot ${sideRead.className}" style="left:${fillPct}%"></span>
     </div>
-  </td>
+    <span class="flow-fill-edge right">A</span>
+  </div>
+</td>
   <td class="flow-iv-cell" style="color:var(--text2)">
     ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
   </td>
