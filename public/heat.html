@@ -7555,6 +7555,15 @@
               <button class="flow-filter-btn" data-filter="FLOOR" onclick="flowSetFilter(this)">FLOOR</button>
             </div>
             <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:9px;color:var(--text3)">DTE:</span>
+
+              <input id="flow-dte-min" type="number" min="0" step="1" value="0" oninput="flowApplyDteFilter()"
+                style="width:46px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
+
+              <span style="font-size:9px;color:var(--text3)">to</span>
+
+              <input id="flow-dte-max" type="number" min="0" step="1" placeholder="All" oninput="flowApplyDteFilter()"
+                style="width:50px;background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
               <span style="font-size:9px;color:var(--text3)">Sort by:</span>
               <select id="flow-sort-sel" onchange="flowApplySort()"
                 style="background:var(--bg3);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:3px 6px;font-size:10px;font-family:inherit;">
@@ -12934,6 +12943,8 @@
     let flowAllRows = [];        // full flattened dataset
     let flowFilter = 'ALL';      // ALL | CALL | PUT | SWEEP | FLOOR
     let flowSortCol = 'premium'; // default sort
+    let flowDteMin = '0';        // blank = no minimum
+    let flowDteMax = '';         // blank = no maximum
 
     function flowSetFilter(btn) {
       document.querySelectorAll('.flow-filter-btn').forEach(b => b.classList.remove('active'));
@@ -12944,6 +12955,16 @@
 
     function flowApplySort() {
       flowSortCol = document.getElementById('flow-sort-sel').value;
+      flowRenderTable();
+    }
+
+    function flowApplyDteFilter() {
+      const minInput = document.getElementById('flow-dte-min');
+      const maxInput = document.getElementById('flow-dte-max');
+
+      flowDteMin = minInput ? minInput.value.trim() : '';
+      flowDteMax = maxInput ? maxInput.value.trim() : '';
+
       flowRenderTable();
     }
 
@@ -12983,6 +13004,20 @@
       else if (flowFilter === 'PUT') rows = rows.filter(r => r.side === 'PUT');
       else if (flowFilter === 'SWEEP') rows = rows.filter(r => r.isSweep);
       else if (flowFilter === 'FLOOR') rows = rows.filter(r => r.isFloor);
+
+      // DTE range filter: min <= DTE <= max
+      const dteMin = flowDteMin === '' ? null : Number(flowDteMin);
+      const dteMax = flowDteMax === '' ? null : Number(flowDteMax);
+
+      if (dteMin !== null || dteMax !== null) {
+        rows = rows.filter(r => {
+          const dte = Number(r.daysToExpiration);
+          if (!Number.isFinite(dte)) return false;
+          if (dteMin !== null && Number.isFinite(dteMin) && dte < dteMin) return false;
+          if (dteMax !== null && Number.isFinite(dteMax) && dte > dteMax) return false;
+          return true;
+        });
+      }
 
       // Sort
       const sortKey = { premium: 'premium', volume: 'totalVolume', oi: 'openInterest', otm: 'otmAbs', iv: 'volatility' }[flowSortCol] || 'premium';
