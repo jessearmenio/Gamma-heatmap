@@ -10309,8 +10309,9 @@
         // Also preload Heat Seeker / GEX on initial connected load
         reloadHeat();
         // Capture SPY daily history on initial connected site load.
-        // Keep DB capture independent from manually opening the Options Flow page.
+        // Keep DB capture independent from manually opening the Options Flow and ETF pages.
         loadSpyHistory();
+        loadEtfs();
       } else {
         btn.className = 'disconnected';
         dot.className = 'offline';
