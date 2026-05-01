@@ -13089,14 +13089,15 @@
           ? dbHistRes.rows
           : [];
 
-        const liveTradeDate = todayRow?.tradeDate || todayTradeDate;
+        const liveTradeDate = String(todayRow?.tradeDate || latestTradeDate || '').slice(0, 10);
 
         const dbHistoryRows = dbRows
-          .filter(r => r.tradeDate !== liveTradeDate)
+          .filter(r => String(r.tradeDate || '').slice(0, 10) !== liveTradeDate)
           .slice(0, 13)
           .map(r => ({
             ...r,
-            datetime: new Date(`${r.tradeDate}T12:00:00`).getTime(),
+            tradeDate: String(r.tradeDate || '').slice(0, 10),
+            datetime: new Date(`${String(r.tradeDate || '').slice(0, 10)}T12:00:00`).getTime(),
             isDbHistory: true
           }));
 
