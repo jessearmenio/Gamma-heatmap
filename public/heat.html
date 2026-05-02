@@ -13034,7 +13034,6 @@
         const isCall = r.side === 'CALL';
         const expLabel = r.expKey?.split(':')[0]?.slice(5) ?? '—';
         const premClass = r.premium > 500000 ? 'flow-premium lg' : r.premium > 100000 ? 'flow-premium md' : 'flow-premium sm';
-        const baSizeBar = renderBidAskSizeBar(r.bidSize, r.askSize);
 
         // Sentiment flags
         let flags = '';
@@ -13088,9 +13087,6 @@
   ${renderBidAskSizeBar(r.bidSize, r.askSize)}
   </td>
   <td>
-  <td>
-  ${baSizeBar}
-  </td>
   <td class="flow-iv-cell" style="color:var(--text2)">
     ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
   </td>
