@@ -7612,20 +7612,20 @@
             <table id="flow-table">
               <thead>
                 <tr>
-                  <th data-col="time">Time</th>
+                  <th data-col="time">As of</th>
                   <th data-col="ticker">Ticker</th>
-                  <th data-col="side">Side</th>
+                  <th data-col="type">Type</th>
                   <th data-col="contract">Contract</th>
                   <th data-col="dte">DTE</th>
                   <th data-col="stock">Stock</th>
                   <th data-col="otm">%OTM</th>
                   <th data-col="bidask">Bid/Ask</th>
-                  <th data-col="spot">Spot</th>
+                  <th data-col="spot">Current</th>
                   <th data-col="size">Size</th>
                   <th data-col="premium">Premium</th>
                   <th data-col="volume">Volume</th>
                   <th data-col="oi">OI</th>
-                  <th data-col="fill">Fill</th>
+                  <th data-col="basize">B/A Size</th>
                   <th data-col="iv">IV%</th>
                   <th data-col="flags">Flags</th>
                 </tr>
@@ -12968,27 +12968,27 @@
       flowRenderTable();
     }
 
-    function inferFlowSide(last, bid, ask) {
-      const l = Number(last);
-      const b = Number(bid);
-      const a = Number(ask);
+    function renderBidAskSizeBar(bidSize, askSize) {
+      const bid = Math.max(0, Number(bidSize) || 0);
+      const ask = Math.max(0, Number(askSize) || 0);
+      const total = bid + ask;
 
-      if (!Number.isFinite(l) || l <= 0 || !Number.isFinite(b) || !Number.isFinite(a) || a <= 0) {
-        return { label: 'MID', className: 'mid' };
+      if (total <= 0) {
+        return `<span style="color:var(--text3)">—</span>`;
       }
 
-      const spread = a - b;
-      if (spread <= 0) return { label: 'MID', className: 'mid' };
+      const bidPct = Math.round((bid / total) * 100);
+      const askPct = 100 - bidPct;
 
-      const askDist = Math.abs(l - a);
-      const bidDist = Math.abs(l - b);
-      const nearAsk = askDist <= spread * 0.25;
-      const nearBid = bidDist <= spread * 0.25;
-
-      if (nearAsk || l >= a) return { label: 'ASK', className: 'ask' };
-      if (nearBid || l <= b) return { label: 'BID', className: 'bid' };
-
-      return { label: 'MID', className: 'mid' };
+      return `
+    <div class="flow-ba-bar" title="Bid size ${bid.toLocaleString()} / Ask size ${ask.toLocaleString()}">
+      <span class="flow-ba-pct bid">${bidPct}%</span>
+      <div class="flow-ba-fill" style="background:linear-gradient(90deg,
+        rgba(34,221,136,0.45) ${bidPct}%,
+        rgba(255,59,92,0.45) ${bidPct}%);"></div>
+      <span class="flow-ba-pct ask">${askPct}%</span>
+    </div>
+  `;
     }
 
     function fmtContracts(n) {
@@ -13030,13 +13030,7 @@
         const isCall = r.side === 'CALL';
         const expLabel = r.expKey?.split(':')[0]?.slice(5) ?? '—';
         const premClass = r.premium > 500000 ? 'flow-premium lg' : r.premium > 100000 ? 'flow-premium md' : 'flow-premium sm';
-        const sideRead = inferFlowSide(r.last, r.bid, r.ask);
-        const bidNum = Number(r.bid);
-        const askNum = Number(r.ask);
-        const lastNum = Number(r.last);
-        const fillPct = Number.isFinite(bidNum) && Number.isFinite(askNum) && Number.isFinite(lastNum) && askNum > bidNum
-          ? Math.max(0, Math.min(100, ((lastNum - bidNum) / (askNum - bidNum)) * 100))
-          : 50;
+        const baSizeBar = renderBidAskSizeBar(r.bidSize, r.askSize);
 
         // Sentiment flags
         let flags = '';
@@ -13054,9 +13048,9 @@
 
   <td><span class="flow-side-badge ${isCall ? 'call' : 'put'}">${r.sym}</span></td>
 
-  <td class="flow-side ${sideRead.className}">
-    ${sideRead.label}
-  </td>
+<td class="${isCall ? 'flow-call' : 'flow-put'}" style="font-weight:800;">
+  ${isCall ? 'CALL' : 'PUT'}
+</td>
   <td class="flow-strike">
     <span class="strike-main">${Number(r.strike).toFixed(r.strike % 1 ? 1 : 0)}</span>
     <span class="strike-sub">${isCall ? 'call' : 'put'}</span>
@@ -13085,13 +13079,8 @@
     ${fmtK(r.openInterest)}
   </td>
 <td>
-  <div class="flow-fill-bar" title="Bid ${fmt(r.bid)} / Last ${fmt(r.last)} / Ask ${fmt(r.ask)}">
-    <span class="flow-fill-edge left">B</span>
-    <div class="flow-fill-track">
-      <span class="flow-fill-dot ${sideRead.className}" style="left:${fillPct}%"></span>
-    </div>
-    <span class="flow-fill-edge right">A</span>
-  </div>
+<td>
+  ${baSizeBar}
 </td>
   <td class="flow-iv-cell" style="color:var(--text2)">
     ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
@@ -13445,25 +13434,35 @@
             Object.entries(strikes).forEach(([strikeStr, contracts]) => {
               contracts.forEach(c => {
                 const strike = c.strikePrice || parseFloat(strikeStr);
-                const bid = c.bid ?? 0;
-                const ask = c.ask ?? 0;
+                const bid = Number(c.bid ?? 0);
+                const ask = Number(c.ask ?? 0);
                 const last = Number(c.last ?? 0);
-                const mid = (bid + ask) / 2;
+                const mark = Number(c.mark ?? 0);
+                const mid = bid > 0 && ask > 0 ? (bid + ask) / 2 : 0;
+
                 const volume = Math.trunc(Number(c.totalVolume || 0));
                 const oi = Math.trunc(Number(c.openInterest || 0));
-                const priceForPremium = last > 0 ? last : mid;
+
+                const bidSize = Math.trunc(Number(c.bidSize || 0));
+                const askSize = Math.trunc(Number(c.askSize || 0));
+
+                const priceForPremium =
+                  mark > 0 ? mark :
+                    last > 0 ? last :
+                      mid > 0 ? mid :
+                        0;
+
                 const premium = priceForPremium * volume * 100;
                 const otmPct = underlyingPrice > 0
                   ? side === 'CALL'
                     ? ((strike - underlyingPrice) / underlyingPrice) * 100
                     : ((underlyingPrice - strike) / underlyingPrice) * 100
                   : null;
-                const inferredSide = inferFlowSide(last, bid, ask);
                 const isSweep = volume > oi * 0.5 && volume > 100;
                 const isFloor = volume >= 5000;
                 const isUnusual = volume > oi * 2 && oi > 0;
-                const isBullish = inferredSide.label === 'ASK';
-                const isBearish = inferredSide.label === 'BID';
+                const isBullish = false;
+                const isBearish = false;
                 const isEarnings = (
                   c.daysToExpiration !== null &&
                   c.daysToExpiration <= 2 &&
@@ -13473,7 +13472,7 @@
                 );
                 rows.push({
                   sym, expKey, strike,
-                  side, bid, ask, last,
+                  side, bid, ask, bidSize, askSize, last, mark,
                   openInterest: oi, totalVolume: volume,
                   volatility: c.volatility ?? 0,
                   delta: c.delta, gamma: c.gamma,
