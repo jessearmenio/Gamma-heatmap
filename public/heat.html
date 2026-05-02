@@ -3506,66 +3506,6 @@
       min-height: 0;
     }
 
-    #flow-table th[data-col="basize"],
-    #flow-table td.flow-ba-cell {
-      width: 72px;
-      min-width: 72px;
-      max-width: 72px;
-      text-align: center;
-    }
-
-    #flow-table th[data-col="iv"],
-    #flow-table td.flow-iv-cell {
-      width: 58px;
-      min-width: 58px;
-      max-width: 58px;
-      text-align: center;
-    }
-
-    #flow-table th[data-col="flags"],
-    #flow-table td.flow-flags-cell {
-      width: 210px;
-      min-width: 210px;
-      max-width: 210px;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    .flow-ba-cell {
-      padding-left: 4px !important;
-      padding-right: 4px !important;
-    }
-
-    .flow-iv-cell {
-      color: var(--text2);
-    }
-
-    .flow-flags-cell {
-      white-space: nowrap;
-    }
-
-    .flow-ba-bar.compact {
-      display: inline-flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      min-width: 34px;
-      width: 34px;
-      line-height: 1.05;
-    }
-
-    .flow-ba-bar.compact .flow-ba-fill {
-      display: none;
-    }
-
-    .flow-ba-bar.compact .flow-ba-pct {
-      background: transparent;
-      padding: 0;
-      font-size: 10px;
-      font-weight: 800;
-    }
-
     #flow-table {
       width: 100%;
       border-collapse: collapse;
@@ -13045,7 +12985,7 @@
       const askPct = 100 - bidPct;
 
       return `
-    <div class="flow-ba-bar compact" title="Bid size ${bid.toLocaleString()} / Ask size ${ask.toLocaleString()}">
+    <div class="flow-ba-bar" title="Bid size ${bid.toLocaleString()} / Ask size ${ask.toLocaleString()}">
       <span class="flow-ba-pct bid">${bidPct}%</span>
       <div class="flow-ba-fill" style="background:linear-gradient(90deg,
         rgba(34,221,136,0.45) ${bidPct}%,
@@ -13143,15 +13083,14 @@
   <td>
     ${fmtK(r.openInterest)}
   </td>
-  <td class="flow-ba-cell">
+  <td>
   ${renderBidAskSizeBar(r.bidSize, r.askSize)}
   </td>
-  <td>
-  <td class="flow-iv-cell">
-  ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
+  <td class="flow-iv-cell" style="color:var(--text2)">
+    ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
   </td>
-  <td class="flow-flags-cell">
-  ${flags || '<span style="color:var(--text3)">—</span>'}
+  <td class="flow-flags-cell" style="white-space:nowrap">
+    ${flags || '<span style="color:var(--text3)">—</span>'}
   </td>
 </tr>`;
       }).join('');
