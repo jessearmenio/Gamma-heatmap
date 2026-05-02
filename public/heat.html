@@ -3399,7 +3399,11 @@
    OPTIONS FLOW PAGE
 ───────────────────────────────────────────── */
     .flow-strike {
-      display: flex;
+      white-space: nowrap;
+    }
+
+    .flow-contract-inner {
+      display: inline-flex;
       align-items: center;
       gap: 6px;
     }
@@ -13051,10 +13055,12 @@
 <td class="${isCall ? 'flow-call' : 'flow-put'}" style="font-weight:800;">
   ${isCall ? 'CALL' : 'PUT'}
 </td>
-  <td class="flow-strike">
+<td class="flow-strike">
+  <div class="flow-contract-inner">
     <span class="strike-main">${Number(r.strike).toFixed(r.strike % 1 ? 1 : 0)}</span>
     <span class="strike-sub">${isCall ? 'call' : 'put'}</span>
-  </td>
+  </div>
+</td>
   <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
   <td>${fmt(r.underlyingPrice)}</td>
   <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">
@@ -13078,14 +13084,16 @@
   <td>
     ${fmtK(r.openInterest)}
   </td>
-<td>
-<td>
+  <td>
+  ${renderBidAskSizeBar(r.bidSize, r.askSize)}
+  </td>
+  <td>
+  <td>
   ${baSizeBar}
-</td>
+  </td>
   <td class="flow-iv-cell" style="color:var(--text2)">
     ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
   </td>
-
   <td class="flow-flags-cell" style="white-space:nowrap">
     ${flags || '<span style="color:var(--text3)">—</span>'}
   </td>
