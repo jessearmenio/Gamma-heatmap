@@ -3733,6 +3733,67 @@
     }
 
     /* ── SPY Analytics Cards (Vol/OI/History) ─────────────────── */
+    #sp500-flow-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px 0;
+      flex-shrink: 0;
+    }
+
+    #sp500-flow-filter-bar .sp500-ff-label {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+    }
+
+    #sp500-flow-filter-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #sp500-flow-filter-input:focus {
+      border-color: var(--accent);
+    }
+
+    #sp500-flow-filter-input::placeholder {
+      color: var(--text3);
+    }
+
+    #sp500-flow-filter-clear {
+      background: var(--bg3);
+      color: var(--text2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    #sp500-flow-filter-clear:hover {
+      color: var(--text);
+      border-color: var(--text3);
+    }
+
+    #sp500-flow-filter-bar .sp500-ff-status {
+      font-size: 9px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
     #flow-analytics-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -7439,6 +7500,16 @@
         <div id="flow-page" class="page" style="display:none;">
           <!-- TOP BAR: symbol + filters + sort -->
 
+
+          <!-- S&P 500 FLOW FILTER: applies to both Highest Vol and Highest OI tables -->
+          <div id="sp500-flow-filter-bar">
+            <span class="sp500-ff-label">S&amp;P 500 Filter</span>
+            <input id="sp500-flow-filter-input" type="text"
+              placeholder="e.g. NVDA, SPY, GOOGL  — or  -NVDA, -AAPL  to exclude"
+              spellcheck="false" autocomplete="off" />
+            <button type="button" id="sp500-flow-filter-clear" onclick="sp500FlowFilterClear()">Clear</button>
+            <span id="sp500-flow-filter-status" class="sp500-ff-status"></span>
+          </div>
 
           <!-- SPY ANALYTICS ROW: Highest Vol + Highest OI -->
           <div id="flow-analytics-row">
@@ -13170,10 +13241,104 @@
       "PNC", "APD", "SHW", "MPC", "HCA", "AON", "MS", "FDX", "MAR", "SNPS"
     ];
 
+    // Parse the S&P 500 flow filter input. Tickers are comma- or space-separated.
+    // Plain tickers → includes (restrict scan to these).
+    // Tickers prefixed with '-' → excludes (remove from full SP500 universe).
+    // Mixed: start from the include list (or full universe if no includes), then drop excludes.
+    function parseSp500FilterText(raw) {
+      const includes = [];
+      const excludes = [];
+      const seenInc = new Set();
+      const seenExc = new Set();
+      (raw || '')
+        .split(/[\s,]+/)
+        .map(t => t.trim())
+        .filter(Boolean)
+        .forEach(token => {
+          let t = token;
+          let isExclude = false;
+          while (t.startsWith('-') || t.startsWith('!')) { isExclude = !isExclude; t = t.slice(1); }
+          if (!t) return;
+          const sym = t.toUpperCase();
+          if (isExclude) {
+            if (!seenExc.has(sym)) { seenExc.add(sym); excludes.push(sym); }
+          } else {
+            if (!seenInc.has(sym)) { seenInc.add(sym); includes.push(sym); }
+          }
+        });
+
+      let symbols;
+      let mode;
+      if (includes.length === 0 && excludes.length === 0) {
+        symbols = SP500_SCAN_SYMBOLS.slice();
+        mode = 'all';
+      } else {
+        const base = includes.length ? includes : SP500_SCAN_SYMBOLS.slice();
+        const excSet = new Set(excludes);
+        symbols = base.filter(s => !excSet.has(s));
+        mode = includes.length && excludes.length
+          ? 'mixed'
+          : (includes.length ? 'include' : 'exclude');
+      }
+      return { symbols, mode, includes, excludes };
+    }
+
+    function sp500FlowFilterStatusText(filter) {
+      if (filter.mode === 'all') return `Scanning all ${filter.symbols.length} S&P 500 names`;
+      if (filter.mode === 'include') return `Scanning ${filter.symbols.length} ticker${filter.symbols.length === 1 ? '' : 's'}`;
+      if (filter.mode === 'exclude') return `Scanning ${filter.symbols.length} S&P 500 names (excluding ${filter.excludes.length})`;
+      return `Scanning ${filter.symbols.length} ticker${filter.symbols.length === 1 ? '' : 's'} (after excludes)`;
+    }
+
+    function sp500FlowFilterClear() {
+      const input = document.getElementById('sp500-flow-filter-input');
+      if (input) input.value = '';
+      loadSpyContracts();
+    }
+
+    // Wire up the filter input: re-run on Enter or on blur (debounced typing not needed
+    // since each rerun does a 100-symbol chain fetch).
+    function sp500FlowFilterInit() {
+      const input = document.getElementById('sp500-flow-filter-input');
+      if (!input || input._sp500Wired) return;
+      input._sp500Wired = true;
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          input.blur();
+          loadSpyContracts();
+        }
+      });
+      input.addEventListener('change', () => loadSpyContracts());
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', sp500FlowFilterInit);
+    } else {
+      sp500FlowFilterInit();
+    }
+
     async function loadSpyContracts() {
       if (!isConnected) return;
       const [volBody, oiBody] = ['spy-vol-body', 'spy-oi-body'].map(id => document.getElementById(id));
-      const loading = `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">Scanning S&amp;P 500 chains…</td></tr>`;
+
+      // Resolve the filter → symbol list to actually scan.
+      const filterInput = document.getElementById('sp500-flow-filter-input');
+      const filter = parseSp500FilterText(filterInput ? filterInput.value : '');
+      const symbolsToScan = filter.symbols;
+      const statusEl = document.getElementById('sp500-flow-filter-status');
+      if (statusEl) statusEl.textContent = sp500FlowFilterStatusText(filter);
+
+      if (!symbolsToScan.length) {
+        const empty = `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">Filter excludes every ticker — nothing to scan.</td></tr>`;
+        if (volBody) volBody.innerHTML = empty;
+        if (oiBody) oiBody.innerHTML = empty;
+        return;
+      }
+
+      const scanLabel = filter.mode === 'all'
+        ? 'Scanning S&amp;P 500 chains…'
+        : `Scanning ${symbolsToScan.length} ticker${symbolsToScan.length === 1 ? '' : 's'}…`;
+      const loading = `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">${scanLabel}</td></tr>`;
       if (volBody) volBody.innerHTML = loading;
       if (oiBody) oiBody.innerHTML = loading;
 
@@ -13225,8 +13390,8 @@
         // Run requests in chunks to avoid hammering the upstream API.
         const CHUNK = 8;
         const allContracts = [];
-        for (let i = 0; i < SP500_SCAN_SYMBOLS.length; i += CHUNK) {
-          const slice = SP500_SCAN_SYMBOLS.slice(i, i + CHUNK);
+        for (let i = 0; i < symbolsToScan.length; i += CHUNK) {
+          const slice = symbolsToScan.slice(i, i + CHUNK);
           const results = await Promise.all(slice.map(fetchSymbol));
           for (const list of results) {
             for (const row of list) allContracts.push(row);
