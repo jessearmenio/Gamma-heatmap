@@ -7505,7 +7505,7 @@
           <div id="sp500-flow-filter-bar">
             <span class="sp500-ff-label">S&amp;P 500 Filter</span>
             <input id="sp500-flow-filter-input" type="text"
-              placeholder="Filter ticker NVDA, exclude ticker -NVDA"
+              placeholder="e.g. NVDA, SPY, GOOGL  — or  -NVDA, -AAPL  to exclude"
               spellcheck="false" autocomplete="off" />
             <button type="button" id="sp500-flow-filter-clear" onclick="sp500FlowFilterClear()">Clear</button>
             <span id="sp500-flow-filter-status" class="sp500-ff-status"></span>
@@ -13227,18 +13227,41 @@
       }).join('');
     }
 
-    // ─── S&P 500 Highest Vol / OI Contracts (scans all 100 top SP500 chains) ──
+    // ─── S&P 500 Highest Vol / OI Contracts (scans top 300 SP500 chains by weight) ──
+    // Top 300 S&P 500 names by index weight (sourced from Slickcharts).
+    // Order is roughly market-cap-weighted so the heaviest hitters are scanned first
+    // when running in chunks — ensures the top contracts surface fastest.
     const SP500_SCAN_SYMBOLS = [
-      "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "BRK.B", "LLY", "AVGO",
-      "JPM", "V", "XOM", "UNH", "MA", "COST", "HD", "PG", "NFLX", "MRK",
-      "ABBV", "CVX", "KO", "ADBE", "PEP", "BAC", "AMD", "TMO", "WMT", "CSCO",
-      "MCD", "CRM", "ACN", "LIN", "DHR", "ABT", "WFC", "INTU", "TXN", "QCOM",
-      "PM", "DIS", "IBM", "AMGN", "GE", "NOW", "CAT", "GS", "RTX", "ISRG",
-      "BLK", "BKNG", "SPGI", "AXP", "PLD", "SYK", "T", "LOW", "PGR", "UNP",
-      "HON", "TJX", "VRTX", "MDT", "SCHW", "C", "ELV", "LMT", "DE", "ADP",
-      "GILD", "MMC", "ADI", "ETN", "REGN", "MO", "CB", "SO", "ZTS", "CI",
-      "BSX", "DUK", "ICE", "BDX", "CL", "CSX", "PYPL", "ITW", "WM", "EOG",
-      "PNC", "APD", "SHW", "MPC", "HCA", "AON", "MS", "FDX", "MAR", "SNPS"
+      "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "GOOG", "AVGO", "META", "TSLA", "BRK.B",
+      "WMT", "LLY", "JPM", "XOM", "JNJ", "V", "COST", "MA", "ORCL", "MU",
+      "NFLX", "CVX", "ABBV", "BAC", "PLTR", "AMD", "CAT", "PG", "HD", "KO",
+      "CSCO", "GE", "MRK", "AMAT", "LRCX", "MS", "RTX", "GS", "UNH", "WFC",
+      "PM", "INTC", "GEV", "LIN", "IBM", "TMUS", "MCD", "PEP", "VZ", "AXP",
+      "C", "KLAC", "T", "NEE", "AMGN", "TMO", "ABT", "TJX", "TXN", "GILD",
+      "CRM", "DIS", "ISRG", "BA", "PFE", "SCHW", "APH", "COP", "ANET", "ADI",
+      "DE", "BLK", "UBER", "HON", "UNP", "LMT", "ETN", "WELL", "QCOM", "DHR",
+      "BKNG", "LOW", "APP", "PANW", "CB", "SPGI", "BMY", "SYK", "PLD", "NEM",
+      "GLW", "ACN", "INTU", "PH", "COF", "VRTX", "PGR", "MDT", "MO", "DELL",
+      "SO", "NOW", "CME", "MCK", "HCA", "SBUX", "SNDK", "DUK", "WDC", "CEG",
+      "CMCSA", "VRT", "CRWD", "NOC", "EQIX", "ADBE", "HWM", "GD", "STX", "TT",
+      "WM", "CVS", "BSX", "ICE", "BX", "FCX", "WMB", "MAR", "FDX", "PWR",
+      "UPS", "BK", "MRSH", "JCI", "PNC", "REGN", "USB", "KKR", "ADP", "SHW",
+      "AMT", "MCO", "CDNS", "CSX", "ORLY", "ECL", "RCL", "MMM", "SNPS", "CMI",
+      "ABNB", "EOG", "ITW", "SLB", "EMR", "MDLZ", "KMI", "MSI", "VLO", "AEP",
+      "HLT", "ROST", "CRH", "CI", "MNST", "PSX", "MPC", "CL", "AON", "CTAS",
+      "WBD", "RSG", "GM", "TDG", "NKE", "LHX", "DASH", "ELV", "NSC", "APD",
+      "APO", "SRE", "HOOD", "TRV", "DLR", "PCAR", "COR", "TEL", "OXY", "SPG",
+      "FTNT", "BKR", "CIEN", "TFC", "O", "AFL", "AZO", "CTVA", "AJG", "MPWR",
+      "LITE", "OKE", "D", "TGT", "FAST", "FANG", "ALL", "TRGP", "GWW", "VST",
+      "ETR", "EA", "FIX", "EXC", "ADSK", "AME", "CAH", "KEYS", "ZTS", "NXPI",
+      "TER", "XEL", "PSA", "NDAQ", "CARR", "EW", "F", "COHR", "MET", "URI",
+      "COIN", "GRMN", "IDXX", "FOXA", "MSCI", "MCHP", "VRSK", "FTV", "DD", "DTE",
+      "YUM", "CMG", "LULU", "ROK", "EXR", "CCI", "A", "KMB", "STT", "SCCO",
+      "TRP", "ENPH", "DLTR", "CNC", "HUM", "RJF", "DOV", "GIS", "STZ", "PEG",
+      "EBAY", "TSCO", "AVB", "IR", "ED", "GEHC", "MTB", "CHTR", "KDP", "FIS",
+      "RMD", "EXE", "DOW", "EFX", "CSGP", "CCL", "FICO", "WTW", "DAL", "VLTO",
+      "IRM", "K", "WAB", "MTD", "CINF", "OTIS", "TROW", "WBA", "KVUE", "DG",
+      "NUE", "LDOS", "GPN", "ROL", "IT", "EQR", "PRU", "ON", "WST", "RF"
     ];
 
     // Parse the S&P 500 flow filter input. Tickers are comma- or space-separated.
@@ -13388,7 +13411,8 @@
         };
 
         // Run requests in chunks to avoid hammering the upstream API.
-        const CHUNK = 8;
+        // Bumped to 12 for the 300-name scan so total wall-clock time stays reasonable.
+        const CHUNK = 12;
         const allContracts = [];
         for (let i = 0; i < symbolsToScan.length; i += CHUNK) {
           const slice = symbolsToScan.slice(i, i + CHUNK);
