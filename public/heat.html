@@ -7446,7 +7446,7 @@
             <!-- Highest Volume Contracts -->
             <div class="flow-analytics-card">
               <div class="flow-analytics-card-header">
-                <span>SPY</span>
+                <span>S&amp;P 500</span>
                 <span style="color:var(--text3);font-weight:400;">Highest Volume Contracts</span>
                 <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-vol-updated"></span>
               </div>
@@ -7454,6 +7454,7 @@
                 <table class="fan-table" id="spy-vol-table">
                   <thead>
                     <tr>
+                      <th>Symbol</th>
                       <th>Strike</th>
                       <th>C/P</th>
                       <th>Expiry</th>
@@ -7467,7 +7468,7 @@
                   </thead>
                   <tbody id="spy-vol-body">
                     <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
+                      <td colspan="10" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -7477,7 +7478,7 @@
             <!-- Highest OI Contracts -->
             <div class="flow-analytics-card">
               <div class="flow-analytics-card-header">
-                <span>SPY</span>
+                <span>S&amp;P 500</span>
                 <span style="color:var(--text3);font-weight:400;">Highest OI Contracts</span>
                 <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-oi-updated"></span>
               </div>
@@ -7485,6 +7486,7 @@
                 <table class="fan-table" id="spy-oi-table">
                   <thead>
                     <tr>
+                      <th>Symbol</th>
                       <th>Strike</th>
                       <th>C/P</th>
                       <th>Expiry</th>
@@ -7498,7 +7500,7 @@
                   </thead>
                   <tbody id="spy-oi-body">
                     <tr>
-                      <td colspan="9" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
+                      <td colspan="10" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -13096,55 +13098,87 @@
       }).join('');
     }
 
-    // ─── SPY Highest Vol / OI Contracts ────────────────────────────────────────
+    // ─── S&P 500 Highest Vol / OI Contracts (scans all 100 top SP500 chains) ──
+    const SP500_SCAN_SYMBOLS = [
+      "AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOGL", "GOOG", "BRK.B", "LLY", "AVGO",
+      "JPM", "V", "XOM", "UNH", "MA", "COST", "HD", "PG", "NFLX", "MRK",
+      "ABBV", "CVX", "KO", "ADBE", "PEP", "BAC", "AMD", "TMO", "WMT", "CSCO",
+      "MCD", "CRM", "ACN", "LIN", "DHR", "ABT", "WFC", "INTU", "TXN", "QCOM",
+      "PM", "DIS", "IBM", "AMGN", "GE", "NOW", "CAT", "GS", "RTX", "ISRG",
+      "BLK", "BKNG", "SPGI", "AXP", "PLD", "SYK", "T", "LOW", "PGR", "UNP",
+      "HON", "TJX", "VRTX", "MDT", "SCHW", "C", "ELV", "LMT", "DE", "ADP",
+      "GILD", "MMC", "ADI", "ETN", "REGN", "MO", "CB", "SO", "ZTS", "CI",
+      "BSX", "DUK", "ICE", "BDX", "CL", "CSX", "PYPL", "ITW", "WM", "EOG",
+      "PNC", "APD", "SHW", "MPC", "HCA", "AON", "MS", "FDX", "MAR", "SNPS"
+    ];
+
     async function loadSpyContracts() {
       if (!isConnected) return;
       const [volBody, oiBody] = ['spy-vol-body', 'spy-oi-body'].map(id => document.getElementById(id));
-      const loading = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
+      const loading = `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">Scanning S&amp;P 500 chains…</td></tr>`;
       if (volBody) volBody.innerHTML = loading;
       if (oiBody) oiBody.innerHTML = loading;
 
       try {
-        // Wide chain: strikeCount=100 covers ~$50 both sides for SPY
-        const d = await apiGet('/api/chain?symbol=SPY&strikeCount=100&contractType=ALL&includeUnderlyingQuote=true');
-        if (!d.ok) throw new Error(d.error);
-        const chain = d.data;
-
-        // Flatten all contracts
-        const contracts = [];
-        const flatChain = (map, side) => {
-          if (!map) return;
-          Object.entries(map).forEach(([expKey, strikes]) => {
-            Object.entries(strikes).forEach(([strikeStr, arr]) => {
-              arr.forEach(c => {
-                const dte = c.daysToExpiration ?? 0;
-                // Expiry label from description or expKey
-                const expParts = expKey.split(':');
-                const expDate = expParts[0] || '';
-                contracts.push({
-                  strike: c.strikePrice || parseFloat(strikeStr),
-                  side,
-                  expiry: expDate,
-                  dte,
-                  last: c.last ?? 0,
-                  low52: c.lowPrice ?? c.low52Week ?? 0,
-                  high52: c.highPrice ?? c.high52Week ?? 0,
-                  bid: c.bid ?? 0,
-                  ask: c.ask ?? 0,
-                  volume: c.totalVolume || 0,
-                  oi: c.openInterest || 0,
+        // Flatten one symbol's chain into contract rows tagged with the symbol
+        const flattenChain = (chain, symbol) => {
+          const out = [];
+          const walk = (map, side) => {
+            if (!map) return;
+            Object.entries(map).forEach(([expKey, strikes]) => {
+              Object.entries(strikes).forEach(([strikeStr, arr]) => {
+                arr.forEach(c => {
+                  const dte = c.daysToExpiration ?? 0;
+                  const expDate = (expKey.split(':')[0]) || '';
+                  out.push({
+                    symbol,
+                    strike: c.strikePrice || parseFloat(strikeStr),
+                    side,
+                    expiry: expDate,
+                    dte,
+                    last: c.last ?? 0,
+                    low52: c.lowPrice ?? c.low52Week ?? 0,
+                    high52: c.highPrice ?? c.high52Week ?? 0,
+                    bid: c.bid ?? 0,
+                    ask: c.ask ?? 0,
+                    volume: c.totalVolume || 0,
+                    oi: c.openInterest || 0,
+                  });
                 });
               });
             });
-          });
+          };
+          walk(chain.callExpDateMap, 'CALL');
+          walk(chain.putExpDateMap, 'PUT');
+          return out;
         };
-        flatChain(chain.callExpDateMap, 'CALL');
-        flatChain(chain.putExpDateMap, 'PUT');
+
+        // Fetch chain for one symbol; return [] on failure so one bad ticker can't kill the scan.
+        const fetchSymbol = async (sym) => {
+          try {
+            const d = await apiGet(`/api/chain?symbol=${encodeURIComponent(sym)}&strikeCount=40&contractType=ALL&includeUnderlyingQuote=false`);
+            if (!d.ok || !d.data) return [];
+            return flattenChain(d.data, sym);
+          } catch (_) {
+            return [];
+          }
+        };
+
+        // Run requests in chunks to avoid hammering the upstream API.
+        const CHUNK = 8;
+        const allContracts = [];
+        for (let i = 0; i < SP500_SCAN_SYMBOLS.length; i += CHUNK) {
+          const slice = SP500_SCAN_SYMBOLS.slice(i, i + CHUNK);
+          const results = await Promise.all(slice.map(fetchSymbol));
+          for (const list of results) {
+            for (const row of list) allContracts.push(row);
+          }
+        }
 
         const renderRow = (c) => {
           const sideClass = c.side === 'CALL' ? 'call' : 'put';
           const lohi = (c.low52 || c.high52)
-            ? `$${c.low52.toFixed(2)}–$${c.high52.toFixed(2)}`
+            ? `$${(c.low52 || 0).toFixed(2)}–$${(c.high52 || 0).toFixed(2)}`
             : '—';
           const volDisplay = c.volume >= 1000
             ? `<span class="fan-vol-chip">${(c.volume / 1000).toFixed(0)}K</span>`
@@ -13152,7 +13186,6 @@
           const oiDisplay = c.oi >= 1000
             ? `<span class="fan-oi-chip">${(c.oi / 1000).toFixed(0)}K</span>`
             : c.oi.toLocaleString();
-          // Bid/ask spread as % of mid; show red% bar (ask side) + green fill
           const mid = (c.bid + c.ask) / 2;
           const askPct = mid > 0 ? Math.round(((c.ask - mid) / mid) * 100) : 0;
           const bidPct = 100 - askPct;
@@ -13161,11 +13194,12 @@
             `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>` +
             `</div>`;
           return `<tr>
+            <td><b>${c.symbol}</b></td>
             <td><b>$${c.strike.toFixed(0)}</b></td>
             <td class="${sideClass}">${c.side}</td>
             <td style="color:var(--text3);">${c.expiry}</td>
             <td style="color:var(--text3);">(${c.dte}D)</td>
-            <td>$${c.last.toFixed(2)}</td>
+            <td>$${(c.last || 0).toFixed(2)}</td>
             <td style="color:var(--text3);font-size:9px;">${lohi}</td>
             <td>${volDisplay}</td>
             <td>${oiDisplay}</td>
@@ -13173,26 +13207,26 @@
           </tr>`;
         };
 
-        // Top 10 by volume
-        const byVol = [...contracts].sort((a, b) => b.volume - a.volume).slice(0, 10);
+        // Top 10 by volume across the full S&P 500 scan
+        const byVol = [...allContracts].sort((a, b) => b.volume - a.volume).slice(0, 10);
         if (volBody) {
           volBody.innerHTML = byVol.length ? byVol.map(renderRow).join('') :
-            `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
+            `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-vol-updated');
           if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
-        // Top 10 by OI
-        const byOI = [...contracts].sort((a, b) => b.oi - a.oi).slice(0, 10);
+        // Top 10 by OI across the full S&P 500 scan
+        const byOI = [...allContracts].sort((a, b) => b.oi - a.oi).slice(0, 10);
         if (oiBody) {
           oiBody.innerHTML = byOI.length ? byOI.map(renderRow).join('') :
-            `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
+            `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-oi-updated');
           if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
       } catch (e) {
-        const errHtml = `<tr><td colspan="9" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
+        const errHtml = `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
         if (volBody) volBody.innerHTML = errHtml;
         if (oiBody) oiBody.innerHTML = errHtml;
         ovLogTerminalError('SPY_CONTRACTS', e.message);
