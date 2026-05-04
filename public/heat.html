@@ -10221,36 +10221,17 @@
       renderCalendarDayPanel(dayIso, dayEvents);
     }
 
-function renderCalendarLegend() {
-  const legend = document.getElementById('calendar-legend');
-  if (!legend) return;
+    function renderCalendarLegend() {
+      const legend = document.getElementById('calendar-legend');
+      if (!legend) return;
 
-  legend.innerHTML = `
-    <label class="cal-legend-item">
-      <span class="cal-legend-dot" style="background:#ff97aa"></span>
-      High Impact
-      <input type="checkbox" data-calendar-filter="high" ${calendarEventFilters.high ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
-    </label>
-
-    <label class="cal-legend-item">
-      <span class="cal-legend-dot" style="background:#ffd98d"></span>
-      Medium Impact
-      <input type="checkbox" data-calendar-filter="med" ${calendarEventFilters.med ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
-    </label>
-
-    <label class="cal-legend-item">
-      <span class="cal-legend-dot" style="background:#3bdcff"></span>
-      Lower Impact
-      <input type="checkbox" data-calendar-filter="low" ${calendarEventFilters.low ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
-    </label>
-
-    <label class="cal-legend-item">
-      <span class="cal-legend-dot" style="background:#22dd88"></span>
-      Earnings
-      <input type="checkbox" data-calendar-filter="earnings" ${calendarEventFilters.earnings ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
-    </label>
-  `;
-}
+      legend.innerHTML = `
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ff97aa"></span> High Impact</div>
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ffd98d"></span> Medium Impact</div>
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#3bdcff"></span> Lower Impact</div>
+        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#22dd88"></span>Earnings</div>
+      `;
+    }
 
     function getOrdinal(n) {
       if (n > 3 && n < 21) return n + "th";
