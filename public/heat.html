@@ -1909,6 +1909,33 @@
       gap: 8px;
     }
 
+    #calendar-event-filters {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-right: 6px;
+    }
+
+    .calendar-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .calendar-filter-pill input {
+      accent-color: var(--cyan);
+    }
+
     #calendar-view-toggle {
       display: flex;
       align-items: center;
@@ -8370,6 +8397,25 @@
                 <div id="calendar-month-label">—</div>
               </span>
               <div id="calendar-toolbar">
+                <div id="calendar-event-filters">
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="low" checked onchange="setCalendarEventFilter(this)">
+                    Low
+                  </label>
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="med" checked onchange="setCalendarEventFilter(this)">
+                    Medium
+                  </label>
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="high" checked onchange="setCalendarEventFilter(this)">
+                    High
+                  </label>
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="earnings" onchange="setCalendarEventFilter(this)">
+                    Earnings
+                  </label>
+                </div>
+
                 <div id="calendar-view-toggle">
                   <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
                     onclick="setCalendarViewMode('month')">Month</button>
@@ -8665,6 +8711,12 @@
     let calendarEarningsEvents = [];
     let calendarEarningsLoadedRange = "";
     let calendarSelectedDayIso = "";
+    let calendarEventFilters = {
+      low: true,
+      med: true,
+      high: true,
+      earnings: false
+    };
 
     // ═══════════════════════════════════════════════════════
     //  NAVIGATION
@@ -10101,9 +10153,29 @@
       }).format(d);
     }
 
+    function shouldShowCalendarEvent(ev) {
+      if (ev.type === 'EARNINGS' || ev.color === 'earnings') {
+        return !!calendarEventFilters.earnings;
+      }
+
+      const tier = ev.tier || ev.color;
+      return !!calendarEventFilters[tier];
+    }
+
+    function setCalendarEventFilter(input) {
+      const key = input?.dataset?.calendarFilter;
+      if (!key) return;
+
+      calendarEventFilters[key] = !!input.checked;
+      calendarSelectedDayIso = "";
+      closeCalendarDayPanel();
+      renderCalendar();
+    }
+
     function getEventsForCalendarDay(dayDate, allEvents) {
       return allEvents
         .filter(ev => toISODateLocal(dayDate) === ev.releaseDate)
+        .filter(shouldShowCalendarEvent)
         .sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
     }
 
