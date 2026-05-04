@@ -9726,6 +9726,7 @@
       FOMC: { tier: 'high', time: '1:00pm CST', color: 'high' },
       CPI: { tier: 'high', time: '7:30am CST', color: 'high' },
       PCE: { tier: 'high', time: '7:30am CST', color: 'high' },
+      NFP: { tier: 'high', time: '7:30am CST', color: 'high' },
       JOLTS: { tier: 'high', time: '9:00am CST', color: 'high' },
       'Manufacturing PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
       'Services PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
@@ -9848,6 +9849,19 @@
           time: CALENDAR_EVENT_META.PCE.time,
           tier: CALENDAR_EVENT_META.PCE.tier,
           color: CALENDAR_EVENT_META.PCE.color,
+          spanDays
+        });
+      });
+
+      NFP_EVENTS.forEach(ev => {
+        events.push({
+          type: 'NFP',
+          title: `${ev.labelMonth} Non-Farm Payroll`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META.NFP.time,
+          tier: CALENDAR_EVENT_META.NFP.tier,
+          color: CALENDAR_EVENT_META.NFP.color,
           spanDays
         });
       });
@@ -11035,6 +11049,22 @@
       { releaseDate: "2026-10-29", labelMonth: "Sep" },
       { releaseDate: "2026-11-25", labelMonth: "Oct" },
       { releaseDate: "2026-12-23", labelMonth: "Nov" }
+    ];
+
+    const NFP_EVENTS = [
+      { releaseDate: "2025-12-16", labelMonth: "Nov 2025" },
+      { releaseDate: "2026-01-09", labelMonth: "Dec 2025" },
+      { releaseDate: "2026-02-11", labelMonth: "Jan" },
+      { releaseDate: "2026-03-06", labelMonth: "Feb" },
+      { releaseDate: "2026-04-03", labelMonth: "Mar" },
+      { releaseDate: "2026-05-08", labelMonth: "Apr" },
+      { releaseDate: "2026-06-05", labelMonth: "May" },
+      { releaseDate: "2026-07-02", labelMonth: "Jun" },
+      { releaseDate: "2026-08-07", labelMonth: "Jul" },
+      { releaseDate: "2026-09-04", labelMonth: "Aug" },
+      { releaseDate: "2026-10-02", labelMonth: "Sep" },
+      { releaseDate: "2026-11-06", labelMonth: "Oct" },
+      { releaseDate: "2026-12-04", labelMonth: "Nov" }
     ];
 
     const MOPEX_EVENTS = [
