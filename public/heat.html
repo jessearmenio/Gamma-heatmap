@@ -10065,6 +10065,7 @@
     <div class="cal-tooltip-title">${ev.symbol} Earnings</div>
     <div class="cal-tooltip-line"><b>Symbol:</b> ${ev.symbol || "—"}</div>
     <div class="cal-tooltip-line"><b>Name:</b> ${ev.name || "—"}</div>
+    <div class="cal-tooltip-line"><b>Sector:</b> ${ev.sector || "—"}</div>
     <div class="cal-tooltip-line"><b>Report Date:</b> ${ev.reportDate || ev.releaseDate || "—"}</div>
     <div class="cal-tooltip-line"><b>Fiscal Quarter:</b> ${ev.year && ev.quarter ? `${ev.year} Q${ev.quarter}` : "—"}</div>
     <div class="cal-tooltip-line"><b>Estimate:</b> ${fmtNumMaybe(ev.estimate)}</div>
@@ -10155,7 +10156,7 @@
       } else {
         body.innerHTML = dayEvents.map(ev => {
           const detailLine = ev.type === 'EARNINGS'
-            ? `Symbol: ${ev.symbol || "—"} • Reporting: ${ev.releaseLabel || "—"}`
+            ? `Symbol: ${ev.symbol || "—"} • Sector: ${ev.sector || "—"} • Reporting: ${ev.releaseLabel || "—"}`
             : (ev.time || '—');
 
           const subDetail = ev.type === 'EARNINGS'

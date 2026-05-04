@@ -1020,6 +1020,7 @@ app.get("/api/earnings-calendar", async (req, res) => {
       const estimate = cols[idx.estimate] || "";
       const currency = cols[idx.currency] || "";
       const timeOfTheDay = cols[idx.timeOfTheDay] || "";
+      const sector = idx.sector != null ? (cols[idx.sector] || "") : "";
 
       const reportDate = normalizeIsoDate(reportDateRaw);
       const fiscalDateEnding = normalizeIsoDate(fiscalDateEndingRaw);
@@ -1040,6 +1041,7 @@ app.get("/api/earnings-calendar", async (req, res) => {
         estimate: estimate === "" ? null : Number(estimate),
         currency,
         timeOfTheDay,
+        sector,
         releaseLabel: formatReportingLabel(timeOfTheDay)
       };
     }).filter(ev =>
