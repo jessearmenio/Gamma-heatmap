@@ -8370,7 +8370,6 @@
                 <div id="calendar-month-label">—</div>
               </span>
               <div id="calendar-toolbar">
-                <div id="calendar-event-filters">
                 <div id="calendar-view-toggle">
                   <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
                     onclick="setCalendarViewMode('month')">Month</button>
@@ -10194,11 +10193,11 @@
       renderCalendarDayPanel(dayIso, dayEvents);
     }
 
-function renderCalendarLegend() {
-  const legend = document.getElementById('calendar-legend');
-  if (!legend) return;
+    function renderCalendarLegend() {
+      const legend = document.getElementById('calendar-legend');
+      if (!legend) return;
 
-  legend.innerHTML = `
+      legend.innerHTML = `
     <label class="cal-legend-item">
       <span class="cal-legend-dot" style="background:#ff97aa"></span>
       High Impact
@@ -10223,7 +10222,7 @@ function renderCalendarLegend() {
       <input type="checkbox" data-calendar-filter="earnings" ${calendarEventFilters.earnings ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
     </label>
   `;
-}
+    }
 
     function getOrdinal(n) {
       if (n > 3 && n < 21) return n + "th";
