@@ -1909,33 +1909,6 @@
       gap: 8px;
     }
 
-    #calendar-event-filters {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-right: 6px;
-    }
-
-    .calendar-filter-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 8px;
-      border-radius: 999px;
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      color: var(--text2);
-      font-size: 9px;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      cursor: pointer;
-    }
-
-    .calendar-filter-pill input {
-      accent-color: var(--cyan);
-    }
-
     #calendar-view-toggle {
       display: flex;
       align-items: center;
@@ -8398,24 +8371,6 @@
               </span>
               <div id="calendar-toolbar">
                 <div id="calendar-event-filters">
-                  <label class="calendar-filter-pill">
-                    <input type="checkbox" data-calendar-filter="low" checked onchange="setCalendarEventFilter(this)">
-                    Low
-                  </label>
-                  <label class="calendar-filter-pill">
-                    <input type="checkbox" data-calendar-filter="med" checked onchange="setCalendarEventFilter(this)">
-                    Medium
-                  </label>
-                  <label class="calendar-filter-pill">
-                    <input type="checkbox" data-calendar-filter="high" checked onchange="setCalendarEventFilter(this)">
-                    High
-                  </label>
-                  <label class="calendar-filter-pill">
-                    <input type="checkbox" data-calendar-filter="earnings" onchange="setCalendarEventFilter(this)">
-                    Earnings
-                  </label>
-                </div>
-
                 <div id="calendar-view-toggle">
                   <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
                     onclick="setCalendarViewMode('month')">Month</button>
@@ -10239,17 +10194,36 @@
       renderCalendarDayPanel(dayIso, dayEvents);
     }
 
-    function renderCalendarLegend() {
-      const legend = document.getElementById('calendar-legend');
-      if (!legend) return;
+function renderCalendarLegend() {
+  const legend = document.getElementById('calendar-legend');
+  if (!legend) return;
 
-      legend.innerHTML = `
-        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ff97aa"></span> High Impact</div>
-        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ffd98d"></span> Medium Impact</div>
-        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#3bdcff"></span> Lower Impact</div>
-        <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#22dd88"></span>Earnings</div>
-      `;
-    }
+  legend.innerHTML = `
+    <label class="cal-legend-item">
+      <span class="cal-legend-dot" style="background:#ff97aa"></span>
+      High Impact
+      <input type="checkbox" data-calendar-filter="high" ${calendarEventFilters.high ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
+    </label>
+
+    <label class="cal-legend-item">
+      <span class="cal-legend-dot" style="background:#ffd98d"></span>
+      Medium Impact
+      <input type="checkbox" data-calendar-filter="med" ${calendarEventFilters.med ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
+    </label>
+
+    <label class="cal-legend-item">
+      <span class="cal-legend-dot" style="background:#3bdcff"></span>
+      Lower Impact
+      <input type="checkbox" data-calendar-filter="low" ${calendarEventFilters.low ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
+    </label>
+
+    <label class="cal-legend-item">
+      <span class="cal-legend-dot" style="background:#22dd88"></span>
+      Earnings
+      <input type="checkbox" data-calendar-filter="earnings" ${calendarEventFilters.earnings ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
+    </label>
+  `;
+}
 
     function getOrdinal(n) {
       if (n > 3 && n < 21) return n + "th";
