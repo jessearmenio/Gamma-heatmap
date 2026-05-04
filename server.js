@@ -922,14 +922,42 @@ function parseCsvLine(line) {
   return out.map(v => v.trim());
 }
 
+function normalizeIsoDate(value) {
+  const v = String(value || "").trim();
+  if (!v) return "";
+
+  // Already ISO: YYYY-MM-DD
+  const isoMatch = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (isoMatch) {
+    const y = isoMatch[1];
+    const m = String(Number(isoMatch[2])).padStart(2, "0");
+    const d = String(Number(isoMatch[3])).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+
+  // M/D/YY or M/D/YYYY (US format used in earnings_calendar.csv)
+  const slashMatch = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2}|\d{4})$/);
+  if (slashMatch) {
+    const month = String(Number(slashMatch[1])).padStart(2, "0");
+    const day = String(Number(slashMatch[2])).padStart(2, "0");
+    let year = slashMatch[3];
+    if (year.length === 2) year = `20${year}`;
+    return `${year}-${month}-${day}`;
+  }
+
+  return "";
+}
+
 function quarterFromFiscalDate(fiscalDateEnding) {
-  if (!fiscalDateEnding) return { year: null, quarter: null };
+  const iso = normalizeIsoDate(fiscalDateEnding);
+  if (!iso) return { year: null, quarter: null };
 
-  const dt = new Date(fiscalDateEnding);
-  if (Number.isNaN(dt.getTime())) return { year: null, quarter: null };
-
-  const year = dt.getFullYear();
-  const month = dt.getMonth() + 1;
+  const [yearStr, monthStr] = iso.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) {
+    return { year: null, quarter: null };
+  }
 
   let quarter = null;
   if (month <= 3) quarter = 1;
@@ -987,11 +1015,14 @@ app.get("/api/earnings-calendar", async (req, res) => {
 
       const symbol = cols[idx.symbol] || "";
       const name = cols[idx.name] || "";
-      const reportDate = cols[idx.reportDate] || "";
-      const fiscalDateEnding = cols[idx.fiscalDateEnding] || "";
+      const reportDateRaw = cols[idx.reportDate] || "";
+      const fiscalDateEndingRaw = cols[idx.fiscalDateEnding] || "";
       const estimate = cols[idx.estimate] || "";
       const currency = cols[idx.currency] || "";
       const timeOfTheDay = cols[idx.timeOfTheDay] || "";
+
+      const reportDate = normalizeIsoDate(reportDateRaw);
+      const fiscalDateEnding = normalizeIsoDate(fiscalDateEndingRaw);
 
       const q = quarterFromFiscalDate(fiscalDateEnding);
 
