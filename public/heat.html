@@ -8398,6 +8398,24 @@
               </span>
               <div id="calendar-toolbar">
                 <div id="calendar-event-filters">
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="low" checked onchange="setCalendarEventFilter(this)">
+                    Low
+                  </label>
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="med" checked onchange="setCalendarEventFilter(this)">
+                    Medium
+                  </label>
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="high" checked onchange="setCalendarEventFilter(this)">
+                    High
+                  </label>
+                  <label class="calendar-filter-pill">
+                    <input type="checkbox" data-calendar-filter="earnings" onchange="setCalendarEventFilter(this)">
+                    Earnings
+                  </label>
+                </div>
+
                 <div id="calendar-view-toggle">
                   <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
                     onclick="setCalendarViewMode('month')">Month</button>
