@@ -7505,8 +7505,7 @@
           <div id="sp500-flow-filter-bar">
             <span class="sp500-ff-label">S&amp;P 500 Filter</span>
             <input id="sp500-flow-filter-input" value="-NVDA,-GOOGL,-AAPL,-AMZN,-TSLA" type="text"
-              placeholder="e.g. NVDA to filter, -NVDA to exclude"
-              spellcheck="false" autocomplete="off" />
+              placeholder="e.g. NVDA to filter, -NVDA to exclude" spellcheck="false" autocomplete="off" />
             <button type="button" id="sp500-flow-filter-clear" onclick="sp500FlowFilterClear()">Clear</button>
             <span id="sp500-flow-filter-status" class="sp500-ff-status"></span>
           </div>
@@ -13614,8 +13613,8 @@
                   const vol = c.totalVolume || 0;
                   const mid = ((c.bid || 0) + (c.ask || 0)) / 2;
                   const prem = mid * vol * 100;
-                  if (side === 'CALL') { callOI += oi; totalPrem += prem; netPrem += prem; }
-                  else { putOI += oi; totalPrem += prem; netPrem -= prem; }
+                  if (side === 'CALL') { callOI += oi; totalPrem += prem; }
+                  else { putOI += oi; totalPrem += prem; }
                 });
               });
             });
@@ -13623,7 +13622,11 @@
           tallySide(ch.callExpDateMap, 'CALL');
           tallySide(ch.putExpDateMap, 'PUT');
           chainToday = {
-            callOI, putOI, totalOI: callOI + putOI, totalPrem, netPrem,
+            callOI,
+            putOI,
+            totalOI: callOI + putOI,
+            totalPrem,
+            netPrem: callOI - putOI,
             iv30: ch.volatility ?? null,
           };
         }
@@ -13681,7 +13684,9 @@
           const totalOiRaw = isToday && chainToday ? chainToday.totalOI : c.totalOi;
           const callOiRaw = isToday && chainToday ? chainToday.callOI : c.callOi;
           const putOiRaw = isToday && chainToday ? chainToday.putOI : c.putOi;
-          const netPremRaw = isToday && chainToday ? chainToday.netPrem : c.netPrem;
+          const netPremRaw = callOiRaw != null && putOiRaw != null
+            ? Number(callOiRaw) - Number(putOiRaw)
+            : (isToday && chainToday ? chainToday.netPrem : c.netPrem);
           const totalPremRaw = isToday && chainToday ? chainToday.totalPrem : c.totalPrem;
           const vol30Raw = isToday && chainToday?.iv30 != null ? chainToday.iv30 : c.vol30d;
 
@@ -13689,7 +13694,7 @@
           const oiChgPct = c.oiChangePct != null ? fmtPct(Number(c.oiChangePct)) : '—';
           const callOI = callOiRaw != null ? fmtM(Number(callOiRaw)) : '—';
           const putOI = putOiRaw != null ? fmtM(Number(putOiRaw)) : '—';
-          const netPrem = netPremRaw != null ? fmtDollar(Number(netPremRaw)) : '—';
+          const netPrem = netPremRaw != null ? fmtM(Number(netPremRaw)) : '—';
           const totPrem = totalPremRaw != null ? fmtDollar(Number(totalPremRaw)) : '—';
 
           const ivr = c.ivr != null ? fmtPct(Number(c.ivr)) : '—';
