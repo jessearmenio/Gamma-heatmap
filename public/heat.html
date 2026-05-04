@@ -13482,7 +13482,43 @@
 
     // ─── Historical SPY Data (14 trading days) ──────────────────────────────────
 
+    // NYSE/Nasdaq full-closure dates (YYYY-MM-DD) for 2025–2027.
+    // Source: NYSE Group official 2025/2026/2027 holiday calendar.
+    // Early-close days (Black Friday, Christmas Eve, July 3 partials) are NOT included
+    // here — those are still trading days for daily-snapshot purposes.
+    const NYSE_HOLIDAYS = new Set([
+      // 2025
+      '2025-01-01', '2025-01-20', '2025-02-17', '2025-04-18', '2025-05-26',
+      '2025-06-19', '2025-07-04', '2025-09-01', '2025-11-27', '2025-12-25',
+      // 2026
+      '2026-01-01', '2026-01-19', '2026-02-16', '2026-04-03', '2026-05-25',
+      '2026-06-19', '2026-07-03', '2026-09-07', '2026-11-26', '2026-12-25',
+      // 2027
+      '2027-01-01', '2027-01-18', '2027-02-15', '2027-03-26', '2027-05-31',
+      '2027-06-18', '2027-07-05', '2027-09-06', '2027-11-25', '2027-12-24'
+    ]);
+
+    // Returns true only for U.S. equity trading days: Mon–Fri AND not on the NYSE
+    // holiday list. Input is a CT-local YYYY-MM-DD string (e.g. "2026-05-02").
+    function isUsEquityTradingDay(yyyymmdd) {
+      const s = String(yyyymmdd || '').slice(0, 10);
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+      if (!m) return false;
+      const y = +m[1], mo = +m[2], d = +m[3];
+      // Use local-time Date constructor so weekday math doesn't drift across timezones.
+      const dow = new Date(y, mo - 1, d).getDay(); // 0=Sun .. 6=Sat
+      if (dow === 0 || dow === 6) return false;
+      if (NYSE_HOLIDAYS.has(s)) return false;
+      return true;
+    }
+
     async function saveSpyDailyHistorySnapshot(row) {
+      // Hard guard: never persist a snapshot for a non-trading day. This prevents
+      // weekend/holiday rows from being written if the page is open on Sat/Sun or
+      // a market holiday — the original bug that put 5/2 (Sat) and 5/3 (Sun) in DB.
+      if (!row || !isUsEquityTradingDay(row.tradeDate)) {
+        return;
+      }
       try {
         await fetch('/api/spy-daily-history/snapshot', {
           method: 'POST',
@@ -13522,7 +13558,11 @@
           day: '2-digit'
         }).format(new Date());
 
-        const todayRow = liveLast ? {
+        // Only build a live "today" row on actual U.S. equity trading days.
+        // On weekends and NYSE holidays, the dashboard is open but no new bar
+        // should appear at the top of the matrix.
+        const todayIsTradingDay = isUsEquityTradingDay(todayCT);
+        const todayRow = (liveLast && todayIsTradingDay) ? {
           datetime: latestCandle?.datetime || Date.now(),
           tradeDate: todayCT,
           high: Number(liveToday?.highPrice || latestCandle?.high || liveLast),
@@ -13540,6 +13580,10 @@
 
         const dbHistoryRows = dbRows
           .filter(r => r.tradeDate !== todayCT)
+          // Drop any rows that may have been persisted on a non-trading day
+          // (weekend/holiday) by an older build of this page. This makes the
+          // matrix correct immediately even if old bad rows are still in Turso.
+          .filter(r => isUsEquityTradingDay(String(r.tradeDate || '').slice(0, 10)))
           .sort((a, b) => new Date(b.tradeDate) - new Date(a.tradeDate))
           .slice(0, 13)
           .map(r => ({
