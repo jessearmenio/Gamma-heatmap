@@ -2340,11 +2340,12 @@
     }
 
     .macro-divider {
-      color: var(--bg2);
-      margin: 0 6px;
+      color: #FFF;
+      margin: 0 4px 0 2px;
       font-weight: 900;
-      text-align: center;
-      justify-content: center;
+      font-size: 13px;
+      text-align: center !Important;
+      justify-content: center !important;
     }
 
     /* ── Overview: Row 1 – Score Ring + Chart ── */
@@ -11852,7 +11853,7 @@
         banner.className = '';
         const extraClass = getBannerClass(upcoming, sc?.VIX ?? 0);
         if (extraClass) banner.classList.add(extraClass);
-        textEl.innerHTML = parts.join('<span class="macro-divider">•</span>');
+        textEl.innerHTML = parts.join('<span class="macro-divider">|</span>');
       } else {
         banner.style.display = 'none';
         banner.className = '';
