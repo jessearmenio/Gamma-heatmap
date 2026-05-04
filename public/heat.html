@@ -2339,6 +2339,12 @@
       line-height: 1.5;
     }
 
+    .macro-divider {
+      color: var(--bg2);
+      margin: 0 6px;
+      font-weight: 700;
+    }
+
     /* ── Overview: Row 1 – Score Ring + Chart ── */
     .ov-row1 {
       display: grid;
@@ -11844,7 +11850,7 @@
         banner.className = '';
         const extraClass = getBannerClass(upcoming, sc?.VIX ?? 0);
         if (extraClass) banner.classList.add(extraClass);
-        textEl.textContent = parts.join('  |  ');
+        textEl.innerHTML = parts.join('<span class="macro-divider">•</span>');
       } else {
         banner.style.display = 'none';
         banner.className = '';
