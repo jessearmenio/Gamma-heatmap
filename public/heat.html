@@ -13576,8 +13576,6 @@
           ? dbHistRes.rows
           : [];
 
-        const liveTradeDate = String(todayRow?.tradeDate || latestTradeDate || '').slice(0, 10);
-
         const dbHistoryRows = dbRows
           .filter(r => r.tradeDate !== todayCT)
           // Drop any rows that may have been persisted on a non-trading day
