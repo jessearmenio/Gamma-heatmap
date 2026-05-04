@@ -10166,7 +10166,9 @@
           return `
         <div class="calendar-day-summary-item ${ev.color}">
           <div class="calendar-day-summary-top">
-            <div class="calendar-day-summary-name">${ev.title}</div>
+          <div class="calendar-day-summary-name">
+            ${ev.type === 'EARNINGS' ? `${ev.name || ev.symbol} earnings` : ev.title}
+          </div>
             <div class="calendar-day-summary-type">${ev.type}</div>
           </div>
           <div class="calendar-day-summary-time">${detailLine}</div>
@@ -10325,7 +10327,7 @@
           return `
               <div class="cal-event ${ev.color}"
                    ${ev.type === 'EARNINGS' ? `data-earnings="${payload}"` : ''}>
-                <span class="cal-event-name">${ev.title}</span>
+                   ${ev.type === 'EARNINGS' ? `${ev.name || ev.symbol} earnings` : ev.title}
                 <span class="cal-event-time">${ev.type === 'EARNINGS' ? ev.releaseLabel : ev.time}</span>
               </div>
             `;

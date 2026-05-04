@@ -1032,7 +1032,7 @@ app.get("/api/earnings-calendar", async (req, res) => {
         color: "earnings",
         symbol,
         name,
-        title: `${symbol} Earnings`,
+        title: `${name || symbol} earnings`,
         releaseDate: reportDate,
         reportDate,
         fiscalDateEnding,
