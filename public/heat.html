@@ -2,6 +2,10 @@
 <html lang="en">
 
 <head>
+  <script src="https://kit.fontawesome.com/4b245c958c.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Market Engine Dashboard</title>
@@ -71,16 +75,10 @@
     }
 
     body {
-      font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       color: var(--text);
       font-size: 12px;
       letter-spacing: 0.02em;
-    }
-
-    spana {
-      transform: scale(1.2);
-      margin-bottom: 1px;
-      /* refresh button home icon */
     }
 
     spanb {
@@ -91,11 +89,6 @@
     spanu {
       padding-right: 5px;
       /* Updated: {time} ago */
-    }
-
-    spanr {
-      transform: scale(1.2);
-      /* pause button home icon */
     }
 
     /* ── Scrollbars ── */
@@ -391,7 +384,7 @@
     }
 
     #topbar-left-stack {
-      width: 100px;
+      width: 105px;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -1687,7 +1680,7 @@
     #heat-table tbody td {
       padding: 4px 8px;
       text-align: right;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
       border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       white-space: nowrap;
@@ -3560,6 +3553,8 @@
       padding: 5px 9px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.03);
       white-space: nowrap;
+      line-height: 0.5;
+      font-size: 12px;
       vertical-align: middle;
     }
 
@@ -3891,6 +3886,7 @@
     .fan-table td {
       padding: 4px 8px;
       text-align: right;
+      font-size: 11px;
       color: var(--text2);
     }
 
@@ -3998,6 +3994,7 @@
       padding: 4px 8px;
       text-align: right;
       color: var(--text2);
+      font-size: 12px;
     }
 
     .fhist-table td:first-child {
@@ -6762,15 +6759,15 @@
         <div id="nav-toggle-stack">
           <div id="nav-top-controls">
             <button class="topbar-icon-btn" id="refresh-btn" onclick="refreshCurrentPage()" title="Refresh now">
-              <spana>↻</spana>
+              <i class="fa-solid fa-arrows-rotate"></i>
             </button>
             <button class="topbar-icon-btn" id="pause-btn" onclick="togglePause()" title="Pause auto-refresh">
-              <spanr>⏸</spanr>
+              <i class="fa-solid fa-pause"></i>
             </button>
           </div>
 
           <button id="nav-toggle" onclick="toggleNav()" title="Toggle sidebar">
-            &#9776;
+            <i class="fa-solid fa-bars"></i>
           </button>
         </div>
         <div id="topbar-left-stack">
@@ -13279,7 +13276,7 @@
 </td>
   <td style="color:var(--text3)">${r.daysToExpiration ?? '—'}</td>
   <td>${fmt(r.underlyingPrice)}</td>
-  <td style="color:${r.inTheMoney ? 'var(--green)' : 'var(--text3)'}">
+  <td style="color:${r.otmPct > 0 ? 'var(--green)' : r.otmPct < 0 ? 'var(--red)' : 'var(--text3)'}">
     ${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}
   </td>
   <td style="color:var(--text2);white-space:nowrap">
@@ -13839,7 +13836,14 @@
       tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--text3);">Loading ${sym} options chain…</td></tr>`;
 
       try {
-        const d = await apiGet(`/api/chain?symbol=${sym}&strikeCount=40&contractType=ALL&includeUnderlyingQuote=true`);
+        const today = new Date();
+        const toDate = new Date(today);
+        toDate.setFullYear(toDate.getFullYear() + 2);
+
+        const fromDate = today.toISOString().slice(0, 10);
+        const toDateStr = toDate.toISOString().slice(0, 10);
+
+        const d = await apiGet(`/api/chain?symbol=${encodeURIComponent(sym)}&strikeCount=40&contractType=ALL&includeUnderlyingQuote=true&fromDate=${fromDate}&toDate=${toDateStr}`);
         if (!d.ok) throw new Error(d.error);
 
         const chain = d.data;
@@ -14431,6 +14435,13 @@
         return '';
       }
 
+      function scSignalLabel(s, a) {
+        if (s === 'REL STRENGTH') {
+          return a.changePct < 0 ? 'REL WEAKNESS' : 'REL STRENGTH';
+        }
+        return s;
+      }
+
       // ── Filter + Sort ─────────────────────────────────────
       // ── Composite Score ──────────────────────────────
       function scComputeScore(a) {
@@ -14667,7 +14678,7 @@
           const volBarW = Math.min(a.volRatio / 10, 1) * 100;
           const volBarCls = a.volRatio > 5 ? 'extreme' : a.volRatio > 3 ? 'high' : '';
           const dayRangePct = Math.max(0, Math.min(a.dayRangePct * 100, 100));
-          const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${s}</span>`).join('');
+          const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${scSignalLabel(s, a)}</span>`).join('');
 
           return `<tr onclick="scOpenFlyout(${JSON.stringify(a).replace(/"/g, '&quot;')})">
             <td>
@@ -14724,7 +14735,7 @@
 
         // Build flyout content
         const volFillW = Math.min((a.volRatio / 5) * 100, 100);
-        const signalBadges = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${s}</span>`).join(' ');
+        const signalBadges = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${scSignalLabel(s, a)}</span>`).join(' ');
 
         const unusualText = scBuildNarrative(a);
 
@@ -15296,11 +15307,11 @@
       const topCalls = [...s].sort((a, b) => b.callOpenInterest - a.callOpenInterest).slice(0, 5);
       const topPuts = [...s].sort((a, b) => b.putOpenInterest - a.putOpenInterest).slice(0, 5);
       document.getElementById('sm-sweeps').innerHTML = `
-    <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP CALL OI STRIKES</div>
-    ${topCalls.map(r => `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--accent);font-weight:700">${r.strike}</span><span style="color:var(--text2)">${fmtK(r.callOpenInterest)} OI</span><span style="color:var(--text3);font-size:10px;">${fmtDollar(r.callGex)}</span></div>`).join('')}
+    <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP CALL OI STRIKES</div>
+    ${topCalls.map(r => `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--accent);font-weight:700">${r.strike}</span><span style="color:var(--text2)">${fmtK(r.callOpenInterest)} OI</span><span style="color:var(--text3);font-size:13px;">${fmtDollar(r.callGex)}</span></div>`).join('')}
     <hr class="sep" style="margin:8px 0;">
-    <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP PUT OI STRIKES</div>
-    ${topPuts.map(r => `<div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:#d470ff;font-weight:700">${r.strike}</span><span style="color:var(--text2)">${fmtK(r.putOpenInterest)} OI</span><span style="color:var(--text3);font-size:10px;">${fmtDollar(r.putGex)}</span></div>`).join('')}`;
+    <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP PUT OI STRIKES</div>
+    ${topPuts.map(r => `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:#d470ff;font-weight:700">${r.strike}</span><span style="color:var(--text2)">${fmtK(r.putOpenInterest)} OI</span><span style="color:var(--text3);font-size:13px;">${fmtDollar(r.putGex)}</span></div>`).join('')}`;
 
       // OI chart (canvas bar chart)
       drawOIChart();
