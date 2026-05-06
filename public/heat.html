@@ -1883,7 +1883,7 @@
     }
 
     #calendar-card {
-      height: 100%;
+      height: 127%;
       display: flex;
       flex-direction: column;
     }
@@ -2144,6 +2144,8 @@
       width: 360px;
       max-width: 360px;
       min-width: 360px;
+      height: 100%;
+      max-height: 100%;
       background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
       border: 1px solid var(--border3);
       border-radius: 8px;
@@ -2187,9 +2189,11 @@
     }
 
     #calendar-day-panel-body {
-      flex: 1;
+      flex: 1 1 auto;
       min-height: 0;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
       padding: 12px;
       display: flex;
       flex-direction: column;
@@ -3560,6 +3564,51 @@
 
     #flow-table tbody tr:hover td {
       background: rgba(255, 255, 255, 0.03);
+    }
+
+    #flow-table th.flow-ba-size-head,
+    #flow-table td.flow-ba-size-cell {
+      min-width: 82px;
+      width: 82px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    #flow-table th.flow-ba-visual-head,
+    #flow-table td.flow-ba-visual-cell {
+      min-width: 118px;
+      width: 118px;
+      text-align: center;
+    }
+
+    .flow-ba-bar {
+      display: grid;
+      grid-template-columns: 30px 1fr 30px;
+      align-items: center;
+      gap: 4px;
+      min-width: 108px;
+    }
+
+    .flow-ba-fill {
+      height: 7px;
+      border-radius: 999px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .flow-ba-pct {
+      font-size: 9px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .flow-ba-pct.bid {
+      color: var(--green);
+      text-align: right;
+    }
+
+    .flow-ba-pct.ask {
+      color: var(--red);
+      text-align: left;
     }
 
     #flow-table tbody tr.flow-row-call {
@@ -5249,6 +5298,11 @@
     }
 
     .sc-signal-badge.price-spike {
+      color: var(--green);
+      background: rgba(34, 221, 136, 0.1);
+    }
+
+    .sc-signal-badge.price-plunge {
       color: var(--red);
       background: rgba(255, 59, 92, 0.12);
     }
@@ -5261,6 +5315,11 @@
     .sc-signal-badge.rel-strength {
       color: var(--cyan);
       background: var(--cyansoft);
+    }
+
+    .sc-signal-badge.rel-weakness {
+      color: var(--yellow);
+      background: rgba(255, 215, 0, 0.12);
     }
 
     .sc-sector-badge {
@@ -7707,14 +7766,14 @@
                   <th data-col="premium">Premium</th>
                   <th data-col="volume">Volume</th>
                   <th data-col="oi">OI</th>
-                  <th data-col="basize">B/A Size</th>
+                  <th data-col="basize" class="flow-ba-size-head">B/A Size</th>
                   <th data-col="iv">IV%</th>
-                  <th data-col="flags">Flags</th>
+                  <th data-col="babar" class="flow-ba-visual-head">B/A Bar</th>
                 </tr>
               </thead>
               <tbody id="flow-tbody">
                 <tr>
-                  <td colspan="16" style="text-align:center;padding:32px;color:var(--text3);">Log in to view
+                  <td colspan="15" style="text-align:center;padding:32px;color:var(--text3);">Log in to view
                     options flow.</td>
                 </tr>
               </tbody>
@@ -8029,7 +8088,7 @@
               </div>
               <div class="sc-range-group">
                 <span class="sc-filter-label">Min Vol Ratio</span>
-                <input type="range" class="sc-range" id="sc-vol-ratio-range" min="1" max="10" step="0.5" value="2">
+                <input type="range" class="sc-range" id="sc-vol-ratio-range" min="1" max="5" step="0.1" value="5">
                 <span class="sc-range-val" id="sc-vol-ratio-val">2.0x</span>
               </div>
               <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker:">
@@ -9956,21 +10015,35 @@
     }
 
     async function loadCalendarPage() {
-      document.getElementById("calendar-view-month-btn")?.classList.toggle("active", calendarViewMode === "month");
-      document.getElementById("calendar-view-week-btn")?.classList.toggle("active", calendarViewMode === "week");
-
-      await ensureCalendarEarningsLoaded();
-      renderCalendar();
-    }
-
-    function setCalendarViewMode(mode) {
-      calendarViewMode = mode === "week" ? "week" : "month";
+      calendarCursor = new Date();
 
       document.getElementById("calendar-view-month-btn")?.classList.toggle("active", calendarViewMode === "month");
       document.getElementById("calendar-view-week-btn")?.classList.toggle("active", calendarViewMode === "week");
 
       calendarSelectedDayIso = "";
       closeCalendarDayPanel();
+
+      await ensureCalendarEarningsLoaded();
+      renderCalendar();
+    }
+
+    async function setCalendarViewMode(mode) {
+      const nextMode = mode === "week" ? "week" : "month";
+      const modeChanged = calendarViewMode !== nextMode;
+
+      calendarViewMode = nextMode;
+
+      if (modeChanged && calendarViewMode === "week") {
+        calendarCursor = new Date();
+      }
+
+      document.getElementById("calendar-view-month-btn")?.classList.toggle("active", calendarViewMode === "month");
+      document.getElementById("calendar-view-week-btn")?.classList.toggle("active", calendarViewMode === "week");
+
+      calendarSelectedDayIso = "";
+      closeCalendarDayPanel();
+
+      await ensureCalendarEarningsLoaded();
       renderCalendar();
     }
 
@@ -13249,17 +13322,6 @@
         const expLabel = r.expKey?.split(':')[0]?.slice(5) ?? '—';
         const premClass = r.premium > 500000 ? 'flow-premium lg' : r.premium > 100000 ? 'flow-premium md' : 'flow-premium sm';
 
-        // Sentiment flags
-        let flags = '';
-        if (r.isBullish) flags += `<span class="flow-flag bullish">BULLISH</span>`;
-        if (r.isBearish) flags += `<span class="flow-flag bearish">BEARISH</span>`;
-        if (r.isSweep) flags += `<span class="flow-flag sweep">SWEEP</span>`;
-        if (r.isFloor) flags += `<span class="flow-flag floor">FLOOR</span>`;
-        if (r.isUnusual) flags += `<span class="flow-flag unusual">UNUSUAL</span>`;
-        if (r.isEarnings && r.sym !== 'SPY' && r.sym !== 'SPX' && r.sym !== 'SPXW') {
-          flags += `<span class="flow-flag earnings">EARN</span>`;
-        }
-
         return `<tr class="flow-row-${r.side.toLowerCase()}">
   <td style="color:var(--text3);white-space:nowrap">${now}</td>
 
@@ -13298,13 +13360,14 @@
     ${fmtK(r.openInterest)}
   </td>
   <td>
-  ${renderBidAskSizeBar(r.bidSize, r.askSize)}
+  <td class="flow-ba-size-cell" style="color:var(--text2)">
+    ${fmtContracts(r.bidSize)} / ${fmtContracts(r.askSize)}
   </td>
   <td class="flow-iv-cell" style="color:var(--text2)">
     ${r.volatility ? Number(r.volatility).toFixed(1) + '%' : '—'}
   </td>
-  <td class="flow-flags-cell" style="white-space:nowrap">
-    ${flags || '<span style="color:var(--text3)">—</span>'}
+  <td class="flow-ba-visual-cell">
+    ${renderBidAskSizeBar(r.bidSize, r.askSize)}
   </td>
 </tr>`;
       }).join('');
@@ -13833,7 +13896,7 @@
       if (!isConnected) return;
       const sym = (document.getElementById('flow-sym-input')?.value || 'SPY').toUpperCase();
       const tbody = document.getElementById('flow-tbody');
-      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--text3);">Loading ${sym} options chain…</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="15" style="text-align:center;padding:24px;color:var(--text3);">Loading ${sym} options chain…</td></tr>`;
 
       try {
         const today = new Date();
@@ -13934,7 +13997,7 @@
         loadSpyHistory();
 
       } catch (e) {
-        document.getElementById('flow-tbody').innerHTML = `<tr><td colspan="16" style="text-align:center;padding:24px;color:var(--red);">⚠ ${e.message}</td></tr>`;
+        document.getElementById('flow-tbody').innerHTML = `<tr><td colspan="15" style="text-align:center;padding:24px;color:var(--red);">⚠ ${e.message}</td></tr>`;
       }
     }
 
@@ -14427,11 +14490,11 @@
       function scChgCls(v) { return v > 0 ? 'up' : v < 0 ? 'dn' : 'flat'; }
       function scChgPfx(v) { return v > 0 ? '+' : ''; }
 
-      function scSignalClass(s) {
+      function scSignalClass(s, a) {
         if (s === 'VOL SPIKE') return 'vol-spike';
-        if (s === 'PRICE SPIKE') return 'price-spike';
+        if (s === 'PRICE SPIKE') return a.changePct < 0 ? 'price-plunge' : 'price-spike';
         if (s === 'BREAKOUT') return 'breakout';
-        if (s === 'REL STRENGTH') return 'rel-strength';
+        if (s === 'REL STRENGTH') return a.changePct < 0 ? 'rel-weakness' : 'rel-strength';
         return '';
       }
 
@@ -14439,6 +14502,11 @@
         if (s === 'REL STRENGTH') {
           return a.changePct < 0 ? 'REL WEAKNESS' : 'REL STRENGTH';
         }
+
+        if (s === 'PRICE SPIKE') {
+          return a.changePct < 0 ? 'PRICE PLUNGE' : 'PRICE SPIKE';
+        }
+
         return s;
       }
 
@@ -14504,7 +14572,7 @@
             if (needed && !a.signals.includes(needed)) return false;
           }
           // Vol ratio
-          if (a.volRatio < scMinVolRatio && !a.signals.includes('PRICE SPIKE') && !a.signals.includes('BREAKOUT') && !a.signals.includes('REL STRENGTH')) return false;
+          if (a.volRatio < scMinVolRatio) return false;
           // Search
           if (scSearchVal && !a.symbol.includes(scSearchVal.toUpperCase()) && !(a.name || '').toUpperCase().includes(scSearchVal.toUpperCase())) return false;
           // Price range
@@ -14678,7 +14746,7 @@
           const volBarW = Math.min(a.volRatio / 10, 1) * 100;
           const volBarCls = a.volRatio > 5 ? 'extreme' : a.volRatio > 3 ? 'high' : '';
           const dayRangePct = Math.max(0, Math.min(a.dayRangePct * 100, 100));
-          const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${scSignalLabel(s, a)}</span>`).join('');
+          const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s, a)}">${scSignalLabel(s, a)}</span>`).join('');
 
           return `<tr onclick="scOpenFlyout(${JSON.stringify(a).replace(/"/g, '&quot;')})">
             <td>
@@ -14735,7 +14803,7 @@
 
         // Build flyout content
         const volFillW = Math.min((a.volRatio / 5) * 100, 100);
-        const signalBadges = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s)}">${scSignalLabel(s, a)}</span>`).join(' ');
+        const signalBadges = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s, a)}">${scSignalLabel(s, a)}</span>`).join(' ');
 
         const unusualText = scBuildNarrative(a);
 
@@ -14850,7 +14918,11 @@
           parts.push(`${a.symbol} is trading on ${a.volRatio.toFixed(1)}x its 20-day average volume — a significant volume spike that often precedes a larger move or indicates institutional activity.`);
         }
         if (a.signals.includes('PRICE SPIKE')) {
-          parts.push(`The stock is up ${scFmt(Math.abs(a.changePct))}% today, a notable single-day price spike relative to its typical daily range.`);
+          parts.push(
+            a.changePct < 0
+              ? `The stock is down ${scFmt(Math.abs(a.changePct))}% today, a notable single-day price plunge relative to its typical daily range.`
+              : `The stock is up ${scFmt(Math.abs(a.changePct))}% today, a notable single-day price spike relative to its typical daily range.`
+          );
         }
         if (a.signals.includes('BREAKOUT')) {
           parts.push(`Price has broken above its 20-day high on elevated volume, a classic breakout signal.`);
@@ -14928,9 +15000,19 @@
         });
 
         document.getElementById('sc-vol-ratio-range').addEventListener('input', e => {
-          scMinVolRatio = parseFloat(e.target.value);
-          document.getElementById('sc-vol-ratio-val').textContent = scMinVolRatio.toFixed(1) + 'x';
-          scApplyFilters(); scUpdateKPIs(); scRenderTable();
+          const raw = parseFloat(e.target.value);
+
+          // Reverse behavior:
+          // slider LEFT  = least restrictive (1.0x)
+          // slider RIGHT = most restrictive (5.0x)
+          scMinVolRatio = 6 - raw;
+
+          document.getElementById('sc-vol-ratio-val').textContent =
+            scMinVolRatio.toFixed(1) + 'x';
+
+          scApplyFilters();
+          scUpdateKPIs();
+          scRenderTable();
         });
 
         document.getElementById('sc-search').addEventListener('input', e => {
