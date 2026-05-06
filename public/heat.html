@@ -12865,7 +12865,18 @@
 
     async function fetchGeoRisk() {
       try {
-        const r = await fetch(GEO_RISK_API_URL, { headers: { 'x-rapidapi-host': GEO_RISK_API_HOST, 'x-rapidapi-key': GEO_RISK_API_KEY } });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+        const r = await fetch(GEO_RISK_API_URL, {
+          signal: controller.signal,
+          headers: {
+            'x-rapidapi-host': GEO_RISK_API_HOST,
+            'x-rapidapi-key': GEO_RISK_API_KEY
+          }
+        });
+
+        clearTimeout(timeoutId);
         if (!r.ok) return null;
         const d = await r.json();
         const data = d.data || d;
