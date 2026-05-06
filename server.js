@@ -1757,4 +1757,45 @@ app.get("*", (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
+})
+app.get('/api/etf-history', async (req, res) => {
+  try {
+    if (!TURSODATABASEURL || !TURSOAUTHTOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+
+    const symbolsRaw = String(req.query.symbols || '').trim();
+    const limit = Math.min(Math.max(Number(req.query.limit || 130), 1), 400);
+    const startDate = String(req.query.startDate || '').trim();
+    const symbols = symbolsRaw
+      ? symbolsRaw.split(',').map(s => String(s || '').trim().toUpperCase()).filter(Boolean)
+      : [];
+
+    let sql = `
+      SELECT symbol, tradedate AS tradeDate, price, changepct AS changePct, volume
+      FROM etfhistory
+    `;
+    const where = [];
+    const args = [];
+
+    if (symbols.length) {
+      where.push(`symbol IN (${symbols.map(() => '?').join(',')})`);
+      args.push(...symbols);
+    }
+    if (startDate) {
+      where.push('tradedate >= ?');
+      args.push(startDate);
+    }
+    if (where.length) sql += ` WHERE ${where.join(' AND ')}`;
+    sql += ' ORDER BY tradedate DESC, symbol ASC LIMIT ?';
+    args.push(limit * Math.max(1, symbols.length || 1));
+
+    const result = await turso.execute({ sql, args });
+    res.json({ ok: true, rows: result.rows || [] });
+  } catch (error) {
+    console.error('ETF HISTORY READ ERROR:', error.message);
+    res.status(500).json({ ok: false, error: 'Failed to load ETF history.' });
+  }
 });
+
+;
