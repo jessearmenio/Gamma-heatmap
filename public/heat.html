@@ -1404,10 +1404,10 @@
 
     #ov-loading-fill {
       height: 100%;
-      width: 40%;
+      width: 0%;
       background: var(--accent);
       border-radius: 99px;
-      animation: ov-load-slide 1.2s ease-in-out infinite;
+      transition: width 0.25s ease;
     }
 
     @keyframes ov-load-slide {
@@ -6976,6 +6976,9 @@
                 <div id="ov-loading-fill"></div>
               </div>
               <div id="ov-loading-label">Loading market data&hellip;</div>
+              <div id="ov-loading-detail"
+                style="font-size:10px;color:var(--text3);letter-spacing:0.04em;text-transform:uppercase;">Starting...
+              </div>
             </div>
           </div>
           <div id="overview-error" class="error-banner" style="display:none;"></div>
@@ -12870,9 +12873,23 @@
       } catch { return null; }
     }
 
+    function ovSetLoadingProgress(pct, label, detail = '') {
+      const fill = document.getElementById('ov-loading-fill');
+      const labelEl = document.getElementById('ov-loading-label');
+      const detailEl = document.getElementById('ov-loading-detail');
+
+      const safePct = Math.max(0, Math.min(100, Number(pct) || 0));
+
+      if (fill) fill.style.width = `${safePct}%`;
+      if (labelEl) labelEl.textContent = label || 'Loading market data...';
+      if (detailEl) detailEl.textContent = detail || `${safePct}% complete`;
+    }
+
     function ovShowLoading() {
       const el = document.getElementById('ov-loading-overlay');
       if (el) el.style.display = 'flex';
+
+      ovSetLoadingProgress(5, 'Starting overview load...', 'Preparing dashboard requests');
     }
     function ovHideLoading() {
       const el = document.getElementById('ov-loading-overlay');
@@ -12886,12 +12903,32 @@
       ovShowLoading();
       ovInitTicker();
       ovClearTerminalErrors(); // fresh load = clear old errors
+
       try {
+        ovSetLoadingProgress(15, 'Loading market overview...', 'Fetching quotes, breadth, volatility, and historical data');
+
+        const ovPromise = apiGet('/api/marketoverview').then(r => {
+          ovSetLoadingProgress(55, 'Market overview loaded...', 'Processing quotes and historical map');
+          return r;
+        });
+
+        const geoPromise = fetchGeoRisk().then(r => {
+          ovSetLoadingProgress(70, 'Geo risk loaded...', 'Processing geopolitical risk stories');
+          return r;
+        });
+
+        const fearPromise = fetchFearGreed().then(r => {
+          ovSetLoadingProgress(82, 'Fear & Greed loaded...', 'Processing sentiment cache');
+          return r;
+        });
+
         const [ovData, geoRiskResult, fearGreedResult] = await Promise.all([
-          apiGet('/api/marketoverview'),
-          fetchGeoRisk(),
-          fetchFearGreed()
+          ovPromise,
+          geoPromise,
+          fearPromise
         ]);
+
+        ovSetLoadingProgress(92, 'Building dashboard...', 'Rendering overview cards and terminal analysis');
 
         if (!ovData.ok) {
           const msg = ovData.error || 'Overview load failed';
@@ -12934,6 +12971,7 @@
 
         // Also run old overview sections (options key levels + movers) using existing dashboard endpoint
         loadOverviewLegacy();
+        ovSetLoadingProgress(100, 'Overview complete', 'Dashboard ready');
         ovHideLoading();
 
       } catch (e) {
