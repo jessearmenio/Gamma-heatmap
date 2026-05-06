@@ -7760,7 +7760,7 @@
                   <th data-col="dte">DTE</th>
                   <th data-col="stock">Stock</th>
                   <th data-col="otm">%OTM</th>
-                  <th data-col="bidask">Bid/Ask</th>
+                  <th data-col="bidask">Spread</th>
                   <th data-col="spot">Current</th>
                   <th data-col="size">Size</th>
                   <th data-col="premium">Premium</th>
@@ -13342,7 +13342,7 @@
     ${r.otmPct !== null ? r.otmPct.toFixed(1) + '%' : '—'}
   </td>
   <td style="color:var(--text2);white-space:nowrap">
-    ${fmt(r.bid)} / ${fmt(r.ask)}
+    ${fmt(r.bid)} - ${fmt(r.ask)}
   </td>
   <td style="font-weight:700;color:var(--text)">
     ${fmt(r.last)}
