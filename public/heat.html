@@ -3888,6 +3888,48 @@
       color: var(--purple);
     }
 
+    .flow-scan-loading {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .flow-scan-loading-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--text2);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .flow-scan-progress-track {
+      height: 7px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border2);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .flow-scan-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, rgba(59, 220, 255, 0.35), var(--cyan));
+      border-radius: 999px;
+      transition: width 0.22s ease;
+    }
+
+    .flow-scan-loading-sub {
+      color: var(--text3);
+      font-size: 10px;
+      text-align: center;
+    }
+
     .fan-table-wrap {
       overflow-x: auto;
       max-height: 260px;
@@ -13504,11 +13546,34 @@
       }
 
       const scanLabel = filter.mode === 'all'
-        ? 'Scanning S&amp;P 500 chains…'
-        : `Scanning ${symbolsToScan.length} ticker${symbolsToScan.length === 1 ? '' : 's'}…`;
-      const loading = `<tr><td colspan="10" style="text-align:center;padding:16px;color:var(--text3);">${scanLabel}</td></tr>`;
-      if (volBody) volBody.innerHTML = loading;
-      if (oiBody) oiBody.innerHTML = loading;
+        ? 'Scanning S&amp;P 500 chains'
+        : `Scanning ${symbolsToScan.length} ticker${symbolsToScan.length === 1 ? '' : 's'}`;
+
+      const renderScanProgress = (done, total, currentLabel = 'Starting scan…') => {
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        const loading = `
+    <tr>
+      <td colspan="10" style="padding:18px 16px;color:var(--text3);">
+        <div class="flow-scan-loading">
+          <div class="flow-scan-loading-top">
+            <span>${scanLabel}</span>
+            <span>${pct}%</span>
+          </div>
+          <div class="flow-scan-progress-track">
+            <div class="flow-scan-progress-fill" style="width:${pct}%"></div>
+          </div>
+          <div class="flow-scan-loading-sub">${currentLabel}</div>
+        </div>
+      </td>
+    </tr>
+  `;
+
+        if (volBody) volBody.innerHTML = loading;
+        if (oiBody) oiBody.innerHTML = loading;
+      };
+
+      renderScanProgress(0, symbolsToScan.length, `Preparing ${symbolsToScan.length} ticker scan…`);
 
       try {
         // Flatten one symbol's chain into contract rows tagged with the symbol
@@ -13559,12 +13624,31 @@
         // Bumped to 12 for the 300-name scan so total wall-clock time stays reasonable.
         const CHUNK = 12;
         const allContracts = [];
+
         for (let i = 0; i < symbolsToScan.length; i += CHUNK) {
           const slice = symbolsToScan.slice(i, i + CHUNK);
+          const startNum = i + 1;
+          const endNum = Math.min(i + slice.length, symbolsToScan.length);
+
+          renderScanProgress(
+            i,
+            symbolsToScan.length,
+            `Loading ${slice.join(', ')} (${startNum}–${endNum} of ${symbolsToScan.length})`
+          );
+
           const results = await Promise.all(slice.map(fetchSymbol));
+
           for (const list of results) {
             for (const row of list) allContracts.push(row);
           }
+
+          renderScanProgress(
+            endNum,
+            symbolsToScan.length,
+            `Loaded through ${slice[slice.length - 1]} • ${allContracts.length.toLocaleString()} contracts found`
+          );
+
+          await new Promise(requestAnimationFrame);
         }
 
         const renderRow = (c) => {
