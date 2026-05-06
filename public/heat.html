@@ -1427,6 +1427,15 @@
       text-transform: uppercase;
     }
 
+    #ov-loading-percent {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 0.02em;
+      line-height: 1;
+      font-family: "SF Mono", "Consolas", monospace;
+    }
+
     #overview-page {
       position: relative;
     }
@@ -6972,6 +6981,7 @@
         <div id="overview-page" class="page active">
           <div id="ov-loading-overlay" style="display:none;">
             <div id="ov-loading-inner">
+              <div id="ov-loading-percent">0%</div>
               <div id="ov-loading-bar">
                 <div id="ov-loading-fill"></div>
               </div>
@@ -12877,10 +12887,12 @@
       const fill = document.getElementById('ov-loading-fill');
       const labelEl = document.getElementById('ov-loading-label');
       const detailEl = document.getElementById('ov-loading-detail');
+      const percentEl = document.getElementById('ov-loading-percent');
 
       const safePct = Math.max(0, Math.min(100, Number(pct) || 0));
 
       if (fill) fill.style.width = `${safePct}%`;
+      if (percentEl) percentEl.textContent = `${Math.round(safePct)}%`;
       if (labelEl) labelEl.textContent = label || 'Loading market data...';
       if (detailEl) detailEl.textContent = detail || `${safePct}% complete`;
     }
