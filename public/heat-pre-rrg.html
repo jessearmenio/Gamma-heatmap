@@ -4773,78 +4773,6 @@
       color: var(--cyan);
     }
 
-    #etf-rrg-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .rrg-tail {
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 0.35;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: 0.55;
-      vector-effect: non-scaling-stroke;
-    }
-
-    .rrg-tail-dot {
-      opacity: 0.7;
-    }
-
-    /* RRG header / control styling */
-    .etf-rrg-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .etf-rrg-head-left {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-    }
-
-    .etf-rrg-subtitle {
-      font-size: 10px;
-      color: var(--text3);
-      font-weight: 500;
-    }
-
-    .etf-rrg-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .etf-rrg-control {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 700;
-    }
-
-    .etf-rrg-control select {
-      background: #0d1016;
-      color: var(--text1);
-      border: 1px solid var(--border2);
-      border-radius: 4px;
-      padding: 3px 6px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
     .etf-table {
       width: 100%;
       border-collapse: collapse;
@@ -8061,31 +7989,9 @@
       ════════════════════════════════════ -->
         <div id="etfs-page" class="page" style="display:none;">
           <div class="card mb12" id="etf-rrg-card">
-            <div class="card-header etf-rrg-header">
-              <div class="etf-rrg-head-left">
-                <span class="card-title">ETF Relative Rotation</span>
-                <span class="etf-rrg-subtitle">Relative strength vs momentum</span>
-              </div>
-              <div class="etf-rrg-controls">
-                <label class="etf-rrg-control">
-                  <span>Timeframe</span>
-                  <select id="etf-rrg-timeframe" onchange="loadEtfs()">
-                    <option value="1m">1M</option>
-                    <option value="3m" selected>3M</option>
-                    <option value="6m">6M</option>
-                    <option value="1y">1Y</option>
-                  </select>
-                </label>
-                <label class="etf-rrg-control">
-                  <span>Tails</span>
-                  <select id="etf-rrg-tails" onchange="loadEtfs()">
-                    <option value="5">5</option>
-                    <option value="10" selected>10</option>
-                    <option value="15">15</option>
-                    <option value="20">20</option>
-                  </select>
-                </label>
-              </div>
+            <div class="card-header">
+              <span class="card-title">ETF Relative Rotation</span>
+              <span style="font-size:9px;color:var(--text3)">Relative strength vs momentum</span>
             </div>
             <div class="card-body">
               <div id="etf-rrg-wrap">
@@ -8097,7 +8003,6 @@
                 <div class="rrg-axis-v"></div>
                 <div class="rrg-axis-h"></div>
 
-                <svg id="etf-rrg-svg" aria-hidden="true"></svg>
                 <div id="etf-rrg-points"></div>
               </div>
             </div>
@@ -14318,13 +14223,8 @@
     }
 
     function etfQuadrant(row) {
-      // X = RS-Ratio deviation (rrgStrength), Y = RS-Momentum deviation (rrgMomentum)
-      // Top-Right (X>=0, Y>=0)  => Leading
-      // Top-Left  (X<0,  Y>=0)  => Improving
-      // Bot-Left  (X<0,  Y<0)   => Lagging
-      // Bot-Right (X>=0, Y<0)   => Weakening
-      const strength = Number(row.rrgStrength) || 0;
-      const momentum = Number(row.rrgMomentum) || 0;
+      const strength = Number(row.rrgStrength);
+      const momentum = Number(row.rrgMomentum);
 
       if (strength >= 0 && momentum >= 0) return 'leading';
       if (strength < 0 && momentum >= 0) return 'improving';
@@ -14332,120 +14232,28 @@
       return 'weakening';
     }
 
-    // ── JdK RS-Ratio / RS-Momentum (StockCharts methodology, simplified) ──
-    // Given a series of {tradeDate, price, spy} rows, returns an array of
-    // {tradeDate, strength, momentum} centered on 0 (i.e. "100" on the StockCharts scale).
-    //
-    //   RS         = (ETF / SPY) * 100
-    //   RS-Ratio   = z-score of EMA(RS) vs its rolling mean & stdev, scaled to ~±5
-    //               (centered on 0 here; add 100 for display)
-    //   RS-Momentum= rate of change of RS-Ratio over `momentumPeriod` bars
-    function ema(values, period) {
-      if (!values.length) return [];
-      const k = 2 / (period + 1);
-      const out = [values[0]];
-      for (let i = 1; i < values.length; i++) {
-        out.push(values[i] * k + out[i - 1] * (1 - k));
-      }
-      return out;
-    }
-
-    function computeRrgSeries(series, opts = {}) {
-      const ratioPeriod = opts.ratioPeriod || 14;       // EMA smoothing for RS
-      const lookback   = opts.lookback   || 63;        // ~3 months of trading days
-      const momentumPeriod = opts.momentumPeriod || 5; // ROC window for momentum
-
-      if (!Array.isArray(series) || series.length < 2) return [];
-
-      const rs = series.map(p => (p.price / p.spy) * 100);
-      const rsSmooth = ema(rs, ratioPeriod);
-
-      const result = [];
-      for (let i = 0; i < rsSmooth.length; i++) {
-        // rolling window for normalization
-        const start = Math.max(0, i - lookback + 1);
-        const window = rsSmooth.slice(start, i + 1);
-        const mean = window.reduce((s, v) => s + v, 0) / window.length;
-        const variance = window.reduce((s, v) => s + (v - mean) ** 2, 0) / Math.max(1, window.length);
-        const stdev = Math.sqrt(variance) || 1e-9;
-        // Scale z-score so typical values land in ~[-5, 5] (deviation around 100)
-        const ratioDev = ((rsSmooth[i] - mean) / stdev) * 2.5;
-        result.push({
-          tradeDate: series[i].tradeDate,
-          strength: ratioDev,
-          momentum: 0
-        });
-      }
-
-      // Momentum = ROC of RS-Ratio over `momentumPeriod` bars,
-      // smoothed lightly so the tail isn't too jagged.
-      const momRaw = result.map((p, i) => {
-        if (i < momentumPeriod) return 0;
-        return p.strength - result[i - momentumPeriod].strength;
-      });
-      const momSmooth = ema(momRaw, Math.max(2, Math.floor(momentumPeriod / 2)));
-      result.forEach((p, i) => { p.momentum = momSmooth[i]; });
-
-      return result;
-    }
-
     function renderEtfRrg(rows) {
       const mount = document.getElementById('etf-rrg-points');
-      const svg = document.getElementById('etf-rrg-svg');
       if (!mount) return;
-      if (!Array.isArray(rows) || !rows.length) {
-        mount.innerHTML = '';
-        if (svg) svg.innerHTML = '';
-        return;
-      }
 
-      // X axis = JdK RS-Ratio deviation (rrgStrength)
-      // Y axis = JdK RS-Momentum deviation (rrgMomentum)
-      // Both are centered at 0 (i.e. "100" on the StockCharts scale).
-      const allStrengths = rows.flatMap(r => [
-        Number(r.rrgStrength) || 0,
-        ...((r.tail || []).map(p => Number(p.strength) || 0))
-      ]);
-      const allMomentums = rows.flatMap(r => [
-        Number(r.rrgMomentum) || 0,
-        ...((r.tail || []).map(p => Number(p.momentum) || 0))
-      ]);
-      const maxAbsStrength = Math.max(0.5, ...allStrengths.map(Math.abs));
-      const maxAbsMomentum = Math.max(0.5, ...allMomentums.map(Math.abs));
-
-      const projectX = (s) => 50 + Math.max(-1, Math.min(1, (Number(s) || 0) / maxAbsStrength)) * 42;
-      const projectY = (m) => 50 - Math.max(-1, Math.min(1, (Number(m) || 0) / maxAbsMomentum)) * 42;
-
-      if (svg) {
-        svg.setAttribute('viewBox', '0 0 100 100');
-        svg.setAttribute('preserveAspectRatio', 'none');
-        svg.innerHTML = rows.map(row => {
-          const q = etfQuadrant(row);
-          const colorVar = q === 'leading' ? '--green' : q === 'improving' ? '--blue' : q === 'lagging' ? '--red' : '--yellow';
-          const tail = Array.isArray(row.tail) ? row.tail : [];
-          const points = tail.map(p => `${projectX(p.strength)},${projectY(p.momentum)}`).join(' ');
-          const dots = tail.slice(0, -1).map(p =>
-            `<circle class="rrg-tail-dot" cx="${projectX(p.strength)}" cy="${projectY(p.momentum)}" r="0.65" fill="currentColor"></circle>`
-          ).join('');
-          return `<g class="${q}" style="color:var(${colorVar})">${points ? `<polyline class="rrg-tail" points="${points}"></polyline>` : ''}${dots}</g>`;
-        }).join('');
-      }
+      const maxAbsStrength = Math.max(1, ...rows.map(r => Math.abs(Number(r.rrgStrength) || 0)));
+      const maxAbsMomentum = Math.max(1, ...rows.map(r => Math.abs(Number(r.rrgMomentum) || 0)));
 
       mount.innerHTML = rows.map(row => {
         const q = etfQuadrant(row);
-        const left = projectX(row.rrgStrength);
-        const top = projectY(row.rrgMomentum);
-        const active = row.symbol === etfSelectedSymbol ? 'active' : '';
 
-        // StockCharts displays RS-Ratio / RS-Momentum centered at 100.
-        const ratioDisplay = (100 + (Number(row.rrgStrength) || 0)).toFixed(2);
-        const momoDisplay = (100 + (Number(row.rrgMomentum) || 0)).toFixed(2);
+        const xNorm = Math.max(-1, Math.min(1, (Number(row.rrgMomentum) || 0) / maxAbsMomentum));
+        const yNorm = Math.max(-1, Math.min(1, (Number(row.rrgStrength) || 0) / maxAbsStrength));
+
+        const left = 50 + xNorm * 42;
+        const top = 50 - yNorm * 42;
+        const active = row.symbol === etfSelectedSymbol ? 'active' : '';
 
         return `
       <div
         class="rrg-point ${q} ${active}"
         style="left:${left}%;top:${top}%"
-        title="${row.symbol} | RS-Ratio ${ratioDisplay} | RS-Momentum ${momoDisplay}"
+        title="${row.symbol} | Strength ${row.rrgStrength.toFixed(2)} | Momentum ${row.rrgMomentum.toFixed(2)}"
         onclick="etfSelect('${row.symbol}')"
       >
         ${row.symbol}
@@ -14506,22 +14314,8 @@
 
       try {
         const symbols = ETF_LIST.map(x => x.symbol).join(',');
-        const timeframe = document.getElementById('etf-rrg-timeframe')?.value || '3m';
-        const tails = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 10));
-        const monthsMap = { '1m': 1, '3m': 3, '6m': 6, '1y': 12 };
-        const months = monthsMap[timeframe] || 3;
-        const start = new Date();
-        start.setMonth(start.getMonth() - months);
-        const startDate = start.toISOString().slice(0, 10);
-
-        const [resp, histResp, spyResp] = await Promise.all([
-          apiGet('/api/quotes?symbols=' + encodeURIComponent(symbols)),
-          apiGet('/api/etf-history?symbols=' + encodeURIComponent(symbols) + '&startDate=' + encodeURIComponent(startDate) + '&limit=600'),
-          apiGet('/api/spy-daily-history?limit=400')
-        ]);
+        const resp = await apiGet('/api/quotes?symbols=' + encodeURIComponent(symbols));
         const data = resp?.data || {};
-        const histRows = Array.isArray(histResp?.rows) ? histResp.rows : [];
-        const spyRows = Array.isArray(spyResp?.rows) ? spyResp.rows : [];
 
         const rows = ETF_LIST.map(etf => {
           const item = getEtfQuotePayload(data, etf.symbol) || {};
@@ -14560,60 +14354,12 @@
           };
         }).sort((a, b) => Number(b.pct || 0) - Number(a.pct || 0));
 
-        const spyMap = new Map(spyRows.map(r => [String(r.tradeDate), Number(r.close)]));
-        const historyBySymbol = histRows.reduce((acc, row) => {
-          const sym = String(row.symbol || '').toUpperCase();
-          if (!sym) return acc;
-          (acc[sym] ||= []).push(row);
-          return acc;
-        }, {});
-
-        // Tune RRG smoothing periods to the selected timeframe.
-        // Longer timeframes => slower smoothing & wider lookback (matches StockCharts daily defaults).
-        const rrgOpts = (() => {
-          switch (timeframe) {
-            case '1m': return { ratioPeriod: 5,  lookback: 21,  momentumPeriod: 3 };
-            case '6m': return { ratioPeriod: 14, lookback: 126, momentumPeriod: 5 };
-            case '1y': return { ratioPeriod: 21, lookback: 252, momentumPeriod: 10 };
-            case '3m':
-            default:   return { ratioPeriod: 10, lookback: 63,  momentumPeriod: 5 };
-          }
-        })();
+        const avgPct = rows.reduce((sum, r) => sum + (Number(r.pct) || 0), 0) / Math.max(1, rows.length);
+        const avgRelVol = rows.reduce((sum, r) => sum + (Number(r.relVol) || 0), 0) / Math.max(1, rows.length);
 
         rows.forEach(r => {
-          const series = (historyBySymbol[r.symbol] || [])
-            .map(h => ({
-              tradeDate: String(h.tradeDate),
-              price: Number(h.price),
-              spy: spyMap.get(String(h.tradeDate))
-            }))
-            .filter(h => Number.isFinite(h.price) && Number.isFinite(h.spy) && h.spy > 0)
-            .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
-
-          if (series.length >= 5) {
-            const rrg = computeRrgSeries(series, rrgOpts);
-            // Trim warm-up bars so the tail starts after smoothing has stabilized.
-            const warmup = Math.max(rrgOpts.ratioPeriod, rrgOpts.momentumPeriod);
-            const stable = rrg.slice(warmup);
-            const usable = stable.length ? stable : rrg;
-            const tail = usable.slice(-tails);
-            const last = tail[tail.length - 1] || usable[usable.length - 1];
-            r.tail = tail;
-            r.rrgStrength = Number(last?.strength || 0);
-            r.rrgMomentum = Number(last?.momentum || 0);
-          } else {
-            // Not enough history yet — fall back to a tiny single-point
-            // proxy from today's quote so the dot still appears on the chart.
-            const proxyStrength = Number(r.pct) || 0;
-            const proxyMomentum = ((Number(r.relVol) || 1) - 1) * 2;
-            r.tail = [{
-              tradeDate: new Date().toISOString().slice(0, 10),
-              strength: proxyStrength,
-              momentum: proxyMomentum
-            }];
-            r.rrgStrength = proxyStrength;
-            r.rrgMomentum = proxyMomentum;
-          }
+          r.rrgStrength = (Number(r.pct) || 0) - avgPct;
+          r.rrgMomentum = ((Number(r.relVol) || 0) - avgRelVol) * 2;
         });
 
         renderEtfRrg(rows);
