@@ -14415,7 +14415,20 @@
 
       const symbols = etfRrgState.symbols;
       if (!symbols.length) {
-        svg.innerHTML = '';
+        // Render an empty plot frame with a friendly hint instead of a blank box,
+        // so users can tell the chart is alive but waiting on history data.
+        svg.setAttribute('viewBox', '0 0 1000 600');
+        svg.innerHTML = `
+          <rect x="0" y="0" width="1000" height="600" fill="none"/>
+          <text x="500" y="285" text-anchor="middle" fill="rgba(255,255,255,0.55)"
+                style="font-size:18px;font-weight:600;letter-spacing:1px;">
+            Waiting for ETF history
+          </text>
+          <text x="500" y="315" text-anchor="middle" fill="rgba(255,255,255,0.35)"
+                style="font-size:12px;">
+            Need at least ≈10 trading days in etf_history to plot rotation.
+          </text>
+        `;
         if (text) text.textContent = 'No data yet';
         return;
       }
@@ -14650,6 +14663,8 @@
         const [resp, histResp, spyResp] = await Promise.all([
           apiGet('/api/quotes?symbols=' + encodeURIComponent(symbols)),
           apiGet('/api/etf-history?symbols=' + encodeURIComponent(symbols) + '&startDate=' + encodeURIComponent(startDate) + '&limit=8000'),
+          // Match the ETF history window so spyMap dates overlap with etf_history dates
+          // (the server caps at 5000; 320 trading days ≈ 14 months).
           apiGet('/api/spy-daily-history?limit=400')
         ]);
         const data = resp?.data || {};
@@ -14693,13 +14708,20 @@
           };
         }).sort((a, b) => Number(b.pct || 0) - Number(a.pct || 0));
 
-        const spyMap = new Map(spyRows.map(r => [String(r.tradeDate), Number(r.close)]));
+        // Normalize trade_date strings (some sources include a T-suffix) to YYYY-MM-DD.
+        const normDate = (d) => String(d || '').slice(0, 10);
+        const spyMap = new Map(
+          spyRows
+            .filter(r => Number.isFinite(Number(r.close)))
+            .map(r => [normDate(r.tradeDate), Number(r.close)])
+        );
         const historyBySymbol = histRows.reduce((acc, row) => {
           const sym = String(row.symbol || '').toUpperCase();
           if (!sym) return acc;
           (acc[sym] ||= []).push(row);
           return acc;
         }, {});
+        console.log('[ETF RRG] history rows:', histRows.length, '| symbols with history:', Object.keys(historyBySymbol).length, '| spy days:', spyMap.size);
 
         // Stable RRG smoothing — single fixed setting now that timeframe is
         // controlled by the slider scrubbing through weekly samples.
@@ -14710,12 +14732,56 @@
         etfRrgState.maxLen = 0;
         etfRrgState.latestDate = null;
 
+        // If the SPY history table is empty/sparse, build a synthetic SPY index from the
+        // average normalized price across all ETFs that day. This keeps the RRG working
+        // even when only etf_history has been backfilled.
+        const buildFallbackSpy = () => {
+          const byDate = new Map();
+          histRows.forEach(row => {
+            const d = normDate(row.tradeDate);
+            const p = Number(row.price);
+            if (!d || !Number.isFinite(p) || p <= 0) return;
+            const sym = String(row.symbol || '').toUpperCase();
+            if (!byDate.has(sym)) byDate.set(sym, new Map());
+            byDate.get(sym).set(d, p);
+          });
+          // Pick first available bar per symbol as a base, then average pct-of-base across symbols.
+          const bases = new Map();
+          for (const [sym, dateMap] of byDate.entries()) {
+            const sorted = Array.from(dateMap.entries()).sort((a,b) => a[0].localeCompare(b[0]));
+            if (sorted.length) bases.set(sym, sorted[0][1]);
+          }
+          const allDates = new Set();
+          for (const dateMap of byDate.values()) for (const d of dateMap.keys()) allDates.add(d);
+          const out = new Map();
+          for (const d of allDates) {
+            let sum = 0, n = 0;
+            for (const [sym, dateMap] of byDate.entries()) {
+              const v = dateMap.get(d);
+              const base = bases.get(sym);
+              if (Number.isFinite(v) && Number.isFinite(base) && base > 0) {
+                sum += v / base;
+                n++;
+              }
+            }
+            if (n > 0) out.set(d, (sum / n) * 100); // synthetic index ~100 at start
+          }
+          return out;
+        };
+
+        const usingFallbackSpy = spyMap.size < 30 && histRows.length > 0;
+        const effectiveSpy = usingFallbackSpy ? buildFallbackSpy() : spyMap;
+        if (usingFallbackSpy) {
+          console.warn('[ETF RRG] spy_daily_history sparse (' + spyMap.size + ' days) — using synthetic SPY index from ETF basket.');
+        }
+
         rows.forEach(r => {
-          const series = (historyBySymbol[r.symbol] || [])
+          const raw = historyBySymbol[r.symbol] || [];
+          const series = raw
             .map(h => ({
-              tradeDate: String(h.tradeDate),
+              tradeDate: normDate(h.tradeDate),
               price: Number(h.price),
-              spy: spyMap.get(String(h.tradeDate))
+              spy: effectiveSpy.get(normDate(h.tradeDate))
             }))
             .filter(h => Number.isFinite(h.price) && Number.isFinite(h.spy) && h.spy > 0)
             .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
@@ -14749,8 +14815,13 @@
             // keep it in the matrix table.
             r.rrgStrength = 0;
             r.rrgMomentum = 0;
+            if (raw.length > 0) {
+              console.log('[ETF RRG] ' + r.symbol + ': ' + raw.length + ' raw rows but ' + series.length + ' joined to SPY — skipped.');
+            }
           }
         });
+
+        console.log('[ETF RRG] symbols charted:', etfRrgState.symbols.length, '/ ' + rows.length);
 
         // Configure the timeline slider so 0 = head at the most recent week
         // and higher values scrub backward (one week per tick).

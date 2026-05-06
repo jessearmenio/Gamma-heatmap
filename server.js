@@ -1770,7 +1770,10 @@ app.get("/api/spy-daily-history", async (req, res) => {
       return res.json({ ok: true, rows: [] });
     }
 
-    const limit = Math.min(Number(req.query.limit || 13), 60);
+    // Default 13 days for compact displays, but allow up to 5000 days so the
+    // ETF Relative Rotation Graph can build a year+ of weekly samples that
+    // share dates with etf_history rows.
+    const limit = Math.min(Math.max(Number(req.query.limit) || 13, 1), 5000);
 
     const result = await turso.execute({
       sql: `
