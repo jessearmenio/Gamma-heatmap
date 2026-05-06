@@ -12900,7 +12900,11 @@
       const detailEl = document.getElementById('ov-loading-detail');
       const percentEl = document.getElementById('ov-loading-percent');
 
-      const safePct = Math.max(0, Math.min(100, Number(pct) || 0));
+      const requestedPct = Math.max(0, Math.min(100, Number(pct) || 0));
+      const currentPct = Number(fill?.dataset?.pct || 0);
+      const safePct = Math.max(currentPct, requestedPct);
+
+      if (fill) fill.dataset.pct = String(safePct);
 
       if (fill) fill.style.width = `${safePct}%`;
       if (percentEl) percentEl.textContent = `${Math.round(safePct)}%`;
@@ -12911,6 +12915,12 @@
     function ovShowLoading() {
       const el = document.getElementById('ov-loading-overlay');
       if (el) el.style.display = 'flex';
+
+      const fill = document.getElementById('ov-loading-fill');
+      if (fill) {
+        fill.dataset.pct = '0';
+        fill.style.width = '0%';
+      }
 
       ovSetLoadingProgress(5, 'Starting overview load...', 'Preparing dashboard requests');
     }
