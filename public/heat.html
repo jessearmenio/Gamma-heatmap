@@ -7989,9 +7989,31 @@
       ════════════════════════════════════ -->
         <div id="etfs-page" class="page" style="display:none;">
           <div class="card mb12" id="etf-rrg-card">
-            <div class="card-header">
-              <span class="card-title">ETF Relative Rotation</span>
-              <span style="font-size:9px;color:var(--text3)">Relative strength vs momentum</span>
+            <div class="card-header etf-rrg-header">
+              <div class="etf-rrg-head-left">
+                <span class="card-title">ETF Relative Rotation</span>
+                <span class="etf-rrg-subtitle">Relative strength vs momentum</span>
+              </div>
+              <div class="etf-rrg-controls">
+                <label class="etf-rrg-control">
+                  <span>Timeframe</span>
+                  <select id="etf-rrg-timeframe" onchange="loadEtfs()">
+                    <option value="1m">1M</option>
+                    <option value="3m" selected>3M</option>
+                    <option value="6m">6M</option>
+                    <option value="1y">1Y</option>
+                  </select>
+                </label>
+                <label class="etf-rrg-control">
+                  <span>Tails</span>
+                  <select id="etf-rrg-tails" onchange="loadEtfs()">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                  </select>
+                </label>
+              </div>
             </div>
             <div class="card-body">
               <div id="etf-rrg-wrap">
@@ -8003,6 +8025,7 @@
                 <div class="rrg-axis-v"></div>
                 <div class="rrg-axis-h"></div>
 
+                <svg id="etf-rrg-svg" aria-hidden="true"></svg>
                 <div id="etf-rrg-points"></div>
               </div>
             </div>
@@ -14232,89 +14255,63 @@
       return 'weakening';
     }
 
-    function etfRrgProjectPoint(strength, momentum, maxAbsStrength, maxAbsMomentum) {
-      const xNorm = Math.max(-1, Math.min(1, (Number(momentum) || 0) / maxAbsMomentum));
-      const yNorm = Math.max(-1, Math.min(1, (Number(strength) || 0) / maxAbsStrength));
-      return { left: 50 + xNorm * 42, top: 50 - yNorm * 42 };
-    }
-
-    function buildEtfRrgModel(historyRows, spyRows, tails = 10) {
-      const spyMap = new Map((spyRows || []).map(r => [String(r.tradeDate), Number(r.close)]));
-      const grouped = new Map();
-      (historyRows || []).forEach(r => {
-        const sym = String(r.symbol || '').toUpperCase();
-        if (!sym) return;
-        if (!grouped.has(sym)) grouped.set(sym, []);
-        grouped.get(sym).push({ tradeDate: String(r.tradeDate), price: Number(r.price), volume: Number(r.volume || 0), changePct: Number(r.changePct || 0) });
-      });
-      const out = [];
-      grouped.forEach((rows, symbol) => {
-        rows.sort((a, b) => String(a.tradeDate).localeCompare(String(b.tradeDate)));
-        const rsSeries = rows.map(r => {
-          const spy = spyMap.get(r.tradeDate);
-          if (!Number.isFinite(r.price) || !Number.isFinite(spy) || spy <= 0) return null;
-          return { tradeDate: r.tradeDate, rs: r.price / spy };
-        }).filter(Boolean);
-        if (rsSeries.length < 8) return;
-        const computed = rsSeries.map((pt, idx) => {
-          const rsWindow = rsSeries.slice(Math.max(0, idx - 4), idx + 1).map(x => x.rs);
-          const rsAvg = rsWindow.reduce((a, b) => a + b, 0) / rsWindow.length;
-          const ratio = rsAvg > 0 ? ((pt.rs / rsAvg) - 1) * 100 : 0;
-          const prior = idx > 0 ? rsSeries[idx - 1].rs : pt.rs;
-          const momentumRaw = prior > 0 ? ((pt.rs / prior) - 1) * 100 : 0;
-          const momWindow = [];
-          for (let j = Math.max(0, idx - 4); j <= idx; j++) {
-            const prev = j > 0 ? rsSeries[j - 1].rs : rsSeries[j].rs;
-            momWindow.push(prev > 0 ? ((rsSeries[j].rs / prev) - 1) * 100 : 0);
-          }
-          const momAvg = momWindow.reduce((a, b) => a + b, 0) / momWindow.length;
-          return { tradeDate: pt.tradeDate, strength: ratio, momentum: momentumRaw - momAvg };
-        });
-        const tail = computed.slice(-Math.max(2, tails));
-        if (!tail.length) return;
-        const last = tail[tail.length - 1];
-        out.push({ symbol, rrgStrength: last.strength, rrgMomentum: last.momentum, tail });
-      });
-      return out;
-    }
-
     function renderEtfRrg(rows) {
       const mount = document.getElementById('etf-rrg-points');
       const svg = document.getElementById('etf-rrg-svg');
-      if (!mount || !svg) return;
-      const maxAbsStrength = Math.max(1, ...rows.flatMap(r => (r.tail || []).map(p => Math.abs(Number(p.strength) || 0)).concat([Math.abs(Number(r.rrgStrength) || 0)])));
-      const maxAbsMomentum = Math.max(1, ...rows.flatMap(r => (r.tail || []).map(p => Math.abs(Number(p.momentum) || 0)).concat([Math.abs(Number(r.rrgMomentum) || 0)])));
-      svg.setAttribute('viewBox', '0 0 100 100');
-      svg.setAttribute('preserveAspectRatio', 'none');
-      svg.innerHTML = rows.map(row => {
-        const q = etfQuadrant(row);
-        const colorVar = q === 'leading' ? '--green' : q === 'improving' ? '--blue' : q === 'lagging' ? '--red' : '--yellow';
-        const pts = (row.tail || []).map(p => { const xy = etfRrgProjectPoint(p.strength, p.momentum, maxAbsStrength, maxAbsMomentum); return `${xy.left},${xy.top}`; }).join(' ');
-        const dots = (row.tail || []).slice(0, -1).map(p => { const xy = etfRrgProjectPoint(p.strength, p.momentum, maxAbsStrength, maxAbsMomentum); return `<circle class="rrg-tail-dot" cx="${xy.left}" cy="${xy.top}" r="0.65" fill="currentColor"></circle>`; }).join('');
-        return `<g class="${q}" style="color:var(${colorVar})"><polyline class="rrg-tail ${q}" points="${pts}"></polyline>${dots}</g>`;
-      }).join('');
+      if (!mount) return;
+      if (!Array.isArray(rows) || !rows.length) {
+        mount.innerHTML = '';
+        if (svg) svg.innerHTML = '';
+        return;
+      }
+
+      const maxAbsStrength = Math.max(1, ...rows.flatMap(r => [Math.abs(Number(r.rrgStrength) || 0), ...((r.tail || []).map(p => Math.abs(Number(p.strength) || 0)))]));
+      const maxAbsMomentum = Math.max(1, ...rows.flatMap(r => [Math.abs(Number(r.rrgMomentum) || 0), ...((r.tail || []).map(p => Math.abs(Number(p.momentum) || 0)))]));
+
+      if (svg) {
+        svg.setAttribute('viewBox', '0 0 100 100');
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.innerHTML = rows.map(row => {
+          const q = etfQuadrant(row);
+          const colorVar = q === 'leading' ? '--green' : q === 'improving' ? '--blue' : q === 'lagging' ? '--red' : '--yellow';
+          const tail = Array.isArray(row.tail) ? row.tail : [];
+          const points = tail.map(p => {
+            const xNorm = Math.max(-1, Math.min(1, (Number(p.momentum) || 0) / maxAbsMomentum));
+            const yNorm = Math.max(-1, Math.min(1, (Number(p.strength) || 0) / maxAbsStrength));
+            const left = 50 + xNorm * 42;
+            const top = 50 - yNorm * 42;
+            return `${left},${top}`;
+          }).join(' ');
+          const dots = tail.slice(0, -1).map(p => {
+            const xNorm = Math.max(-1, Math.min(1, (Number(p.momentum) || 0) / maxAbsMomentum));
+            const yNorm = Math.max(-1, Math.min(1, (Number(p.strength) || 0) / maxAbsStrength));
+            const left = 50 + xNorm * 42;
+            const top = 50 - yNorm * 42;
+            return `<circle class="rrg-tail-dot" cx="${left}" cy="${top}" r="0.65" fill="currentColor"></circle>`;
+          }).join('');
+          return `<g class="${q}" style="color:var(${colorVar})">${points ? `<polyline class="rrg-tail" points="${points}"></polyline>` : ''}${dots}</g>`;
+        }).join('');
+      }
+
       mount.innerHTML = rows.map(row => {
         const q = etfQuadrant(row);
-        const xy = etfRrgProjectPoint(row.rrgStrength, row.rrgMomentum, maxAbsStrength, maxAbsMomentum);
+        const xNorm = Math.max(-1, Math.min(1, (Number(row.rrgMomentum) || 0) / maxAbsMomentum));
+        const yNorm = Math.max(-1, Math.min(1, (Number(row.rrgStrength) || 0) / maxAbsStrength));
+        const left = 50 + xNorm * 42;
+        const top = 50 - yNorm * 42;
         const active = row.symbol === etfSelectedSymbol ? 'active' : '';
-        return `<div class="rrg-point ${q} ${active}" style="left:${xy.left}%;top:${xy.top}%" title="${row.symbol} | Strength ${row.rrgStrength.toFixed(2)} | Momentum ${row.rrgMomentum.toFixed(2)}" onclick="etfSelect('${row.symbol}')">${row.symbol}</div>`;
-      }).join('');
-    }
 
-    function etfApplyRrgFilters() {
-      const timeframe = document.getElementById('etf-rrg-timeframe')?.value || '3m';
-      const tails = Number(document.getElementById('etf-rrg-tails')?.value || 10);
-      const monthsMap = { '1m': 1, '3m': 3, '6m': 6, '1y': 12 };
-      const months = monthsMap[timeframe] || 3;
-      const start = new Date();
-      start.setMonth(start.getMonth() - months);
-      const startDate = start.toISOString().slice(0, 10);
-      const filteredEtf = (etfRrgState.historyRows || []).filter(r => String(r.tradeDate) >= startDate);
-      const filteredSpy = (etfRrgState.spyHistoryRows || []).filter(r => String(r.tradeDate) >= startDate);
-      const model = buildEtfRrgModel(filteredEtf, filteredSpy, tails).filter(r => etfRrgState.quoteRows.some(q => q.symbol === r.symbol));
-      renderEtfRrg(model);
-      if (!etfSelectedSymbol && model[0]) etfSelect(model[0].symbol);
-      else if (etfSelectedSymbol) etfSelect(etfSelectedSymbol);
+        return `
+      <div
+        class="rrg-point ${q} ${active}"
+        style="left:${left}%;top:${top}%"
+        title="${row.symbol} | Strength ${Number(row.rrgStrength || 0).toFixed(2)} | Momentum ${Number(row.rrgMomentum || 0).toFixed(2)}"
+        onclick="etfSelect('${row.symbol}')"
+      >
+        ${row.symbol}
+      </div>
+    `;
+      }).join('');
     }
 
     function etfSelect(symbol) {
@@ -14361,72 +14358,143 @@
 
       tbody.innerHTML = `
     <tr>
-      <td colspan="10" style="text-align:center;padding:20px;color:var(--text3);">Loading ETFs…</td>
-    </tr>`;
+      <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
+        Loading ETF quotes...
+      </td>
+    </tr>
+  `;
 
       try {
-        const etfSymbols = Object.keys(ETF_NAME_MAP);
-        const [quotesRes, etfHistRes, spyHistRes] = await Promise.all([
-          apiGet(`/api/quotes?symbols=${etfSymbols.join(',')}`),
-          apiGet(`/api/etf-history?symbols=${etfSymbols.join(',')}&limit=260`),
-          apiGet('/api/spy-daily-history?limit=260')
+        const symbols = ETF_LIST.map(x => x.symbol).join(',');
+        const timeframe = document.getElementById('etf-rrg-timeframe')?.value || '3m';
+        const tails = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 10));
+        const monthsMap = { '1m': 1, '3m': 3, '6m': 6, '1y': 12 };
+        const months = monthsMap[timeframe] || 3;
+        const start = new Date();
+        start.setMonth(start.getMonth() - months);
+        const startDate = start.toISOString().slice(0, 10);
+
+        const [resp, histResp, spyResp] = await Promise.all([
+          apiGet('/api/quotes?symbols=' + encodeURIComponent(symbols)),
+          apiGet('/api/etf-history?symbols=' + encodeURIComponent(symbols) + '&startDate=' + encodeURIComponent(startDate) + '&limit=600'),
+          apiGet('/api/spy-daily-history?limit=400')
         ]);
+        const data = resp?.data || {};
+        const histRows = Array.isArray(histResp?.rows) ? histResp.rows : [];
+        const spyRows = Array.isArray(spyResp?.rows) ? spyResp.rows : [];
 
-        if (!quotesRes?.ok) throw new Error(quotesRes?.error || 'Failed to load ETF quotes.');
+        const rows = ETF_LIST.map(etf => {
+          const item = getEtfQuotePayload(data, etf.symbol) || {};
+          const q = item.quote || {};
+          const f = item.fundamental || {};
+          const r = item.reference || {};
 
-        const quoteData = quotesRes.data || {};
-        const rows = etfSymbols.map(symbol => {
-          const payload = getEtfQuotePayload(quoteData, symbol);
-          const quote = payload?.quote || {};
-          const ref = payload?.reference || {};
-          const last = Number(quote.lastPrice ?? quote.mark ?? quote.closePrice ?? 0);
-          const changePct = Number(quote.netPercentChange ?? 0);
-          const change = Number(quote.netChange ?? 0);
-          const volume = Number(quote.totalVolume ?? 0);
-          const avgVolume = Number(ref.averageVolume ?? quote.averageDailyVolume10Day ?? quote.averageDailyVolume ?? 0);
-          const relVol = avgVolume > 0 ? volume / avgVolume : 0;
-          const low52 = Number(quote['52WeekLow'] ?? quote.fiftyTwoWeekLow ?? ref.week52Low ?? 0);
-          const high52 = Number(quote['52WeekHigh'] ?? quote.fiftyTwoWeekHigh ?? ref.week52High ?? 0);
-          const range52wPos = high52 > low52 && last > 0 ? ((last - low52) / (high52 - low52)) * 100 : 0;
+          const last = q.lastPrice ?? q.mark ?? q.closePrice;
+          const pct = q.netPercentChange ?? q.regularMarketPercentChange ?? 0;
+          const net = q.netChange ?? q.regularMarketNetChange ?? 0;
+          const volume = q.totalVolume ?? q.volume;
+          const avgVol = q.avgVolume ?? q.averageVolume ?? f.avgVolume ?? f.averageVolume;
+          const relVol = Number.isFinite(Number(volume)) && Number(avgVol) > 0 ? Number(volume) / Number(avgVol) : null;
+          const low = q.lowPrice ?? q.regularMarketDayLow;
+          const high = q.highPrice ?? q.regularMarketDayHigh;
+          const wLow = q['52WeekLow'] ?? q.week52Low;
+          const wHigh = q['52WeekHigh'] ?? q.week52High;
+          const wPos = Number.isFinite(Number(last)) && Number.isFinite(Number(wLow)) && Number.isFinite(Number(wHigh)) && Number(wHigh) > Number(wLow)
+            ? ((Number(last) - Number(wLow)) / (Number(wHigh) - Number(wLow))) * 100
+            : null;
+
           return {
-            symbol,
-            name: ETF_NAME_MAP[symbol] || ref.description || symbol,
+            ...etf,
+            displayName: r.description || etf.name,
             last,
-            change,
-            changePct,
+            pct,
+            net,
             volume,
-            avgVolume,
+            avgVol,
             relVol,
-            dayRange: `${formatCompact(quote.lowPrice ?? 0)} - ${formatCompact(quote.highPrice ?? 0)}`,
-            range52wPos,
-            _quotePayload: payload
+            low,
+            high,
+            wPos,
+            rrgStrength: 0,
+            rrgMomentum: 0
           };
-        }).sort((a, b) => b.changePct - a.changePct);
+        }).sort((a, b) => Number(b.pct || 0) - Number(a.pct || 0));
 
-        etfRrgState = {
-          quoteRows: rows,
-          historyRows: Array.isArray(etfHistRes?.rows) ? etfHistRes.rows : [],
-          spyHistoryRows: Array.isArray(spyHistRes?.rows) ? spyHistRes.rows : []
-        };
+        const spyMap = new Map(spyRows.map(r => [String(r.tradeDate), Number(r.close)]));
+        const historyBySymbol = histRows.reduce((acc, row) => {
+          const sym = String(row.symbol || '').toUpperCase();
+          if (!sym) return acc;
+          (acc[sym] ||= []).push(row);
+          return acc;
+        }, {});
 
-        tbody.innerHTML = rows.map(r => `
-      <tr data-symbol="${r.symbol}" onclick="etfSelect('${r.symbol}')">
-        <td class="etf-symbol">${r.symbol}</td>
-        <td class="etf-name">${r.name}</td>
-        <td>${formatCompact(r.last)}</td>
-        <td class="${r.changePct > 0 ? 'etf-up' : r.changePct < 0 ? 'etf-dn' : 'etf-flat'}">${formatSignedPct(r.changePct)}</td>
-        <td class="${r.change > 0 ? 'etf-up' : r.change < 0 ? 'etf-dn' : 'etf-flat'}">${formatSigned(r.change)}</td>
-        <td>${formatAbbrev(r.volume)}</td>
-        <td>${formatAbbrev(r.avgVolume)}</td>
-        <td>${r.relVol ? r.relVol.toFixed(2) + 'x' : '—'}</td>
-        <td>${r.dayRange}</td>
-        <td>${Number.isFinite(r.range52wPos) ? r.range52wPos.toFixed(0) + '%' : '—'}</td>
-      </tr>`).join('');
+        rows.forEach(r => {
+          const series = (historyBySymbol[r.symbol] || [])
+            .map(h => ({ tradeDate: String(h.tradeDate), price: Number(h.price), spy: spyMap.get(String(h.tradeDate)) }))
+            .filter(h => Number.isFinite(h.price) && Number.isFinite(h.spy) && h.spy > 0)
+            .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
 
-        etfApplyRrgFilters();
-        if (rows[0]) etfSelect(rows[0].symbol);
+          if (series.length >= 2) {
+            const relSeries = series.map(h => ({
+              tradeDate: h.tradeDate,
+              rs: (h.price / h.spy) * 100
+            }));
+            const rsAvg = relSeries.reduce((s, p) => s + p.rs, 0) / relSeries.length;
+            const normalized = relSeries.map((p, idx, arr) => {
+              const prev = idx > 0 ? arr[idx - 1].rs : p.rs;
+              return {
+                tradeDate: p.tradeDate,
+                strength: rsAvg ? ((p.rs / rsAvg) - 1) * 100 : 0,
+                momentum: prev ? ((p.rs / prev) - 1) * 100 : 0
+              };
+            });
+            const tail = normalized.slice(-tails);
+            const last = tail[tail.length - 1] || normalized[normalized.length - 1];
+            r.tail = tail;
+            r.rrgStrength = Number(last?.strength || 0);
+            r.rrgMomentum = Number(last?.momentum || 0);
+          } else {
+            r.tail = [{ strength: Number(r.pct) || 0, momentum: ((Number(r.relVol) || 1) - 1) * 10 }];
+            r.rrgStrength = Number(r.pct) || 0;
+            r.rrgMomentum = ((Number(r.relVol) || 1) - 1) * 10;
+          }
+        });
+
+        renderEtfRrg(rows);
+        saveEtfHistorySnapshot(rows);
+
+        tbody.innerHTML = rows.map(row => {
+          const tone = etfTone(row.pct);
+          const active = row.symbol === etfSelectedSymbol ? 'active' : '';
+          const quadrant = etfQuadrant(row);
+
+          return `
+        <tr class="${active}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
+          <td><span class="etf-symbol">${row.symbol}</span></td>
+          <td class="etf-name">${ETF_NAME_MAP[row.symbol] || row.displayName}</td>
+          <td>${etfNum(row.last, 2)}</td>
+          <td class="${tone}">${etfPct(row.pct)}</td>
+          <td class="${etfTone(row.net)}">${Number(row.net) > 0 ? '+' : ''}${etfNum(row.net, 2)}</td>
+          <td>${etfCompact(row.volume)}</td>
+          <td>${etfCompact(row.avgVol)}</td>
+          <td>${row.relVol == null ? '—' : row.relVol.toFixed(2) + 'x'}</td>
+          <td>${etfNum(row.low, 2)} / ${etfNum(row.high, 2)}</td>
+          <td>${row.wPos == null ? '—' : row.wPos.toFixed(0) + '%'}</td>
+        </tr>
+      `;
+        }).join('');
+
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--red);">${err.message || 'Failed to load ETFs.'}</td></tr>`;
+        tbody.innerHTML = `
+      <tr>
+        <td colspan="10" style="text-align:center;padding:24px;color:var(--red);">
+          ETF load failed: ${err.message}
+        </td>
+      </tr>
+    `;
+
+        const mount = document.getElementById('etf-rrg-points');
+        if (mount) mount.innerHTML = '';
       }
     }
 
