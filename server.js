@@ -83,6 +83,22 @@ async function initTurso() {
     )
   `);
 
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS GexHistory (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      dateRecorded TEXT NOT NULL UNIQUE,
+      kingGEX REAL,
+      callWall REAL,
+      putWall REAL,
+      netGamma REAL,
+      spyOpen REAL,
+      spyClose REAL,
+      spyChange REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
@@ -118,6 +134,47 @@ async function saveEtfSnapshot({ symbol, price, changePct, volume }) {
       Number.isFinite(Number(changePct)) ? Number(changePct) : null,
       Number.isFinite(Number(volume)) ? Number(volume) : null
     ]
+  });
+}
+
+async function saveGexHistorySnapshot(row) {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return;
+
+  await turso.execute({
+    sql: `
+      INSERT INTO GexHistory (
+        dateRecorded,
+        kingGEX,
+        callWall,
+        putWall,
+        netGamma,
+        spyOpen,
+        spyClose,
+        spyChange,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(dateRecorded)
+      DO UPDATE SET
+        kingGEX = excluded.kingGEX,
+        callWall = excluded.callWall,
+        putWall = excluded.putWall,
+        netGamma = excluded.netGamma,
+        spyOpen = excluded.spyOpen,
+        spyClose = excluded.spyClose,
+        spyChange = excluded.spyChange,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [
+      row.dateRecorded || getCstDateKey(),
+      row.kingGEX,
+      row.callWall,
+      row.putWall,
+      row.netGamma,
+      row.spyOpen,
+      row.spyClose,
+      row.spyChange
+    ].map(v => Number.isFinite(Number(v)) ? Number(v) : v ?? null)
   });
 }
 
@@ -1642,6 +1699,65 @@ function shouldSaveEtfCloseSnapshot() {
   // Save only after regular market close: 3:00pm CST/CT
   return true;
 }
+
+app.get("/api/gex-history", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+
+    const limit = Math.min(Math.max(Number(req.query.limit) || 30, 1), 500);
+
+    const result = await turso.execute({
+      sql: `
+        SELECT
+          dateRecorded,
+          kingGEX,
+          callWall,
+          putWall,
+          netGamma,
+          spyOpen,
+          spyClose,
+          spyChange
+        FROM GexHistory
+        ORDER BY dateRecorded DESC
+        LIMIT ?
+      `,
+      args: [limit]
+    });
+
+    res.json({
+      ok: true,
+      count: result.rows?.length || 0,
+      rows: result.rows || []
+    });
+  } catch (error) {
+    console.error("GEX HISTORY READ ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to load GEX history.",
+      details: error.message
+    });
+  }
+});
+
+app.post("/api/gex-history/snapshot", async (req, res) => {
+  try {
+    await saveGexHistorySnapshot(req.body || {});
+
+    res.json({
+      ok: true,
+      saved: 1
+    });
+  } catch (error) {
+    console.error("GEX HISTORY SAVE ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to save GEX history.",
+      details: error.message
+    });
+  }
+});
 
 // GET /api/etf-history?symbols=XLK,XLF,...&startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&limit=600
 // Reads daily ETF snapshots from the etf_history table and returns them oldest -> newest

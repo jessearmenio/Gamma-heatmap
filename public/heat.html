@@ -2328,7 +2328,6 @@
       color: var(--text3);
       font-size: 12px;
       cursor: pointer;
-
       transition: color 0.15s ease, transform 0.1s ease;
     }
 
@@ -8039,10 +8038,40 @@
               </div>
             </div>
           </div>
-          <div class="card">
+          <div class="card mb12">
             <div class="card-header"><span class="card-title">Open Interest by Strike (SPY)</span></div>
             <div class="card-body" id="sm-oi-chart">
               <canvas id="oi-chart" width="100%" height="180" style="width:100%;height:180px;"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">GEX History</span>
+              <span class="text-muted fs10">King GEX / Walls / SPY Change</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div class="matrix-wrap">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>King GEX</th>
+                      <th>Call Wall</th>
+                      <th>Put Wall</th>
+                      <th>Net Gamma</th>
+                      <th>SPY Open</th>
+                      <th>SPY Close</th>
+                      <th>SPY Change</th>
+                    </tr>
+                  </thead>
+                  <tbody id="gex-history-body">
+                    <tr>
+                      <td colspan="8" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -8950,7 +8979,10 @@
         case 'charting-page': loadCharting(); break;
         case 'etfs-page': loadEtfs(); break;
         case 'treasury-page': loadTreasury(); break;
-        case 'smart-page': loadSmartMoney(); break;
+        case 'smart-page':
+          loadSmartMoney();
+          loadGexHistory();
+          break;
         case 'darkpool-page': loadDarkPool(); break;
         case 'scanner-page': loadScanner(); break;
         case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
@@ -11178,6 +11210,14 @@
       if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
       if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + 'K';
       return String(n);
+    }
+    function fmtNumSmart(n, dec = 2) {
+      const v = Number(n);
+      if (!Number.isFinite(v)) return '—';
+      return v.toLocaleString('en-US', {
+        minimumFractionDigits: dec,
+        maximumFractionDigits: dec
+      });
     }
     function fmtDollar(n) {
       if (n == null || isNaN(n)) return '—';
@@ -16078,6 +16118,42 @@
 
       // OI chart (canvas bar chart)
       drawOIChart();
+    }
+
+    async function loadGexHistory() {
+      const tbody = document.getElementById('gex-history-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
+
+      try {
+        const res = await apiGet('/api/gex-history?limit=30');
+        const rows = Array.isArray(res.rows) ? res.rows : [];
+
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text3);">No GEX history saved yet.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = rows.map(r => {
+          const spyChange = Number(r.spyChange);
+
+          return `
+        <tr>
+          <td>${r.dateRecorded || '—'}</td>
+          <td>${fmtNumSmart(r.kingGEX, 0)}</td>
+          <td>${fmtNumSmart(r.callWall, 2)}</td>
+          <td>${fmtNumSmart(r.putWall, 2)}</td>
+          <td>${fmtNumSmart(r.netGamma, 0)}</td>
+          <td>${fmtNumSmart(r.spyOpen, 2)}</td>
+          <td>${fmtNumSmart(r.spyClose, 2)}</td>
+          <td class="${chgClass(spyChange)}">${chgPrefix(spyChange)}${fmtNumSmart(spyChange, 2)}%</td>
+        </tr>
+      `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--red);">Failed to load GEX history.</td></tr>`;
+      }
     }
 
     function drawOIChart() {
