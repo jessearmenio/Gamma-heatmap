@@ -949,7 +949,7 @@
       border-radius: 2px;
       display: flex;
       align-items: center;
-      padding: 0 4px;
+      padding: 2px 0px 0px 4px;
       font-size: 8px;
       font-weight: 700;
       letter-spacing: 0.04em;
@@ -12088,7 +12088,7 @@
       const upcoming = getMacroEventsForBanner().filter(ev => {
         if (ev.days > 5) return false;
 
-        if (ev.type === 'EARNINGS' && parseMarketCap(ev.marketCap) < 100e9) {
+        if (ev.type === 'EARNINGS' && parseMarketCap(ev.marketCap) < 40e9) {
           return false;
         }
 
