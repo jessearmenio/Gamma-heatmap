@@ -1,9 +1,5 @@
 node_modules
 .env
 .DS_Store
-public/old-heat.html
-old-server.js
-public/heatv1.html
-serverV1.js
-prior-versions
-public/heat-light-chart.html
+public/prior-versions
+mrkcap.py
