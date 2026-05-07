@@ -919,17 +919,23 @@ app.get("/api/heat", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const response = await fetchChain(requestedSymbol, {
-      contractType: req.query.contractType,
-      strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
-      includeUnderlyingQuote: false,
-      fromDate: req.query.fromDate,
-      toDate: req.query.toDate,
-      range: req.query.range,
-      expMonth: req.query.expMonth,
-      optionType: req.query.optionType,
-      strike: req.query.strike
-    });
+    const [response, quotesResponse] = await Promise.all([
+      fetchChain(requestedSymbol, {
+        contractType: req.query.contractType,
+        strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
+        includeUnderlyingQuote: false,
+        fromDate: req.query.fromDate,
+        toDate: req.query.toDate,
+        range: req.query.range,
+        expMonth: req.query.expMonth,
+        optionType: req.query.optionType,
+        strike: req.query.strike
+      }),
+      schwabGet("https://api.schwabapi.com/marketdata/v1/quotes", {
+        params: { symbols: mapQuoteSymbolsParam(requestedSymbol), fields: "quote" },
+        timeout: 30000
+      }).catch(() => ({ data: {} }))
+    ]);
 
     const chain = response.data || {};
     const heat = buildHeatFromChain(chain);
@@ -939,6 +945,7 @@ app.get("/api/heat", async (req, res) => {
       requestedSymbol,
       actualSymbol,
       request: response.config?.params || null,
+      quotes: quotesResponse.data || {},
       ...heat
     });
   } catch (error) {

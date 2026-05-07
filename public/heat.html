@@ -6079,6 +6079,54 @@
       background: var(--purple);
     }
 
+    .gex-history-wrap {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    .gex-history-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 11px;
+    }
+
+    .gex-history-table th {
+      padding: 8px 10px;
+      text-align: right;
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.018);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .gex-history-table th:first-child,
+    .gex-history-table td:first-child {
+      text-align: left;
+    }
+
+    .gex-history-table td {
+      padding: 8px 10px;
+      text-align: right;
+      color: var(--text);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      white-space: nowrap;
+    }
+
+    .gex-history-table tbody tr:hover td {
+      background: rgba(59, 220, 255, 0.04);
+    }
+
+    .gex-history-empty {
+      text-align: center !important;
+      padding: 18px !important;
+      color: var(--text3) !important;
+    }
+
     /* ─────────────────────────────────────────────
    Tooltip
 ───────────────────────────────────────────── */
@@ -8051,8 +8099,8 @@
               <span class="text-muted fs10">King GEX / Walls / SPY Change</span>
             </div>
             <div class="card-body" style="padding:0;">
-              <div class="matrix-wrap">
-                <table class="data-table">
+              <div class="gex-history-wrap">
+                <table class="gex-history-table">
                   <thead>
                     <tr>
                       <th>Date</th>
@@ -8067,7 +8115,7 @@
                   </thead>
                   <tbody id="gex-history-body">
                     <tr>
-                      <td colspan="8" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td>
+                      <td colspan="8" class="gex-history-empty">Loading…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -13390,12 +13438,47 @@
       try {
         const d = await apiGet(`/api/heat?symbol=${heatSymbol}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`);
         if (!d.ok) throw new Error(d.error);
-        lastHeatData = d;
+        llastHeatData = d;
         updateOvmPc(); // refresh P/C on Overview whenever Heat data updates
         renderHeatTable(d);
         updateHeatKeyLevels(d);
+
+        if (heatSymbol === 'SPY') {
+          saveGexHistoryFromHeat(d);
+        }
       } catch (e) {
         empty.innerHTML = `<div class="co-icon" style="font-size:32px;">⚠</div><div class="co-title" style="color:var(--red);">${e.message}</div>`;
+      }
+    }
+
+    async function saveGexHistoryFromHeat(d) {
+      try {
+        const s = d.summary || {};
+        const q = d.quotes?.SPY?.quote || {};
+        const spyOpen = q.openPrice ?? null;
+        const spyClose = d.underlyingPrice ?? q.lastPrice ?? q.closePrice ?? null;
+
+        const netGamma = Array.isArray(d.strikes)
+          ? d.strikes.reduce((sum, row) => sum + (Number(row.netGex) || 0), 0)
+          : null;
+
+        await fetch('/api/gex-history/snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            kingGEX: s.kingStrike?.strike ?? null,
+            callWall: s.strongestCallWall?.strike ?? null,
+            putWall: s.strongestPutWall?.strike ?? null,
+            netGamma,
+            spyOpen,
+            spyClose,
+            spyChange: Number.isFinite(Number(q.netPercentChange)) ? Number(q.netPercentChange) : null
+          })
+        });
+
+        loadGexHistory();
+      } catch (err) {
+        console.warn('GEX history snapshot save failed:', err.message);
       }
     }
 
@@ -16124,14 +16207,14 @@
       const tbody = document.getElementById('gex-history-body');
       if (!tbody) return;
 
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="gex-history-empty">Loading…</td></tr>`;
 
       try {
         const res = await apiGet('/api/gex-history?limit=30');
         const rows = Array.isArray(res.rows) ? res.rows : [];
 
         if (!rows.length) {
-          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--text3);">No GEX history saved yet.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" class="gex-history-empty">No GEX history saved yet.</td></tr>`;
           return;
         }
 
@@ -16152,7 +16235,7 @@
       `;
         }).join('');
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:16px;color:var(--red);">Failed to load GEX history.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="gex-history-empty">Failed to load GEX history.</td></tr>`;
       }
     }
 
