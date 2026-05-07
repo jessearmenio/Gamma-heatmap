@@ -768,7 +768,6 @@
     #market-status-badge .ms-label {
       display: inline-block;
       position: relative;
-      margin-top: 0.0625rem;
       animation: text-wipe-cycle 10s infinite;
     }
 
@@ -12088,7 +12087,7 @@
       const upcoming = getMacroEventsForBanner().filter(ev => {
         if (ev.days > 5) return false;
 
-        if (ev.type === 'EARNINGS' && parseMarketCap(ev.marketCap) < 40e9) {
+        if (ev.type === 'EARNINGS' && parseMarketCap(ev.marketCap) < 100e9) {
           return false;
         }
 
