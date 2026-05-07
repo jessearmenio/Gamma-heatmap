@@ -2073,6 +2073,17 @@
       flex-direction: column;
       gap: 4px;
       overflow: hidden;
+      min-height: 0;
+    }
+
+    #calendar-grid.week-view .cal-day {
+      min-height: 0;
+    }
+
+    #calendar-grid.week-view .cal-events {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 2px;
     }
 
     .cal-event {
@@ -12105,7 +12116,7 @@
         banner.className = '';
         const extraClass = getBannerClass(upcoming, sc?.VIX ?? 0);
         if (extraClass) banner.classList.add(extraClass);
-        textEl.innerHTML = parts.join('<span class="macro-divider">|</span>');
+        textEl.innerHTML = parts.join('<span class="macro-divider">•</span>');
       } else {
         banner.style.display = 'none';
         banner.className = '';
