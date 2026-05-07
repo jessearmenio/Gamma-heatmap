@@ -1007,7 +1007,7 @@ app.get("/api/earnings-calendar", async (req, res) => {
       });
     }
 
-    const headers = parseCsvLine(lines[0]).map(h => h.trim());
+    const headers = parseCsvLine(lines[0]).map(h => h.trim().replace(/^\uFEFF/, ""));
     const idx = Object.fromEntries(headers.map((h, i) => [h, i]));
 
     const events = lines.slice(1).map(line => {
@@ -1021,6 +1021,7 @@ app.get("/api/earnings-calendar", async (req, res) => {
       const currency = cols[idx.currency] || "";
       const timeOfTheDay = cols[idx.timeOfTheDay] || "";
       const sector = idx.sector != null ? (cols[idx.sector] || "") : "";
+      const marketCap = idx.MarketCap != null ? (cols[idx.MarketCap] || "") : "";
 
       const reportDate = normalizeIsoDate(reportDateRaw);
       const fiscalDateEnding = normalizeIsoDate(fiscalDateEndingRaw);
@@ -1042,6 +1043,7 @@ app.get("/api/earnings-calendar", async (req, res) => {
         currency,
         timeOfTheDay,
         sector,
+        marketCap,
         releaseLabel: formatReportingLabel(timeOfTheDay)
       };
     }).filter(ev =>

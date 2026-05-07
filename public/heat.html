@@ -4647,11 +4647,25 @@
     }
 
     /* SVG chart elements */
-    .rrg-quad-fill { opacity: 0.18; }
-    .rrg-quad-fill.improving { fill: #3b8cff; }
-    .rrg-quad-fill.leading   { fill: #22dd88; }
-    .rrg-quad-fill.lagging   { fill: #ff3b5c; }
-    .rrg-quad-fill.weakening { fill: #ffd700; }
+    .rrg-quad-fill {
+      opacity: 0.18;
+    }
+
+    .rrg-quad-fill.improving {
+      fill: #3b8cff;
+    }
+
+    .rrg-quad-fill.leading {
+      fill: #22dd88;
+    }
+
+    .rrg-quad-fill.lagging {
+      fill: #ff3b5c;
+    }
+
+    .rrg-quad-fill.weakening {
+      fill: #ffd700;
+    }
 
     .rrg-grid-line {
       stroke: rgba(255, 255, 255, 0.06);
@@ -4685,10 +4699,22 @@
       opacity: 0.9;
       pointer-events: none;
     }
-    .rrg-quad-label.improving { fill: #3b8cff; }
-    .rrg-quad-label.leading   { fill: #22dd88; }
-    .rrg-quad-label.lagging   { fill: #ff3b5c; }
-    .rrg-quad-label.weakening { fill: #d9b800; }
+
+    .rrg-quad-label.improving {
+      fill: #3b8cff;
+    }
+
+    .rrg-quad-label.leading {
+      fill: #22dd88;
+    }
+
+    .rrg-quad-label.lagging {
+      fill: #ff3b5c;
+    }
+
+    .rrg-quad-label.weakening {
+      fill: #d9b800;
+    }
 
     .rrg-tail-line {
       fill: none;
@@ -4722,6 +4748,7 @@
       stroke: var(--cyan);
       stroke-width: 2;
     }
+
     .rrg-symbol-group.active .rrg-head-label {
       fill: var(--cyan) !important;
     }
@@ -8074,16 +8101,8 @@
               <div class="etf-rrg-timeline-label">
                 <span id="etf-rrg-timeline-text">Loading…</span>
               </div>
-              <input
-                type="range"
-                id="etf-rrg-timeframe"
-                class="etf-rrg-slider"
-                min="0"
-                max="0"
-                step="1"
-                value="0"
-                oninput="etfRrgRedraw()"
-              />
+              <input type="range" id="etf-rrg-timeframe" class="etf-rrg-slider" min="0" max="0" step="1" value="0"
+                oninput="etfRrgRedraw()" />
             </div>
 
             <div class="card-body">
@@ -8874,7 +8893,7 @@
       low: true,
       med: true,
       high: true,
-      earnings: false
+      earnings: true
     };
 
     // ═══════════════════════════════════════════════════════
@@ -10248,9 +10267,24 @@
       }
     }
 
+    function parseMarketCap(value) {
+      if (!value) return 0;
+
+      const raw = String(value).trim().replace(/[$,]/g, "").toUpperCase();
+      const n = parseFloat(raw);
+
+      if (!Number.isFinite(n)) return 0;
+
+      if (raw.endsWith("T")) return n * 1e12;
+      if (raw.endsWith("B")) return n * 1e9;
+      if (raw.endsWith("M")) return n * 1e6;
+
+      return n;
+    }
+
     function fmtMoneyShort(v) {
-      const n = Number(v);
-      if (!Number.isFinite(n)) return "—";
+      const n = parseMarketCap(v);
+      if (!Number.isFinite(n) || n <= 0) return "—";
       if (Math.abs(n) >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
       if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
       if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
@@ -10276,6 +10310,7 @@
     <div class="cal-tooltip-line"><b>Symbol:</b> ${ev.symbol || "—"}</div>
     <div class="cal-tooltip-line"><b>Name:</b> ${ev.name || "—"}</div>
     <div class="cal-tooltip-line"><b>Sector:</b> ${ev.sector || "—"}</div>
+    <div class="cal-tooltip-line"><b>Market Cap:</b> ${fmtMoneyShort(ev.marketCap)}</div>
     <div class="cal-tooltip-line"><b>Report Date:</b> ${ev.reportDate || ev.releaseDate || "—"}</div>
     <div class="cal-tooltip-line"><b>Fiscal Quarter:</b> ${ev.year && ev.quarter ? `${ev.year} Q${ev.quarter}` : "—"}</div>
     <div class="cal-tooltip-line"><b>Estimate:</b> ${fmtNumMaybe(ev.estimate)}</div>
@@ -10366,7 +10401,7 @@
       } else {
         body.innerHTML = dayEvents.map(ev => {
           const detailLine = ev.type === 'EARNINGS'
-            ? `Symbol: ${ev.symbol || "—"} • Sector: ${ev.sector || "—"} • Reporting: ${ev.releaseLabel || "—"}`
+            ? `Symbol: ${ev.symbol || "—"} • Sector: ${ev.sector || "—"} • Market Cap: ${fmtMoneyShort(ev.marketCap)} • Reporting: ${ev.releaseLabel || "—"}`
             : (ev.time || '—');
 
           const subDetail = ev.type === 'EARNINGS'
@@ -12050,7 +12085,15 @@
       }
 
       const parts = [];
-      const upcoming = getMacroEventsForBanner().filter(ev => ev.days <= 5);
+      const upcoming = getMacroEventsForBanner().filter(ev => {
+        if (ev.days > 5) return false;
+
+        if (ev.type === 'EARNINGS' && parseMarketCap(ev.marketCap) < 100e9) {
+          return false;
+        }
+
+        return true;
+      });
 
       // Geo risk removed from macro banner
       /*if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {
@@ -14342,7 +14385,7 @@
 
     function computeRrgSeries(series, opts = {}) {
       const ratioPeriod = opts.ratioPeriod || 14;       // EMA smoothing for RS
-      const lookback   = opts.lookback   || 63;        // ~3 months of trading days
+      const lookback = opts.lookback || 63;        // ~3 months of trading days
       const momentumPeriod = opts.momentumPeriod || 5; // ROC window for momentum
 
       if (!Array.isArray(series) || series.length < 2) return [];
@@ -14506,9 +14549,9 @@
       const cy0 = yToPx(0);
 
       const colorMap = {
-        leading:   '#22dd88',
+        leading: '#22dd88',
         improving: '#3b8cff',
-        lagging:   '#ff3b5c',
+        lagging: '#ff3b5c',
         weakening: '#d9b800'
       };
 
@@ -14752,7 +14795,7 @@
           // Pick first available bar per symbol as a base, then average pct-of-base across symbols.
           const bases = new Map();
           for (const [sym, dateMap] of byDate.entries()) {
-            const sorted = Array.from(dateMap.entries()).sort((a,b) => a[0].localeCompare(b[0]));
+            const sorted = Array.from(dateMap.entries()).sort((a, b) => a[0].localeCompare(b[0]));
             if (sorted.length) bases.set(sym, sorted[0][1]);
           }
           const allDates = new Set();
