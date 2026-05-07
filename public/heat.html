@@ -12083,16 +12083,12 @@
         return;
       }
 
-      const parts = [];
-      const upcoming = getMacroEventsForBanner().filter(ev => {
-        if (ev.days > 5) return false;
+const upcoming = getMacroEventsForBanner().filter(ev => {
+  if (ev.days > 5) return false;
+  if (ev.type === 'EARNINGS') return false;
 
-        if (ev.type === 'EARNINGS' && parseMarketCap(ev.marketCap) < 100e9) {
-          return false;
-        }
-
-        return true;
-      });
+  return true;
+});
 
       // Geo risk removed from macro banner
       /*if (geoRisk && geoRisk.topic && geoRisk.topic !== 'Normal') {

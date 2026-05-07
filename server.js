@@ -977,6 +977,21 @@ function formatReportingLabel(timeOfTheDay) {
   return "Time Not Specified";
 }
 
+function parseMarketCapValue(value) {
+  if (!value) return 0;
+
+  const raw = String(value).trim().replace(/[$,]/g, "").toUpperCase();
+  const n = parseFloat(raw);
+
+  if (!Number.isFinite(n)) return 0;
+
+  if (raw.endsWith("T")) return n * 1e12;
+  if (raw.endsWith("B")) return n * 1e9;
+  if (raw.endsWith("M")) return n * 1e6;
+
+  return n;
+}
+
 app.get("/api/earnings-calendar", async (req, res) => {
   try {
     const from = req.query.from;
@@ -1050,7 +1065,8 @@ app.get("/api/earnings-calendar", async (req, res) => {
       ev.symbol &&
       ev.releaseDate &&
       ev.releaseDate >= from &&
-      ev.releaseDate <= to
+      ev.releaseDate <= to &&
+      parseMarketCapValue(ev.marketCap) >= 20e9
     );
 
     res.json({
