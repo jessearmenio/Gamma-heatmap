@@ -696,7 +696,7 @@ app.get("/api/geo-risk", async (_req, res) => {
     }
 
     const response = await axios.get(
-      "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php",
+      "https://world-conflict-intelligence-api.p.rapidapi.com/wars/allwars.php",
       {
         params: {
           timespan: "24h",
