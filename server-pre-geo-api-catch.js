@@ -556,6 +556,136 @@ app.get("/api/fear-greed", async (_req, res) => {
   }
 });
 
+// Domains we treat as English-only when an article-level language tag is missing.
+// Conservative list — better to drop a story than show a non-English one.
+const ENGLISH_DOMAIN_ALLOWLIST = new Set([
+  "reuters.com", "apnews.com", "bbc.com", "bbc.co.uk", "cnn.com", "nytimes.com",
+  "washingtonpost.com", "wsj.com", "ft.com", "bloomberg.com", "theguardian.com",
+  "telegraph.co.uk", "thetimes.co.uk", "economist.com", "npr.org", "abcnews.go.com",
+  "cbsnews.com", "nbcnews.com", "foxnews.com", "usatoday.com", "latimes.com",
+  "chicagotribune.com", "politico.com", "axios.com", "thehill.com", "newsweek.com",
+  "time.com", "theatlantic.com", "forbes.com", "businessinsider.com", "cnbc.com",
+  "marketwatch.com", "yahoo.com", "news.yahoo.com", "finance.yahoo.com",
+  "aljazeera.com", "dw.com", "france24.com", "euronews.com", "rferl.org",
+  "voanews.com", "japantimes.co.jp", "scmp.com", "channelnewsasia.com",
+  "straitstimes.com", "manilatimes.net", "inquirer.net", "rappler.com",
+  "abs-cbn.com", "gmanetwork.com", "thehindu.com", "hindustantimes.com",
+  "timesofindia.indiatimes.com", "indiatoday.in", "ndtv.com", "thedailystar.net",
+  "dawn.com", "arabnews.com", "gulfnews.com", "thenationalnews.com",
+  "jpost.com", "timesofisrael.com", "haaretz.com", "middleeasteye.net",
+  "kyivindependent.com", "kyivpost.com", "euractiv.com", "politico.eu",
+  "theglobeandmail.com", "cbc.ca", "ctvnews.ca", "nationalpost.com",
+  "abc.net.au", "smh.com.au", "theage.com.au", "news.com.au", "stuff.co.nz",
+  "nzherald.co.nz", "rnz.co.nz", "theconversation.com", "defensenews.com",
+  "breakingdefense.com", "militarytimes.com", "stripes.com", "foreignpolicy.com",
+  "foreignaffairs.com", "csis.org", "rusi.org", "understandingwar.org",
+  "acleddata.com", "crisisgroup.org", "hrw.org", "amnesty.org",
+  "un.org", "news.un.org", "reliefweb.int", "salinapost.com"
+]);
+
+function extractDomain(url) {
+  if (!url) return "";
+  try {
+    const u = new URL(url);
+    return u.hostname.replace(/^www\./, "").toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function isEnglishLanguage(lang) {
+  if (!lang) return false;
+  const v = String(lang).trim().toLowerCase();
+  return v === "english" || v === "en" || v.startsWith("en-") || v.startsWith("en_");
+}
+
+function filterGeoRiskEnglish(payload) {
+  if (!payload || typeof payload !== "object") return payload;
+
+  const articles = Array.isArray(payload.articles) ? payload.articles : [];
+
+  // URL → language map and domain → (sawEnglish, sawNonEnglish) summary
+  const urlLang = new Map();
+  const domainHasEnglish = new Map();
+  for (const a of articles) {
+    const url = (a?.url || "").trim();
+    const lang = a?.language || "";
+    if (url) urlLang.set(url, lang);
+    const dom = extractDomain(a?.url) || (a?.domain || "").toLowerCase();
+    if (dom) {
+      const cur = domainHasEnglish.get(dom) || { en: 0, other: 0 };
+      if (isEnglishLanguage(lang)) cur.en += 1;
+      else if (lang) cur.other += 1;
+      domainHasEnglish.set(dom, cur);
+    }
+  }
+
+  function isEnglishStory(story) {
+    const lead = story?.lead_article || {};
+    const directLang = story?.language || lead.language;
+    if (directLang) return isEnglishLanguage(directLang);
+
+    const url = (lead.url || story?.url || "").trim();
+    if (url && urlLang.has(url)) return isEnglishLanguage(urlLang.get(url));
+
+    const dom = extractDomain(url) || (lead.domain || story?.domain || "").toLowerCase();
+    if (dom) {
+      const stats = domainHasEnglish.get(dom);
+      if (stats) {
+        // Trust the domain if it has at least one confirmed English article
+        // and no confirmed non-English article in this batch.
+        if (stats.en > 0 && stats.other === 0) return true;
+        if (stats.other > 0 && stats.en === 0) return false;
+      }
+      if (ENGLISH_DOMAIN_ALLOWLIST.has(dom)) return true;
+    }
+
+    // Unknown — drop to be safe (we only want English we can read)
+    return false;
+  }
+
+  const englishHeadlines = (Array.isArray(payload.top_headlines) ? payload.top_headlines : [])
+    .filter(isEnglishStory);
+  const englishClusters = (Array.isArray(payload.clusters) ? payload.clusters : [])
+    .filter(isEnglishStory);
+  const englishArticles = articles.filter(a => isEnglishLanguage(a?.language));
+
+  // Recompute the overall risk level / dominant tone from the filtered set so
+  // the badge in the UI reflects only English stories.
+  const levels = englishHeadlines.map(h => String(h?.risk_level || "").toLowerCase());
+  const hasHigh = levels.some(l => l === "high" || l === "critical");
+  const hasMed = levels.some(l => l === "medium");
+  const overall_risk_level = hasHigh ? "high" : hasMed ? "medium" : englishHeadlines.length ? "low" : "unknown";
+
+  const scores = englishHeadlines
+    .map(h => Number(h?.risk_score))
+    .filter(n => Number.isFinite(n));
+  const overall_risk_score = scores.length
+    ? Math.round(scores.reduce((s, n) => s + n, 0) / scores.length)
+    : (payload.overview?.overall_risk_score ?? null);
+
+  const out = {
+    ...payload,
+    top_headlines: englishHeadlines,
+    clusters: englishClusters,
+    articles: englishArticles,
+    overview: {
+      ...(payload.overview || {}),
+      overall_risk_level,
+      overall_risk_score,
+      coverage_volume: englishArticles.length,
+      story_clusters: englishClusters.length
+    },
+    meta: {
+      ...(payload.meta || {}),
+      english_filter_applied: true,
+      english_headlines_kept: englishHeadlines.length,
+      headlines_dropped: (payload.top_headlines?.length || 0) - englishHeadlines.length
+    }
+  };
+  return out;
+}
+
 app.get("/api/geo-risk", async (_req, res) => {
   try {
     if (!WORLD_CONFLICT_API_KEY) {
@@ -566,7 +696,7 @@ app.get("/api/geo-risk", async (_req, res) => {
     }
 
     const response = await axios.get(
-      "https://world-conflict-intelligence-api.p.rapidapi.com/wars/allwars.php",
+      "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php",
       {
         params: {
           timespan: "24h",
@@ -582,9 +712,17 @@ app.get("/api/geo-risk", async (_req, res) => {
       }
     );
 
+    // Filter to English-language stories only.
+    // The `articles` array carries the per-article `language` field; `top_headlines`
+    // does not. Build a URL→language lookup from `articles`, then keep only the
+    // headlines whose lead_article URL maps to English (or whose source domain is
+    // a known English-only outlet, as a fallback when the article isn't in the
+    // articles array).
+    const filtered = filterGeoRiskEnglish(response.data);
+
     res.json({
       ok: true,
-      data: response.data
+      data: filtered
     });
   } catch (error) {
     console.error("GEO_RISK ERROR:", error.response?.data || error.message);
