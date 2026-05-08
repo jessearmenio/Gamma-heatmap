@@ -13088,7 +13088,8 @@
     async function fetchGeoRisk() {
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3500);
+        // World Conflict API can take 5-8s on a cache miss — give it room
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
         const r = await fetch(GEO_RISK_API_URL, {
           signal: controller.signal
@@ -13099,22 +13100,53 @@
         const d = await r.json();
         if (!d.ok) return null;
 
+        // Response shape from world-conflict-intelligence-api /wars/allwars.php:
+        //   { ok, meta:{topic,...}, overview:{overall_risk_level, dominant_tone,...},
+        //     top_headlines:[ {headline, summary, risk_level, regions[], lead_article:{url,domain,published_at}} ],
+        //     story_clusters:[...] }
         const data = d.data || {};
-        const stories =
-          Array.isArray(data.stories) ? data.stories :
-            Array.isArray(data.wars) ? data.wars :
-              Array.isArray(data.results) ? data.results :
-                Array.isArray(data.data) ? data.data :
-                  Array.isArray(data) ? data :
-                    [];
+        const overview = data.overview || {};
+        const meta = data.meta || {};
+
+        const rawStories =
+          Array.isArray(data.top_headlines) ? data.top_headlines :
+            Array.isArray(data.stories) ? data.stories :
+              Array.isArray(data.story_clusters) ? data.story_clusters :
+                Array.isArray(data.wars) ? data.wars :
+                  Array.isArray(data.results) ? data.results :
+                    Array.isArray(data.data) ? data.data :
+                      Array.isArray(data) ? data :
+                        [];
+
+        // Normalise each story into the shape ovRenderGeoRisk() expects:
+        // { headline, summary, riskLevel, publishedAt, url, domain }
+        const stories = rawStories.map(s => {
+          const lead = s.lead_article || s.leadArticle || {};
+          return {
+            headline: s.headline || s.title || lead.title || '--',
+            summary: s.summary || s.description || '',
+            riskLevel: s.risk_level || s.riskLevel || 'low',
+            publishedAt: s.published_at || s.publishedAt || lead.published_at || lead.publishedAt || null,
+            url: s.url || lead.url || '',
+            domain: s.domain || lead.domain || (Array.isArray(s.regions) ? s.regions[0] : '') || ''
+          };
+        });
+
+        // Prefer the API's own overall risk level when present; otherwise derive from stories
+        const apiLevel = overview.overall_risk_level || overview.overallRiskLevel || null;
         const levels = stories.map(s => s.riskLevel || 'low');
         const hasHigh = levels.some(l => l === 'high' || l === 'critical');
         const hasMed = levels.some(l => l === 'medium');
+        const derivedLevel = hasHigh ? 'high' : hasMed ? 'medium' : 'low';
+        const overallRiskLevel = apiLevel || derivedLevel;
+
         return {
-          topic: data.topic || data.subject || stories[0]?.domain || 'Geopolitical Risk',
-          overallRiskLevel: hasHigh ? 'high' : hasMed ? 'medium' : 'low',
-          overallRiskLevelUi: hasHigh ? 'danger' : hasMed ? 'caution' : 'neutral',
-          dominantTone: hasHigh ? 'elevated' : hasMed ? 'moderate' : 'calm',
+          topic: meta.topic || data.topic || data.subject || overview.key_takeaway || stories[0]?.domain || 'Geopolitical Risk',
+          overallRiskLevel,
+          overallRiskLevelUi: overallRiskLevel === 'high' || overallRiskLevel === 'critical' ? 'danger'
+            : overallRiskLevel === 'medium' ? 'caution' : 'neutral',
+          dominantTone: overview.dominant_tone || (overallRiskLevel === 'high' || overallRiskLevel === 'critical' ? 'elevated'
+            : overallRiskLevel === 'medium' ? 'moderate' : 'calm'),
           stories: stories.slice(0, 6)
         };
       } catch { return null; }
