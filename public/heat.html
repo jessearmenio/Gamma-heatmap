@@ -4911,14 +4911,14 @@
 ───────────────────────────────────────────── */
 
     #etfs-page {
-      height: calc(100vh - var(--header-h) - 32px);
+      min-height: calc(100vh - var(--header-h) - 32px);
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
 
     #etf-rrg-card {
-      height: 560px;
+      height: auto;
       flex-shrink: 0;
       display: flex;
       flex-direction: column;
@@ -4933,7 +4933,8 @@
     #etf-rrg-wrap {
       position: relative;
       width: 100%;
-      height: 100%;
+      aspect-ratio: 1 / 1;
+      height: auto;
       border: 1px solid var(--border2);
       border-radius: 8px;
       overflow: hidden;
@@ -14946,7 +14947,7 @@
       if (!symbols.length) {
         // Render an empty plot frame with a friendly hint instead of a blank box,
         // so users can tell the chart is alive but waiting on history data.
-        svg.setAttribute('viewBox', '0 0 1000 600');
+        svg.setAttribute('viewBox', '0 0 1000 1000');
         svg.innerHTML = `
           <rect x="0" y="0" width="1000" height="600" fill="none"/>
           <text x="500" y="285" text-anchor="middle" fill="rgba(255,255,255,0.55)"
@@ -15012,7 +15013,7 @@
       const yMin = -niceExtent, yMax = niceExtent;
 
       // ── SVG layout ──
-      const W = 1000, H = 600;
+      const W = 1000, H = 1000;
       const M = { left: 70, right: 30, top: 22, bottom: 50 };
       const innerW = W - M.left - M.right;
       const innerH = H - M.top - M.bottom;
