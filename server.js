@@ -16,6 +16,7 @@ const SCHWAB_APP_SECRET = process.env.SCHWAB_APP_SECRET;
 const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI;
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const FEAR_GREED_API_KEY = process.env.FEAR_GREED_API_KEY;
+const WORLD_CONFLICT_API_KEY = process.env.WORLD_CONFLICT_API_KEY;
 const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL;
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN;
 
@@ -550,6 +551,47 @@ app.get("/api/fear-greed", async (_req, res) => {
     res.status(500).json({
       ok: false,
       error: "Failed to fetch fear and greed index.",
+      details: error.response?.data || error.message
+    });
+  }
+});
+
+app.get("/api/geo-risk", async (_req, res) => {
+  try {
+    if (!WORLD_CONFLICT_API_KEY) {
+      return res.status(500).json({
+        ok: false,
+        error: "Missing WORLD_CONFLICT_API_KEY."
+      });
+    }
+
+    const response = await axios.get(
+      "https://world-conflict-intelligence-api.p.rapidapi.com/wars/allwars.php",
+      {
+        params: {
+          timespan: "24h",
+          max: 12,
+          ai: 0
+        },
+        headers: {
+          "x-rapidapi-key": WORLD_CONFLICT_API_KEY,
+          "x-rapidapi-host": "world-conflict-intelligence-api.p.rapidapi.com",
+          "Content-Type": "application/json"
+        },
+        timeout: 15000
+      }
+    );
+
+    res.json({
+      ok: true,
+      data: response.data
+    });
+  } catch (error) {
+    console.error("GEO_RISK ERROR:", error.response?.data || error.message);
+
+    res.status(error.response?.status || 500).json({
+      ok: false,
+      error: "Failed to fetch geo risk stories.",
       details: error.response?.data || error.message
     });
   }

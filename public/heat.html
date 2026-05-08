@@ -11494,9 +11494,7 @@
       { releaseDate: "2026-12-16", labelMonth: "Dec" }
     ];
 
-    const GEO_RISK_API_URL = "https://world-conflict-intelligence-api.p.rapidapi.com/wars/usairan.php";
-    const GEO_RISK_API_HOST = "world-conflict-intelligence-api.p.rapidapi.com";
-    const GEO_RISK_API_KEY = "64de0721dfmsh16b88a238670039p180561jsne239188deb55";
+    const GEO_RISK_API_URL = "/api/geo-risk";
 
     const SECTOR_ORDER = ["XLE", "XLF", "XLK", "XLI", "XLC", "XLY", "XLV", "XLRE", "XLP", "XLB", "XLU"];
 
@@ -13093,18 +13091,22 @@
         const timeoutId = setTimeout(() => controller.abort(), 3500);
 
         const r = await fetch(GEO_RISK_API_URL, {
-          signal: controller.signal,
-          headers: {
-            'x-rapidapi-host': GEO_RISK_API_HOST,
-            'x-rapidapi-key': GEO_RISK_API_KEY
-          }
+          signal: controller.signal
         });
 
         clearTimeout(timeoutId);
         if (!r.ok) return null;
         const d = await r.json();
-        const data = d.data || d;
-        const stories = Array.isArray(data.stories) ? data.stories : Array.isArray(data) ? data : [];
+        if (!d.ok) return null;
+
+        const data = d.data || {};
+        const stories =
+          Array.isArray(data.stories) ? data.stories :
+            Array.isArray(data.wars) ? data.wars :
+              Array.isArray(data.results) ? data.results :
+                Array.isArray(data.data) ? data.data :
+                  Array.isArray(data) ? data :
+                    [];
         const levels = stories.map(s => s.riskLevel || 'low');
         const hasHigh = levels.some(l => l === 'high' || l === 'critical');
         const hasMed = levels.some(l => l === 'medium');
