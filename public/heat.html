@@ -8084,859 +8084,858 @@
               <div class="text-muted fs10">—</div>
             </div>
           </div>
-        </div>
-        <div class="card mb12">
-          <div class="card-header"><span class="card-title">Open Interest by Strike (SPY)</span></div>
-          <div class="card-body" id="sm-oi-chart">
-            <canvas id="oi-chart" width="100%" height="180" style="width:100%;height:180px;"></canvas>
+          <div class="card mb12">
+            <div class="card-header"><span class="card-title">Open Interest by Strike (SPY)</span></div>
+            <div class="card-body" id="sm-oi-chart">
+              <canvas id="oi-chart" width="100%" height="180" style="width:100%;height:180px;"></canvas>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">GEX History</span>
+              <span class="text-muted fs10">King GEX / Walls / SPY Change</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <div class="gex-history-wrap">
+                <table class="gex-history-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>King GEX</th>
+                      <th>Call Wall</th>
+                      <th>Put Wall</th>
+                      <th>Net Gamma</th>
+                      <th>Total +GEX</th>
+                      <th>Total -GEX</th>
+                      <th>SPY Open</th>
+                      <th>SPY Close</th>
+                      <th>SPY Change</th>
+                    </tr>
+                  </thead>
+                  <tbody id="gex-history-body">
+                    <tr>
+                      <td colspan="10" class="gex-history-empty">Loading…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">GEX History</span>
-            <span class="text-muted fs10">King GEX / Walls / SPY Change</span>
+        <!-- ════════════════════════════════════
+           6. DARK POOL
+      ════════════════════════════════════ -->
+        <div id="darkpool-page" class="page" style="display:none;">
+          <div class="card mb12">
+            <div class="card-header">
+              <span class="card-title">Dark Pool Alerts</span>
+              <span style="font-size:9px;color:var(--text3)">Large block trades detected via OI changes</span>
+            </div>
+            <div class="card-body" id="dp-alerts-body">
+              <div class="text-muted fs10">Dark pool activity is inferred from unusual Open Interest shifts. Log in to
+                activate.</div>
+            </div>
           </div>
-          <div class="card-body" style="padding:0;">
-            <div class="gex-history-wrap">
-              <table class="gex-history-table">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><span class="card-title">Top OI Gainers</span></div>
+              <div class="card-body" id="dp-oi-gainers">
+                <div class="text-muted fs10">—</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">Unusual Volume</span></div>
+              <div class="card-body" id="dp-vol-alerts">
+                <div class="text-muted fs10">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+           7. MAG 7
+      ════════════════════════════════════ -->
+        <div id="mag7-page" class="page" style="display:none;">
+          <div class="mag7-grid" id="mag7-grid">
+            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view Magnificent 7
+              data.</div>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════
+           8. ETFs
+      ════════════════════════════════════ -->
+        <div id="etfs-page" class="page" style="display:none;">
+          <div class="card mb12" id="etf-rrg-card">
+            <div class="card-header etf-rrg-header">
+              <div class="etf-rrg-head-left">
+                <span class="card-title">ETF Relative Rotation</span>
+                <span class="etf-rrg-subtitle" id="etf-rrg-subtitle">vs SPY benchmark</span>
+              </div>
+              <div class="etf-rrg-controls">
+                <label class="etf-rrg-control">
+                  <span>Tail length</span>
+                  <select id="etf-rrg-tails" onchange="etfRrgRedraw()">
+                    <option value="5">5w</option>
+                    <option value="10" selected>10w</option>
+                    <option value="15">15w</option>
+                    <option value="20">20w</option>
+                  </select>
+                </label>
+              </div>
+            </div>
+
+            <div class="etf-rrg-timeline">
+              <div class="etf-rrg-timeline-label">
+                <span id="etf-rrg-timeline-text">Loading…</span>
+              </div>
+              <input type="range" id="etf-rrg-timeframe" class="etf-rrg-slider" min="0" max="0" step="1" value="0"
+                oninput="etfRrgRedraw()" />
+            </div>
+
+            <div class="card-body">
+              <div id="etf-rrg-wrap">
+                <svg id="etf-rrg-svg" aria-hidden="true"></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">ETF Performance Matrix</span>
+              <span style="font-size:9px;color:var(--text3)">Sorted best to worst by % change</span>
+            </div>
+            <div class="card-body" style="padding:0;">
+              <table class="etf-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>King GEX</th>
-                    <th>Call Wall</th>
-                    <th>Put Wall</th>
-                    <th>Net Gamma</th>
-                    <th>Total +GEX</th>
-                    <th>Total -GEX</th>
-                    <th>SPY Open</th>
-                    <th>SPY Close</th>
-                    <th>SPY Change</th>
+                    <th>Symbol</th>
+                    <th>Fund / Theme</th>
+                    <th>Last</th>
+                    <th>% Chg</th>
+                    <th>Net</th>
+                    <th>Volume</th>
+                    <th>Avg Vol</th>
+                    <th>Rel Vol</th>
+                    <th>Day Range</th>
+                    <th>52W Pos</th>
                   </tr>
                 </thead>
-                <tbody id="gex-history-body">
+                <tbody id="etf-tbody">
                   <tr>
-                    <td colspan="10" class="gex-history-empty">Loading…</td>
+                    <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
+                      Log in to view ETFs.
+                    </td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ════════════════════════════════════
-           6. DARK POOL
-      ════════════════════════════════════ -->
-      <div id="darkpool-page" class="page" style="display:none;">
-        <div class="card mb12">
-          <div class="card-header">
-            <span class="card-title">Dark Pool Alerts</span>
-            <span style="font-size:9px;color:var(--text3)">Large block trades detected via OI changes</span>
-          </div>
-          <div class="card-body" id="dp-alerts-body">
-            <div class="text-muted fs10">Dark pool activity is inferred from unusual Open Interest shifts. Log in to
-              activate.</div>
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Top OI Gainers</span></div>
-            <div class="card-body" id="dp-oi-gainers">
-              <div class="text-muted fs10">—</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">Unusual Volume</span></div>
-            <div class="card-body" id="dp-vol-alerts">
-              <div class="text-muted fs10">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ════════════════════════════════════
-           7. MAG 7
-      ════════════════════════════════════ -->
-      <div id="mag7-page" class="page" style="display:none;">
-        <div class="mag7-grid" id="mag7-grid">
-          <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view Magnificent 7
-            data.</div>
-        </div>
-      </div>
-
-      <!-- ════════════════════════════════════
-           8. ETFs
-      ════════════════════════════════════ -->
-      <div id="etfs-page" class="page" style="display:none;">
-        <div class="card mb12" id="etf-rrg-card">
-          <div class="card-header etf-rrg-header">
-            <div class="etf-rrg-head-left">
-              <span class="card-title">ETF Relative Rotation</span>
-              <span class="etf-rrg-subtitle" id="etf-rrg-subtitle">vs SPY benchmark</span>
-            </div>
-            <div class="etf-rrg-controls">
-              <label class="etf-rrg-control">
-                <span>Tail length</span>
-                <select id="etf-rrg-tails" onchange="etfRrgRedraw()">
-                  <option value="5">5w</option>
-                  <option value="10" selected>10w</option>
-                  <option value="15">15w</option>
-                  <option value="20">20w</option>
-                </select>
-              </label>
-            </div>
-          </div>
-
-          <div class="etf-rrg-timeline">
-            <div class="etf-rrg-timeline-label">
-              <span id="etf-rrg-timeline-text">Loading…</span>
-            </div>
-            <input type="range" id="etf-rrg-timeframe" class="etf-rrg-slider" min="0" max="0" step="1" value="0"
-              oninput="etfRrgRedraw()" />
-          </div>
-
-          <div class="card-body">
-            <div id="etf-rrg-wrap">
-              <svg id="etf-rrg-svg" aria-hidden="true"></svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">ETF Performance Matrix</span>
-            <span style="font-size:9px;color:var(--text3)">Sorted best to worst by % change</span>
-          </div>
-          <div class="card-body" style="padding:0;">
-            <table class="etf-table">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th>Fund / Theme</th>
-                  <th>Last</th>
-                  <th>% Chg</th>
-                  <th>Net</th>
-                  <th>Volume</th>
-                  <th>Avg Vol</th>
-                  <th>Rel Vol</th>
-                  <th>Day Range</th>
-                  <th>52W Pos</th>
-                </tr>
-              </thead>
-              <tbody id="etf-tbody">
-                <tr>
-                  <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
-                    Log in to view ETFs.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            9. FUTURES
       ════════════════════════════════════ -->
-      <div id="futures-page" class="page" style="display:none;">
-        <div class="futures-grid mb12" id="futures-grid">
-          <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view futures data.
+        <div id="futures-page" class="page" style="display:none;">
+          <div class="futures-grid mb12" id="futures-grid">
+            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view futures data.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">Futures Reference Data</span></div>
+            <div class="card-body" id="futures-ref-body">
+              <div class="text-muted fs10">—</div>
+            </div>
           </div>
         </div>
-        <div class="card">
-          <div class="card-header"><span class="card-title">Futures Reference Data</span></div>
-          <div class="card-body" id="futures-ref-body">
-            <div class="text-muted fs10">—</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            10. COMMODITIES & METALS
       ════════════════════════════════════ -->
-      <div id="commodities-page" class="page" style="display:none;">
-        <div class="card mb12">
-          <div class="card-header"><span class="card-title">Commodities &amp; Metals</span></div>
-          <div class="card-body" style="padding:0;">
-            <table class="comm-table">
-              <thead>
-                <tr>
-                  <th>Symbol</th>
-                  <th>Name</th>
-                  <th>Last</th>
-                  <th>Change</th>
-                  <th>% Chg</th>
-                  <th>High</th>
-                  <th>Low</th>
-                  <th>Settle</th>
-                  <th>OI</th>
-                </tr>
-              </thead>
-              <tbody id="comm-tbody">
-                <tr>
-                  <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Log in to view
-                    commodities.</td>
-                </tr>
-              </tbody>
-            </table>
+        <div id="commodities-page" class="page" style="display:none;">
+          <div class="card mb12">
+            <div class="card-header"><span class="card-title">Commodities &amp; Metals</span></div>
+            <div class="card-body" style="padding:0;">
+              <table class="comm-table">
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Name</th>
+                    <th>Last</th>
+                    <th>Change</th>
+                    <th>% Chg</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Settle</th>
+                    <th>OI</th>
+                  </tr>
+                </thead>
+                <tbody id="comm-tbody">
+                  <tr>
+                    <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Log in to view
+                      commodities.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            11. FX MARKETS
       ════════════════════════════════════ -->
-      <div id="fx-page" class="page" style="display:none;">
-        <div class="fx-grid" id="fx-grid">
-          <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view FX pairs.</div>
+        <div id="fx-page" class="page" style="display:none;">
+          <div class="fx-grid" id="fx-grid">
+            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view FX pairs.</div>
+          </div>
         </div>
-      </div>
 
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            STOCK SCANNER
       ════════════════════════════════════ -->
-      <div id="scanner-page" class="page" style="display:none;">
-        <div class="scanner-pg-wrap">
+        <div id="scanner-page" class="page" style="display:none;">
+          <div class="scanner-pg-wrap">
 
-          <!-- Error banner -->
-          <div class="sc-error-banner" id="sc-error-banner">
-            <span id="sc-error-text" style="flex:1">API request failed.</span>
-            <button onclick="loadScanner()"
-              style="font-size:10px;padding:3px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;">Retry</button>
-            <button onclick="document.getElementById('sc-error-banner').classList.remove('visible')"
-              style="background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;">&times;</button>
+            <!-- Error banner -->
+            <div class="sc-error-banner" id="sc-error-banner">
+              <span id="sc-error-text" style="flex:1">API request failed.</span>
+              <button onclick="loadScanner()"
+                style="font-size:10px;padding:3px 10px;background:var(--red);color:#fff;border:none;border-radius:4px;cursor:pointer;">Retry</button>
+              <button onclick="document.getElementById('sc-error-banner').classList.remove('visible')"
+                style="background:none;border:none;color:var(--red);font-size:14px;cursor:pointer;">&times;</button>
+            </div>
+
+            <!-- Filter bar — row 1 -->
+            <div class="sc-filter-bar">
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span class="sc-filter-label">Sector</span>
+                <select class="sc-filter-select" id="sc-sector">
+                  <option value="ALL">All Sectors</option>
+                  <option value="XLK">XLK — Technology</option>
+                  <option value="XLF">XLF — Financials</option>
+                  <option value="XLE">XLE — Energy</option>
+                  <option value="XLV">XLV — Health Care</option>
+                  <option value="XLI">XLI — Industrials</option>
+                  <option value="XLY">XLY — Cons. Disc.</option>
+                  <option value="XLP">XLP — Cons. Staples</option>
+                  <option value="XLU">XLU — Utilities</option>
+                  <option value="XLB">XLB — Materials</option>
+                  <option value="XLRE">XLRE — Real Estate</option>
+                  <option value="XLC">XLC — Comm. Svcs</option>
+                </select>
+              </div>
+              <div style="display:flex;align-items:center;gap:5px;">
+                <span class="sc-filter-label">Scan</span>
+                <div class="sc-scan-toggles">
+                  <button class="sc-scan-toggle active" data-scan="all">All Anomalies</button>
+                  <button class="sc-scan-toggle" data-scan="vol-spike">Volume Spike</button>
+                  <button class="sc-scan-toggle" data-scan="price-spike">Price Spike</button>
+                  <button class="sc-scan-toggle" data-scan="breakout">Breakout</button>
+                </div>
+              </div>
+              <div class="sc-range-group">
+                <span class="sc-filter-label">Min Vol Ratio</span>
+                <input type="range" class="sc-range" id="sc-vol-ratio-range" min="1" max="3" step="0.1" value="5">
+                <span class="sc-range-val" id="sc-vol-ratio-val">1.0x</span>
+              </div>
+              <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker:">
+              <button class="sc-filters-toggle active" id="sc-filters-toggle">&#43; More Filters</button>
+              <div class="sc-filter-spacer"></div>
+              <button class="sc-btn-scan" id="sc-btn-scan">Scan Now</button>
+              <span class="sc-refresh-txt" id="sc-refresh-txt">Next refresh: --</span>
+            </div>
+
+            <!-- Filter bar — row 2 (advanced, collapsible) -->
+            <div class="sc-filter-row2" id="sc-filter-row2" style="display:flex;">
+
+              <!-- Price Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Price</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-price-min" placeholder="Min" min="0" step="0.01">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-price-max" placeholder="Max" min="0" step="0.01">
+                </div>
+              </div>
+
+              <!-- Change % Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Chg%</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-chg-min" placeholder="Min" step="0.1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-chg-max" placeholder="Max" step="0.1">
+                </div>
+              </div>
+
+              <!-- Market Cap -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Mkt Cap</span>
+                <div class="sc-mcap-toggles">
+                  <button class="sc-mcap-btn active" data-mcap="ALL">All</button>
+                  <button class="sc-mcap-btn" data-mcap="MEGA">Mega &gt;200B</button>
+                  <button class="sc-mcap-btn" data-mcap="LARGE">Large 10-200B</button>
+                  <button class="sc-mcap-btn" data-mcap="MID">Mid 2-10B</button>
+                  <button class="sc-mcap-btn" data-mcap="SMALL">Small &lt;2B</button>
+                </div>
+              </div>
+
+              <!-- P/E Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">P/E</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-pe-min" placeholder="Min" min="0" step="1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-pe-max" placeholder="Max" min="0" step="1">
+                </div>
+              </div>
+
+              <!-- Beta Range -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Beta</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-beta-min" placeholder="Min" step="0.1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-beta-max" placeholder="Max" step="0.1">
+                </div>
+              </div>
+
+              <!-- Div Yield -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Div Yield%</span>
+                <div class="sc-filter-minmax">
+                  <input type="number" class="sc-filter-num" id="sc-divy-min" placeholder="Min" min="0" step="0.1">
+                  <span class="sc-filter-sep">–</span>
+                  <input type="number" class="sc-filter-num" id="sc-divy-max" placeholder="Max" min="0" step="0.1">
+                </div>
+              </div>
+
+              <!-- 52W Position -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">52W Range</span>
+                <div class="sc-52w-toggles">
+                  <button class="sc-52w-btn active" data-52w="ALL">All</button>
+                  <button class="sc-52w-btn" data-52w="NEAR_HIGH">Near High &gt;90%</button>
+                  <button class="sc-52w-btn" data-52w="NEAR_LOW">Near Low &lt;10%</button>
+                  <button class="sc-52w-btn" data-52w="MID_RANGE">Mid Range</button>
+                </div>
+              </div>
+
+              <!-- Abs % Move -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">|Move|% Min</span>
+                <input type="number" class="sc-filter-num" id="sc-abschange-min" placeholder="e.g. 5" min="0" step="0.5"
+                  style="width:74px">
+              </div>
+
+              <!-- Raw Volume Floor -->
+              <div class="sc-filter-pill-group">
+                <span class="sc-filter-label">Min Vol</span>
+                <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0"
+                  step="100000" style="width:100px">
+              </div>
+
+              <!-- Penny Mode -->
+              <label
+                style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
+                id="sc-penny-label">
+                <input type="checkbox" id="sc-penny-mode" style="accent-color:var(--amber);width:12px;height:12px;">
+                <span>🔥 Penny Mode</span>
+              </label>
+
+              <!-- Active filter tags -->
+              <div class="sc-active-filters" id="sc-active-tags"></div>
+
+              <button class="sc-filters-toggle" id="sc-clear-adv"
+                style="color:var(--red);border-color:rgba(255,59,92,0.3);">Clear All</button>
+            </div>
+
+            <!-- KPI cards -->
+            <div class="sc-kpi-row">
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Total Anomalies</div>
+                <div class="sc-kpi-value" style="color:var(--cyan)" id="sc-kpi-total">—</div>
+                <div class="sc-kpi-sub" id="sc-kpi-total-sub">scanning...</div>
+              </div>
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Avg Vol Ratio</div>
+                <div class="sc-kpi-value" style="color:var(--amber)" id="sc-kpi-avolvr">—</div>
+                <div class="sc-kpi-sub">across flagged stocks</div>
+              </div>
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Top Sector</div>
+                <div class="sc-kpi-value" id="sc-kpi-sector">—</div>
+                <div class="sc-kpi-sub" id="sc-kpi-sector-sub">—</div>
+              </div>
+              <div class="sc-kpi-card">
+                <div class="sc-kpi-label">Advancers / Decliners</div>
+                <div class="sc-kpi-value" id="sc-kpi-breadth">—</div>
+                <div class="sc-kpi-sub" id="sc-kpi-breadth-sub">advances / declines</div>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="sc-table-wrap">
+              <table class="sc-table" id="sc-table">
+                <thead>
+                  <tr>
+                    <th data-col="symbol">Symbol <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="price" style="text-align:right">Price <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="changePct" style="text-align:right">Chg% <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="volume" style="text-align:right">Volume <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="avgVolume" style="text-align:right">Avg Vol <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="volRatio" style="text-align:right" class="sc-sorted">Vol Ratio <span
+                        class="sc-sort-arrow">▼</span></th>
+                    <th data-col="dayRange">Day Range <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="perf20d" style="text-align:right">20D Perf% <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="signals">Signal <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="sector">Sector <span class="sc-sort-arrow">▲</span></th>
+                    <th data-col="score" class="sc-sorted" style="text-align:center">Score <span
+                        class="sc-sort-arrow">▼</span></th>
+                  </tr>
+                </thead>
+                <tbody id="sc-tbody">
+                  <tr class="sc-skeleton">
+                    <td>
+                      <div class="sc-skel-block" style="width:46px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:58px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:44px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:70px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:70px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:44px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:78px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:44px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:90px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:60px"></div>
+                    </td>
+                  </tr>
+                  <tr class="sc-skeleton">
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:62px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:65px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:65px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:78px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:40px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:84px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:55px"></div>
+                    </td>
+                  </tr>
+                  <tr class="sc-skeleton">
+                    <td>
+                      <div class="sc-skel-block" style="width:50px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:55px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:42px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:72px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:72px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:42px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:78px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:42px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:96px"></div>
+                    </td>
+                    <td>
+                      <div class="sc-skel-block" style="width:58px"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
           </div>
-
-          <!-- Filter bar — row 1 -->
-          <div class="sc-filter-bar">
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span class="sc-filter-label">Sector</span>
-              <select class="sc-filter-select" id="sc-sector">
-                <option value="ALL">All Sectors</option>
-                <option value="XLK">XLK — Technology</option>
-                <option value="XLF">XLF — Financials</option>
-                <option value="XLE">XLE — Energy</option>
-                <option value="XLV">XLV — Health Care</option>
-                <option value="XLI">XLI — Industrials</option>
-                <option value="XLY">XLY — Cons. Disc.</option>
-                <option value="XLP">XLP — Cons. Staples</option>
-                <option value="XLU">XLU — Utilities</option>
-                <option value="XLB">XLB — Materials</option>
-                <option value="XLRE">XLRE — Real Estate</option>
-                <option value="XLC">XLC — Comm. Svcs</option>
-              </select>
-            </div>
-            <div style="display:flex;align-items:center;gap:5px;">
-              <span class="sc-filter-label">Scan</span>
-              <div class="sc-scan-toggles">
-                <button class="sc-scan-toggle active" data-scan="all">All Anomalies</button>
-                <button class="sc-scan-toggle" data-scan="vol-spike">Volume Spike</button>
-                <button class="sc-scan-toggle" data-scan="price-spike">Price Spike</button>
-                <button class="sc-scan-toggle" data-scan="breakout">Breakout</button>
-              </div>
-            </div>
-            <div class="sc-range-group">
-              <span class="sc-filter-label">Min Vol Ratio</span>
-              <input type="range" class="sc-range" id="sc-vol-ratio-range" min="1" max="3" step="0.1" value="5">
-              <span class="sc-range-val" id="sc-vol-ratio-val">1.0x</span>
-            </div>
-            <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker:">
-            <button class="sc-filters-toggle active" id="sc-filters-toggle">&#43; More Filters</button>
-            <div class="sc-filter-spacer"></div>
-            <button class="sc-btn-scan" id="sc-btn-scan">Scan Now</button>
-            <span class="sc-refresh-txt" id="sc-refresh-txt">Next refresh: --</span>
-          </div>
-
-          <!-- Filter bar — row 2 (advanced, collapsible) -->
-          <div class="sc-filter-row2" id="sc-filter-row2" style="display:flex;">
-
-            <!-- Price Range -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">Price</span>
-              <div class="sc-filter-minmax">
-                <input type="number" class="sc-filter-num" id="sc-price-min" placeholder="Min" min="0" step="0.01">
-                <span class="sc-filter-sep">–</span>
-                <input type="number" class="sc-filter-num" id="sc-price-max" placeholder="Max" min="0" step="0.01">
-              </div>
-            </div>
-
-            <!-- Change % Range -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">Chg%</span>
-              <div class="sc-filter-minmax">
-                <input type="number" class="sc-filter-num" id="sc-chg-min" placeholder="Min" step="0.1">
-                <span class="sc-filter-sep">–</span>
-                <input type="number" class="sc-filter-num" id="sc-chg-max" placeholder="Max" step="0.1">
-              </div>
-            </div>
-
-            <!-- Market Cap -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">Mkt Cap</span>
-              <div class="sc-mcap-toggles">
-                <button class="sc-mcap-btn active" data-mcap="ALL">All</button>
-                <button class="sc-mcap-btn" data-mcap="MEGA">Mega &gt;200B</button>
-                <button class="sc-mcap-btn" data-mcap="LARGE">Large 10-200B</button>
-                <button class="sc-mcap-btn" data-mcap="MID">Mid 2-10B</button>
-                <button class="sc-mcap-btn" data-mcap="SMALL">Small &lt;2B</button>
-              </div>
-            </div>
-
-            <!-- P/E Range -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">P/E</span>
-              <div class="sc-filter-minmax">
-                <input type="number" class="sc-filter-num" id="sc-pe-min" placeholder="Min" min="0" step="1">
-                <span class="sc-filter-sep">–</span>
-                <input type="number" class="sc-filter-num" id="sc-pe-max" placeholder="Max" min="0" step="1">
-              </div>
-            </div>
-
-            <!-- Beta Range -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">Beta</span>
-              <div class="sc-filter-minmax">
-                <input type="number" class="sc-filter-num" id="sc-beta-min" placeholder="Min" step="0.1">
-                <span class="sc-filter-sep">–</span>
-                <input type="number" class="sc-filter-num" id="sc-beta-max" placeholder="Max" step="0.1">
-              </div>
-            </div>
-
-            <!-- Div Yield -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">Div Yield%</span>
-              <div class="sc-filter-minmax">
-                <input type="number" class="sc-filter-num" id="sc-divy-min" placeholder="Min" min="0" step="0.1">
-                <span class="sc-filter-sep">–</span>
-                <input type="number" class="sc-filter-num" id="sc-divy-max" placeholder="Max" min="0" step="0.1">
-              </div>
-            </div>
-
-            <!-- 52W Position -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">52W Range</span>
-              <div class="sc-52w-toggles">
-                <button class="sc-52w-btn active" data-52w="ALL">All</button>
-                <button class="sc-52w-btn" data-52w="NEAR_HIGH">Near High &gt;90%</button>
-                <button class="sc-52w-btn" data-52w="NEAR_LOW">Near Low &lt;10%</button>
-                <button class="sc-52w-btn" data-52w="MID_RANGE">Mid Range</button>
-              </div>
-            </div>
-
-            <!-- Abs % Move -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">|Move|% Min</span>
-              <input type="number" class="sc-filter-num" id="sc-abschange-min" placeholder="e.g. 5" min="0" step="0.5"
-                style="width:74px">
-            </div>
-
-            <!-- Raw Volume Floor -->
-            <div class="sc-filter-pill-group">
-              <span class="sc-filter-label">Min Vol</span>
-              <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0" step="100000"
-                style="width:100px">
-            </div>
-
-            <!-- Penny Mode -->
-            <label
-              style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
-              id="sc-penny-label">
-              <input type="checkbox" id="sc-penny-mode" style="accent-color:var(--amber);width:12px;height:12px;">
-              <span>🔥 Penny Mode</span>
-            </label>
-
-            <!-- Active filter tags -->
-            <div class="sc-active-filters" id="sc-active-tags"></div>
-
-            <button class="sc-filters-toggle" id="sc-clear-adv"
-              style="color:var(--red);border-color:rgba(255,59,92,0.3);">Clear All</button>
-          </div>
-
-          <!-- KPI cards -->
-          <div class="sc-kpi-row">
-            <div class="sc-kpi-card">
-              <div class="sc-kpi-label">Total Anomalies</div>
-              <div class="sc-kpi-value" style="color:var(--cyan)" id="sc-kpi-total">—</div>
-              <div class="sc-kpi-sub" id="sc-kpi-total-sub">scanning...</div>
-            </div>
-            <div class="sc-kpi-card">
-              <div class="sc-kpi-label">Avg Vol Ratio</div>
-              <div class="sc-kpi-value" style="color:var(--amber)" id="sc-kpi-avolvr">—</div>
-              <div class="sc-kpi-sub">across flagged stocks</div>
-            </div>
-            <div class="sc-kpi-card">
-              <div class="sc-kpi-label">Top Sector</div>
-              <div class="sc-kpi-value" id="sc-kpi-sector">—</div>
-              <div class="sc-kpi-sub" id="sc-kpi-sector-sub">—</div>
-            </div>
-            <div class="sc-kpi-card">
-              <div class="sc-kpi-label">Advancers / Decliners</div>
-              <div class="sc-kpi-value" id="sc-kpi-breadth">—</div>
-              <div class="sc-kpi-sub" id="sc-kpi-breadth-sub">advances / declines</div>
-            </div>
-          </div>
-
-          <!-- Table -->
-          <div class="sc-table-wrap">
-            <table class="sc-table" id="sc-table">
-              <thead>
-                <tr>
-                  <th data-col="symbol">Symbol <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="price" style="text-align:right">Price <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="changePct" style="text-align:right">Chg% <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="volume" style="text-align:right">Volume <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="avgVolume" style="text-align:right">Avg Vol <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="volRatio" style="text-align:right" class="sc-sorted">Vol Ratio <span
-                      class="sc-sort-arrow">▼</span></th>
-                  <th data-col="dayRange">Day Range <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="perf20d" style="text-align:right">20D Perf% <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="signals">Signal <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="sector">Sector <span class="sc-sort-arrow">▲</span></th>
-                  <th data-col="score" class="sc-sorted" style="text-align:center">Score <span
-                      class="sc-sort-arrow">▼</span></th>
-                </tr>
-              </thead>
-              <tbody id="sc-tbody">
-                <tr class="sc-skeleton">
-                  <td>
-                    <div class="sc-skel-block" style="width:46px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:58px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:44px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:70px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:70px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:44px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:78px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:44px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:90px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:60px"></div>
-                  </td>
-                </tr>
-                <tr class="sc-skeleton">
-                  <td>
-                    <div class="sc-skel-block" style="width:40px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:62px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:40px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:65px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:65px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:40px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:78px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:40px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:84px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:55px"></div>
-                  </td>
-                </tr>
-                <tr class="sc-skeleton">
-                  <td>
-                    <div class="sc-skel-block" style="width:50px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:55px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:42px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:72px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:72px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:42px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:78px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:42px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:96px"></div>
-                  </td>
-                  <td>
-                    <div class="sc-skel-block" style="width:58px"></div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
         </div>
-      </div>
 
-      <!-- Flyout -->
-      <div class="sc-flyout-backdrop" id="sc-flyout-backdrop"></div>
-      <div class="sc-flyout-panel" id="sc-flyout-panel">
-        <div class="sc-flyout-hdr">
-          <div>
-            <div class="sc-flyout-sym" id="sc-flyout-sym">—</div>
-            <div class="sc-flyout-name" id="sc-flyout-name">—</div>
-            <div class="sc-flyout-price-row">
-              <span class="sc-flyout-price" id="sc-flyout-price">—</span>
-              <span class="sc-flyout-chg" id="sc-flyout-chg">—</span>
+        <!-- Flyout -->
+        <div class="sc-flyout-backdrop" id="sc-flyout-backdrop"></div>
+        <div class="sc-flyout-panel" id="sc-flyout-panel">
+          <div class="sc-flyout-hdr">
+            <div>
+              <div class="sc-flyout-sym" id="sc-flyout-sym">—</div>
+              <div class="sc-flyout-name" id="sc-flyout-name">—</div>
+              <div class="sc-flyout-price-row">
+                <span class="sc-flyout-price" id="sc-flyout-price">—</span>
+                <span class="sc-flyout-chg" id="sc-flyout-chg">—</span>
+              </div>
             </div>
+            <button class="sc-flyout-close" id="sc-flyout-close">&times;</button>
           </div>
-          <button class="sc-flyout-close" id="sc-flyout-close">&times;</button>
+          <div id="sc-flyout-content"></div>
         </div>
-        <div id="sc-flyout-content"></div>
-      </div>
 
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            12. EARNINGS VOL
       ════════════════════════════════════ -->
-      <div id="earnings-page" class="page" style="display:none;">
-        <div class="card mb12">
-          <div class="card-header">
-            <span class="card-title">Upcoming Earnings — Volatility Monitor</span>
-          </div>
-          <div class="card-body" id="earnings-body">
-            <div class="text-muted fs10">Log in to view earnings volatility data.</div>
+        <div id="earnings-page" class="page" style="display:none;">
+          <div class="card mb12">
+            <div class="card-header">
+              <span class="card-title">Upcoming Earnings — Volatility Monitor</span>
+            </div>
+            <div class="card-body" id="earnings-body">
+              <div class="text-muted fs10">Log in to view earnings volatility data.</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            13. SENTIMENT
       ════════════════════════════════════ -->
-      <div id="sentiment-page" class="page" style="display:none;">
-      </div>
-      <!-- ════════════════════════════════════
+        <div id="sentiment-page" class="page" style="display:none;">
+        </div>
+        <!-- ════════════════════════════════════
            14. CHARTING
       ════════════════════════════════════ -->
-      <div id="charting-page" class="page" style="display:none;">
-        <div id="charting-tv-wrap">
-          <div class="card" id="charting-tv-card">
-            <div class="card-header">
-              <span class="card-title">TradingView Chart</span>
-              <span style="font-size:9px;color:var(--text3)">Interactive full-page chart</span>
-            </div>
-            <div class="card-body">
-              <div id="charting-tv-widget"></div>
+        <div id="charting-page" class="page" style="display:none;">
+          <div id="charting-tv-wrap">
+            <div class="card" id="charting-tv-card">
+              <div class="card-header">
+                <span class="card-title">TradingView Chart</span>
+                <span style="font-size:9px;color:var(--text3)">Interactive full-page chart</span>
+              </div>
+              <div class="card-body">
+                <div id="charting-tv-widget"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <!-- ════════════════════════════════════
+        <!-- ════════════════════════════════════
            15. TREASURY & RISK
       ════════════════════════════════════ -->
-      <div id="treasury-page" class="page" style="display:none;">
-        <div class="card mb12">
-          <div class="card-header"><span class="card-title">Treasury Yield Curve</span></div>
-          <div class="card-body" id="treasury-body">
-            <div class="text-muted fs10">Treasury yields (via Futures/BOND quotes). Log in to view.</div>
+        <div id="treasury-page" class="page" style="display:none;">
+          <div class="card mb12">
+            <div class="card-header"><span class="card-title">Treasury Yield Curve</span></div>
+            <div class="card-body" id="treasury-body">
+              <div class="text-muted fs10">Treasury yields (via Futures/BOND quotes). Log in to view.</div>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><span class="card-title">Risk Metrics</span></div>
+              <div class="card-body" id="risk-body">
+                <div class="text-muted fs10">—</div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">USD Index (DXY)</span></div>
+              <div class="card-body" id="dxy-body">
+                <div class="text-muted fs10">—</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="grid-2">
-          <div class="card">
-            <div class="card-header"><span class="card-title">Risk Metrics</span></div>
-            <div class="card-body" id="risk-body">
-              <div class="text-muted fs10">—</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><span class="card-title">USD Index (DXY)</span></div>
-            <div class="card-body" id="dxy-body">
-              <div class="text-muted fs10">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div id="calendar-page" class="page" style="display:none;">
-        <div class="card" id="calendar-card">
-          <div class="card-header">
-            <span class="card-title">
-              <div id="calendar-month-label">—</div>
-            </span>
-            <div id="calendar-toolbar">
-              <div id="calendar-view-toggle">
-                <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
-                  onclick="setCalendarViewMode('month')">Month</button>
-                <button id="calendar-view-week-btn" class="calendar-view-btn" type="button"
-                  onclick="setCalendarViewMode('week')">Week</button>
+        <div id="calendar-page" class="page" style="display:none;">
+          <div class="card" id="calendar-card">
+            <div class="card-header">
+              <span class="card-title">
+                <div id="calendar-month-label">—</div>
+              </span>
+              <div id="calendar-toolbar">
+                <div id="calendar-view-toggle">
+                  <button id="calendar-view-month-btn" class="calendar-view-btn active" type="button"
+                    onclick="setCalendarViewMode('month')">Month</button>
+                  <button id="calendar-view-week-btn" class="calendar-view-btn" type="button"
+                    onclick="setCalendarViewMode('week')">Week</button>
+                </div>
+                <button class="topbar-icon-btn" type="button" onclick="calendarPrevPeriod()" title="Previous">
+                  <spanb>◀</spanb>
+                </button>
+                <button class="topbar-icon-btn" type="button" onclick="calendarNextPeriod()" title="Next">
+                  <spanb>▶</spanb>
+                </button>
               </div>
-              <button class="topbar-icon-btn" type="button" onclick="calendarPrevPeriod()" title="Previous">
-                <spanb>◀</spanb>
-              </button>
-              <button class="topbar-icon-btn" type="button" onclick="calendarNextPeriod()" title="Next">
-                <spanb>▶</spanb>
-              </button>
             </div>
-          </div>
-          <div class="card-body" id="calendar-body">
-            <div id="calendar-legend"></div>
-            <div id="calendar-grid-wrap">
-              <div id="calendar-main">
-                <div id="calendar-weekdays"></div>
-                <div id="calendar-grid"></div>
-              </div>
+            <div class="card-body" id="calendar-body">
+              <div id="calendar-legend"></div>
+              <div id="calendar-grid-wrap">
+                <div id="calendar-main">
+                  <div id="calendar-weekdays"></div>
+                  <div id="calendar-grid"></div>
+                </div>
 
-              <aside id="calendar-day-panel" class="collapsed">
-                <div id="calendar-day-panel-header">
-                  <div>
-                    <div id="calendar-day-panel-title">Day Summary</div>
-                    <div id="calendar-day-panel-subtitle">—</div>
+                <aside id="calendar-day-panel" class="collapsed">
+                  <div id="calendar-day-panel-header">
+                    <div>
+                      <div id="calendar-day-panel-title">Day Summary</div>
+                      <div id="calendar-day-panel-subtitle">—</div>
+                    </div>
+                    <button class="topbar-icon-btn" type="button" onclick="closeCalendarDayPanel()"
+                      title="Close">✕</button>
                   </div>
-                  <button class="topbar-icon-btn" type="button" onclick="closeCalendarDayPanel()"
-                    title="Close">✕</button>
-                </div>
-                <div id="calendar-day-panel-body">
-                  <div class="text-muted fs10">No day selected.</div>
-                </div>
-              </aside>
+                  <div id="calendar-day-panel-body">
+                    <div class="text-muted fs10">No day selected.</div>
+                  </div>
+                </aside>
 
-              <div id="calendar-tooltip"></div>
+                <div id="calendar-tooltip"></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <!-- ════════════════════════════════════════════════
+        <!-- ════════════════════════════════════════════════
              JOURNAL PAGE
         ════════════════════════════════════════════════ -->
-      <div id="journal-page" class="page">
+        <div id="journal-page" class="page">
 
-        <!-- hidden file input -->
-        <input type="file" id="jnl-file-input" accept=".csv" style="display:none">
-        <div id="jnl-tooltip" class="jnl-tooltip"></div>
+          <!-- hidden file input -->
+          <input type="file" id="jnl-file-input" accept=".csv" style="display:none">
+          <div id="jnl-tooltip" class="jnl-tooltip"></div>
 
-        <!-- header row -->
-        <div class="jnl-header">
-          <div class="jnl-header-left">
-            <div class="jnl-trade-count" id="jnl-trade-count">0 <span>trades in <span
-                  id="jnl-year-label">--</span></span></div>
-            <select class="jnl-year-select" id="jnl-year-select" onchange="jnlChangeYear(this.value)">
-              <option>2026</option>
-              <option>2025</option>
-              <option>2024</option>
-            </select>
-          </div>
-          <button class="jnl-upload-btn" onclick="document.getElementById('jnl-file-input').click()">
-            ↑ Upload CSV
-          </button>
-        </div>
-
-        <!-- 75/25 LAYOUT: 3 heatmaps | ticker pie chart -->
-        <div class="jnl-hm-row">
-          <div class="jnl-hm-cards">
-
-            <!-- TRADE ACTIVITY HEATMAP -->
-            <div class="jnl-card" id="jnl-activity-card">
-              <div class="jnl-card-header">
-                <div>
-                  <div class="jnl-card-title">Trade activity</div>
-                  <div class="jnl-card-sub" id="jnl-activity-sub">Trading Account · upload a CSV to begin</div>
-                </div>
-                <div style="display:flex;align-items:center;gap:12px;">
-                  <div class="jnl-card-meta" id="jnl-activity-meta"></div>
-                  <div class="jnl-toggle" id="jnl-metric-toggle">
-                    <button class="active" onclick="jnlSetMetric('trades',this)">Trades</button>
-                    <button onclick="jnlSetMetric('shares',this)">Shares</button>
-                    <button onclick="jnlSetMetric('notional',this)">Notional</button>
-                  </div>
-                </div>
-              </div>
-              <div class="jnl-heatmap-wrap">
-                <div id="jnl-months-row" class="jnl-heatmap-months"></div>
-                <div class="jnl-heatmap-outer">
-                  <div class="jnl-dow-labels">
-                    <div class="jnl-dow-label"></div>
-                    <div class="jnl-dow-label">Mon</div>
-                    <div class="jnl-dow-label">Tue</div>
-                    <div class="jnl-dow-label">Wed</div>
-                    <div class="jnl-dow-label">Thu</div>
-                    <div class="jnl-dow-label">Fri</div>
-                    <div class="jnl-dow-label"></div>
-                  </div>
-                  <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
-                </div>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-                <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
-                <div class="jnl-legend">
-                  Less
-                  <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                  <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
-                  <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                  <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
-                  <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                  More
-                </div>
-              </div>
-            </div>
-
-            <!-- TRADE PERFORMANCE HEATMAP -->
-            <div class="jnl-card">
-              <div class="jnl-card-header">
-                <div>
-                  <div class="jnl-card-title">Trade performance</div>
-                  <div class="jnl-card-sub" id="jnl-pnl-sub"><span id="jnl-year-label3">--</span> YTD · daily net
-                    P&amp;L</div>
-                </div>
-                <div class="jnl-card-meta" id="jnl-pnl-meta"></div>
-              </div>
-              <div class="jnl-heatmap-wrap">
-                <div id="jnl-pnl-months-row" class="jnl-heatmap-months"></div>
-                <div class="jnl-heatmap-outer">
-                  <div class="jnl-dow-labels">
-                    <div class="jnl-dow-label"></div>
-                    <div class="jnl-dow-label">Mon</div>
-                    <div class="jnl-dow-label">Tue</div>
-                    <div class="jnl-dow-label">Wed</div>
-                    <div class="jnl-dow-label">Thu</div>
-                    <div class="jnl-dow-label">Fri</div>
-                    <div class="jnl-dow-label"></div>
-                  </div>
-                  <div id="jnl-pnl-heatmap" class="jnl-heatmap"></div>
-                </div>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-                <div class="jnl-card-sub" id="jnl-pnl-footer">Upload a CSV to see your performance</div>
-                <div class="jnl-legend">
-                  Loss
-                  <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
-                  <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
-                  <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                  <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                  <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                  Profit
-                </div>
-              </div>
-            </div>
-
-            <!-- SPY DAILY PERFORMANCE HEATMAP -->
-            <div class="jnl-card">
-              <div class="jnl-card-header">
-                <div>
-                  <div class="jnl-card-title">SPY daily performance</div>
-                  <div class="jnl-card-sub" id="jnl-spy-sub"><span id="jnl-year-label2">--</span> YTD · intensity =
-                    daily % change (open to close)</div>
-                </div>
-                <div class="jnl-card-meta" id="jnl-spy-meta"></div>
-              </div>
-              <div class="jnl-heatmap-wrap">
-                <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
-                <div class="jnl-heatmap-outer">
-                  <div class="jnl-dow-labels">
-                    <div class="jnl-dow-label"></div>
-                    <div class="jnl-dow-label">Mon</div>
-                    <div class="jnl-dow-label">Tue</div>
-                    <div class="jnl-dow-label">Wed</div>
-                    <div class="jnl-dow-label">Thu</div>
-                    <div class="jnl-dow-label">Fri</div>
-                    <div class="jnl-dow-label"></div>
-                  </div>
-                  <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
-                </div>
-              </div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-                <div class="jnl-card-sub" id="jnl-spy-footer"></div>
-                <div class="jnl-legend">
-                  &minus;2%
-                  <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
-                  <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
-                  <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                  <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                  <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                  +2%
-                </div>
-              </div>
-            </div>
-
-          </div><!-- /.jnl-hm-cards -->
-
-          <!-- TICKER PIE CHART PANEL -->
-          <div class="jnl-pie-panel">
-            <div class="jnl-pie-title">Ticker mix</div>
-            <div class="jnl-pie-sub" id="jnl-pie-sub">% of trades by ticker</div>
-            <canvas id="jnl-pie-canvas" width="180" height="180"></canvas>
-            <div class="jnl-pie-legend" id="jnl-pie-legend"></div>
-          </div>
-
-        </div><!-- /.jnl-hm-row -->
-
-        <!-- BEHAVIORAL FLAGS -->
-        <div class="jnl-flags" id="jnl-flags"></div>
-
-        <!-- TRADE MATRIX -->
-        <div class="jnl-card" style="padding:0;overflow:hidden;">
-          <div
-            style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-            <div class="jnl-card-title">Trade Log</div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <input id="jnl-search" placeholder="Filter ticker…"
-                style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;width:120px;"
-                oninput="jnlRenderTable()">
-              <select id="jnl-filter-type"
-                style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;"
-                onchange="jnlRenderTable()">
-                <option value="">All Types</option>
-                <option value="Buy to Open">Buy to Open</option>
-                <option value="Sell to Close">Sell to Close</option>
+          <!-- header row -->
+          <div class="jnl-header">
+            <div class="jnl-header-left">
+              <div class="jnl-trade-count" id="jnl-trade-count">0 <span>trades in <span
+                    id="jnl-year-label">--</span></span></div>
+              <select class="jnl-year-select" id="jnl-year-select" onchange="jnlChangeYear(this.value)">
+                <option>2026</option>
+                <option>2025</option>
+                <option>2024</option>
               </select>
-              <span style="font-size:10px;color:var(--text3);">—</span>
-              <input type="date" id="jnl-date-from"
-                style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;"
-                onchange="jnlRenderTable()" title="From date">
-              <span style="font-size:10px;color:var(--text3);">to</span>
-              <input type="date" id="jnl-date-to"
-                style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;"
-                onchange="jnlRenderTable()" title="To date">
-              <button
-                onclick="document.getElementById('jnl-date-from').value='';document.getElementById('jnl-date-to').value='';jnlRenderTable();"
-                style="background:transparent;border:1px solid var(--border2);color:var(--text3);padding:5px 9px;border-radius:5px;font-size:10px;font-family:inherit;cursor:pointer;"
-                title="Clear date range">&times;</button>
+            </div>
+            <button class="jnl-upload-btn" onclick="document.getElementById('jnl-file-input').click()">
+              ↑ Upload CSV
+            </button>
+          </div>
+
+          <!-- 75/25 LAYOUT: 3 heatmaps | ticker pie chart -->
+          <div class="jnl-hm-row">
+            <div class="jnl-hm-cards">
+
+              <!-- TRADE ACTIVITY HEATMAP -->
+              <div class="jnl-card" id="jnl-activity-card">
+                <div class="jnl-card-header">
+                  <div>
+                    <div class="jnl-card-title">Trade activity</div>
+                    <div class="jnl-card-sub" id="jnl-activity-sub">Trading Account · upload a CSV to begin</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div class="jnl-card-meta" id="jnl-activity-meta"></div>
+                    <div class="jnl-toggle" id="jnl-metric-toggle">
+                      <button class="active" onclick="jnlSetMetric('trades',this)">Trades</button>
+                      <button onclick="jnlSetMetric('shares',this)">Shares</button>
+                      <button onclick="jnlSetMetric('notional',this)">Notional</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="jnl-heatmap-wrap">
+                  <div id="jnl-months-row" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
+                  <div class="jnl-legend">
+                    Less
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    More
+                  </div>
+                </div>
+              </div>
+
+              <!-- TRADE PERFORMANCE HEATMAP -->
+              <div class="jnl-card">
+                <div class="jnl-card-header">
+                  <div>
+                    <div class="jnl-card-title">Trade performance</div>
+                    <div class="jnl-card-sub" id="jnl-pnl-sub"><span id="jnl-year-label3">--</span> YTD · daily net
+                      P&amp;L</div>
+                  </div>
+                  <div class="jnl-card-meta" id="jnl-pnl-meta"></div>
+                </div>
+                <div class="jnl-heatmap-wrap">
+                  <div id="jnl-pnl-months-row" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="jnl-pnl-heatmap" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="jnl-pnl-footer">Upload a CSV to see your performance</div>
+                  <div class="jnl-legend">
+                    Loss
+                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    Profit
+                  </div>
+                </div>
+              </div>
+
+              <!-- SPY DAILY PERFORMANCE HEATMAP -->
+              <div class="jnl-card">
+                <div class="jnl-card-header">
+                  <div>
+                    <div class="jnl-card-title">SPY daily performance</div>
+                    <div class="jnl-card-sub" id="jnl-spy-sub"><span id="jnl-year-label2">--</span> YTD · intensity =
+                      daily % change (open to close)</div>
+                  </div>
+                  <div class="jnl-card-meta" id="jnl-spy-meta"></div>
+                </div>
+                <div class="jnl-heatmap-wrap">
+                  <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="jnl-spy-footer"></div>
+                  <div class="jnl-legend">
+                    &minus;2%
+                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    +2%
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /.jnl-hm-cards -->
+
+            <!-- TICKER PIE CHART PANEL -->
+            <div class="jnl-pie-panel">
+              <div class="jnl-pie-title">Ticker mix</div>
+              <div class="jnl-pie-sub" id="jnl-pie-sub">% of trades by ticker</div>
+              <canvas id="jnl-pie-canvas" width="180" height="180"></canvas>
+              <div class="jnl-pie-legend" id="jnl-pie-legend"></div>
+            </div>
+
+          </div><!-- /.jnl-hm-row -->
+
+          <!-- BEHAVIORAL FLAGS -->
+          <div class="jnl-flags" id="jnl-flags"></div>
+
+          <!-- TRADE MATRIX -->
+          <div class="jnl-card" style="padding:0;overflow:hidden;">
+            <div
+              style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <div class="jnl-card-title">Trade Log</div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input id="jnl-search" placeholder="Filter ticker…"
+                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;width:120px;"
+                  oninput="jnlRenderTable()">
+                <select id="jnl-filter-type"
+                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;"
+                  onchange="jnlRenderTable()">
+                  <option value="">All Types</option>
+                  <option value="Buy to Open">Buy to Open</option>
+                  <option value="Sell to Close">Sell to Close</option>
+                </select>
+                <span style="font-size:10px;color:var(--text3);">—</span>
+                <input type="date" id="jnl-date-from"
+                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;"
+                  onchange="jnlRenderTable()" title="From date">
+                <span style="font-size:10px;color:var(--text3);">to</span>
+                <input type="date" id="jnl-date-to"
+                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;"
+                  onchange="jnlRenderTable()" title="To date">
+                <button
+                  onclick="document.getElementById('jnl-date-from').value='';document.getElementById('jnl-date-to').value='';jnlRenderTable();"
+                  style="background:transparent;border:1px solid var(--border2);color:var(--text3);padding:5px 9px;border-radius:5px;font-size:10px;font-family:inherit;cursor:pointer;"
+                  title="Clear date range">&times;</button>
+              </div>
+            </div>
+            <div class="jnl-matrix-summary" id="jnl-matrix-summary" style="display:none;"></div>
+            <div class="jnl-table-wrap" id="jnl-table-wrap">
+              <div class="jnl-empty">
+                <div class="jnl-empty-icon">📂</div>
+                <div class="jnl-empty-title">No trades loaded</div>
+                <div class="jnl-empty-desc">Upload a CSV from your brokerage to view your trade log.</div>
+              </div>
             </div>
           </div>
-          <div class="jnl-matrix-summary" id="jnl-matrix-summary" style="display:none;"></div>
-          <div class="jnl-table-wrap" id="jnl-table-wrap">
-            <div class="jnl-empty">
-              <div class="jnl-empty-icon">📂</div>
-              <div class="jnl-empty-title">No trades loaded</div>
-              <div class="jnl-empty-desc">Upload a CSV from your brokerage to view your trade log.</div>
-            </div>
-          </div>
-        </div>
 
-      </div><!-- /journal-page -->
+        </div><!-- /journal-page -->
 
-    </div><!-- /page-content -->
-  </div><!-- /main -->
+      </div><!-- /page-content -->
+    </div><!-- /main -->
   </div><!-- /app -->
   <script>
     // ═══════════════════════════════════════════════════════
