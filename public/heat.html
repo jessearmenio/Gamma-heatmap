@@ -13440,7 +13440,7 @@
       try {
         const d = await apiGet(`/api/heat?symbol=${heatSymbol}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`);
         if (!d.ok) throw new Error(d.error);
-        llastHeatData = d;
+        lastHeatData = d;
         updateOvmPc(); // refresh P/C on Overview whenever Heat data updates
         renderHeatTable(d);
         updateHeatKeyLevels(d);
@@ -13460,23 +13460,22 @@
         const spyOpen = q.openPrice ?? null;
         const spyClose = d.underlyingPrice ?? q.lastPrice ?? q.closePrice ?? null;
 
-        const netGamma = Array.isArray(d.strikes)
-          ? d.strikes.reduce((sum, row) => sum + (Number(row.netGex) || 0), 0)
-          : null;
+        const gammaTotals = Array.isArray(d.matrix)
+          ? d.matrix.reduce((acc, row) => {
+            const rowGamma = Array.isArray(row.cells)
+              ? row.cells.reduce((sum, cell) => sum + (Number(cell.netGex) || 0), 0)
+              : 0;
 
-        const totalPosGamma = Array.isArray(d.strikes)
-          ? d.strikes.reduce((sum, row) => {
-            const g = Number(row.netGex) || 0;
-            return g > 0 ? sum + g : sum;
-          }, 0)
-          : null;
+            acc.netGamma += rowGamma;
 
-        const totalNegGamma = Array.isArray(d.strikes)
-          ? d.strikes.reduce((sum, row) => {
-            const g = Number(row.netGex) || 0;
-            return g < 0 ? sum + g : sum;
-          }, 0)
-          : null;
+            if (rowGamma > 0) acc.totalPosGamma += rowGamma;
+            if (rowGamma < 0) acc.totalNegGamma += rowGamma;
+
+            return acc;
+          }, { netGamma: 0, totalPosGamma: 0, totalNegGamma: 0 })
+          : { netGamma: null, totalPosGamma: null, totalNegGamma: null };
+
+        const { netGamma, totalPosGamma, totalNegGamma } = gammaTotals;
 
         await fetch('/api/gex-history/snapshot', {
           method: 'POST',

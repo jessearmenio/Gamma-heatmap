@@ -101,9 +101,6 @@ async function initTurso() {
     )
   `);
 
-  await turso.execute(`ALTER TABLE GexHistory ADD COLUMN totalPosGamma REAL`).catch(() => { });
-  await turso.execute(`ALTER TABLE GexHistory ADD COLUMN totalNegGamma REAL`).catch(() => { });
-
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
@@ -160,7 +157,7 @@ async function saveGexHistorySnapshot(row) {
         spyChange,
         updated_at
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       ON CONFLICT(dateRecorded)
       DO UPDATE SET
         kingGEX = excluded.kingGEX,
