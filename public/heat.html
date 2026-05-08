@@ -211,12 +211,12 @@
 
       96% {
         opacity: 1;
-        background-position: -100% 0;
+        background-position: -200% 0;
       }
 
       100% {
         opacity: 0;
-        background-position: -100% 0;
+        background-position: -200% 0;
       }
     }
 
@@ -257,6 +257,7 @@
       }
 
       85% {
+        transform: rotate(0deg);
         box-shadow:
           inset 0 0 0 1px rgba(245, 166, 35, 0.6),
           0 0 18px 2px rgba(245, 166, 35, 0.7),
@@ -265,6 +266,7 @@
       }
 
       95% {
+        transform: rotate(360deg);
         box-shadow:
           inset 0 0 0 1px rgba(245, 166, 35, 0.25),
           0 0 6px 0 rgba(245, 166, 35, 0.2);
@@ -272,6 +274,7 @@
       }
 
       100% {
+        transform: rotate(360deg);
         box-shadow:
           inset 0 0 0 1px rgba(245, 166, 35, 0.15),
           0 0 0 0 rgba(245, 166, 35, 0);
@@ -694,6 +697,38 @@
       letter-spacing: 0.04em;
       line-height: 1.2;
       text-align: center;
+    }
+
+    #topbar-title.title-matrix-drop {
+      animation: title-matrix-drop 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes title-matrix-drop {
+      0% {
+        opacity: 0;
+        transform: translateY(-28px);
+        filter: blur(3px);
+        color: #F5A623;
+        text-shadow: 0 0 10px rgba(34, 221, 136, 0.9);
+        letter-spacing: 0.22em;
+      }
+
+      55% {
+        opacity: 1;
+        transform: translateY(3px);
+        filter: blur(0.5px);
+        color: #F5A623;
+        text-shadow: 0 0 8px rgba(220, 255, 30, 0.55);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: none;
+        color: var(--text);
+        text-shadow: none;
+        letter-spacing: 0.04em;
+      }
     }
 
     #topbar-left-stack #market-status-badge {
@@ -9284,6 +9319,16 @@
     // ═══════════════════════════════════════════════════════
     //  NAVIGATION
     // ═══════════════════════════════════════════════════════
+    function playTopbarTitleMatrixDrop() {
+      const title = document.getElementById('topbar-title');
+      if (!title) return;
+      title.classList.remove('title-matrix-drop');
+      void title.offsetWidth;
+      title.classList.add('title-matrix-drop');
+      window.setTimeout(() => {
+        title.classList.remove('title-matrix-drop');
+      }, 800);
+    }
     function navTo(el) {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
       el.classList.add('active');
@@ -9299,7 +9344,9 @@
       }
       const rawTitle = el.querySelector('.nav-label')?.textContent || '';
       const words = rawTitle.trim().split(/\s+/);
-      document.getElementById('topbar-title').innerHTML = words.length === 2 ? words[0] + '<br>' + words[1] : rawTitle;
+      document.getElementById('topbar-title').innerHTML =
+        words.length === 2 ? words[0] + '<br>' + words[1] : rawTitle;
+      playTopbarTitleMatrixDrop();
       // Auto-load pages when navigated to
       if (isConnected || target === 'charting-page' || target === 'calendar-page') autoLoadPage(target);
     }
