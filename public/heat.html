@@ -13451,6 +13451,8 @@
         if (heatSymbol === 'SPY') {
           saveGexHistoryFromHeat(d);
         }
+
+        return d;
       } catch (e) {
         empty.innerHTML = `<div class="co-icon" style="font-size:32px;">⚠</div><div class="co-title" style="color:var(--red);">${e.message}</div>`;
       }
@@ -16190,9 +16192,22 @@
     }
 
     async function loadSmartMoney() {
-      if (!isConnected || !lastHeatData) {
-        document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Load the Heat Seeker page for SPY first to derive Smart Money signals.</div>`;
+      if (!isConnected) {
+        document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Connect Schwab first to derive Smart Money signals.</div>`;
         return;
+      }
+
+      if (!lastHeatData) {
+        document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Loading SPY Heat Seeker data…</div>`;
+
+        try {
+          await reloadHeat();
+        } catch (e) {
+          document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Failed to load Heat Seeker data.</div>`;
+          return;
+        }
+
+        if (!lastHeatData) return;
       }
       const s = lastHeatData.strikes || [];
       const callOI = s.reduce((a, r) => a + r.callOpenInterest, 0);
@@ -16222,7 +16237,7 @@
         <span style="color:#d470ff;font-weight:700">Put GEX: ${fmtDollar(putGex)}</span>
       </div>
     </div>
-      ${renderSmartMoneyKeyLevelPills(d)}`;
+      ${renderSmartMoneyKeyLevelPills(lastHeatData)}`;
 
       // Sweeps = highest OI strikes
       const topCalls = [...s].sort((a, b) => b.callOpenInterest - a.callOpenInterest).slice(0, 5);
