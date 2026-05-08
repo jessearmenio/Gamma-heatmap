@@ -6127,11 +6127,6 @@
       color: var(--text3) !important;
     }
 
-    .card-body #sm-oi-chart {
-      grid-template-columns: 1fr 1fr;
-    }
-
-
     /* ─────────────────────────────────────────────
    Tooltip
 ───────────────────────────────────────────── */
@@ -16214,11 +16209,17 @@
       const topCalls = [...s].sort((a, b) => b.callOpenInterest - a.callOpenInterest).slice(0, 5);
       const topPuts = [...s].sort((a, b) => b.putOpenInterest - a.putOpenInterest).slice(0, 5);
       document.getElementById('sm-sweeps').innerHTML = `
-    <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP CALL OI STRIKES</div>
-    ${topCalls.map(r => `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:var(--accent);font-weight:700">${r.strike}</span><span style="color:var(--text2)">${fmtK(r.callOpenInterest)} OI</span><span style="color:var(--text3);font-size:13px;">${fmtDollar(r.callGex)}</span></div>`).join('')}
-    <hr class="sep" style="margin:8px 0;">
-    <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP PUT OI STRIKES</div>
-    ${topPuts.map(r => `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="color:#d470ff;font-weight:700">${r.strike}</span><span style="color:var(--text2)">${fmtK(r.putOpenInterest)} OI</span><span style="color:var(--text3);font-size:13px;">${fmtDollar(r.putGex)}</span></div>`).join('')}`;
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;">
+    <div style="min-width:0;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP CALL OI STRIKES</div>
+      ${topCalls.map(r => `<div style="display:grid;grid-template-columns:48px 1fr 72px;gap:8px;align-items:center;font-size:12px;margin-bottom:3px;"><span style="color:var(--accent);font-weight:700">${r.strike}</span><span style="color:var(--text2);text-align:right;">${fmtK(r.callOpenInterest)} OI</span><span style="color:var(--text3);font-size:13px;text-align:right;">${fmtDollar(r.callGex)}</span></div>`).join('')}
+    </div>
+
+    <div style="min-width:0;border-left:1px solid var(--border);padding-left:14px;">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;font-weight:700;">TOP PUT OI STRIKES</div>
+      ${topPuts.map(r => `<div style="display:grid;grid-template-columns:48px 1fr 72px;gap:8px;align-items:center;font-size:12px;margin-bottom:3px;"><span style="color:#d470ff;font-weight:700">${r.strike}</span><span style="color:var(--text2);text-align:right;">${fmtK(r.putOpenInterest)} OI</span><span style="color:var(--text3);font-size:13px;text-align:right;">${fmtDollar(r.putGex)}</span></div>`).join('')}
+    </div>
+  </div>`;
 
       // OI chart (canvas bar chart)
       drawOIChart();
