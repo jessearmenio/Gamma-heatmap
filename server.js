@@ -91,6 +91,8 @@ async function initTurso() {
       callWall REAL,
       putWall REAL,
       netGamma REAL,
+      totalPosGamma REAL,
+      totalNegGamma REAL,
       spyOpen REAL,
       spyClose REAL,
       spyChange REAL,
@@ -98,6 +100,9 @@ async function initTurso() {
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await turso.execute(`ALTER TABLE GexHistory ADD COLUMN totalPosGamma REAL`).catch(() => { });
+  await turso.execute(`ALTER TABLE GexHistory ADD COLUMN totalNegGamma REAL`).catch(() => { });
 
   console.log("Turso SPY daily history table ready.");
 
@@ -148,6 +153,8 @@ async function saveGexHistorySnapshot(row) {
         callWall,
         putWall,
         netGamma,
+        totalPosGamma,
+        totalNegGamma,
         spyOpen,
         spyClose,
         spyChange,
@@ -160,6 +167,8 @@ async function saveGexHistorySnapshot(row) {
         callWall = excluded.callWall,
         putWall = excluded.putWall,
         netGamma = excluded.netGamma,
+        totalPosGamma = excluded.totalPosGamma,
+        totalNegGamma = excluded.totalNegGamma,
         spyOpen = excluded.spyOpen,
         spyClose = excluded.spyClose,
         spyChange = excluded.spyChange,
@@ -171,6 +180,8 @@ async function saveGexHistorySnapshot(row) {
       row.callWall,
       row.putWall,
       row.netGamma,
+      row.totalPosGamma,
+      row.totalNegGamma,
       row.spyOpen,
       row.spyClose,
       row.spyChange
@@ -1723,6 +1734,8 @@ app.get("/api/gex-history", async (req, res) => {
           callWall,
           putWall,
           netGamma,
+          totalPosGamma,
+          totalNegGamma,
           spyOpen,
           spyClose,
           spyChange

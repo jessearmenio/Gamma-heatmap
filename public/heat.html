@@ -8108,6 +8108,8 @@
                       <th>Call Wall</th>
                       <th>Put Wall</th>
                       <th>Net Gamma</th>
+                      <th>Total (+)Gamma</th>
+                      <th>Total (-)Gamma</th>
                       <th>SPY Open</th>
                       <th>SPY Close</th>
                       <th>SPY Change</th>
@@ -8115,7 +8117,7 @@
                   </thead>
                   <tbody id="gex-history-body">
                     <tr>
-                      <td colspan="8" class="gex-history-empty">Loading…</td>
+                      <td colspan="10" class="gex-history-empty">Loading…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -13462,6 +13464,20 @@
           ? d.strikes.reduce((sum, row) => sum + (Number(row.netGex) || 0), 0)
           : null;
 
+        const totalPosGamma = Array.isArray(d.strikes)
+          ? d.strikes.reduce((sum, row) => {
+            const g = Number(row.netGex) || 0;
+            return g > 0 ? sum + g : sum;
+          }, 0)
+          : null;
+
+        const totalNegGamma = Array.isArray(d.strikes)
+          ? d.strikes.reduce((sum, row) => {
+            const g = Number(row.netGex) || 0;
+            return g < 0 ? sum + g : sum;
+          }, 0)
+          : null;
+
         await fetch('/api/gex-history/snapshot', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -13470,6 +13486,8 @@
             callWall: s.strongestCallWall?.strike ?? null,
             putWall: s.strongestPutWall?.strike ?? null,
             netGamma,
+            totalPosGamma,
+            totalNegGamma,
             spyOpen,
             spyClose,
             spyChange: Number.isFinite(Number(q.netPercentChange)) ? Number(q.netPercentChange) : null
@@ -16228,6 +16246,8 @@
           <td>${fmtNumSmart(r.callWall, 2)}</td>
           <td>${fmtNumSmart(r.putWall, 2)}</td>
           <td>${fmtNumSmart(r.netGamma, 0)}</td>
+          <td class="up">${fmtNumSmart(r.totalPosGamma, 0)}</td>
+          <td class="dn">${fmtNumSmart(r.totalNegGamma, 0)}</td>
           <td>${fmtNumSmart(r.spyOpen, 2)}</td>
           <td>${fmtNumSmart(r.spyClose, 2)}</td>
           <td class="${chgClass(spyChange)}">${chgPrefix(spyChange)}${fmtNumSmart(spyChange, 2)}%</td>
