@@ -10834,8 +10834,6 @@
         loadOverview();
         loadSentiment();
 
-        // Also preload Heat Seeker / GEX on initial connected load
-        reloadHeat();
         // Capture SPY daily history on initial connected site load.
         // Keep DB capture independent from manually opening the Options Flow and ETF pages.
         loadSpyHistory();
@@ -13182,10 +13180,16 @@
           return r;
         });
 
+        const heatPromise = reloadHeat().then(r => {
+          ovSetLoadingProgress(88, 'Heat Seeker loaded...', 'Preloading SPY gamma levels for Smart Money');
+          return r;
+        });
+
         const [ovData, geoRiskResult, fearGreedResult] = await Promise.all([
           ovPromise,
           geoPromise,
-          fearPromise
+          fearPromise,
+          heatPromise
         ]);
 
         ovSetLoadingProgress(92, 'Building dashboard...', 'Rendering overview cards and terminal analysis');
