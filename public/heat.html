@@ -16170,6 +16170,21 @@
     // ═══════════════════════════════════════════════════════
     //  SMART MONEY
     // ═══════════════════════════════════════════════════════
+    function renderSmartMoneyKeyLevelPills(d) {
+      const s = d?.summary || {};
+
+      return `
+    <div class="kl-row" style="padding:0;margin-top:10px;">
+      <span class="kl-pill spot">Spot: ${fmt(d?.underlyingPrice)}</span>
+      <span class="kl-pill call">Call Wall: ${s.strongestCallWall?.strike ?? '—'}</span>
+      <span class="kl-pill put">Put Wall: ${s.strongestPutWall?.strike ?? '—'}</span>
+      <span class="kl-pill king">King: ${s.kingStrike?.strike ?? '—'} ${s.kingCell?.netGex ? `(${fmtDollar(s.kingCell.netGex)})` : ''}</span>
+      <span class="kl-pill gex-pos">+GEX: ${s.strongestPositiveGex?.strike ?? '—'}</span>
+      <span class="kl-pill gex-neg">−GEX: ${s.strongestNegativeGex?.strike ?? '—'}</span>
+    </div>
+  `;
+    }
+
     async function loadSmartMoney() {
       if (!isConnected || !lastHeatData) {
         document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Load the Heat Seeker page for SPY first to derive Smart Money signals.</div>`;
@@ -16203,7 +16218,7 @@
         <span style="color:#d470ff;font-weight:700">Put GEX: ${fmtDollar(putGex)}</span>
       </div>
     </div>
-    <div style="font-size:10px;color:var(--text3);">Positive GEX = market makers are long gamma → dampens moves.<br>Negative GEX = market makers short gamma → amplifies moves.</div>`;
+      ${renderSmartMoneyKeyLevelPills(d)}`;
 
       // Sweeps = highest OI strikes
       const topCalls = [...s].sort((a, b) => b.callOpenInterest - a.callOpenInterest).slice(0, 5);
