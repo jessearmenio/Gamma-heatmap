@@ -1107,10 +1107,10 @@ app.get("/api/heat", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const isVixRequest = requestedSymbol === '$VIX';
+    const isVixRequest = actualSymbol === "$VIX";
 
     const requests = [
-      fetchChain(requestedSymbol, {
+      fetchChain(actualSymbol, {
         contractType: req.query.contractType,
         strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
         includeUnderlyingQuote: false,
@@ -1131,7 +1131,7 @@ app.get("/api/heat", async (req, res) => {
       requests.push(
         schwabGet('https://api.schwabapi.com/marketdata/v1/pricehistory', {
           params: {
-            symbol: 'VIX',
+            symbol: '$VIX',
             periodType: 'year',
             period: 1,
             frequencyType: 'daily',
@@ -1144,8 +1144,19 @@ app.get("/api/heat", async (req, res) => {
 
     const [response, quotesResponse, vixHistResponse] = await Promise.all(requests);
 
-    const chain = response.data;
+    const chain = response.data || {};
     const heat = buildHeatFromChain(chain);
+
+    if (!heat.contractCount) {
+      return res.json({
+        ok: false,
+        requestedSymbol,
+        actualSymbol,
+        request: response.config?.params ?? null,
+        error: `No option contracts returned for ${actualSymbol}.`,
+        details: chain
+      });
+    }
 
     let vix = null;
 
