@@ -4966,20 +4966,24 @@
       min-height: 0;
     }
 
+
     #etf-rrg-wrap {
       position: relative;
-      width: 100%;
+      width: min(75%, 900px);
+      margin: 0 auto;
       aspect-ratio: 1 / 1;
       height: auto;
       border: 1px solid var(--border2);
       border-radius: 8px;
       overflow: hidden;
       background: #07101d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
+
     #etf-rrg-svg {
-      position: absolute;
-      inset: 0;
       width: 100%;
       height: 100%;
       display: block;
@@ -15184,13 +15188,11 @@
     function etfSelect(symbol) {
       etfSelectedSymbol = symbol;
 
-      document.querySelectorAll('#etf-tbody tr').forEach(tr => {
-        tr.classList.toggle('active', tr.dataset.symbol === symbol);
-      });
+      document.querySelectorAll('#etf-tbody tr').forEach(tr =>
+        tr.classList.toggle('active', tr.dataset.symbol === symbol)
+      );
 
-      document.querySelectorAll('.rrg-point').forEach(pt => {
-        pt.classList.toggle('active', pt.textContent.trim() === symbol);
-      });
+      renderEtfRrg();
     }
 
     const ETF_NAME_MAP = {
