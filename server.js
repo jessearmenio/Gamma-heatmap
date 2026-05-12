@@ -1107,7 +1107,9 @@ app.get("/api/heat", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const [response, quotesResponse] = await Promise.all([
+    const isVixRequest = requestedSymbol === '$VIX';
+
+    const requests = [
       fetchChain(requestedSymbol, {
         contractType: req.query.contractType,
         strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
@@ -1119,21 +1121,88 @@ app.get("/api/heat", async (req, res) => {
         optionType: req.query.optionType,
         strike: req.query.strike
       }),
-      schwabGet("https://api.schwabapi.com/marketdata/v1/quotes", {
-        params: { symbols: mapQuoteSymbolsParam(requestedSymbol), fields: "quote" },
+      schwabGet('https://api.schwabapi.com/marketdata/v1/quotes', {
+        params: { symbols: mapQuoteSymbolsParam(requestedSymbol), fields: 'quote' },
         timeout: 30000
       }).catch(() => ({ data: {} }))
-    ]);
+    ];
 
-    const chain = response.data || {};
+    if (isVixRequest) {
+      requests.push(
+        schwabGet('https://api.schwabapi.com/marketdata/v1/pricehistory', {
+          params: {
+            symbol: 'VIX',
+            periodType: 'year',
+            period: 1,
+            frequencyType: 'daily',
+            frequency: 1
+          },
+          timeout: 30000
+        }).catch(() => ({ data: { candles: [] } }))
+      );
+    }
+
+    const [response, quotesResponse, vixHistResponse] = await Promise.all(requests);
+
+    const chain = response.data;
     const heat = buildHeatFromChain(chain);
+
+    let vix = null;
+
+    if (isVixRequest) {
+      const vixQuote =
+        quotesResponse.data?.VIX?.quote ??
+        quotesResponse.data?.$VIX?.quote ??
+        quotesResponse.data?.VIX ??
+        quotesResponse.data?.$VIX ??
+        null;
+
+      const vixCloses = (vixHistResponse?.data?.candles || [])
+        .map(c => Number(c.close))
+        .filter(Number.isFinite);
+
+      const vixValue =
+        Number(vixQuote?.lastPrice) ||
+        Number(vixQuote?.mark) ||
+        (vixCloses.length ? vixCloses[vixCloses.length - 1] : null);
+
+      const vix20sma =
+        vixCloses.length >= 20
+          ? vixCloses.slice(-20).reduce((a, b) => a + b, 0) / 20
+          : null;
+
+      const vixSlope =
+        vixCloses.length >= 6
+          ? (vixCloses[vixCloses.length - 1] - vixCloses[vixCloses.length - 6]) / 5
+          : null;
+
+      const vixPct =
+        vixCloses.length
+          ? (() => {
+            const sample = vixCloses.slice(-252);
+            const base = Number.isFinite(vixValue) ? vixValue : sample[sample.length - 1];
+            const belowOrEqual = sample.filter(v => v <= base).length;
+            return Math.round((belowOrEqual / sample.length) * 100);
+          })()
+          : null;
+
+      vix = {
+        value: vixValue,
+        quote: vixQuote,
+        closes: vixCloses,
+        slope5d: vixSlope,
+        sma20: vix20sma,
+        percentile1y: vixPct
+      };
+    }
 
     res.json({
       ok: true,
       requestedSymbol,
       actualSymbol,
-      request: response.config?.params || null,
-      quotes: quotesResponse.data || {},
+      request: response.config?.params ?? null,
+      quotes: quotesResponse.data,
+      ...(vix ? { vix } : {}),
       ...heat
     });
   } catch (error) {
