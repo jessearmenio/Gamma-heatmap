@@ -3495,6 +3495,63 @@
       border-color: 1px solid var(--cyan);
     }
 
+    /* ── Heat Seeker: duplicate chart (mirrors #ov-chart-card styling, full width) ── */
+    #hs-chart-card {
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      overflow: hidden;
+      width: 100%;
+      min-width: 0;
+      max-height: 438px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    #hs-chart-header {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #hs-spy-chart {
+      flex: 1 1 0;
+      min-height: 320px;
+      border-radius: 0 0 8px 8px;
+      overflow: visible;
+      position: relative;
+      cursor: crosshair;
+      min-width: 0;
+    }
+
+    #hs-gamma-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    #hs-chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 5px 14px;
+      font-size: 9px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    #hs-spy-chart-tf {
+      display: flex;
+      gap: 3px;
+    }
+
     /* ── Overview: Geo Risk stories ── */
     #ov-geo-card {
       background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
@@ -4980,6 +5037,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      max-width: 800px;
     }
 
 
@@ -8053,6 +8111,49 @@
               class="dte-btn" onclick="reloadHeat()">
               ↻ Load
             </button>
+          </div>
+
+          <!-- Heat Seeker duplicate of #ov-chart-card, synced to heatSymbol -->
+          <div id="hs-chart-card">
+            <div id="hs-chart-header">
+              <span class="card-title" id="hs-chart-title">SPY</span>
+              <div id="hs-spy-chart-tf">
+                <button class="ov-chart-tf-btn active" data-hsctf="3M" onclick="hsSetChartTf('3M',this)">3M</button>
+                <button class="ov-chart-tf-btn" data-hsctf="6M" onclick="hsSetChartTf('6M',this)">6M</button>
+                <button class="ov-chart-tf-btn" data-hsctf="1Y" onclick="hsSetChartTf('1Y',this)">1Y</button>
+              </div>
+            </div>
+            <div id="hs-chart-legend">
+              <div style="width:18px;height:7px;background:#DCFF1E;border-radius:1px;opacity:0.7;"></div><span
+                style="color:var(--text3);font-size:9px;">+GEX</span>
+              <div style="width:18px;height:7px;background:#8a16c0;border-radius:1px;opacity:0.7;"></div><span
+                style="color:var(--text3);font-size:9px;">−GEX</span>
+              <span id="hs-legend-callwall" class="ov-legend-item"></span>
+              <span id="hs-legend-putwall" class="ov-legend-item"></span>
+              <span id="hs-legend-king" class="ov-legend-item"></span>
+              <div class="ov-leg-item" style="margin-left:auto;gap:8px;">
+                <div class="ov-leg-item">
+                  <div class="ov-leg-line" style="background:#11C81A;"></div>EMA 8
+                </div>
+                <div class="ov-leg-item">
+                  <div class="ov-leg-line" style="background:#9C27B0;"></div>EMA 21
+                </div>
+                <div class="ov-leg-item">
+                  <div class="ov-leg-line" style="background:#01BCD4;"></div>EMA 50
+                </div>
+              </div>
+              <div class="ov-leg-item" style="gap:6px;">
+                <div style="width:14px;height:0;border-top:1.5px dashed #1848CC;"></div><span
+                  style="color:#1848CC;font-size:9px;">PDH/PDL</span>
+              </div>
+              <div class="ov-leg-item" style="gap:6px;">
+                <div style="width:14px;height:0;border-top:1.5px solid #F23644;"></div><span
+                  style="color:#F23644;font-size:9px;">ATH</span>
+              </div>
+            </div>
+            <div id="hs-spy-chart">
+              <canvas id="hs-gamma-canvas"></canvas>
+            </div>
           </div>
 
           <div id="heat-body"
@@ -13263,6 +13364,502 @@
       }
     }
 
+    // ══════════════════════════════════════════════════
+    // HEAT SEEKER duplicate chart — mirrors #ov-chart-card but synced to heatSymbol.
+    // Uses its own state so it doesn't conflict with the market-overview chart.
+    // ══════════════════════════════════════════════════
+    let hsLwcChart = null;
+    let hsLwcCandleSeries = null;
+    let hsGammaData = [];
+    let hsChartRenderToken = 0;
+    let hsChartTf = '3M';
+    let hsDailyCandles = null;      // cache of daily candles for current symbol
+    let hsIntradayCache = {};       // { '5m':[], '10m':[], '1H':[] } for current symbol
+    let hsCurrentSymbol = null;
+
+    function hsFilterCandles(candles, tf) {
+      if (TF_INTRADAY[tf]) return candles;
+      const now = Date.now();
+      const day = 86400000;
+      let fromMs;
+      if (tf === '1D') fromMs = now - 2 * day;
+      else if (tf === '5D') fromMs = now - 5 * day;
+      else if (tf === '3M') fromMs = now - 90 * day;
+      else if (tf === '6M') fromMs = now - 180 * day;
+      else if (tf === '1Y') fromMs = now - 365 * day;
+      else fromMs = now - 90 * day;
+      if (tf === '1D') {
+        const sorted = [...candles].sort((a, b) => b.datetime - a.datetime);
+        return sorted.slice(0, 60).reverse();
+      }
+      const filtered = candles.filter(c => c.datetime >= fromMs);
+      return filtered.length >= 5 ? filtered : candles.slice(-60);
+    }
+
+    function hsRenderChart(candles) {
+      const container = document.getElementById('hs-spy-chart');
+      if (!container) return;
+
+      if (hsLwcChart) { try { hsLwcChart.remove(); } catch (e) { } hsLwcChart = null; }
+      hsLwcCandleSeries = null;
+      hsChartRenderToken++;
+      const renderToken = hsChartRenderToken;
+      container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas>';
+
+      if (!candles || candles.length < 10) {
+        container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Log in and load to see chart data</div>';
+        return;
+      }
+
+      const display = hsFilterCandles(candles, hsChartTf);
+      if (display.length < 5) {
+        container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Not enough data for this timeframe</div>';
+        return;
+      }
+
+      const totalH = container.clientHeight || 460;
+
+      hsLwcChart = LightweightCharts.createChart(container, {
+        width: container.clientWidth || 800,
+        height: totalH,
+        layout: {
+          background: { type: 'solid', color: '#0a0b0d' },
+          textColor: 'rgba(122,128,153,0.9)',
+          fontFamily: 'inherit',
+          fontSize: 10,
+        },
+        grid: {
+          vertLines: { color: 'rgba(255,255,255,0.035)' },
+          horzLines: { color: 'rgba(255,255,255,0.035)' },
+        },
+        crosshair: {
+          mode: LightweightCharts.CrosshairMode.Normal,
+          vertLine: { color: 'rgba(220,255,30,0.4)', labelBackgroundColor: '#1e2230' },
+          horzLine: { color: 'rgba(220,255,30,0.4)', labelBackgroundColor: '#1e2230' },
+        },
+        rightPriceScale: {
+          borderColor: 'rgba(255,255,255,0.06)',
+          textColor: 'rgba(122,128,153,0.9)',
+        },
+        timeScale: {
+          borderColor: 'rgba(255,255,255,0.06)',
+          timeVisible: true,
+          secondsVisible: false,
+          fixLeftEdge: false,
+          fixRightEdge: false,
+          rightOffset: 8,
+        },
+        handleScroll: {
+          mouseWheel: true,
+          pressedMouseMove: true,
+          horzTouchDrag: true,
+          vertTouchDrag: true,
+        },
+        handleScale: {
+          mouseWheel: true,
+          pinch: true,
+          axisPressedMouseMove: { time: true, price: true },
+        },
+      });
+
+      const candleData = display.map((c) => {
+        let low = c.low;
+        if (low === 0 || low == null) low = Math.min(c.open, c.close);
+        let high = c.high;
+        if (high === 0 || high == null) high = Math.max(c.open, c.close);
+        return {
+          time: Math.floor(c.datetime / 1000),
+          open: c.open,
+          high: high,
+          low: low,
+          close: c.close,
+        };
+      });
+
+      const candleSeries = hsLwcChart.addCandlestickSeries({
+        upColor: '#D1C4E9',
+        downColor: '#7E57C2',
+        borderUpColor: '#D1C4E9',
+        borderDownColor: '#7E57C2',
+        wickUpColor: '#D1C4E9',
+        wickDownColor: '#7E57C2',
+        priceScaleId: 'right',
+        scaleMargins: { top: 0.04, bottom: 0.30 },
+      });
+      candleSeries.setData(candleData);
+      hsLwcCandleSeries = candleSeries;
+
+      // Volume
+      const volSeries = hsLwcChart.addHistogramSeries({
+        priceFormat: { type: 'volume' },
+        priceScaleId: 'vol',
+        scaleMargins: { top: 0.80, bottom: 0.00 },
+      });
+      hsLwcChart.priceScale('vol').applyOptions({
+        scaleMargins: { top: 0.80, bottom: 0.00 },
+      });
+      volSeries.setData(display.map(c => ({
+        time: Math.floor(c.datetime / 1000),
+        value: c.volume || 0,
+        color: c.close >= c.open ? 'rgba(209,196,233,0.25)' : 'rgba(126,87,194,0.30)',
+      })));
+
+      // EMAs
+      const allCloses = candles.map(c => c.close);
+      const startIdx = candles.findIndex(c => c.datetime === display[0].datetime);
+      const si = startIdx >= 0 ? startIdx : 0;
+      const ema8vals = calcEMA(allCloses, 8).slice(si, si + display.length);
+      const ema21vals = calcEMA(allCloses, 21).slice(si, si + display.length);
+      const ema50vals = calcEMA(allCloses, 50).slice(si, si + display.length);
+
+      const makeEMA = (vals, color, lineWidth) => {
+        const s = hsLwcChart.addLineSeries({
+          color, lineWidth,
+          priceScaleId: 'right',
+          crosshairMarkerVisible: false,
+          lastValueVisible: true,
+          priceLineVisible: false,
+        });
+        s.setData(
+          vals
+            .map((v, i) => v !== null ? { time: Math.floor(display[i].datetime / 1000), value: v } : null)
+            .filter(Boolean)
+        );
+        return s;
+      };
+      makeEMA(ema8vals, '#11C81A', 1);
+      makeEMA(ema21vals, '#9C27B0', 1.5);
+      makeEMA(ema50vals, '#01BCD4', 1.5);
+
+      // RSI on second price scale
+      const rsiVals = calcRSI(allCloses, 14).slice(si, si + display.length);
+
+      // Divider/anchor series so the 'rsi' price scale exists before applyOptions
+      const hsDividerSeries = hsLwcChart.addLineSeries({
+        priceScaleId: 'rsi',
+        color: 'transparent',
+        lineWidth: 1,
+        lastValueVisible: false,
+        priceLineVisible: false,
+      });
+      hsLwcChart.priceScale('rsi').applyOptions({
+        scaleMargins: { top: 0.73, bottom: 0.00 },
+        borderVisible: true,
+        borderColor: 'rgba(255,255,255,0.06)',
+        drawTicks: true,
+      });
+      const rsiData = rsiVals
+        .map((v, i) => v !== null ? { time: Math.floor(display[i].datetime / 1000), value: v } : null)
+        .filter(Boolean);
+
+      const rsiSeries = hsLwcChart.addLineSeries({
+        color: '#c084fc',
+        lineWidth: 1.5,
+        priceScaleId: 'rsi',
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 3,
+        lastValueVisible: true,
+        priceLineVisible: false,
+        autoscaleInfoProvider: () => ({
+          priceRange: { minValue: 0, maxValue: 100 },
+          margins: { above: 0, below: 0 },
+        }),
+      });
+      rsiSeries.setData(rsiData);
+      rsiSeries.createPriceLine({ price: 70, color: 'rgba(255,59,92,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '70' });
+      rsiSeries.createPriceLine({ price: 30, color: 'rgba(34,221,136,0.4)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '30' });
+      rsiSeries.createPriceLine({ price: 50, color: 'rgba(255,255,255,0.1)', lineWidth: 1, lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: false });
+
+      const rsiLabel = document.createElement('div');
+      rsiLabel.style.cssText = 'position:absolute;left:8px;bottom:4px;font-size:8px;font-weight:700;color:rgba(192,132,252,0.7);pointer-events:none;letter-spacing:0.06em;';
+      rsiLabel.textContent = 'RSI (14)';
+      container.style.position = 'relative';
+      container.appendChild(rsiLabel);
+
+      hsLwcChart.timeScale().fitContent();
+
+      const redrawGamma = () => requestAnimationFrame(hsDrawGammaBars);
+      hsLwcChart.subscribeCrosshairMove(redrawGamma);
+      hsLwcChart.timeScale().subscribeVisibleLogicalRangeChange(redrawGamma);
+      setTimeout(hsDrawGammaBars, 80);
+      setTimeout(hsDrawGammaBars, 300);
+      setTimeout(hsDrawGammaBars, 800);
+
+      window.hsChartResize = function hsChartResize() {
+        if (!hsLwcChart) return;
+        hsLwcChart.applyOptions({ width: 1 });
+        requestAnimationFrame(() => {
+          if (!hsLwcChart) return;
+          const w = container.clientWidth;
+          if (w > 0) hsLwcChart.applyOptions({ width: w });
+          requestAnimationFrame(hsDrawGammaBars);
+        });
+      };
+
+      let _hsRoTimer = null;
+      function hsChartResizeDebounced() {
+        clearTimeout(_hsRoTimer);
+        _hsRoTimer = setTimeout(hsChartResize, 260);
+      }
+      const ro = new ResizeObserver(hsChartResizeDebounced);
+      ro.observe(container);
+      window.addEventListener('resize', hsChartResizeDebounced);
+
+      hsDrawChartLevels(renderToken);
+    }
+
+    async function hsDrawChartLevels(renderToken) {
+      if (!hsLwcChart || !hsLwcCandleSeries) return;
+      try {
+        const sym = encodeURIComponent(hsCurrentSymbol || 'SPY');
+        const url = `/api/pricehistory?symbol=${sym}&periodType=day&period=5&frequencyType=minute&frequency=5&needExtendedHoursData=true`;
+        const d = await apiGet(url);
+        if (renderToken !== hsChartRenderToken) return;
+        if (!d.ok || !d.data?.candles?.length) return;
+        const candles = d.data.candles;
+
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const yesterdayMidnight = todayMidnight - 86400000;
+
+        const isRegular = (ms) => {
+          const d = new Date(ms);
+          const h = d.getUTCHours();
+          const m = d.getUTCMinutes();
+          const totalMin = h * 60 + m;
+          return totalMin >= 13 * 60 + 30 && totalMin < 20 * 60;
+        };
+
+        const prevDayCandles = candles.filter(c =>
+          c.datetime >= yesterdayMidnight && c.datetime < todayMidnight && isRegular(c.datetime)
+        );
+
+        const addLine = (price, color, title, style = LightweightCharts.LineStyle.Dashed, showAxisLabel = true) => {
+          if (!price || !isFinite(price)) return;
+          try {
+            hsLwcCandleSeries.createPriceLine({
+              price,
+              color,
+              lineWidth: 1,
+              lineStyle: style,
+              axisLabelVisible: showAxisLabel,
+              title: showAxisLabel ? title : '',
+            });
+          } catch (e) { /* chart destroyed */ }
+        };
+
+        if (prevDayCandles.length) {
+          const pdh = Math.max(...prevDayCandles.map(c => c.high));
+          const pdl = Math.min(...prevDayCandles.map(c => c.low));
+          addLine(pdh, '#1848CC', 'PDH');
+          addLine(pdl, '#1848CC', 'PDL');
+        }
+
+        // Heat seeker key levels (current symbol's own walls/king from lastHeatData)
+        const s = (lastHeatData && lastHeatData.summary) || {};
+        const callWall = Number(s.strongestCallWall?.strike);
+        const putWall = Number(s.strongestPutWall?.strike);
+        const king = Number(s.kingStrike?.strike);
+        if (callWall) addLine(callWall, '#DCFF1E', 'CALL WALL', LightweightCharts.LineStyle.Solid, false);
+        if (putWall) addLine(putWall, '#d470ff', 'PUT WALL', LightweightCharts.LineStyle.Solid, false);
+        if (king) addLine(king, '#f5a623', 'KING GEX', LightweightCharts.LineStyle.Solid, false);
+
+        if (renderToken !== hsChartRenderToken) return;
+
+        // ATH from the full daily candle set we already have
+        let ath = null;
+        if (hsDailyCandles && hsDailyCandles.length) {
+          ath = Math.max(...hsDailyCandles.map(c => c.high));
+        }
+        if (ath) addLine(ath, '#F23644', 'ATH', LightweightCharts.LineStyle.Solid);
+      } catch (e) { console.warn('hsDrawChartLevels:', e); }
+    }
+
+    let hsGammaHitBoxes = [];
+    function hsDrawGammaBars() {
+      const canvas = document.getElementById('hs-gamma-canvas');
+      const chartEl = document.getElementById('hs-spy-chart');
+      if (!canvas || !chartEl || !hsLwcChart || !hsLwcCandleSeries) return;
+      if (!hsGammaData || !hsGammaData.length) { canvas.style.display = 'none'; return; }
+
+      const W = chartEl.clientWidth;
+      const H = chartEl.clientHeight;
+      canvas.width = W;
+      canvas.height = H;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      canvas.style.display = 'block';
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, W, H);
+
+      const candlePaneH = Math.round(H * 0.73);
+      const MAX_BAR = 240;
+      const maxAbsGex = Math.max(...hsGammaData.map(d => Math.abs(d.netGex)), 1);
+
+      let kingStrike = null;
+      let kingAbsGex = 0;
+      for (const { strike, netGex } of hsGammaData) {
+        if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
+      }
+
+      hsGammaHitBoxes = [];
+
+      for (const { strike, netGex } of hsGammaData) {
+        if (netGex === 0) continue;
+
+        let y;
+        try { y = hsLwcCandleSeries.priceToCoordinate(strike); } catch (e) { continue; }
+        if (y == null || y < 0 || y > candlePaneH) continue;
+
+        let barH;
+        try {
+          const y0 = hsLwcCandleSeries.priceToCoordinate(strike);
+          const y1 = hsLwcCandleSeries.priceToCoordinate(strike + 1);
+          barH = y0 != null && y1 != null ? Math.abs(y1 - y0) : 3;
+        } catch { barH = 3; }
+        barH = Math.max(1.5, Math.min(barH, 18));
+
+        const barW = Math.round((Math.abs(netGex) / maxAbsGex) * MAX_BAR);
+        if (barW < 1) continue;
+
+        const isKing = strike === kingStrike;
+        ctx.fillStyle = isKing ? 'rgba(245,166,35,0.85)' : (netGex > 0 ? 'rgba(220,255,30,0.55)' : 'rgba(138,22,192,0.55)');
+        ctx.fillRect(0, y - barH / 2, barW, barH);
+
+        hsGammaHitBoxes.push({ x: 0, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex, isKing });
+      }
+
+      if (!chartEl._gammaHoverInit) {
+        chartEl._gammaHoverInit = true;
+        const tip = document.getElementById('ov-gamma-tip'); // reuse existing tooltip element
+        chartEl.addEventListener('mousemove', (e) => {
+          const rect = chartEl.getBoundingClientRect();
+          const mx = e.clientX - rect.left;
+          const my = e.clientY - rect.top;
+          if (mx > 260) { if (tip) tip.style.display = 'none'; return; }
+          let hit = null;
+          let bestDist = Infinity;
+          for (const hb of hsGammaHitBoxes) {
+            if (mx >= hb.x && mx <= hb.x + hb.w) {
+              const cy = hb.y + hb.h / 2;
+              const dist = Math.abs(my - cy);
+              if (dist < bestDist && dist < hb.h * 3) { bestDist = dist; hit = hb; }
+            }
+          }
+          if (hit && tip) {
+            const sign = hit.netGex >= 0 ? '+' : '';
+            const col = hit.isKing ? '#f5a623' : (hit.netGex >= 0 ? '#DCFF1E' : '#9C27B0');
+            const kingTag = hit.isKing ? ' <span style="color:#f5a623;font-size:9px;">★ King Node</span>' : '';
+            tip.innerHTML = `<span style="color:var(--text3);">Strike </span><b>$${hit.strike.toFixed(0)}</b> &nbsp; <span style="color:${col};font-weight:700;">${sign}${fmtDollar(hit.netGex)}</span> <span style="color:var(--text3);font-size:9px;">Net GEX</span>${kingTag}`;
+            tip.style.display = 'block';
+            tip.style.left = (e.clientX + 14) + 'px';
+            tip.style.top = (e.clientY - 10) + 'px';
+          } else if (tip) {
+            tip.style.display = 'none';
+          }
+        });
+        chartEl.addEventListener('mouseleave', () => {
+          const tip = document.getElementById('ov-gamma-tip');
+          if (tip) tip.style.display = 'none';
+        });
+      }
+    }
+
+    async function hsSetChartTf(tf, btn) {
+      hsChartTf = tf;
+      document.querySelectorAll('#hs-spy-chart-tf .ov-chart-tf-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      if (TF_INTRADAY[tf]) {
+        if (hsIntradayCache[tf] && hsIntradayCache[tf].length) {
+          hsRenderChart(hsIntradayCache[tf]);
+        } else {
+          const container = document.getElementById('hs-spy-chart');
+          if (container) container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Loading…</div>';
+          try {
+            const cfg = TF_INTRADAY[tf];
+            const sym = encodeURIComponent(hsCurrentSymbol || 'SPY');
+            const url = `/api/pricehistory?symbol=${sym}&periodType=${cfg.periodType}&period=${cfg.period}&frequencyType=${cfg.frequencyType}&frequency=${cfg.frequency}&needExtendedHoursData=true`;
+            const d = await apiGet(url);
+            const candles = d?.candles || d?.data?.candles;
+            if (candles && candles.length) {
+              hsIntradayCache[tf] = candles;
+              hsRenderChart(hsIntradayCache[tf]);
+            } else {
+              const c2 = document.getElementById('hs-spy-chart');
+              if (c2) c2.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">No intraday data returned</div>';
+            }
+          } catch (e) {
+            console.warn('hsSetChartTf intraday fetch:', e);
+            const c2 = document.getElementById('hs-spy-chart');
+            if (c2) c2.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Chart data unavailable</div>';
+          }
+        }
+      } else {
+        hsRenderChart(hsDailyCandles || null);
+      }
+    }
+
+    // Fetch daily candles for the heat-seeker symbol and (re)render the chart.
+    // Called from reloadHeat() whenever a new symbol is loaded.
+    async function hsLoadChartForSymbol(symbol) {
+      hsCurrentSymbol = symbol;
+      // Update title
+      const titleEl = document.getElementById('hs-chart-title');
+      if (titleEl) titleEl.textContent = symbol;
+      // Reset caches when symbol changes
+      hsIntradayCache = {};
+      hsDailyCandles = null;
+
+      const container = document.getElementById('hs-spy-chart');
+      if (container) container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Loading…</div>';
+
+      try {
+        const sym = encodeURIComponent(symbol);
+        const d = await apiGet(`/api/pricehistory?symbol=${sym}&periodType=year&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false`);
+        const candles = d?.candles || d?.data?.candles;
+        if (candles && candles.length) {
+          hsDailyCandles = candles;
+          // If a non-intraday TF is active, render daily; otherwise re-trigger the intraday fetch.
+          if (TF_INTRADAY[hsChartTf]) {
+            // Re-fetch intraday for new symbol
+            const activeBtn = document.querySelector('#hs-spy-chart-tf .ov-chart-tf-btn.active');
+            hsSetChartTf(hsChartTf, activeBtn);
+          } else {
+            hsRenderChart(hsDailyCandles);
+          }
+        } else {
+          if (container) container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">No chart data for ' + symbol + '</div>';
+        }
+      } catch (e) {
+        console.warn('hsLoadChartForSymbol:', e);
+        if (container) container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas><div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;color:var(--text3);">Chart unavailable: ' + e.message + '</div>';
+      }
+    }
+
+    // Build hsGammaData from the latest heat matrix (same logic as ovGammaData build).
+    function hsUpdateGammaFromHeat(heat) {
+      if (!heat || !heat.matrix || !heat.expirations) { hsGammaData = []; return; }
+      const MAX_DTE = 45;
+      const validExps = new Set(
+        (heat.expirations || []).filter(exp => {
+          const dtePart = exp.split(':')[1];
+          return dtePart ? parseInt(dtePart) <= MAX_DTE : true;
+        })
+      );
+      const strikeMap = {};
+      heat.matrix.forEach(row => {
+        let rowSum = 0;
+        (row.cells || []).forEach(c => {
+          if (validExps.has(c.expKey)) rowSum += c.netGex;
+        });
+        if (rowSum !== 0) strikeMap[row.strike] = (strikeMap[row.strike] || 0) + rowSum;
+      });
+      hsGammaData = Object.entries(strikeMap).map(([s, g]) => ({ strike: Number(s), netGex: g }));
+      requestAnimationFrame(hsDrawGammaBars);
+    }
+
     // ── Ticker marquee ──
     function ovInitTicker() {
       const track = document.getElementById('ov-ticker-track');
@@ -13813,6 +14410,12 @@
       empty.style.display = 'flex';
       table.style.display = 'none';
 
+      // Kick off the heat-seeker duplicate chart load in parallel.
+      // Only re-fetch candles if the symbol changed; otherwise just refresh gamma after heat data arrives.
+      if (hsCurrentSymbol !== heatSymbol) {
+        hsLoadChartForSymbol(heatSymbol);
+      }
+
       try {
         const d = await apiGet(`/api/heat?symbol=${heatSymbol}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`);
         if (!d.ok) throw new Error(d.error);
@@ -13820,6 +14423,9 @@
         updateOvmPc(); // refresh P/C on Overview whenever Heat data updates
         renderHeatTable(d);
         updateHeatKeyLevels(d);
+
+        // Update heat-seeker chart gamma overlay from this matrix
+        hsUpdateGammaFromHeat(d);
 
         if (heatSymbol === 'SPY') {
           saveGexHistoryFromHeat(d);
