@@ -14652,7 +14652,15 @@
           const vol30Raw = isToday && chainToday?.iv30 != null ? chainToday.iv30 : c.vol30d;
 
           const totalOI = totalOiRaw != null ? fmtM(Number(totalOiRaw)) : '—';
-          const oiChgPct = c.oiChangePct != null ? fmtPct(Number(c.oiChangePct)) : '—';
+          const prevOiRaw = last14[i + 1]?.totalOi ?? null;
+          const oiChgPct = (
+            totalOiRaw != null &&
+            prevOiRaw != null &&
+            Number(prevOiRaw) !== 0 &&
+            !c.isLiveToday
+          )
+            ? fmtPct(((Number(totalOiRaw) - Number(prevOiRaw)) / Number(prevOiRaw)) * 100)
+            : '—';
           const callOI = callOiRaw != null ? fmtM(Number(callOiRaw)) : '—';
           const putOI = putOiRaw != null ? fmtM(Number(putOiRaw)) : '—';
           const netPrem = netPremRaw != null ? fmtM(Number(netPremRaw)) : '—';
