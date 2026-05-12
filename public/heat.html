@@ -5210,10 +5210,6 @@
       padding-bottom: 20px;
     }
 
-    .card #etf-rrg-card{
-      padding-bottom: 0px !important;
-    }
-
     .etf-table {
       width: 100%;
       border-collapse: collapse;
@@ -15196,7 +15192,15 @@
         tr.classList.toggle('active', tr.dataset.symbol === symbol)
       );
 
-      renderEtfRrg();
+      document.querySelectorAll('#etf-rrg-svg .rrg-symbol-group').forEach(g =>
+        g.classList.toggle('active', g.dataset.symbol === symbol)
+      );
+
+      const svg = document.getElementById('etf-rrg-svg');
+      const activeGroup = svg?.querySelector(`.rrg-symbol-group[data-symbol="${symbol}"]`);
+      if (svg && activeGroup) {
+        svg.appendChild(activeGroup);
+      }
     }
 
     const ETF_NAME_MAP = {
