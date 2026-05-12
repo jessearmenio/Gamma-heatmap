@@ -3240,6 +3240,7 @@
       text-transform: uppercase;
       letter-spacing: 0.07em;
       font-weight: 700;
+      text-decoration: underline;
     }
 
     .ov-exec-kv-val {
@@ -3266,8 +3267,8 @@
     }
 
     .ov-exec-risk-note {
-      font-size: 9px;
-      color: var(--text2);
+      font-size: 10px;
+      color: var(--white_text);
       padding: 2px 0;
       border-bottom: 1px solid var(--border);
     }
@@ -7925,7 +7926,7 @@
                       <span class="ov-exec-conf medium" id="ov-exec-conf">MEDIUM</span>
                     </div>
                     <div
-                      style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
+                      style="font-size:9px;color:var(--text3);text-transform:uppercase;text-decoration:underline;letter-spacing:0.06em;margin-top:4px;">
                       Active Signals</div>
                     <ul class="ov-exec-signals" id="ov-exec-signals">
                       <li>Waiting for data...</li>
@@ -7941,7 +7942,7 @@
                       <span class="ov-exec-kv-val ov-exec-bias neutral" id="ov-exec-bias">NEUTRAL</span>
                     </div>
                     <div
-                      style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:4px;">
+                      style="font-size:9px;color:var(--text3);text-transform:uppercase;text-decoration:underline;letter-spacing:0.06em;margin-top:4px;">
                       Risk Notes</div>
                     <div class="ov-exec-risks" id="ov-exec-risks">
                       <div class="ov-exec-risk-note">--</div>
@@ -8508,6 +8509,7 @@
                 <label class="etf-rrg-control">
                   <span>Tail length</span>
                   <select id="etf-rrg-tails" onchange="etfRrgRedraw()">
+                    <option value="1">1w</option>
                     <option value="5">5w</option>
                     <option value="10" selected>10w</option>
                     <option value="15">15w</option>
@@ -15010,7 +15012,7 @@
         return;
       }
 
-      const tailLen = Math.max(2, Number(document.getElementById('etf-rrg-tails')?.value || 10));
+      const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 10));
       const offset = slider ? Number(slider.value) || 0 : 0; // 0 = head at most recent
 
       // Build per-symbol tail at this offset.
@@ -15171,7 +15173,7 @@
       // user can’t scrub past the start of the available history.
       const slider = document.getElementById('etf-rrg-timeframe');
       if (slider && etfRrgState.maxLen) {
-        const tailLen = Math.max(2, Number(document.getElementById('etf-rrg-tails')?.value || 10));
+        const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 10));
         const newMax = Math.max(0, etfRrgState.maxLen - tailLen);
         slider.max = String(newMax);
         if (Number(slider.value) > newMax) slider.value = String(newMax);
@@ -15404,7 +15406,7 @@
         // and higher values scrub backward (one week per tick).
         const slider = document.getElementById('etf-rrg-timeframe');
         if (slider) {
-          const tailLen = Math.max(2, Number(document.getElementById('etf-rrg-tails')?.value || 10));
+          const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 10));
           slider.max = String(Math.max(0, etfRrgState.maxLen - tailLen));
           slider.value = '0';
         }
