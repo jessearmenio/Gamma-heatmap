@@ -8186,7 +8186,7 @@
               <div class="flow-analytics-card-header">
                 <span>Historical SPY Data</span>
                 <span id="spy-hist-subtitle"
-                  style="margin-left:8px;color:var(--text3);font-weight:400;font-size:9px;">Last 14 Trading Days</span>
+                  style="margin-left:8px;color:var(--text3);font-weight:400;font-size:11px;">Last 14 Trading Days</span>
                 <span style="margin-left:auto;color:var(--text3);font-size:9px;" id="spy-hist-updated"></span>
               </div>
               <div class="fhist-wrap">
@@ -14558,7 +14558,8 @@
 
         const histSubtitle = document.getElementById('spy-hist-subtitle');
         if (histSubtitle) {
-          histSubtitle.textContent = `Last 14 Trading Days | 30D Vol: ${vol30Avg != null ? Math.round(vol30Avg).toLocaleString() : '—'}`;
+          const volText = vol30Avg != null ? Math.round(vol30Avg).toLocaleString() : '—';
+          histSubtitle.innerHTML = `Last 14 Trading Days | 30D Vol: <span style="font-weight: 600;">${volText}</span>`;
         }
 
         // Get today's chain summary for OI, IV data
