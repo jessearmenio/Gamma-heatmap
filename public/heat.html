@@ -14559,7 +14559,7 @@
         const histSubtitle = document.getElementById('spy-hist-subtitle');
         if (histSubtitle) {
           const volText = vol30Avg != null ? Math.round(vol30Avg).toLocaleString() : '—';
-          histSubtitle.innerHTML = `Last 14 Trading Days | 30D Vol: <span style="font-weight: 600;">${volText}</span>`;
+          histSubtitle.innerHTML = `Last 14 Trading Days | 30D Vol: <span style="color: var(--white_text); font-weight: 600;">${volText}</span>`;
         }
 
         // Get today's chain summary for OI, IV data
