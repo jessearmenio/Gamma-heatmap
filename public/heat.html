@@ -14417,7 +14417,11 @@
       }
 
       try {
-        const d = await apiGet(`/api/heat?symbol=${heatSymbol}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`);
+        const sym = encodeURIComponent(heatSymbol);
+
+        const d = await apiGet(
+          `/api/heat?symbol=${sym}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`
+        );
         if (!d.ok) throw new Error(d.error);
         lastHeatData = d;
         updateOvmPc(); // refresh P/C on Overview whenever Heat data updates

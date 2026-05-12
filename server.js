@@ -896,7 +896,7 @@ app.get("/api/chain", async (req, res) => {
     const requestedSymbol = (req.query.symbol || "SPY").toUpperCase();
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
-    const response = await fetchChain(requestedSymbol, {
+    const response = await fetchChain(actualSymbol, {
       contractType: req.query.contractType,
       strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : undefined,
       includeUnderlyingQuote:
