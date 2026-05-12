@@ -8204,18 +8204,14 @@
                       <th>% OI Chg</th>
                       <th>Call OI</th>
                       <th>Put OI</th>
-                      <th>IVR</th>
                       <th>Vol 30D</th>
-                      <th>Impl 30D</th>
-                      <th>Vol 60D</th>
-                      <th>Impl 60D</th>
                       <th>Net Prem</th>
                       <th>Total Prem</th>
                     </tr>
                   </thead>
                   <tbody id="spy-hist-body">
                     <tr>
-                      <td colspan="18" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
+                      <td colspan="14" style="text-align:center;padding:20px;color:var(--text3);">Waiting for data…</td>
                     </tr>
                   </tbody>
                 </table>
@@ -14493,7 +14489,7 @@
     async function loadSpyHistory() {
       if (!isConnected) return;
       const tbody = document.getElementById('spy-hist-body');
-      if (tbody) tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
+      if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:16px;color:var(--text3);">Loading…</td></tr>`;
 
       try {
         // 30 calendar days gives 14+ trading days
@@ -14637,7 +14633,7 @@
 
           const rawVol30Ratio = c.volume30dRatio ?? (vol30Avg ? c.volume / vol30Avg : null);
           const vol30Ratio = rawVol30Ratio != null && Number.isFinite(Number(rawVol30Ratio))
-            ? Number(rawVol30Ratio).toFixed(2)
+            ? `${(Number(rawVol30Ratio) * 100).toFixed(0)}%`
             : '—';
 
           const isToday = i === 0;
@@ -14666,15 +14662,15 @@
           const netPrem = netPremRaw != null ? fmtM(Number(netPremRaw)) : '—';
           const totPrem = totalPremRaw != null ? fmtDollar(Number(totalPremRaw)) : '—';
 
-          const ivr = c.ivr != null ? fmtPct(Number(c.ivr)) : '—';
+          //const ivr = c.ivr != null ? fmtPct(Number(c.ivr)) : '—';
 
-          const vol30 = vol30Raw != null
-            ? (Number(vol30Raw) > 1 ? Math.round(Number(vol30Raw)) + '%' : Math.round(Number(vol30Raw) * 100) + '%')
-            : '—';
+          //const vol30 = vol30Raw != null
+          // ? (Number(vol30Raw) > 1 ? Math.round(Number(vol30Raw)) + '%' : Math.round(Number(vol30Raw) * 100) + '%')
+          //  : '—';
 
-          const impl30 = c.impl30d != null ? fmtPct(Number(c.impl30d)) : '—';
-          const vol60 = c.vol60d != null ? fmtPct(Number(c.vol60d)) : '—';
-          const impl60 = c.impl60d != null ? fmtPct(Number(c.impl60d)) : '—';
+          //const impl30 = c.impl30d != null ? fmtPct(Number(c.impl30d)) : '—';
+          //const vol60 = c.vol60d != null ? fmtPct(Number(c.vol60d)) : '—';
+          //const impl60 = c.impl60d != null ? fmtPct(Number(c.impl60d)) : '—';
 
           const chgClass = chgPct > 0 ? 'up' : chgPct < 0 ? 'dn' : '';
           const netPremClass = netPremRaw != null ? (Number(netPremRaw) >= 0 ? 'netpos' : 'netneg') : '';
@@ -14691,11 +14687,7 @@
     <td>${oiChgPct}</td>
     <td>${callOI}</td>
     <td>${putOI}</td>
-    <td>${ivr}</td>
     <td>${vol30}</td>
-    <td>${impl30}</td>
-    <td>${vol60}</td>
-    <td>${impl60}</td>
     <td class="${netPremClass}">${netPrem}</td>
     <td>${totPrem}</td>
   </tr>`;
@@ -14703,13 +14695,13 @@
 
         if (tbody) {
           tbody.innerHTML = rows.length ? rows.join('') :
-            `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
+            `<tr><td colspan="14" style="text-align:center;padding:16px;color:var(--text3);">No data</td></tr>`;
           const ts = document.getElementById('spy-hist-updated');
           if (ts) ts.textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
         }
 
       } catch (e) {
-        if (tbody) tbody.innerHTML = `<tr><td colspan="18" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
+        if (tbody) tbody.innerHTML = `<tr><td colspan="14" style="text-align:center;padding:16px;color:var(--red);">⚠ ${e.message}</td></tr>`;
         ovLogTerminalError('SPY_HISTORY', e.message);
       }
     }
