@@ -13694,6 +13694,13 @@
 
       let kingStrike = null;
       let kingAbsGex = 0;
+      hsGammaHitBoxes = [];
+
+      const sortedGammaStrikes = hsGammaData
+        .map(d => Number(d.strike))
+        .filter(Number.isFinite)
+        .sort((a, b) => a - b);
+
       for (const { strike, netGex } of hsGammaData) {
         if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
       }
@@ -13707,13 +13714,29 @@
         try { y = hsLwcCandleSeries.priceToCoordinate(strike); } catch (e) { continue; }
         if (y == null || y < 0 || y > candlePaneH) continue;
 
-        let barH;
+        let barH = 3;
+
         try {
-          const y0 = hsLwcCandleSeries.priceToCoordinate(strike);
-          const y1 = hsLwcCandleSeries.priceToCoordinate(strike + 1);
-          barH = y0 != null && y1 != null ? Math.abs(y1 - y0) : 3;
-        } catch { barH = 3; }
-        barH = Math.max(1.5, Math.min(barH, 18));
+          const idx = sortedGammaStrikes.indexOf(Number(strike));
+          const neighborCoords = [];
+
+          if (idx > 0) {
+            const prevY = hsLwcCandleSeries.priceToCoordinate(sortedGammaStrikes[idx - 1]);
+            if (prevY != null) neighborCoords.push(Math.abs(prevY - y));
+          }
+
+          if (idx < sortedGammaStrikes.length - 1) {
+            const nextY = hsLwcCandleSeries.priceToCoordinate(sortedGammaStrikes[idx + 1]);
+            if (nextY != null) neighborCoords.push(Math.abs(nextY - y));
+          }
+
+          const nearestGap = neighborCoords.length ? Math.min(...neighborCoords) : 6;
+          barH = nearestGap * 0.62;
+        } catch {
+          barH = 3;
+        }
+
+        barH = Math.max(1.5, Math.min(barH, 10));
 
         const barW = Math.round((Math.abs(netGex) / maxAbsGex) * MAX_BAR);
         if (barW < 1) continue;
