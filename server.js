@@ -866,8 +866,8 @@ async function fetchChain(symbol, overrides = {}) {
     strikeCount: overrides.strikeCount ?? 12,
     includeUnderlyingQuote: overrides.includeUnderlyingQuote ?? false,
     strategy: overrides.strategy || "SINGLE",
-    fromDate: overrides.fromDate || getTodayISO(),
-    toDate: overrides.toDate || getFutureISO(14)
+    fromDate: overrides.fromDate,
+    toDate: overrides.toDate
   };
 
   if (overrides.range) params.range = overrides.range;

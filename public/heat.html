@@ -14411,7 +14411,7 @@
         const sym = encodeURIComponent(heatSymbol);
 
         const d = await apiGet(
-          `/api/heat?symbol=${sym}&strikeCount=${strikeCount}`
+          `/api/heat?symbol=${sym}&strikeCount=${strikeCount}&range=ALL`
         );
         if (!d.ok) throw new Error(d.error);
         lastHeatData = d;
