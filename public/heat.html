@@ -5117,12 +5117,22 @@
       fill: #d9b800;
     }
 
+    .rrg-tail-line-base,
     .rrg-tail-line {
       fill: none;
-      stroke-width: 1.6;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    .rrg-tail-line-base {
+      stroke-width: 1.6;
       opacity: 0.85;
+    }
+
+    .rrg-tail-line {
+      stroke-width: 0;
+      opacity: 0;
+      transition: opacity 0.12s ease;
     }
 
     .rrg-tail-dot {
@@ -5151,9 +5161,15 @@
     }
 
     .rrg-symbol-group.active .rrg-tail-line {
-      stroke-width: 3.25;
+      stroke: var(--cyan);
+      stroke-width: 2;
       opacity: 1;
-      filter: drop-shadow(0 0 6px currentColor);
+      filter: drop-shadow(0 0 6px var(--cyan));
+    }
+
+    .rrg-symbol-group.active .rrg-tail-line-base {
+      stroke-width: 2.4;
+      opacity: 1;
     }
 
     .rrg-symbol-group.active .rrg-tail-dot {
@@ -15825,7 +15841,8 @@
         ).join(' ');
 
         parts.push(`<g class="rrg-symbol-group ${p.quadrant} ${isActive ? 'active' : ''}" data-symbol="${p.symbol}">`);
-        parts.push(`<polyline class="rrg-tail-line" points="${points}" stroke="${color}"/>`);
+        parts.push(`<polyline class="rrg-tail-line-base" points="${points}" stroke="${color}"/>`);
+        parts.push(`<polyline class="rrg-tail-line" points="${points}"/>`);
 
         // Past-point dots (everything except the head).
         p.tail.slice(0, -1).forEach((pt, idx) => {
