@@ -5891,6 +5891,35 @@
       background: rgba(255, 215, 0, 0.12);
     }
 
+    /* GEX-mode signal badges — mirror the +GEX / −GEX pill colors used
+       on the heat-seeker / market-overview key levels. */
+    .sc-signal-badge.gex-wall-call {
+      color: var(--accent);
+      background: rgba(220, 255, 30, 0.10);
+      border: 1px solid rgba(220, 255, 30, 0.20);
+    }
+
+    .sc-signal-badge.gex-wall-put {
+      color: #d470ff;
+      background: rgba(180, 35, 240, 0.12);
+      border: 1px solid rgba(180, 35, 240, 0.20);
+    }
+
+    /* Within ≤ $0.50 of the wall: bolder fill + thicker border + subtle glow. */
+    .sc-signal-badge.gex-wall-call.near {
+      color: #1b1b1b;
+      background: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 6px rgba(220, 255, 30, 0.45);
+    }
+
+    .sc-signal-badge.gex-wall-put.near {
+      color: #fff;
+      background: #b423f0;
+      border-color: #d470ff;
+      box-shadow: 0 0 6px rgba(212, 112, 255, 0.5);
+    }
+
     .sc-sector-badge {
       font-size: 9px;
       color: var(--text2);
@@ -7394,7 +7423,7 @@
         </li>
         <li class="nav-section-label">Insights</li>
         <li class="nav-item" data-page="etfs-page" onclick="navTo(this)">
-          <span class="nav-icon">🔄</span><span class="nav-label">ETFs</span>
+          <span class="nav-icon">🔄</span><span class="nav-label">Sector RRG</span>
         </li>
         <!--<li class="nav-item" data-page="charting-page" onclick="navTo(this)">
           <span class="nav-icon">📈</span><span class="nav-label">Charting</span>
@@ -10722,7 +10751,19 @@
 
     /*   --- with date ---   */
     function buildBannerText(ev) {
-      const d = ev.releaseDate instanceof Date ? ev.releaseDate : new Date(ev.releaseDate);
+      // `ev.releaseDate` is an ISO date string like "2026-05-15".
+      // Using `new Date(isoString)` parses it as UTC midnight, then `.getMonth()/.getDate()`
+      // reads it back in the user's local timezone (CDT = UTC−5), which yields the
+      // previous calendar day. Build the date in local time instead so the (M/D) suffix
+      // matches the actual event date and the countdown.
+      let d;
+      if (ev.releaseDate instanceof Date) {
+        d = ev.releaseDate;
+      } else if (typeof ev.releaseDate === 'string' && /^\d{4}-\d{2}-\d{2}/.test(ev.releaseDate)) {
+        d = isoToDateLocal(ev.releaseDate.slice(0, 10));
+      } else {
+        d = new Date(ev.releaseDate);
+      }
       const md = `${d.getMonth() + 1}/${d.getDate()}`;
       return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time} (${md})`;
     }
@@ -14302,7 +14343,17 @@
           return;
         }
         const q = d.quotes || {};
-        const heat = d.heat || {};
+        // Prefer the same SPY heat payload the Heat Seeker page is already using.
+        // The /api/dashboard endpoint can return a stale / differently-bucketed snapshot,
+        // which caused the overview's key levels and chart overlay to disagree with
+        // the Heat Seeker page. `reloadHeat()` runs in parallel inside loadOverview()
+        // and populates `lastHeatData` for SPY before this function executes.
+        const useHeatSeeker =
+          lastHeatData &&
+          (heatSymbol === 'SPY' || lastHeatData?.symbol === 'SPY') &&
+          Array.isArray(lastHeatData.matrix) &&
+          lastHeatData.matrix.length > 0;
+        const heat = useHeatSeeker ? lastHeatData : (d.heat || {});
         const s = heat.summary || {};
 
         // Log if chain returned no contracts
@@ -14357,12 +14408,14 @@
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 
         // ── Build gamma bar data for chart overlay: net GEX per $1 strike, ≤45 DTE ──
+        // Uses the same `heat` source selected above so the overlay strikes match
+        // the key-level pills (and the Heat Seeker page when SPY is loaded there).
         if (heat.matrix && heat.expirations) {
           const MAX_DTE = 45;
           // Which expiration keys are within 45 DTE?
           const validExps = new Set(
             (heat.expirations || []).filter(exp => {
-              const dtePart = exp.split(':')[1];
+              const dtePart = String(exp).split(':')[1];
               return dtePart ? parseInt(dtePart) <= MAX_DTE : true;
             })
           );
@@ -14665,20 +14718,34 @@
       table.innerHTML = html;
       table.style.display = 'table';
       empty.style.display = 'none';
+
+      // Center the matrix on the spot-price row.
+      // This block was previously OUTSIDE renderHeatTable and ran exactly once at
+      // script load (when no rows existed yet) — it never centered the table on
+      // real data. Moving it inside the function (and deferring via rAF) makes it
+      // run every time the heat matrix is (re)rendered.
+      //
+      // We also use `tr.offsetTop` relative to the table, not the scroll wrap,
+      // so we add the table's offset within the wrap.
+      requestAnimationFrame(() => {
+        const wrap = document.getElementById('heat-grid-wrap');
+        const spotRow = table.querySelector('tr.spot-row');
+        if (!wrap || !spotRow) return;
+
+        // tr.offsetTop is relative to its offsetParent (usually <table>).
+        // Walk up to the scroll container to get the true vertical offset.
+        let topInWrap = 0;
+        let node = spotRow;
+        while (node && node !== wrap) {
+          topInWrap += node.offsetTop;
+          node = node.offsetParent;
+        }
+
+        const wrapHeight = wrap.clientHeight;
+        const rowHeight = spotRow.offsetHeight;
+        wrap.scrollTop = Math.max(0, topInWrap - (wrapHeight / 2) + (rowHeight / 2));
+      });
     }
-
-    requestAnimationFrame(() => {
-      const wrap = document.getElementById('heat-grid-wrap');
-      const spotRow = table.querySelector('tr.spot-row');
-
-      if (!wrap || !spotRow) return;
-
-      const wrapHeight = wrap.clientHeight;
-      const rowTop = spotRow.offsetTop;
-      const rowHeight = spotRow.offsetHeight;
-
-      wrap.scrollTop = rowTop - (wrapHeight / 2) + (rowHeight / 2);
-    });
 
     function gexCellColor(gex, absMax) {
       if (gex === 0) return 'transparent';
@@ -16413,7 +16480,13 @@
         if (s === 'PRICE SPIKE') return a.changePct < 0 ? 'price-plunge' : 'price-spike';
         if (s === 'BREAKOUT') return 'breakout';
         if (s === 'REL STRENGTH') return a.changePct < 0 ? 'rel-weakness' : 'rel-strength';
-        if (s === 'GEX WALL') return a.gexDistance <= 0.5 ? 'breakout' : 'rel-strength';
+        if (s === 'GEX WALL') {
+          // Match +GEX / −GEX styling used elsewhere in the app.
+          // Call wall → +GEX (yellow), Put wall → −GEX (purple).
+          const base = a.gexWallType === 'PUT WALL' ? 'gex-wall-put' : 'gex-wall-call';
+          const near = Number.isFinite(a.gexDistance) && a.gexDistance <= 0.5 ? ' near' : '';
+          return base + near;
+        }
         return '';
       }
 
@@ -16619,14 +16692,14 @@
           if (scAbsChgMin !== null && Math.abs(a.changePct) < scAbsChgMin) return false;
           // Raw volume floor
           if (scMinVolume !== null && a.volume < scMinVolume) return false;
-          // Penny mode preset
+          // Penny mode preset — simplified per requirements:
+          //   1) price under $20
+          //   2) high relative volume OR a notable intraday move
           if (scPennyMode) {
-            if (a.price >= 5) return false;
-            if (a.volume < 1e6) return false;
-            if (a.volRatio < 3) return false;
-            if (Math.abs(a.changePct) < 8) return false;
-            const hasPennySignal = a.signals.some(s => ['VOL SPIKE', 'PRICE SPIKE', 'BREAKOUT'].includes(s));
-            if (!hasPennySignal) return false;
+            if (a.price >= 20) return false;
+            const highVol = (a.volRatio || 0) >= 2;
+            const bigMove = Math.abs(a.changePct || 0) >= 5;
+            if (!highVol && !bigMove) return false;
           }
           return true;
         });
@@ -16983,17 +17056,13 @@
       }
 
       // ── Refresh Timer ─────────────────────────────────────
+      // Scanner no longer auto-refreshes on a timer. It refreshes only on:
+      //   • page load (navTo → loadScanner)
+      //   • the "Scan Now" button
+      //   • a filter / scan-type / sector change (handled inline)
       function scStartTimer() {
         scStopTimer();
-        scCountdown = scRefreshSecs;
         scUpdateRefreshDisplay();
-        scRefreshTimer = setInterval(() => {
-          scCountdown--;
-          scUpdateRefreshDisplay();
-          if (scCountdown <= 0) {
-            loadScanner(false);
-          }
-        }, 1000);
       }
 
       function scStopTimer() {
@@ -17002,7 +17071,7 @@
 
       function scUpdateRefreshDisplay() {
         const el = document.getElementById('sc-refresh-txt');
-        if (el) el.textContent = `Next refresh: ${scCountdown}s`;
+        if (el) el.textContent = 'Manual refresh only';
       }
 
       // ── Event Listeners (set up once) ─────────────────────
@@ -17011,28 +17080,31 @@
         if (scEventsSetup) return;
         scEventsSetup = true;
 
-        document.getElementById('sc-sector').addEventListener('change', e => {
+        // Safe wrapper: if an element was removed/renamed the rest of the setup
+          // must still run, otherwise every subsequent button/filter goes dead.
+          const scOn = (id, evt, fn) => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener(evt, fn);
+          };
+
+          scOn('sc-sector', 'change', e => {
           scSectorFilter = e.target.value;
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
         });
 
-        document.getElementById('sc-vol-ratio-range').addEventListener('input', e => {
+        // Vol-ratio slider was removed from the UI; keep handler conditional so a missing
+          // element no longer aborts the rest of the setup (and kills every button).
+          scOn('sc-vol-ratio-range', 'input', e => {
           const raw = parseFloat(e.target.value);
-
-          // Reverse behavior:
-          // slider LEFT  = least restrictive (1.0x)
-          // slider RIGHT = most restrictive (5.0x)
           scMinVolRatio = 6 - raw;
-
-          document.getElementById('sc-vol-ratio-val').textContent =
-            scMinVolRatio.toFixed(1) + 'x';
-
+          const valEl = document.getElementById('sc-vol-ratio-val');
+          if (valEl) valEl.textContent = scMinVolRatio.toFixed(1) + 'x';
           scApplyFilters();
           scUpdateKPIs();
           scRenderTable();
         });
 
-        document.getElementById('sc-search').addEventListener('input', e => {
+        scOn('sc-search', 'input', e => {
           scSearchVal = e.target.value.trim();
           scApplyFilters(); scRenderTable();
         });
@@ -17047,9 +17119,10 @@
         });
 
         // Toggle advanced filters
-        document.getElementById('sc-filters-toggle').addEventListener('click', () => {
+        scOn('sc-filters-toggle', 'click', () => {
           const row = document.getElementById('sc-filter-row2');
           const btn = document.getElementById('sc-filters-toggle');
+          if (!row || !btn) return;
           const visible = row.style.display !== 'none';
           row.style.display = visible ? 'none' : 'flex';
           btn.classList.toggle('active', !visible);
@@ -17060,16 +17133,16 @@
         const debounceAdv = (fn) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), 400); }; };
         const advRefresh = debounceAdv(() => { scApplyFilters(); scUpdateKPIs(); scRenderTable(); });
 
-        document.getElementById('sc-price-min').addEventListener('input', e => { scPriceMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-price-max').addEventListener('input', e => { scPriceMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-chg-min').addEventListener('input', e => { scChgMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-chg-max').addEventListener('input', e => { scChgMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-pe-min').addEventListener('input', e => { scPeMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-pe-max').addEventListener('input', e => { scPeMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-beta-min').addEventListener('input', e => { scBetaMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-beta-max').addEventListener('input', e => { scBetaMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-divy-min').addEventListener('input', e => { scDivYMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
-        document.getElementById('sc-divy-max').addEventListener('input', e => { scDivYMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-price-min', 'input', e => { scPriceMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-price-max', 'input', e => { scPriceMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-chg-min', 'input', e => { scChgMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-chg-max', 'input', e => { scChgMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-pe-min', 'input', e => { scPeMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-pe-max', 'input', e => { scPeMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-beta-min', 'input', e => { scBetaMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-beta-max', 'input', e => { scBetaMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-divy-min', 'input', e => { scDivYMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-divy-max', 'input', e => { scDivYMax = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
 
         // Market cap toggles
         document.querySelectorAll('.sc-mcap-btn').forEach(btn => {
@@ -17092,7 +17165,7 @@
         });
 
         // Clear all advanced
-        document.getElementById('sc-clear-adv').addEventListener('click', () => {
+        scOn('sc-clear-adv', 'click', () => {
           scPriceMin = scPriceMax = scChgMin = scChgMax = scPeMin = scPeMax = scBetaMin = scBetaMax = scDivYMin = scDivYMax = null;
           scAbsChgMin = null; scMinVolume = null; scPennyMode = false; scGexMode = false;
           scMcapFilter = 'ALL'; sc52wFilter = 'ALL';
@@ -17105,11 +17178,11 @@
         });
 
         // Abs % move min
-        document.getElementById('sc-abschange-min').addEventListener('input', e => { scAbsChgMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-abschange-min', 'input', e => { scAbsChgMin = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
         // Raw volume floor
-        document.getElementById('sc-minvol').addEventListener('input', e => { scMinVolume = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
+        scOn('sc-minvol', 'input', e => { scMinVolume = e.target.value !== '' ? parseFloat(e.target.value) : null; advRefresh(); });
         // Penny mode
-        document.getElementById('sc-penny-mode').addEventListener('change', e => {
+        scOn('sc-penny-mode', 'change', e => {
           scPennyMode = e.target.checked;
           if (scPennyMode) {
             // Auto-show advanced filters row so user can see it's active
@@ -17124,7 +17197,7 @@
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
         });
         // GEX mode
-        document.getElementById('sc-gex-mode').addEventListener('change', async e => {
+        scOn('sc-gex-mode', 'change', async e => {
           scGexMode = e.target.checked;
 
           if (scGexMode) {
@@ -17146,9 +17219,9 @@
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
         });
 
-        document.getElementById('sc-btn-scan').addEventListener('click', () => loadScanner(true));
-        document.getElementById('sc-flyout-close').addEventListener('click', scCloseFlyout);
-        document.getElementById('sc-flyout-backdrop').addEventListener('click', scCloseFlyout);
+        scOn('sc-btn-scan', 'click', () => loadScanner(true));
+        scOn('sc-flyout-close', 'click', scCloseFlyout);
+        scOn('sc-flyout-backdrop', 'click', scCloseFlyout);
 
         scSetupSort();
       }
