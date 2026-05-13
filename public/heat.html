@@ -5150,6 +5150,17 @@
       stroke-width: 2;
     }
 
+    .rrg-symbol-group.active .rrg-tail-line {
+      stroke-width: 3.25;
+      opacity: 1;
+      filter: drop-shadow(0 0 6px currentColor);
+    }
+
+    .rrg-symbol-group.active .rrg-tail-dot {
+      opacity: 1;
+      filter: drop-shadow(0 0 5px currentColor);
+    }
+
     .rrg-symbol-group.active .rrg-head-label {
       fill: var(--cyan) !important;
     }
@@ -13824,8 +13835,30 @@
     async function hsLoadChartForSymbol(symbol) {
       hsCurrentSymbol = symbol;
       // Update title
+      // Update title
       const titleEl = document.getElementById('hs-chart-title');
       if (titleEl) titleEl.textContent = symbol;
+
+      try {
+        const qSym = encodeURIComponent(symbol);
+        const quoteRes = await apiGet(`/api/quotes?symbols=${qSym}`);
+        const q = quoteRes?.data?.[symbol] || quoteRes?.data?.[symbol.toUpperCase()];
+
+        const name =
+          q?.reference?.description ||
+          q?.reference?.securityDescription ||
+          q?.quote?.description ||
+          q?.assetMainType ||
+          '';
+
+        if (titleEl) {
+          titleEl.textContent = name
+            ? `${symbol} - ${name}`
+            : symbol;
+        }
+      } catch (e) {
+        console.warn('Heat seeker title quote lookup failed:', e);
+      }
       // Reset caches when symbol changes
       hsIntradayCache = {};
       hsDailyCandles = null;
