@@ -6330,6 +6330,15 @@
       opacity: 1;
     }
 
+    #sc-tbody tr.sc-gex-near {
+      background: rgba(59, 220, 255, 0.08);
+      box-shadow: inset 3px 0 0 var(--cyan);
+    }
+
+    #sc-tbody tr.sc-gex-near:hover {
+      background: rgba(59, 220, 255, 0.13);
+    }
+
     /* ─────────────────────────────────────────────
    EARNINGS VOL
 ─────────────────────────────────────────────
@@ -8887,7 +8896,13 @@
                 <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0"
                   step="100000" style="width:100px">
               </div>
-
+              <!-- GEX Mode -->
+              <label
+                style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
+                id="sc-gex-label">
+                <input type="checkbox" id="sc-gex-mode" style="accent-color:var(--cyan);width:12px;height:12px;">
+                <span>🧲 GEX Mode</span>
+              </label>
               <!-- Penny Mode -->
               <label
                 style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
@@ -16364,6 +16379,7 @@
       let scAbsChgMin = null;        // abs % move filter
       let scMinVolume = null;        // raw volume floor
       let scPennyMode = false;       // penny stock preset
+      let scGexMode = false;         // near call/put wall preset
 
       // ── Helpers ──────────────────────────────────────────
       function scFmt(n, d = 2) {
@@ -16402,6 +16418,7 @@
         if (s === 'PRICE SPIKE') return a.changePct < 0 ? 'price-plunge' : 'price-spike';
         if (s === 'BREAKOUT') return 'breakout';
         if (s === 'REL STRENGTH') return a.changePct < 0 ? 'rel-weakness' : 'rel-strength';
+        if (s === 'GEX WALL') return a.gexDistance <= 0.5 ? 'breakout' : 'rel-strength';
         return '';
       }
 
@@ -16412,6 +16429,12 @@
 
         if (s === 'PRICE SPIKE') {
           return a.changePct < 0 ? 'PRICE PLUNGE' : 'PRICE SPIKE';
+        }
+
+        if (s === 'GEX WALL') {
+          const wall = a.gexWallType || 'WALL';
+          const dist = Number.isFinite(a.gexDistance) ? `$${a.gexDistance.toFixed(2)}` : '';
+          return `${wall} ${dist}`;
         }
 
         return s;
@@ -16469,19 +16492,107 @@
         return 'SMALL';
       }
 
+      async function scEnrichGexWalls(rows) {
+        const body = document.getElementById('sc-tbody');
+
+        const targets = rows
+          .filter(a => a && a.symbol && Number.isFinite(Number(a.price)))
+          .slice(0, 80);
+
+        const renderProgress = (done, total, currentLabel = 'Starting GEX scan…') => {
+          const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+          if (!body) return;
+
+          body.innerHTML = `
+      <tr>
+        <td colspan="11" style="padding:18px 16px;color:var(--text3);">
+          <div class="flow-scan-loading">
+            <div class="flow-scan-loading-top">
+              <span>Scanning GEX walls</span>
+              <span>${done}/${total} · ${pct}%</span>
+            </div>
+            <div class="flow-scan-progress-track">
+              <div class="flow-scan-progress-fill" style="width:${pct}%"></div>
+            </div>
+            <div class="flow-scan-loading-sub">${currentLabel}</div>
+          </div>
+        </td>
+      </tr>
+    `;
+        };
+
+        renderProgress(0, targets.length, `Preparing ${targets.length} ticker GEX scan…`);
+
+        let done = 0;
+        const CHUNK = 6;
+
+        for (let i = 0; i < targets.length; i += CHUNK) {
+          const slice = targets.slice(i, i + CHUNK);
+
+          await Promise.allSettled(slice.map(async a => {
+            try {
+              renderProgress(done, targets.length, `Analyzing ${a.symbol}…`);
+
+              const d = await apiGet(`/api/heat?symbol=${encodeURIComponent(a.symbol)}&strikeCount=60&range=ALL`);
+              if (!d?.ok) return;
+
+              const s = d.summary || {};
+              const callWall = Number(s.strongestCallWall?.strike);
+              const putWall = Number(s.strongestPutWall?.strike);
+              const price = Number(a.price);
+
+              const candidates = [];
+
+              if (Number.isFinite(callWall)) {
+                candidates.push({ type: 'CALL WALL', strike: callWall, distance: Math.abs(price - callWall) });
+              }
+
+              if (Number.isFinite(putWall)) {
+                candidates.push({ type: 'PUT WALL', strike: putWall, distance: Math.abs(price - putWall) });
+              }
+
+              if (!candidates.length) return;
+
+              candidates.sort((x, y) => x.distance - y.distance);
+              const nearest = candidates[0];
+
+              a.callWall = Number.isFinite(callWall) ? callWall : null;
+              a.putWall = Number.isFinite(putWall) ? putWall : null;
+              a.gexWallType = nearest.type;
+              a.gexWallStrike = nearest.strike;
+              a.gexDistance = nearest.distance;
+
+              if (nearest.distance <= 1) {
+                a.signals = ['GEX WALL'];
+              }
+            } catch (e) {
+              console.warn('GEX wall lookup failed:', a.symbol, e);
+            } finally {
+              done++;
+              renderProgress(done, targets.length, `Analyzed ${done} of ${targets.length} tickers…`);
+            }
+          }));
+        }
+      }
+
       function scApplyFilters() {
         scFiltered = scAllAnomalies.filter(a => {
           // Sector
           if (scSectorFilter !== 'ALL' && a.sector !== scSectorFilter) return false;
           // Signal type
-          if (scScanType !== 'all') {
+          if (!scGexMode && scScanType !== 'all') {
             const needed = { 'vol-spike': 'VOL SPIKE', 'price-spike': 'PRICE SPIKE', 'breakout': 'BREAKOUT' }[scScanType];
             if (needed && !a.signals.includes(needed)) return false;
           }
-          // Vol ratio
-          if (a.volRatio < scMinVolRatio) return false;
+          // Vol ratio filter
+          //removed
           // Search
           if (scSearchVal && !a.symbol.includes(scSearchVal.toUpperCase()) && !(a.name || '').toUpperCase().includes(scSearchVal.toUpperCase())) return false;
+          // GEX mode: only show names within $1 of call wall or put wall
+          if (scGexMode) {
+            if (!Number.isFinite(a.gexDistance) || a.gexDistance > 1) return false;
+          }
           // Price range
           if (scPriceMin !== null && a.price < scPriceMin) return false;
           if (scPriceMax !== null && a.price > scPriceMax) return false;
@@ -16563,6 +16674,9 @@
         }
         if (scMinVolume !== null) {
           tags.push({ label: `Vol≥${scFmtK(scMinVolume)}`, clear: () => { scMinVolume = null; const el = document.getElementById('sc-minvol'); if (el) el.value = ''; } });
+        }
+        if (scGexMode) {
+          tags.push({ label: '🧲 GEX Mode', clear: () => { scGexMode = false; const el = document.getElementById('sc-gex-mode'); if (el) el.checked = false; } });
         }
         if (scPennyMode) {
           tags.push({ label: '🔥 Penny Mode', clear: () => { scPennyMode = false; const el = document.getElementById('sc-penny-mode'); if (el) el.checked = false; } });
@@ -16655,7 +16769,8 @@
           const dayRangePct = Math.max(0, Math.min(a.dayRangePct * 100, 100));
           const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s, a)}">${scSignalLabel(s, a)}</span>`).join('');
 
-          return `<tr onclick="scOpenFlyout(${JSON.stringify(a).replace(/"/g, '&quot;')})">
+          const gexNearClass = scGexMode && Number.isFinite(a.gexDistance) && a.gexDistance <= 0.5 ? ' sc-gex-near' : '';
+          return `<tr class="${gexNearClass}" onclick="scOpenFlyout(${JSON.stringify(a).replace(/"/g, '&quot;')})">
             <td>
               <div class="sc-cell-symbol">
                 ${a.isExtreme ? '<div class="sc-extreme-dot"></div>' : ''}
@@ -16984,10 +17099,11 @@
         // Clear all advanced
         document.getElementById('sc-clear-adv').addEventListener('click', () => {
           scPriceMin = scPriceMax = scChgMin = scChgMax = scPeMin = scPeMax = scBetaMin = scBetaMax = scDivYMin = scDivYMax = null;
-          scAbsChgMin = null; scMinVolume = null; scPennyMode = false;
+          scAbsChgMin = null; scMinVolume = null; scPennyMode = false; scGexMode = false;
           scMcapFilter = 'ALL'; sc52wFilter = 'ALL';
           ['sc-price-min', 'sc-price-max', 'sc-chg-min', 'sc-chg-max', 'sc-pe-min', 'sc-pe-max', 'sc-beta-min', 'sc-beta-max', 'sc-divy-min', 'sc-divy-max', 'sc-abschange-min', 'sc-minvol'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
           const pmEl = document.getElementById('sc-penny-mode'); if (pmEl) pmEl.checked = false;
+          const gmEl = document.getElementById('sc-gex-mode'); if (gmEl) gmEl.checked = false;
           document.querySelectorAll('.sc-mcap-btn').forEach(b => b.classList.toggle('active', b.dataset.mcap === 'ALL'));
           document.querySelectorAll('.sc-52w-btn').forEach(b => b.classList.toggle('active', b.dataset['52w'] === 'ALL'));
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
@@ -17010,6 +17126,28 @@
               toggleBtn.textContent = '− More Filters';
             }
           }
+          scApplyFilters(); scUpdateKPIs(); scRenderTable();
+        });
+        // GEX mode
+        document.getElementById('sc-gex-mode').addEventListener('change', async e => {
+          scGexMode = e.target.checked;
+
+          if (scGexMode) {
+            scPennyMode = false;
+            const pmEl = document.getElementById('sc-penny-mode');
+            if (pmEl) pmEl.checked = false;
+
+            const row2 = document.getElementById('sc-filter-row2');
+            const toggleBtn = document.getElementById('sc-filters-toggle');
+            if (row2 && row2.style.display === 'none') {
+              row2.style.display = 'flex';
+              toggleBtn.classList.add('active');
+              toggleBtn.textContent = '− More Filters';
+            }
+
+            await scEnrichGexWalls(scAllAnomalies);
+          }
+
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
         });
 
@@ -17045,6 +17183,10 @@
 
           scAllAnomalies = d.anomalies || [];
           scBreadth = d.breadth || { advances: 0, declines: 0, unchanged: 0 };
+
+          if (scGexMode) {
+            await scEnrichGexWalls(scAllAnomalies);
+          }
 
           scApplyFilters();
           scUpdateKPIs();
