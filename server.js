@@ -1095,6 +1095,124 @@ function buildHeatFromChain(chain) {
   };
 }
 
+// Try to fetch an options chain with progressively relaxed parameters.
+// Schwab's chains endpoint silently returns an empty response (200 OK with
+// status: "SUCCESS" but no expDateMap entries) when the requested payload is
+// too large or when the symbol/strikeCount/date combination doesn't match any
+// listed contracts. This is especially common for $VIX, which has wide,
+// non-uniform strike spacing (1 / 2.5 / 5 / 10) and Wed-only expirations, so a
+// strikeCount=50 / 30-day window often produces nothing.
+async function fetchChainWithFallback(actualSymbol, opts) {
+  const attempts = [];
+
+  // Attempt 1: exact params the caller asked for.
+  attempts.push({ label: "requested", overrides: opts });
+
+  const isVix = actualSymbol === "$VIX";
+
+  if (isVix) {
+    // Attempt 2: drop strikeCount, force range=ALL across the date window.
+    // VIX has far fewer strikes than SPX so ALL is safe and avoids the
+    // "strikeCount around ATM" filter that excludes most listed strikes when
+    // the underlying is near 15 but listed strikes go from 10 to 100+.
+    attempts.push({
+      label: "vix-range-all",
+      overrides: {
+        ...opts,
+        strikeCount: undefined,
+        range: "ALL"
+      }
+    });
+
+    // Attempt 3: widen the date window to 90 days. VIX monthly expirations
+    // are Wed-only and the next listed expiration can sit just outside a
+    // 30-day window when the user happens to query between cycles.
+    attempts.push({
+      label: "vix-wide-window",
+      overrides: {
+        ...opts,
+        strikeCount: undefined,
+        range: "ALL",
+        fromDate: getTodayISO(),
+        toDate: getFutureISO(90)
+      }
+    });
+
+    // Attempt 4: no date constraints at all — let Schwab return everything
+    // it has listed. Last-resort path so the heat map always shows something.
+    attempts.push({
+      label: "vix-no-dates",
+      overrides: {
+        ...opts,
+        strikeCount: undefined,
+        range: "ALL",
+        fromDate: null,
+        toDate: null
+      }
+    });
+  } else {
+    // Non-VIX: a single relaxed retry is enough.
+    attempts.push({
+      label: "relaxed",
+      overrides: { ...opts, strikeCount: undefined, range: "ALL" }
+    });
+  }
+
+  let lastResponse = null;
+  let lastError = null;
+  const tried = [];
+
+  for (const attempt of attempts) {
+    try {
+      // Strip null overrides so fetchChain uses its own defaults.
+      const cleanOverrides = {};
+      for (const [k, v] of Object.entries(attempt.overrides || {})) {
+        if (v !== null && v !== undefined) cleanOverrides[k] = v;
+      }
+
+      const resp = await fetchChain(actualSymbol, cleanOverrides);
+      const chain = resp.data || {};
+      const callMap = chain.callExpDateMap || {};
+      const putMap = chain.putExpDateMap || {};
+      const callExps = Object.keys(callMap).length;
+      const putExps = Object.keys(putMap).length;
+
+      tried.push({
+        label: attempt.label,
+        status: chain.status,
+        callExpirations: callExps,
+        putExpirations: putExps,
+        params: resp.config?.params || null
+      });
+
+      lastResponse = resp;
+
+      // Success = at least one expiration on either side.
+      if (callExps > 0 || putExps > 0) {
+        return { response: resp, tried, succeededWith: attempt.label };
+      }
+
+      console.warn(
+        `CHAIN EMPTY for ${actualSymbol} (attempt=${attempt.label}, status=${chain.status})`
+      );
+    } catch (err) {
+      lastError = err;
+      tried.push({
+        label: attempt.label,
+        error: err.response?.data || err.message,
+        httpStatus: err.response?.status
+      });
+      console.warn(
+        `CHAIN FETCH FAILED for ${actualSymbol} (attempt=${attempt.label}):`,
+        err.response?.status,
+        err.response?.data || err.message
+      );
+    }
+  }
+
+  return { response: lastResponse, tried, error: lastError, succeededWith: null };
+}
+
 app.get("/api/heat", async (req, res) => {
   try {
     if (!schwabTokens?.access_token) {
@@ -1109,51 +1227,87 @@ app.get("/api/heat", async (req, res) => {
 
     const isVixRequest = actualSymbol === "$VIX";
 
-    const requests = [
-      fetchChain(actualSymbol, {
-        contractType: req.query.contractType,
-        strikeCount: req.query.strikeCount ? Number(req.query.strikeCount) : 12,
-        includeUnderlyingQuote: false,
-        fromDate: req.query.fromDate,
-        toDate: req.query.toDate,
-        range: req.query.range,
-        expMonth: req.query.expMonth,
-        optionType: req.query.optionType,
-        strike: req.query.strike
-      }),
-      schwabGet('https://api.schwabapi.com/marketdata/v1/quotes', {
+    // Build chain overrides. For VIX, ignore the caller's strikeCount on the
+    // first attempt — the dashboard sends 50 (the SPY default) which causes
+    // Schwab to return an empty response for VIX whose strikes span 5-100+.
+    const chainOverrides = {
+      contractType: req.query.contractType,
+      strikeCount: isVixRequest
+        ? undefined
+        : (req.query.strikeCount ? Number(req.query.strikeCount) : 12),
+      includeUnderlyingQuote: false,
+      fromDate: req.query.fromDate,
+      toDate: isVixRequest
+        // Widen the default DTE window for VIX so we catch at least one
+        // monthly Wed expiration even when the user happens to query mid-cycle.
+        ? (req.query.toDate || getFutureISO(60))
+        : req.query.toDate,
+      range: isVixRequest ? (req.query.range || "ALL") : req.query.range,
+      expMonth: req.query.expMonth,
+      optionType: req.query.optionType,
+      strike: req.query.strike
+    };
+
+    const chainPromise = fetchChainWithFallback(actualSymbol, chainOverrides);
+
+    const quotesPromise = schwabGet(
+      'https://api.schwabapi.com/marketdata/v1/quotes',
+      {
         params: { symbols: mapQuoteSymbolsParam(requestedSymbol), fields: 'quote' },
         timeout: 30000
-      }).catch(() => ({ data: {} }))
-    ];
+      }
+    ).catch(err => {
+      console.warn(`HEAT quotes fetch failed for ${requestedSymbol}:`, err.message);
+      return { data: {} };
+    });
 
-    if (isVixRequest) {
-      requests.push(
-        schwabGet('https://api.schwabapi.com/marketdata/v1/pricehistory', {
-          params: {
-            symbol: '$VIX',
-            periodType: 'year',
-            period: 1,
-            frequencyType: 'daily',
-            frequency: 1
-          },
-          timeout: 30000
-        }).catch(() => ({ data: { candles: [] } }))
-      );
-    }
+    const vixHistPromise = isVixRequest
+      ? schwabGet('https://api.schwabapi.com/marketdata/v1/pricehistory', {
+        params: {
+          symbol: '$VIX',
+          periodType: 'year',
+          period: 1,
+          frequencyType: 'daily',
+          frequency: 1
+        },
+        timeout: 30000
+      }).catch(err => {
+        console.warn("HEAT VIX history fetch failed:", err.message);
+        return { data: { candles: [] } };
+      })
+      : Promise.resolve({ data: { candles: [] } });
 
-    const [response, quotesResponse, vixHistResponse] = await Promise.all(requests);
+    const [chainResult, quotesResponse, vixHistResponse] = await Promise.all([
+      chainPromise,
+      quotesPromise,
+      vixHistPromise
+    ]);
 
-    const chain = response.data || {};
+    const response = chainResult.response;
+    const chain = response?.data || {};
     const heat = buildHeatFromChain(chain);
 
     if (!heat.contractCount) {
+      // Surface what each fallback attempt actually returned so the issue is
+      // diagnosable from the browser/network tab instead of "No data returned".
+      console.error(
+        `HEAT no contracts for ${actualSymbol}. Attempts:`,
+        JSON.stringify(chainResult.tried, null, 2)
+      );
+
       return res.json({
         ok: false,
         requestedSymbol,
         actualSymbol,
-        request: response.config?.params ?? null,
-        error: `No option contracts returned for ${actualSymbol}.`,
+        request: response?.config?.params ?? null,
+        attempts: chainResult.tried,
+        error: `No option contracts returned for ${actualSymbol}.` +
+          (chain.status && chain.status !== "SUCCESS"
+            ? ` Schwab status: ${chain.status}.`
+            : "") +
+          (chainResult.error
+            ? ` Last error: ${chainResult.error.message || "unknown"}.`
+            : ""),
         details: chain
       });
     }
@@ -1211,7 +1365,9 @@ app.get("/api/heat", async (req, res) => {
       ok: true,
       requestedSymbol,
       actualSymbol,
-      request: response.config?.params ?? null,
+      request: response?.config?.params ?? null,
+      attempts: chainResult.tried,
+      succeededWith: chainResult.succeededWith,
       quotes: quotesResponse.data,
       ...(vix ? { vix } : {}),
       ...heat
