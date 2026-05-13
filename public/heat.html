@@ -8095,12 +8095,9 @@
               <option>AMD</option>
             </select>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
-            <!-- DTE buttons -->
-            <span style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">DTE:</span>
-            <button class="dte-btn" onclick="setHeatDTE(this,7)">7d</button>
-            <button class="dte-btn" onclick="setHeatDTE(this,14)">14d</button>
-            <button class="dte-btn active" onclick="setHeatDTE(this,30)">30d</button>
-            <button class="dte-btn" onclick="setHeatDTE(this,45)">45d</button>
+            <!-- Expirations are populated dynamically from Schwab expirationDate values -->
+            <span style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Expirations:</span>
+            <span class="dte-btn active" style="cursor:default;pointer-events:none;">API Dynamic</span>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
             <!-- Strike count -->
             <span
@@ -9379,7 +9376,7 @@
     // ═══════════════════════════════════════════════════════
     let isConnected = false;
     let heatSymbol = 'SPY';
-    let heatDTE = 30;
+    let heatDTE = null;
     let lastHeatData = null;
 
     // ── Real P/C Ratio for Market Overview ─────────────────
@@ -14384,10 +14381,8 @@
     }
 
     function setHeatDTE(el, dte) {
-      document.querySelectorAll('.dte-btn').forEach(b => b.classList.remove('active'));
-      el.classList.add('active');
-      heatDTE = dte;
-      // Re-render immediately with filtered columns if data already loaded
+      // Legacy no-op: Heat Seeker now renders every expirationDate returned by the API.
+      heatDTE = null;
       if (lastHeatData) {
         renderHeatTable(lastHeatData);
         updateHeatKeyLevels(lastHeatData);
@@ -14399,10 +14394,6 @@
         connectSchwab(); return;
       }
       const strikeCount = document.getElementById('heat-strike-count').value || 20;
-      const today = new Date();
-      const toDate = new Date(today); toDate.setDate(toDate.getDate() + heatDTE);
-      const fromDate = today.toISOString().slice(0, 10);
-      const toDateStr = toDate.toISOString().slice(0, 10);
 
       const empty = document.getElementById('heat-empty-state');
       const table = document.getElementById('heat-table');
@@ -14420,7 +14411,7 @@
         const sym = encodeURIComponent(heatSymbol);
 
         const d = await apiGet(
-          `/api/heat?symbol=${sym}&strikeCount=${strikeCount}&fromDate=${fromDate}&toDate=${toDateStr}`
+          `/api/heat?symbol=${sym}&strikeCount=${strikeCount}`
         );
         if (!d.ok) throw new Error(d.error);
         lastHeatData = d;
@@ -14506,14 +14497,8 @@
         return;
       }
 
-      // ── DTE filtering: only show expirations ≤ heatDTE days out ──
-      const filteredExps = d.expirations.filter(exp => {
-        const dtePart = exp.split(':')[1];
-        const dte = dtePart ? parseInt(dtePart) : 9999;
-        return dte <= heatDTE;
-      });
-      // Use filtered exps if any match, otherwise fall back to all (edge case)
-      const activeExps = filteredExps.length > 0 ? filteredExps : d.expirations;
+      // Render every expirationDate returned by the Schwab chain.
+      const activeExps = d.expirations || [];
       const activeExpSet = new Set(activeExps);
 
       // Find min/max GEX for color scaling (within filtered exps only)
@@ -14534,10 +14519,9 @@
 
       // Build header — NET GEX (sticky left) | STRIKE (sticky left+78) | exp cols
       const headerCols = activeExps.map(exp => {
-        const parts = exp.split(':');
-        const dateStr = parts[0];
-        const dte = parts[1] ? parseInt(parts[1]) : '';
-        return `<th title="${exp}">${dateStr.slice(5)}<br><span style="color:var(--text3);font-size:8px;">${dte}d</span></th>`;
+        const meta = d.expirationMeta?.[exp] || {};
+        const dte = Number.isFinite(Number(meta.daysToExpiration)) ? Number(meta.daysToExpiration) : '';
+        return `<th title="${exp}">${String(exp).slice(5)}<br><span style="color:var(--text3);font-size:8px;">${dte !== '' ? dte + 'd' : ''}</span></th>`;
       }).join('');
 
       let html = `<thead><tr><th class="net-gex-col">NET GEX</th><th class="strike-col">STRIKE</th>${headerCols}</tr></thead><tbody>`;

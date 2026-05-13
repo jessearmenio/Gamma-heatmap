@@ -932,6 +932,11 @@ app.get("/api/chain", async (req, res) => {
   }
 });
 
+function normalizeExpirationDate(contract, expKey) {
+  const raw = contract?.expirationDate || String(expKey || "").split(":")[0];
+  return String(raw || "").slice(0, 10);
+}
+
 function flattenExpDateMap(expDateMap, side) {
   const rows = [];
 
@@ -952,10 +957,15 @@ function flattenExpDateMap(expDateMap, side) {
         const gamma = Number(contract.gamma ?? 0);
         const openInterest = Number(contract.openInterest ?? 0);
         const daysToExpiration = Number(contract.daysToExpiration ?? 0);
+        const expirationDate = normalizeExpirationDate(contract, expKey);
+
+        if (!expirationDate || !Number.isFinite(strike)) continue;
 
         rows.push({
           side,
-          expKey,
+          expKey: expirationDate,
+          sourceExpKey: expKey,
+          expirationDate,
           strike,
           gamma,
           openInterest,
@@ -971,11 +981,7 @@ function flattenExpDateMap(expDateMap, side) {
 }
 
 function sortExpKeys(expKeys) {
-  return [...expKeys].sort((a, b) => {
-    const aDate = a.split(":")[0];
-    const bDate = b.split(":")[0];
-    return new Date(aDate) - new Date(bDate);
-  });
+  return [...expKeys].sort((a, b) => new Date(a) - new Date(b));
 }
 
 function buildHeatFromChain(chain) {
@@ -988,9 +994,18 @@ function buildHeatFromChain(chain) {
   const byStrike = new Map();
   const byCell = new Map();
   const expSet = new Set();
+  const expMeta = new Map();
 
   for (const row of allRows) {
     expSet.add(row.expKey);
+    if (!expMeta.has(row.expKey)) {
+      expMeta.set(row.expKey, {
+        expirationDate: row.expirationDate,
+        daysToExpiration: row.daysToExpiration
+      });
+    } else if (!Number.isFinite(expMeta.get(row.expKey).daysToExpiration) && Number.isFinite(row.daysToExpiration)) {
+      expMeta.get(row.expKey).daysToExpiration = row.daysToExpiration;
+    }
 
     if (!byStrike.has(row.strike)) {
       byStrike.set(row.strike, {
@@ -1047,6 +1062,8 @@ function buildHeatFromChain(chain) {
       const found = byCell.get(`${expKey}|${strikeRow.strike}`);
       return found || {
         expKey,
+        expirationDate: expKey,
+        daysToExpiration: expMeta.get(expKey)?.daysToExpiration ?? null,
         strike: strikeRow.strike,
         callGex: 0,
         putGex: 0,
@@ -1082,6 +1099,9 @@ function buildHeatFromChain(chain) {
     underlyingPrice,
     contractCount: allRows.length,
     expirations,
+    expirationMeta: Object.fromEntries(
+      expirations.map(exp => [exp, expMeta.get(exp) || { expirationDate: exp, daysToExpiration: null }])
+    ),
     summary: {
       strongestCallWall,
       strongestPutWall,
@@ -1226,23 +1246,19 @@ app.get("/api/heat", async (req, res) => {
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
     const isVixRequest = actualSymbol === "$VIX";
+    const isIndexRequest = actualSymbol === "$VIX" || actualSymbol === "$SPX";
 
-    // Build chain overrides. For VIX, ignore the caller's strikeCount on the
-    // first attempt — the dashboard sends 50 (the SPY default) which causes
-    // Schwab to return an empty response for VIX whose strikes span 5-100+.
+    // Build chain overrides. Heat Seeker should use the expirations returned by
+    // the Schwab chain itself, not a fixed 7/14/30/45 DTE date window. $SPXW and
+    // $VIXW weeklies are included in the same $SPX/$VIX chains and are grouped by
+    // each contract's expirationDate inside buildHeatFromChain().
     const chainOverrides = {
       contractType: req.query.contractType,
       strikeCount: isVixRequest
         ? undefined
         : (req.query.strikeCount ? Number(req.query.strikeCount) : 12),
       includeUnderlyingQuote: false,
-      fromDate: req.query.fromDate,
-      toDate: isVixRequest
-        // Widen the default DTE window for VIX so we catch at least one
-        // monthly Wed expiration even when the user happens to query mid-cycle.
-        ? (req.query.toDate || getFutureISO(60))
-        : req.query.toDate,
-      range: isVixRequest ? (req.query.range || "ALL") : req.query.range,
+      range: isIndexRequest ? (req.query.range || "ALL") : req.query.range,
       expMonth: req.query.expMonth,
       optionType: req.query.optionType,
       strike: req.query.strike
