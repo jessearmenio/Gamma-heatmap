@@ -8083,20 +8083,18 @@
             <button class="symbol-pill" onclick="setHeatSymbol(this,'$VIX')">$VIX</button>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
             <!-- Custom symbol dropdown -->
-            <select id="heat-symbol-select" onchange="setHeatSymbolFromSelect(this)">
-              <option value="">— Custom Symbol —</option>
-              <option>AAPL</option>
-              <option>TSLA</option>
-              <option>NVDA</option>
-              <option>AMZN</option>
-              <option>META</option>
-              <option>MSFT</option>
-              <option>GOOGL</option>
-              <option>AMD</option>
-            </select>
+            <input id="heat-symbol-search" type="text" placeholder="Search ticker..." autocomplete="off"
+              style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:5px;padding:5px 10px;font-size:11px;font-family:inherit;width:110px;text-transform:uppercase;"
+              onkeydown="if(event.key === 'Enter') searchHeatSymbol();" />
+
+            <button onclick="searchHeatSymbol()"
+              style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:5px;padding:5px 10px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;">
+              LOAD
+            </button>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
             <!-- Expirations are populated dynamically from Schwab expirationDate values -->
-            <span style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Expirations:</span>
+            <span
+              style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Expirations:</span>
             <span class="dte-btn active" style="cursor:default;pointer-events:none;">API Dynamic</span>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
             <!-- Strike count -->
@@ -14368,17 +14366,29 @@
     function setHeatSymbol(el, sym) {
       document.querySelectorAll('.symbol-pill').forEach(p => p.classList.remove('active'));
       el.classList.add('active');
-      document.getElementById('heat-symbol-select').value = '';
+      const searchInput = document.getElementById('heat-symbol-search');
+if (searchInput) searchInput.value = '';
       heatSymbol = sym;
       reloadHeat();
     }
 
-    function setHeatSymbolFromSelect(sel) {
-      if (!sel.value) return;
-      document.querySelectorAll('.symbol-pill').forEach(p => p.classList.remove('active'));
-      heatSymbol = sel.value;
-      reloadHeat();
-    }
+    function searchHeatSymbol() {
+  const input = document.getElementById('heat-symbol-search');
+  const raw = String(input?.value || '').trim().toUpperCase();
+
+  if (!raw) return;
+
+  const clean = raw.replace(/[^A-Z0-9.$-]/g, '');
+
+  if (!clean) return;
+
+  document.querySelectorAll('.symbol-pill').forEach(p => p.classList.remove('active'));
+
+  heatSymbol = clean;
+  input.value = clean;
+
+  reloadHeat();
+}
 
     function setHeatDTE(el, dte) {
       // Legacy no-op: Heat Seeker now renders every expirationDate returned by the API.
@@ -14572,6 +14582,19 @@
       table.style.display = 'table';
       empty.style.display = 'none';
     }
+
+    requestAnimationFrame(() => {
+      const wrap = document.getElementById('heat-grid-wrap');
+      const spotRow = table.querySelector('tr.spot-row');
+
+      if (!wrap || !spotRow) return;
+
+      const wrapHeight = wrap.clientHeight;
+      const rowTop = spotRow.offsetTop;
+      const rowHeight = spotRow.offsetHeight;
+
+      wrap.scrollTop = rowTop - (wrapHeight / 2) + (rowHeight / 2);
+    });
 
     function gexCellColor(gex, absMax) {
       if (gex === 0) return 'transparent';
