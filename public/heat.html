@@ -636,6 +636,25 @@
       border-radius: 8px;
       font-weight: 700;
     }
+    
+    /* adjust sizing for collapsed sidebar nav */
+    @media (max-width: 900px) {
+      #nav-list .nav-section-label {
+        text-align: center;
+        padding: 0;
+        font-size: 7px;
+      }
+
+      .nav-item .nav-badge {
+        font-size: 0;
+        padding: 0;
+        margin-left: -10px;
+      }
+      #sidebar-logo{
+        padding: 0px 3px;
+        margin-left: 10px;
+      }
+    }
 
     /* ── Main area ── */
     #main {
@@ -17133,20 +17152,20 @@
         scEventsSetup = true;
 
         // Safe wrapper: if an element was removed/renamed the rest of the setup
-          // must still run, otherwise every subsequent button/filter goes dead.
-          const scOn = (id, evt, fn) => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener(evt, fn);
-          };
+        // must still run, otherwise every subsequent button/filter goes dead.
+        const scOn = (id, evt, fn) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener(evt, fn);
+        };
 
-          scOn('sc-sector', 'change', e => {
+        scOn('sc-sector', 'change', e => {
           scSectorFilter = e.target.value;
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
         });
 
         // Vol-ratio slider was removed from the UI; keep handler conditional so a missing
-          // element no longer aborts the rest of the setup (and kills every button).
-          scOn('sc-vol-ratio-range', 'input', e => {
+        // element no longer aborts the rest of the setup (and kills every button).
+        scOn('sc-vol-ratio-range', 'input', e => {
           const raw = parseFloat(e.target.value);
           scMinVolRatio = 6 - raw;
           const valEl = document.getElementById('sc-vol-ratio-val');
