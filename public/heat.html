@@ -636,7 +636,7 @@
       border-radius: 8px;
       font-weight: 700;
     }
-    
+
     /* adjust sizing for collapsed sidebar nav */
     @media (max-width: 900px) {
       #nav-list .nav-section-label {
@@ -650,7 +650,8 @@
         padding: 0;
         margin-left: -10px;
       }
-      #sidebar-logo{
+
+      #sidebar-logo {
         padding: 0px 3px;
         margin-left: 10px;
       }
@@ -10591,6 +10592,7 @@
     const CALENDAR_EVENT_META = {
       FOMC: { tier: 'high', time: '1:00pm CST', color: 'high' },
       CPI: { tier: 'high', time: '7:30am CST', color: 'high' },
+      PPI: { tier: 'high', time: '7:30am CST', color: 'high' },
       PCE: { tier: 'high', time: '7:30am CST', color: 'high' },
       NFP: { tier: 'high', time: '7:30am CST', color: 'high' },
       JOLTS: { tier: 'high', time: '9:00am CST', color: 'high' },
@@ -10677,6 +10679,19 @@
           time: CALENDAR_EVENT_META.CPI.time,
           tier: CALENDAR_EVENT_META.CPI.tier,
           color: CALENDAR_EVENT_META.CPI.color,
+          spanDays
+        });
+      });
+
+      PPI_EVENTS.forEach(ev => {
+        events.push({
+          type: 'PPI',
+          title: `${ev.labelMonth} PPI`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META.PPI.time,
+          tier: CALENDAR_EVENT_META.PPI.tier,
+          color: CALENDAR_EVENT_META.PPI.color,
           spanDays
         });
       });
@@ -12012,6 +12027,16 @@
       { releaseDate: "2026-10-14", labelMonth: "Sep" },
       { releaseDate: "2026-11-10", labelMonth: "Oct" },
       { releaseDate: "2026-12-10", labelMonth: "Nov" }
+    ];
+
+    const PPI_EVENTS = [
+      { releaseDate: "2026-06-11", labelMonth: "May" },
+      { releaseDate: "2026-07-15", labelMonth: "Jun" },
+      { releaseDate: "2026-08-13", labelMonth: "Jul" },
+      { releaseDate: "2026-09-10", labelMonth: "Aug" },
+      { releaseDate: "2026-10-15", labelMonth: "Sep" },
+      { releaseDate: "2026-11-13", labelMonth: "Oct" },
+      { releaseDate: "2026-12-15", labelMonth: "Nov" }
     ];
 
     const JOLTS_EVENTS = [
