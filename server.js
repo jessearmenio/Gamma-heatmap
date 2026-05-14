@@ -1078,10 +1078,26 @@ function buildHeatFromChain(chain) {
     };
   });
 
+  // Call Wall  = strike with the largest CALL-side gamma exposure (resistance).
+  // Put Wall   = strike with the largest PUT-side gamma exposure  (support).
+  //
+  // Industry-standard definition (SpotGamma, FlashAlpha, etc.):
+  //   wall = argmax_K [ gamma(K) * OI(K) * 100 ]   per side
+  //
+  // The previous implementation used raw open interest, which produced walls at
+  // strikes that had high OI but ~zero gamma (e.g. deep-OTM long-dated strikes),
+  // so the highlighted walls did not line up with the GEX heat map. We now sort
+  // by call/put GEX magnitude per strike, matching the heat map exactly.
+  //
+  // Note: putGex is stored as a negative number (see the accumulator above), so
+  // the strongest put-side gamma is the most-negative value.
+  const strikesWithCallGamma = strikes.filter(s => Math.abs(s.callGex) > 0);
+  const strikesWithPutGamma  = strikes.filter(s => Math.abs(s.putGex)  > 0);
+
   const strongestCallWall =
-    [...strikes].sort((a, b) => b.callOpenInterest - a.callOpenInterest)[0] || null;
+    [...strikesWithCallGamma].sort((a, b) => Math.abs(b.callGex) - Math.abs(a.callGex))[0] || null;
   const strongestPutWall =
-    [...strikes].sort((a, b) => b.putOpenInterest - a.putOpenInterest)[0] || null;
+    [...strikesWithPutGamma].sort((a, b) => Math.abs(b.putGex) - Math.abs(a.putGex))[0] || null;
   const strongestPositiveGex =
     [...strikes].sort((a, b) => b.netGex - a.netGex)[0] || null;
   const strongestNegativeGex =

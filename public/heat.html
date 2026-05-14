@@ -14581,8 +14581,8 @@
         document.getElementById('ov-heat-summary').innerHTML = `
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;">
             ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
-            ${detailRow('Call Wall OI', fmtK(s.strongestCallWall?.callOpenInterest))}
-            ${detailRow('Put Wall OI', fmtK(s.strongestPutWall?.putOpenInterest))}
+            ${detailRow('Call Wall GEX', fmtDollar(s.strongestCallWall?.callGex))}
+            ${detailRow('Put Wall GEX', fmtDollar(s.strongestPutWall?.putGex))}
             ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
           </div>`;
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
