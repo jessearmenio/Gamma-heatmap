@@ -13449,6 +13449,56 @@
     let hsDailyCandles = null;      // cache of daily candles for current symbol
     let hsIntradayCache = {};       // { '5m':[], '10m':[], '1H':[] } for current symbol
     let hsCurrentSymbol = null;
+    let hsLiveSpotPrice = null;
+    let hsLastQuotePayload = null;
+
+    function hsExtractLiveSpotFromQuote(quotePayload, symbol = hsCurrentSymbol) {
+      const sym = String(symbol || '').toUpperCase();
+      const wrapper = quotePayload?.data?.[sym] || quotePayload?.[sym] || quotePayload?.data?.symbol || quotePayload?.symbol || null;
+      const q = wrapper?.quote || wrapper || null;
+      const candidates = [
+        q?.lastPrice,
+        q?.mark,
+        q?.markPrice,
+        q?.bidPrice && q?.askPrice ? ((Number(q.bidPrice) + Number(q.askPrice)) / 2) : null,
+        q?.closePrice
+      ];
+      for (const val of candidates) {
+        const num = Number(val);
+        if (Number.isFinite(num) && num > 0) return num;
+      }
+      return null;
+    }
+
+    function hsSyncLatestCandleToSpot(spot = hsLiveSpotPrice) {
+      const live = Number(spot);
+      if (!Number.isFinite(live) || live <= 0) return false;
+      let changed = false;
+      const patchSeries = (candles) => {
+        if (!Array.isArray(candles) || !candles.length) return;
+        const last = candles[candles.length - 1];
+        if (!last) return;
+        if (Math.abs(Number(last.close) - live) > 1e-9) { last.close = live; changed = true; }
+        if (!Number.isFinite(Number(last.open))) last.open = live;
+        if (!Number.isFinite(Number(last.high)) || Number(last.high) < live) { last.high = live; changed = true; }
+        if (!Number.isFinite(Number(last.low)) || Number(last.low) <= 0 || Number(last.low) > live) { last.low = live; changed = true; }
+      };
+      patchSeries(hsDailyCandles);
+      Object.values(hsIntradayCache || {}).forEach(patchSeries);
+      return changed;
+    }
+
+    function hsRefreshRenderedChartFromSpot() {
+      const live = Number(hsLiveSpotPrice);
+      if (!Number.isFinite(live) || live <= 0) return;
+      hsSyncLatestCandleToSpot(live);
+      if (TF_INTRADAY[hsChartTf]) {
+        const candles = hsIntradayCache?.[hsChartTf];
+        if (candles?.length) hsRenderChart(candles);
+      } else if (hsDailyCandles?.length) {
+        hsRenderChart(hsDailyCandles);
+      }
+    }
 
     function hsFilterCandles(candles, tf) {
       if (TF_INTRADAY[tf]) return candles;
@@ -13901,6 +13951,8 @@
     // Called from reloadHeat() whenever a new symbol is loaded.
     async function hsLoadChartForSymbol(symbol) {
       hsCurrentSymbol = symbol;
+      hsLiveSpotPrice = null;
+      hsLastQuotePayload = null;
       // Update title
       // Update title
       const titleEl = document.getElementById('hs-chart-title');
