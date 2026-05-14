@@ -2507,6 +2507,18 @@
       color: var(--green);
     }
 
+    .cal-event.marketClosed {
+      background: rgba(255, 59, 92, 0.14);
+      border-color: rgba(255, 59, 92, 0.34);
+      color: #ff97aa;
+    }
+
+    .cal-event.bankHoliday {
+      background: rgba(180, 35, 240, 0.14);
+      border-color: rgba(180, 35, 240, 0.34);
+      color: var(--purple3);
+    }
+
     #calendar-day-panel {
       width: 360px;
       max-width: 360px;
@@ -2588,6 +2600,14 @@
 
     .calendar-day-summary-item.earnings {
       border-color: rgba(220, 255, 30, 0.25);
+    }
+
+    .calendar-day-summary-item.marketClosed {
+      border-color: rgba(255, 59, 92, 0.32);
+    }
+
+    .calendar-day-summary-item.bankHoliday {
+      border-color: rgba(180, 35, 240, 0.32);
     }
 
     .calendar-day-summary-top {
@@ -9492,7 +9512,9 @@
       low: true,
       med: true,
       high: true,
-      earnings: true
+      earnings: true,
+      marketClosed: false,
+      bankHoliday: true
     };
 
     // ═══════════════════════════════════════════════════════
@@ -10578,6 +10600,20 @@
       'VIX Expo': { tier: 'med', time: '8:00am CST', color: 'med' }
     };
 
+    const MARKET_CLOSED_HOLIDAYS_2026 = [
+      { releaseDate: '2026-05-25', holiday: 'Memorial Day' },
+      { releaseDate: '2026-06-19', holiday: 'Juneteenth' },
+      { releaseDate: '2026-07-03', holiday: '4th of July' },
+      { releaseDate: '2026-09-07', holiday: 'Labor Day' },
+      { releaseDate: '2026-11-26', holiday: 'Thanksgiving' },
+      { releaseDate: '2026-12-25', holiday: 'Christmas' }
+    ];
+
+    const BANK_HOLIDAYS_2026 = [
+      { releaseDate: '2026-10-12', holiday: 'Columbus Day' },
+      { releaseDate: '2026-11-11', holiday: 'Veterans Day' }
+    ];
+
     function cstDateParts(date = new Date()) {
       const parts = new Intl.DateTimeFormat('en-US', {
         timeZone: 'America/Chicago',
@@ -10736,6 +10772,34 @@
         });
       });
 
+      MARKET_CLOSED_HOLIDAYS_2026.forEach(ev => {
+        events.push({
+          type: 'Market Closed',
+          title: `Market Closed - ${ev.holiday}`,
+          releaseDate: ev.releaseDate,
+          labelMonth: '',
+          time: '',
+          tier: 'high',
+          color: 'marketClosed',
+          detail: 'U.S. equity market closed',
+          spanDays
+        });
+      });
+
+      BANK_HOLIDAYS_2026.forEach(ev => {
+        events.push({
+          type: 'Bank Holiday',
+          title: `Bank Holiday - ${ev.holiday}`,
+          releaseDate: ev.releaseDate,
+          labelMonth: '',
+          time: '',
+          tier: 'med',
+          color: 'bankHoliday',
+          detail: 'Banks closed; equity market open',
+          spanDays
+        });
+      });
+
       const earningsEvents = calendarEarningsEvents.map(ev => ({
         ...ev,
         color: 'earnings',
@@ -10784,7 +10848,8 @@
         d = new Date(ev.releaseDate);
       }
       const md = `${d.getMonth() + 1}/${d.getDate()}`;
-      return `${ev.title} – ${formatBannerCountdown(ev.days)} @ ${ev.time} (${md})`;
+      const timePart = ev.time ? ` @ ${ev.time}` : '';
+      return `${ev.title} – ${formatBannerCountdown(ev.days)}${timePart} (${md})`;
     }
 
     function eventTierRank(tier) {
@@ -10992,6 +11057,12 @@
       if (ev.type === 'EARNINGS' || ev.color === 'earnings') {
         return !!calendarEventFilters.earnings;
       }
+      if (ev.color === 'marketClosed') {
+        return !!calendarEventFilters.marketClosed;
+      }
+      if (ev.color === 'bankHoliday') {
+        return !!calendarEventFilters.bankHoliday;
+      }
 
       const tier = ev.tier || ev.color;
       return !!calendarEventFilters[tier];
@@ -11028,7 +11099,7 @@
         body.innerHTML = dayEvents.map(ev => {
           const detailLine = ev.type === 'EARNINGS'
             ? `Symbol: ${ev.symbol || "—"} • Sector: ${ev.sector || "—"} • Market Cap: ${fmtMoneyShort(ev.marketCap)} • Reporting: ${ev.releaseLabel || "—"}`
-            : (ev.time || '—');
+            : (ev.detail || ev.time || '—');
 
           const subDetail = ev.type === 'EARNINGS'
             ? `Name: ${ev.name || "—"} • Report Date: ${ev.reportDate || ev.releaseDate || "—"} • Quarter: ${ev.year && ev.quarter ? `${ev.year} Q${ev.quarter}` : "—"} • Estimate: ${fmtNumMaybe(ev.estimate)}`
@@ -11103,6 +11174,18 @@
       <span class="cal-legend-dot" style="background:#22dd88"></span>
       Earnings
       <input type="checkbox" data-calendar-filter="earnings" ${calendarEventFilters.earnings ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
+    </label>
+
+    <label class="cal-legend-item">
+      <span class="cal-legend-dot" style="background:#ff97aa"></span>
+      Market Closed
+      <input type="checkbox" data-calendar-filter="marketClosed" ${calendarEventFilters.marketClosed ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
+    </label>
+
+    <label class="cal-legend-item">
+      <span class="cal-legend-dot" style="background:#b46cff"></span>
+      Bank Holiday
+      <input type="checkbox" data-calendar-filter="bankHoliday" ${calendarEventFilters.bankHoliday ? 'checked' : ''} onchange="setCalendarEventFilter(this)">
     </label>
   `;
     }
