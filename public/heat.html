@@ -8405,7 +8405,7 @@
                       <th>% OI Chg</th>
                       <th>Call OI</th>
                       <th>Put OI</th>                      
-                      <th>Net Prem</th>
+                      <th>Net OI</th>
                       <th>Total Prem</th>
                     </tr>
                   </thead>
@@ -15341,7 +15341,7 @@
           const bidPct = 100 - askPct;
           const bidAsk = `<div class="fan-ba-bar">` +
             `<span class="fan-ba-pct ask">${askPct}%</span>` +
-            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${bidPct}%,rgba(255,59,92,0.4) ${bidPct}%);"></div>` +
+            `<div class="fan-ba-fill" style="background:linear-gradient(90deg,rgba(34,221,136,0.4) ${askPct}%,rgba(255,59,92,0.4) ${askPct}%);"></div>` +
             `</div>`;
           return `<tr>
             <td><b>${c.symbol}</b></td>
