@@ -5165,8 +5165,8 @@
     }
 
     .rrg-tail-line-base {
-      stroke-width: 1.6;
-      opacity: 0.85;
+      stroke-width: 2;
+      opacity: 0.95;
     }
 
     .rrg-tail-line {
@@ -5372,6 +5372,33 @@
 
     .etf-table tbody tr {
       cursor: pointer;
+      position: relative;
+    }
+
+    .etf-table tbody tr::before {
+      content: "";
+      display: table-cell;
+      width: 10px;
+      min-width: 10px;
+      max-width: 10px;
+      padding: 0;
+      background: var(--text3);
+    }
+
+    .etf-table tbody tr.rrg-leading::before {
+      background: var(--green);
+    }
+
+    .etf-table tbody tr.rrg-weakening::before {
+      background: var(--yellow);
+    }
+
+    .etf-table tbody tr.rrg-lagging::before {
+      background: var(--red);
+    }
+
+    .etf-table tbody tr.rrg-improving::before {
+      background: var(--blue);
     }
 
     .etf-table tbody tr:hover td {
@@ -16383,7 +16410,7 @@
           const quadrant = etfQuadrant(row);
 
           return `
-        <tr class="${active}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
+        <tr class="${active} rrg-${quadrant}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
           <td><span class="etf-symbol">${row.symbol}</span></td>
           <td class="etf-name">${ETF_NAME_MAP[row.symbol] || row.displayName}</td>
           <td>${etfNum(row.last, 2)}</td>
