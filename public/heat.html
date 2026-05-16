@@ -11670,17 +11670,24 @@
     // Globally, the last market to close on the trading week is the U.S. New York / CME Globex
     // session at ~17:00 CT Friday, and the first to open is CME Globex / FX (Sydney) at 17:00 CT Sunday.
     // → Treat Fri 17:00 CT through Sun 17:00 CT (48h) as fully closed for every session bar.
-    function ssWeekendClosedIntervals() {
+    function ssWeekendClosedIntervals(sessionId = '') {
       const dow = ssDayOfWeekCT();
       const intervals = [];
-      // Generate previous, current, and next week's Friday → Sunday window so any
-      // bar in the [-1, 0, +1] day-offset render range is correctly clipped.
+
+      // On Fridays:
+      // - Global sessions should stop before the new 4pm CT cycle starts.
+      // - U.S. post-market should continue until 7pm CT.
+      const fridayCloseMin = sessionId === 'post'
+        ? 19 * 60   // POST continues 3pm–7pm Friday
+        : 16 * 60;  // no new global session bars starting 4pm Friday
+
       for (const weekOff of [-1, 0, 1]) {
-        const daysToFri = (5 - dow) + weekOff * 7;        // negative = past Friday
-        const closedStart = daysToFri * 1440 + 17 * 60;   // Fri 17:00 CT
-        const closedEnd = closedStart + 48 * 60;          // Sun 17:00 CT
+        const daysToFri = (5 - dow) + weekOff * 7;
+        const closedStart = daysToFri * 1440 + fridayCloseMin;
+        const closedEnd = daysToFri * 1440 + (2 * 1440) + 17 * 60; // Sunday 5pm CT
         intervals.push([closedStart, closedEnd]);
       }
+
       return intervals;
     }
 
@@ -11741,8 +11748,8 @@
       //    so the bar is correct regardless of where the visible window falls.
       //    Each candidate bar is clipped against the weekend closure window
       //    (Fri 17:00 CT → Sun 17:00 CT) so no session shows as open over the weekend.
-      const closedIntervals = ssWeekendClosedIntervals();
       for (const s of SS_SESSIONS) {
+        const closedIntervals = ssWeekendClosedIntervals(s.id);
         for (const dayOffset of [-1, 0, 1]) {
           const rawOpen = s.open + dayOffset * 1440;
           const rawClose = s.close + dayOffset * 1440;
