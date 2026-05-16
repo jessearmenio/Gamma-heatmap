@@ -5337,6 +5337,38 @@
       font-size: 11px;
     }
 
+    .etf-quad-head,
+    .etf-quad-cell {
+      width: 14px;
+      min-width: 14px;
+      max-width: 14px;
+      padding-left: 4px !important;
+      padding-right: 0 !important;
+    }
+
+    .etf-quad-dot {
+      display: block;
+      width: 2.5px;
+      height: 18px;
+      border-radius: 2px;
+    }
+
+    .etf-quad-leading {
+      background: rgba(34, 221, 136, 0.18);
+    }
+
+    .etf-quad-weakening {
+      background: rgba(255, 215, 0, 0.18);
+    }
+
+    .etf-quad-lagging {
+      background: rgba(255, 59, 92, 0.18);
+    }
+
+    .etf-quad-improving {
+      background: rgba(59, 140, 255, 0.18);
+    }
+
     .etf-table thead th {
       position: sticky;
       top: 0;
@@ -5372,33 +5404,6 @@
 
     .etf-table tbody tr {
       cursor: pointer;
-      position: relative;
-    }
-
-    .etf-table tbody tr::before {
-      content: "";
-      display: table-cell;
-      width: 10px;
-      min-width: 10px;
-      max-width: 10px;
-      padding: 0;
-      background: var(--text3);
-    }
-
-    .etf-table tbody tr.rrg-leading::before {
-      background: var(--green);
-    }
-
-    .etf-table tbody tr.rrg-weakening::before {
-      background: var(--yellow);
-    }
-
-    .etf-table tbody tr.rrg-lagging::before {
-      background: var(--red);
-    }
-
-    .etf-table tbody tr.rrg-improving::before {
-      background: var(--blue);
     }
 
     .etf-table tbody tr:hover td {
@@ -8353,16 +8358,18 @@
                 <table class="fan-table" id="spy-vol-table">
                   <thead>
                     <tr>
-                      <th>Symbol</th>
-                      <th>Strike</th>
-                      <th>C/P</th>
-                      <th>Expiry</th>
-                      <th>DTE</th>
-                      <th>Last</th>
-                      <th>Low–High</th>
-                      <th>Volume</th>
-                      <th>OI</th>
-                      <th>Bid/Ask Vol</th>
+                      <<tr>
+                        <th class="etf-quad-head"></th>
+                        <th>Symbol</th>
+                        <th>Strike</th>
+                        <th>C/P</th>
+                        <th>Expiry</th>
+                        <th>DTE</th>
+                        <th>Last</th>
+                        <th>Low–High</th>
+                        <th>Volume</th>
+                        <th>OI</th>
+                        <th>Bid/Ask Vol</th>
                     </tr>
                   </thead>
                   <tbody id="spy-vol-body">
@@ -8780,7 +8787,7 @@
                 </thead>
                 <tbody id="etf-tbody">
                   <tr>
-                    <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
+                    <td colspan="11" style="text-align:center;padding:24px;color:var(--text3);">
                       Log in to view ETFs.
                     </td>
                   </tr>
@@ -16215,7 +16222,7 @@
 
       tbody.innerHTML = `
     <tr>
-      <td colspan="10" style="text-align:center;padding:24px;color:var(--text3);">
+      <td colspan="11" style="text-align:center;padding:24px;color:var(--text3);">
         Loading ETF quotes...
       </td>
     </tr>
@@ -16410,8 +16417,9 @@
           const quadrant = etfQuadrant(row);
 
           return `
-        <tr class="${active} rrg-${quadrant}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
-          <td><span class="etf-symbol">${row.symbol}</span></td>
+        <tr class="${active}" data-symbol="${row.symbol}" onclick="etfSelect('${row.symbol}')">
+  <td class="etf-quad-cell"><span class="etf-quad-dot etf-quad-${quadrant}"></span></td>
+  <td><span class="etf-symbol">${row.symbol}</span></td>
           <td class="etf-name">${ETF_NAME_MAP[row.symbol] || row.displayName}</td>
           <td>${etfNum(row.last, 2)}</td>
           <td class="${tone}">${etfPct(row.pct)}</td>
@@ -16428,7 +16436,7 @@
       } catch (err) {
         tbody.innerHTML = `
       <tr>
-        <td colspan="10" style="text-align:center;padding:24px;color:var(--red);">
+        <td colspan="11" style="text-align:center;padding:24px;color:var(--red);">
           ETF load failed: ${err.message}
         </td>
       </tr>
