@@ -9082,13 +9082,6 @@
                 <input type="number" class="sc-filter-num" id="sc-minvol" placeholder="e.g. 1000000" min="0"
                   step="100000" style="width:100px">
               </div>
-              <!-- GEX Mode -->
-              <label
-                style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
-                id="sc-gex-label">
-                <input type="checkbox" id="sc-gex-mode" style="accent-color:var(--cyan);width:12px;height:12px;">
-                <span>🧲 GEX Mode</span>
-              </label>
               <!-- Penny Mode -->
               <label
                 style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;font-size:10px;color:var(--text2);white-space:nowrap;transition:all .15s;"
@@ -17073,8 +17066,7 @@
       let sc52wFilter = 'ALL';
       let scAbsChgMin = null;        // abs % move filter
       let scMinVolume = null;        // raw volume floor
-      let scPennyMode = false;       // penny stock preset
-      let scGexMode = false;         // near call/put wall preset
+      let scPennyMode = false;       // penny stock preset ($15 and under)
 
       // ── Helpers ──────────────────────────────────────────
       function scFmt(n, d = 2) {
@@ -17264,9 +17256,10 @@
               a.gexWallStrike = nearest.strike;
               a.gexDistance = nearest.distance;
 
-              if (nearest.distance <= 1) {
-                a.signals = ['GEX WALL'];
-              }
+              // Flag the nearest call/put wall on every enriched stock
+              // (additive — keeps any existing vol/price/breakout signals).
+              if (!Array.isArray(a.signals)) a.signals = [];
+              if (!a.signals.includes('GEX WALL')) a.signals.push('GEX WALL');
             } catch (e) {
               console.warn('GEX wall lookup failed:', a.symbol, e);
             } finally {
@@ -17282,7 +17275,7 @@
           // Sector
           if (scSectorFilter !== 'ALL' && a.sector !== scSectorFilter) return false;
           // Signal type
-          if (!scGexMode && scScanType !== 'all') {
+          if (scScanType !== 'all') {
             const needed = { 'vol-spike': 'VOL SPIKE', 'price-spike': 'PRICE SPIKE', 'breakout': 'BREAKOUT' }[scScanType];
             if (needed && !a.signals.includes(needed)) return false;
           }
@@ -17290,10 +17283,6 @@
           //removed
           // Search
           if (scSearchVal && !a.symbol.includes(scSearchVal.toUpperCase()) && !(a.name || '').toUpperCase().includes(scSearchVal.toUpperCase())) return false;
-          // GEX mode: only show names within $1 of call wall or put wall
-          if (scGexMode) {
-            if (!Number.isFinite(a.gexDistance) || a.gexDistance > 1) return false;
-          }
           // Price range
           if (scPriceMin !== null && a.price < scPriceMin) return false;
           if (scPriceMax !== null && a.price > scPriceMax) return false;
@@ -17325,15 +17314,9 @@
           if (scAbsChgMin !== null && Math.abs(a.changePct) < scAbsChgMin) return false;
           // Raw volume floor
           if (scMinVolume !== null && a.volume < scMinVolume) return false;
-          // Penny mode preset — simplified per requirements:
-          //   1) price under $20
-          //   2) high relative volume OR a notable intraday move
-          if (scPennyMode) {
-            if (a.price >= 20) return false;
-            const highVol = (a.volRatio || 0) >= 2;
-            const bigMove = Math.abs(a.changePct || 0) >= 5;
-            if (!highVol && !bigMove) return false;
-          }
+          // Penny mode: just return stocks priced $15 and under (no other
+          // filtering). Results are ordered by volume in scApplySort().
+          if (scPennyMode && a.price > 15) return false;
           return true;
         });
         // Compute scores after filtering
@@ -17376,9 +17359,6 @@
         if (scMinVolume !== null) {
           tags.push({ label: `Vol≥${scFmtK(scMinVolume)}`, clear: () => { scMinVolume = null; const el = document.getElementById('sc-minvol'); if (el) el.value = ''; } });
         }
-        if (scGexMode) {
-          tags.push({ label: '🧲 GEX Mode', clear: () => { scGexMode = false; const el = document.getElementById('sc-gex-mode'); if (el) el.checked = false; } });
-        }
         if (scPennyMode) {
           tags.push({ label: '🔥 Penny Mode', clear: () => { scPennyMode = false; const el = document.getElementById('sc-penny-mode'); if (el) el.checked = false; } });
         }
@@ -17395,6 +17375,11 @@
       };
 
       function scApplySort() {
+        // Penny mode lists strictly by volume, highest first.
+        if (scPennyMode) {
+          scFiltered.sort((a, b) => (b.volume || 0) - (a.volume || 0));
+          return;
+        }
         scFiltered.sort((a, b) => {
           let va, vb;
           switch (scSortCol) {
@@ -17470,7 +17455,7 @@
           const dayRangePct = Math.max(0, Math.min(a.dayRangePct * 100, 100));
           const badgeHtml = a.signals.map(s => `<span class="sc-signal-badge ${scSignalClass(s, a)}">${scSignalLabel(s, a)}</span>`).join('');
 
-          const gexNearClass = scGexMode && Number.isFinite(a.gexDistance) && a.gexDistance <= 0.5 ? ' sc-gex-near' : '';
+          const gexNearClass = Number.isFinite(a.gexDistance) && a.gexDistance <= 0.5 ? ' sc-gex-near' : '';
           return `<tr class="${gexNearClass}" onclick="scOpenFlyout(${JSON.stringify(a).replace(/"/g, '&quot;')})">
             <td>
               <div class="sc-cell-symbol">
@@ -17800,11 +17785,10 @@
         // Clear all advanced
         scOn('sc-clear-adv', 'click', () => {
           scPriceMin = scPriceMax = scChgMin = scChgMax = scPeMin = scPeMax = scBetaMin = scBetaMax = scDivYMin = scDivYMax = null;
-          scAbsChgMin = null; scMinVolume = null; scPennyMode = false; scGexMode = false;
+          scAbsChgMin = null; scMinVolume = null; scPennyMode = false;
           scMcapFilter = 'ALL'; sc52wFilter = 'ALL';
           ['sc-price-min', 'sc-price-max', 'sc-chg-min', 'sc-chg-max', 'sc-pe-min', 'sc-pe-max', 'sc-beta-min', 'sc-beta-max', 'sc-divy-min', 'sc-divy-max', 'sc-abschange-min', 'sc-minvol'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
           const pmEl = document.getElementById('sc-penny-mode'); if (pmEl) pmEl.checked = false;
-          const gmEl = document.getElementById('sc-gex-mode'); if (gmEl) gmEl.checked = false;
           document.querySelectorAll('.sc-mcap-btn').forEach(b => b.classList.toggle('active', b.dataset.mcap === 'ALL'));
           document.querySelectorAll('.sc-52w-btn').forEach(b => b.classList.toggle('active', b.dataset['52w'] === 'ALL'));
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
@@ -17829,29 +17813,6 @@
           }
           scApplyFilters(); scUpdateKPIs(); scRenderTable();
         });
-        // GEX mode
-        scOn('sc-gex-mode', 'change', async e => {
-          scGexMode = e.target.checked;
-
-          if (scGexMode) {
-            scPennyMode = false;
-            const pmEl = document.getElementById('sc-penny-mode');
-            if (pmEl) pmEl.checked = false;
-
-            const row2 = document.getElementById('sc-filter-row2');
-            const toggleBtn = document.getElementById('sc-filters-toggle');
-            if (row2 && row2.style.display === 'none') {
-              row2.style.display = 'flex';
-              toggleBtn.classList.add('active');
-              toggleBtn.textContent = '− More Filters';
-            }
-
-            await scEnrichGexWalls(scAllAnomalies);
-          }
-
-          scApplyFilters(); scUpdateKPIs(); scRenderTable();
-        });
-
         scOn('sc-btn-scan', 'click', () => loadScanner(true));
         scOn('sc-flyout-close', 'click', scCloseFlyout);
         scOn('sc-flyout-backdrop', 'click', scCloseFlyout);
@@ -17885,9 +17846,9 @@
           scAllAnomalies = d.anomalies || [];
           scBreadth = d.breadth || { advances: 0, declines: 0, unchanged: 0 };
 
-          if (scGexMode) {
-            await scEnrichGexWalls(scAllAnomalies);
-          }
+          // Always enrich with call/put wall data so every scanned stock
+          // shows its GEX wall flags on the default list.
+          await scEnrichGexWalls(scAllAnomalies);
 
           scApplyFilters();
           scUpdateKPIs();
