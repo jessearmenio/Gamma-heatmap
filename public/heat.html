@@ -12114,7 +12114,7 @@
     const ovTickerCache = {};
 
     let ovState = {
-      mode: sessionStorage.getItem('ovMode') || 'swing',
+      mode: 'swing',
       sectorTf: '1d',
       chartTf: '1D',
       snapshot: null,
@@ -14494,6 +14494,36 @@
       }
     }
 
+    // Quietly re-fetch the active timeframe's candles for the CURRENT symbol
+    // and re-render — no title/cache reset, no loading placeholder. Used on
+    // auto-refresh so the chart updates intraday the way ov-spy-chart does.
+    async function hsRefreshActiveChart() {
+      const symbol = hsCurrentSymbol;
+      if (!symbol) return;
+      try {
+        const sym = encodeURIComponent(symbol);
+        if (TF_INTRADAY[hsChartTf]) {
+          const cfg = TF_INTRADAY[hsChartTf];
+          const url = `/api/pricehistory?symbol=${sym}&periodType=${cfg.periodType}&period=${cfg.period}&frequencyType=${cfg.frequencyType}&frequency=${cfg.frequency}&needExtendedHoursData=true`;
+          const d = await apiGet(url);
+          const candles = d?.candles || d?.data?.candles;
+          if (candles && candles.length) {
+            hsIntradayCache[hsChartTf] = candles;
+            hsRenderChart(candles);
+          }
+        } else {
+          const d = await apiGet(`/api/pricehistory?symbol=${sym}&periodType=year&period=1&frequencyType=daily&frequency=1&needExtendedHoursData=false`);
+          const candles = d?.candles || d?.data?.candles;
+          if (candles && candles.length) {
+            hsDailyCandles = candles;
+            hsRenderChart(candles);
+          }
+        }
+      } catch (e) {
+        console.warn('hsRefreshActiveChart:', e);
+      }
+    }
+
     // Fetch daily candles for the heat-seeker symbol and (re)render the chart.
     // Called from reloadHeat() whenever a new symbol is loaded.
     async function hsLoadChartForSymbol(symbol) {
@@ -15150,7 +15180,7 @@
       const chartLoadPromise =
         hsCurrentSymbol !== heatSymbol
           ? hsLoadChartForSymbol(heatSymbol)
-          : Promise.resolve();
+          : hsRefreshActiveChart();
 
       try {
         const sym = encodeURIComponent(heatSymbol);
