@@ -3464,7 +3464,6 @@
       border-radius: 8px;
       overflow: hidden;
       min-width: 0;
-      max-height: 438px;
       display: flex;
       flex-direction: column;
     }
@@ -7776,8 +7775,6 @@
                         <circle fill="#000" cx="300" cy="300" r="272" />
                       </mask>
                     </defs>
-
-                    <circle class="ovg-ring1" cx="300" cy="300" r="210" stroke-width="220" stroke="#143938" />
 
                     <g id="ovg-marks">
                       <path mask="url(#ovg-m1)" opacity="0.5" d="M0.2,289.5l599.6,20.9 M6.6,237.6l586.9,124.7 M21.8,187.6l556.3,224.8 M45.6,141l508.8,318 M77.1,99.3
@@ -12767,10 +12764,21 @@
         mph += (target - mph) * 0.07;
         if (Math.abs(target - mph) < 0.0005) mph = target;
 
+        // Clip the flame to the filled sweep so the unused part of the dial
+        // stays transparent. Start angle matches the needle's zero position
+        // (canvas 90° down + SVG rotation 40° = 130°), sweeping 270° clockwise.
+        var startA = (130 * Math.PI) / 180;
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.beginPath();
+        ctx.moveTo(cw / 2, ch / 2);
+        ctx.arc(cw / 2, ch / 2, size, startA, startA + mph * 1.5 * Math.PI, false);
+        ctx.closePath();
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+
         hue = hueFor(mph);
         if (scoreEl) scoreEl.textContent = Math.round(mph * 100);
         gsap.set('.ovg-ring3', { drawSVG: '0 ' + (mph * 75) + '%' });
-        gsap.set('.ovg-ring1', { drawSVG: (mph * 75) + '% 100%' });
         gsap.set('.ovg-needle', { rotation: 40 + mph * 270 });
       }
 
@@ -12785,7 +12793,6 @@
 
         gsap.registerPlugin(window.DrawSVGPlugin);
         gsap.set('.ovg-needle',  { transformOrigin: '100px 100px', rotation: 40 });
-        gsap.set('.ovg-ring1',   { transformOrigin: '50% 50%', rotation: 130, drawSVG: '0% 100%' });
         gsap.set('.ovg-ring3',   { transformOrigin: '50% 50%', rotation: 130, drawSVG: 0 });
         gsap.set('.ovg-redzone', { transformOrigin: '50% 50%', drawSVG: '-7.8% 11.2%' });
 
@@ -13581,11 +13588,15 @@
         // Step 1: collapse to 1px so LWC's internal fixed-width table stops
         //         inflating container.clientWidth via overflow
         lwcChart.applyOptions({ width: 1 });
-        // Step 2: after browser reflow, measure the true container width and apply it
+        // Step 2: after browser reflow, measure the true container width/height and apply
         requestAnimationFrame(() => {
           if (!lwcChart) return;
           const w = container.clientWidth;
-          if (w > 0) lwcChart.applyOptions({ width: w });
+          const h = container.clientHeight;
+          const opts = {};
+          if (w > 0) opts.width = w;
+          if (h > 0) opts.height = h;
+          if (opts.width || opts.height) lwcChart.applyOptions(opts);
           requestAnimationFrame(drawGammaBars);
         });
       };
