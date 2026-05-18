@@ -2873,9 +2873,9 @@
 
     .ov-ring-score-group {
       position: absolute;
-      top: 59%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      top: 60%;
+      left: 51.6%;
+      transform: translate(-50%, -34%);
       text-align: center;
       pointer-events: none;
       z-index: 3;
@@ -2898,8 +2898,12 @@
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-top: 4px;
+      margin-top: 33px;
       display: block;
+      background-color: black;
+      padding: 2px;
+      border: 1px solid var(--text);
+      border-radius: 5px;
     }
 
     #ov-ring-mode {
@@ -12680,19 +12684,19 @@
     // `ovg-` prefix so nothing leaks into the rest of the dashboard.
     (function () {
       var N = 4,
-          DUR = 3,
-          hue = 4,
-          mph = 0,        // currently displayed value, 0..1
-          target = 0,     // desired value, 0..1 (composite / 100)
-          started = false,
-          running = false,
-          c, ctx, cw, ch, size,
-          img = new Image(),
-          ring = new Image(),
-          imgReady = false,
-          ringReady = false,
-          particles = [],
-          scoreEl;
+        DUR = 3,
+        hue = 4,
+        mph = 0,        // currently displayed value, 0..1
+        target = 0,     // desired value, 0..1 (composite / 100)
+        started = false,
+        running = false,
+        c, ctx, cw, ch, size,
+        img = new Image(),
+        ring = new Image(),
+        imgReady = false,
+        ringReady = false,
+        particles = [],
+        scoreEl;
 
       function hueFor(v) {
         if (v < 0.2) return 4;    // red
@@ -12792,8 +12796,8 @@
         ctx = c.getContext('2d');
 
         gsap.registerPlugin(window.DrawSVGPlugin);
-        gsap.set('.ovg-needle',  { transformOrigin: '100px 100px', rotation: 40 });
-        gsap.set('.ovg-ring3',   { transformOrigin: '50% 50%', rotation: 130, drawSVG: 0 });
+        gsap.set('.ovg-needle', { transformOrigin: '100px 100px', rotation: 40 });
+        gsap.set('.ovg-ring3', { transformOrigin: '50% 50%', rotation: 130, drawSVG: 0 });
         gsap.set('.ovg-redzone', { transformOrigin: '50% 50%', drawSVG: '-7.8% 11.2%' });
 
         img.onload = function () { imgReady = true; maybeStart(); };
