@@ -6020,13 +6020,11 @@
     .sc-signal-badge.gex-wall-call {
       color: var(--accent);
       background: rgba(220, 255, 30, 0.10);
-      border: 1px solid rgba(220, 255, 30, 0.20);
     }
 
     .sc-signal-badge.gex-wall-put {
       color: #d470ff;
       background: rgba(180, 35, 240, 0.12);
-      border: 1px solid rgba(180, 35, 240, 0.20);
     }
 
     /* Within ≤ $0.50 of the wall: bolder fill + thicker border + subtle glow. */
@@ -17272,6 +17270,9 @@
 
       function scApplyFilters() {
         scFiltered = scAllAnomalies.filter(a => {
+          // Penny mode: the ONLY criterion is price under $15. It bypasses
+          // every other filter; results are ordered by volume in scApplySort().
+          if (scPennyMode) return a.price < 15;
           // Sector
           if (scSectorFilter !== 'ALL' && a.sector !== scSectorFilter) return false;
           // Signal type
@@ -17314,9 +17315,6 @@
           if (scAbsChgMin !== null && Math.abs(a.changePct) < scAbsChgMin) return false;
           // Raw volume floor
           if (scMinVolume !== null && a.volume < scMinVolume) return false;
-          // Penny mode: just return stocks priced $15 and under (no other
-          // filtering). Results are ordered by volume in scApplySort().
-          if (scPennyMode && a.price > 15) return false;
           return true;
         });
         // Compute scores after filtering
