@@ -12579,8 +12579,29 @@
       const sectorAdPct = (sectors.filter(s => ovN(s.dayChangePct, 0) > 0).length / n) * 100;
       breadthScore += Math.min(25, sectorAdPct * 0.25);
       breadthScore += Math.min(10, sectorAdPct * 0.10);
-      const thrustBull = pctAbove20 > 70 && sectorAdPct > 60;
-      const thrustBear = pctAbove20 < 30 && sectorAdPct < 40;
+
+      // Up/Down volume thrust — sector-ETF proxy (no full-market breadth API).
+      // Sum today's volume of advancing vs declining sector ETFs; the ratio
+      // is a breadth-thrust read in the spirit of NYSE up/down volume.
+      function sectorTodayVol(sym) {
+        const cs = allCandles(sym);
+        const v = cs.length ? ovN(cs[cs.length - 1].volume) : null;
+        return (Number.isFinite(v) && v > 0) ? v : ovN(get(sym).totalVolume, 0);
+      }
+      let upVol = 0, downVol = 0;
+      sectors.forEach(s => {
+        const v = sectorTodayVol(s.symbol);
+        if (!Number.isFinite(v) || v <= 0) return;
+        const ch = ovN(s.dayChangePct, 0);
+        if (ch > 0) upVol += v;
+        else if (ch < 0) downVol += v;
+      });
+      const upDownVolRatio = downVol > 0 ? upVol / downVol : (upVol > 0 ? 9.99 : null);
+
+      // Bullish thrust = broad advance carried by heavy up-volume; washout =
+      // the inverse. Volume ratio is the trigger, breadth confirms it.
+      const thrustBull = upDownVolRatio != null && upDownVolRatio >= 2 && pctAbove20 > 60;
+      const thrustBear = upDownVolRatio != null && upDownVolRatio <= 0.5 && pctAbove20 < 40;
       breadthScore += thrustBull ? 5 : thrustBear ? 0 : 2;
       breadthScore += ovN(leader.perf5d, 0) > 0 && ovN(laggard.perf5d, 0) > -3 ? 5 : 2;
       breadthScore = ovClamp(breadthScore);
@@ -12658,7 +12679,7 @@
         regime, vixSlope, vixPct, vixTermRatio, sma2050Diff, trendDir20d,
         spyRsi, macdResult, stochResult,
         pctAbove20, pctAbove50, pctAbove200, sectorAdPct,
-        thrustBull, thrustBear, leader, laggard, perfSpread,
+        thrustBull, thrustBear, upDownVolRatio, leader, laggard, perfSpread,
         tnxDayChg, uupDayChg, tltDayChg, tenYearTrend, uupTrend,
         fomc, cpi, jolts,
         sectors,
@@ -12926,12 +12947,15 @@
       bRow('ovm-above20', 'ovt-above20', sc.pctAbove20);
       bRow('ovm-above50', 'ovt-above50', sc.pctAbove50);
       bRow('ovm-above200', 'ovt-above200', sc.pctAbove200);
-      const thrustValue = sc.upDownVolRatio != null
-        ? sc.upDownVolRatio.toFixed(2)
-        : '--';
-
-      const thrustTag = sc.thrustBull ? 'Bullish Thrust' : sc.thrustBear ? 'Washout' : 'Neutral';
-      const thrustTone = sc.thrustBull ? 'positive' : sc.thrustBear ? 'danger' : 'neutral';
+      const r = sc.upDownVolRatio;
+      const thrustValue = r != null ? r.toFixed(2) : '--';
+      let thrustTag, thrustTone;
+      if (r == null) { thrustTag = '--'; thrustTone = 'neutral'; }
+      else if (sc.thrustBull) { thrustTag = 'Bullish Thrust'; thrustTone = 'positive'; }
+      else if (sc.thrustBear) { thrustTag = 'Washout'; thrustTone = 'danger'; }
+      else if (r >= 1.25) { thrustTag = 'Up Volume'; thrustTone = 'positive'; }
+      else if (r <= 0.8) { thrustTag = 'Down Volume'; thrustTone = 'danger'; }
+      else { thrustTag = 'Neutral'; thrustTone = 'caution'; }
 
       ovSetMetric('ovm-thrust', 'ovt-thrust', thrustValue, thrustTag, thrustTone);
     }
