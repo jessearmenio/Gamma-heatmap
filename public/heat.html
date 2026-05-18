@@ -17124,6 +17124,14 @@
 
         if (s === 'GEX WALL') {
           const wall = a.gexWallType || 'WALL';
+          const strike = Number(a.gexWallStrike);
+          const px = Number(a.price);
+          if (Number.isFinite(strike) && Number.isFinite(px)) {
+            const delta = px - strike;
+            const side = delta > 0 ? 'Above' : delta < 0 ? 'Below' : 'At';
+            const sign = delta > 0 ? '+' : delta < 0 ? '-' : '';
+            return `${side} ${wall} ${sign}$${Math.abs(delta).toFixed(2)}`;
+          }
           const dist = Number.isFinite(a.gexDistance) ? `$${a.gexDistance.toFixed(2)}` : '';
           return `${wall} ${dist}`;
         }
