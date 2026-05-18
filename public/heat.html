@@ -2867,9 +2867,6 @@
       stroke-linecap: round;
     }
 
-    .ovg-redzone {
-      filter: drop-shadow(0 0 3px hsl(138, 85%, 50%));
-    }
 
     /* The group's measured height is just the score number (verdict + mode
        are absolutely positioned below), so translate(-50%,-50%) centers the
@@ -2941,6 +2938,14 @@
     }
 
     .ov-ring-verdict.SITOUT {
+      color: var(--red);
+    }
+
+    .ov-ring-verdict.EXIT {
+      color: var(--orange);
+    }
+
+    .ov-ring-verdict.SHORT {
       color: var(--red);
     }
 
@@ -3260,6 +3265,10 @@
 
     .ov-exec-verdict.sit-out {
       color: var(--text3);
+    }
+
+    .ov-exec-verdict.exit {
+      color: var(--orange);
     }
 
     .ov-exec-conf-row {
@@ -7817,8 +7826,6 @@
                     </g>
 
                     <circle class="ovg-ring3" cx="300" cy="300" r="300" stroke-width="1.5" />
-
-                    <circle class="ovg-redzone" cx="300" cy="300" r="315" stroke-width="6" stroke="hsl(138,85%,50%)" />
                   </svg>
                   <div class="ov-ring-score-group">
                     <span id="ov-ring-score">--</span>
@@ -12699,7 +12706,89 @@
       ) / total;
     }
 
-    function ovVerdict(composite) {
+    // ── Directional read ─────────────────────────────────────────────────
+    // The composite score only measures how good conditions are for LONG
+    // trades — a low score means "bad for longs", which is NOT the same as
+    // "bearish". This computes a separate directional conviction so we can
+    // also call downside actions (raise cash / short), not just sit out.
+    function ovDirectionalRead(composite, scores) {
+      const s = scores || {};
+      let bear = 0, bull = 0;
+      const bearReasons = [], bullReasons = [];
+      const addBear = (w, why) => { bear += w; if (why) bearReasons.push(why); };
+      const addBull = (w, why) => { bull += w; if (why) bullReasons.push(why); };
+
+      // Regime is the primary directional driver
+      if (s.regime === 'strong_downtrend') addBear(3, 'strong downtrend regime');
+      else if (s.regime === 'downtrend') addBear(2, 'downtrend regime');
+      else if (s.regime === 'strong_uptrend') addBull(3, 'strong uptrend regime');
+      else if (s.regime === 'uptrend') addBull(2, 'uptrend regime');
+
+      const SPY = ovN(s.SPY), spy50 = ovN(s.spy50), spy200 = ovN(s.spy200);
+      if (Number.isFinite(SPY) && Number.isFinite(spy200)) {
+        if (SPY < spy200) addBear(2, 'SPY below 200MA'); else addBull(1);
+      }
+      if (Number.isFinite(SPY) && Number.isFinite(spy50)) {
+        if (SPY < spy50) addBear(1, 'SPY below 50MA'); else addBull(1);
+      }
+      if (s.sma2050Diff != null) {
+        if (s.sma2050Diff < -2) addBear(2, 'death cross (20<50MA)');
+        else if (s.sma2050Diff < 0) addBear(1);
+        else if (s.sma2050Diff > 2) addBull(1);
+      }
+      const mr = s.macdResult;
+      if (mr && mr.macd < mr.signal && mr.hist < 0) addBear(1, 'MACD bearish');
+      else if (mr && mr.macd > mr.signal && mr.hist > 0) addBull(1);
+      if (s.trendDir20d != null) {
+        if (s.trendDir20d < -0.5) addBear(1, '20D trend rolling over');
+        else if (s.trendDir20d > 0.5) addBull(1);
+      }
+      const pa20 = ovN(s.pctAbove20);
+      if (pa20 != null) {
+        if (pa20 < 20) addBear(2, 'breadth breakdown (' + Math.round(pa20) + '% > 20MA)');
+        else if (pa20 < 30) addBear(1, 'weak breadth (' + Math.round(pa20) + '% > 20MA)');
+        else if (pa20 > 60) addBull(1);
+      }
+      if (s.thrustBear) addBear(1, 'down-volume washout');
+      else if (s.thrustBull) addBull(1);
+      if (ovN(s.momentumScore, 50) < 35 && ovN(s.trendScore, 50) < 35) addBear(1, 'trend + momentum weak');
+      else if (ovN(s.momentumScore, 50) > 60 && ovN(s.trendScore, 50) > 60) addBull(1);
+      const rsi = ovN(s.spyRsi);
+      if (rsi != null && rsi < 35) addBear(1, 'RSI breaking down (' + Math.round(rsi) + ')');
+      if (s.vixSlope > 0 && ovN(s.VIX, 0) > 22) addBear(1, 'VIX rising / risk-off');
+
+      const net = bear - bull;
+      let bias = 'NEUTRAL', biasCls = 'neutral';
+      if (net >= 3) { bias = 'SHORT BIAS'; biasCls = 'short-bias'; }
+      else if (net <= -3) { bias = 'LONG BIAS'; biasCls = 'long-bias'; }
+
+      const downtrend = s.regime === 'downtrend' || s.regime === 'strong_downtrend';
+      let action;
+      if (composite >= 70 && net <= 0) action = 'long-strong';
+      else if (composite >= 55 && net < 2) action = 'long';
+      else if (bear >= 6 && downtrend && net >= 3) action = 'short';
+      else if (bear >= 4 && net >= 2 && composite < 50) action = 'exit-cash';
+      else if (composite < 40) action = 'reduce';
+      else action = 'hold';
+
+      return { bear, bull, net, bias, biasCls, action, bearReasons, bullReasons };
+    }
+
+    const OV_ACTION_VERDICT = {
+      'long-strong': { text: 'YES , TRADE', cls: 'YES' },
+      'long': { text: 'SELECTIVE', cls: 'SELECTIVE' },
+      'hold': { text: 'NO EDGE', cls: 'CAUTION' },
+      'reduce': { text: 'REDUCE', cls: 'REDUCE' },
+      'exit-cash': { text: 'EXIT / CASH', cls: 'EXIT' },
+      'short': { text: 'SHORT', cls: 'SHORT' },
+    };
+
+    function ovVerdict(composite, scores) {
+      if (scores) {
+        const r = ovDirectionalRead(composite, scores);
+        return OV_ACTION_VERDICT[r.action] || OV_ACTION_VERDICT.hold;
+      }
+      // Legacy composite-only fallback (no directional context)
       if (composite >= 70) return { text: 'YES , TRADE', cls: 'YES' };
       if (composite >= 55) return { text: 'SELECTIVE', cls: 'SELECTIVE' };
       if (composite >= 40) return { text: 'CAUTION', cls: 'CAUTION' };
@@ -12728,11 +12817,10 @@
         scoreEl;
 
       function hueFor(v) {
-        if (v < 0.2) return 4;    // red
-        if (v < 0.4) return 36;   // orange
-        if (v < 0.6) return 58;   // yellow
-        if (v < 0.8) return 76;   // yellow-green
-        return 138;               // green
+        if (v <= 0.30) return 4;    // red — 30% and below
+        if (v <= 0.55) return 36;   // orange — 30–55%
+        if (v < 0.70) return 58;    // yellow — 55–70%
+        return 138;                 // green — 70%+
       }
 
       function Particle(index) {
@@ -12830,7 +12918,6 @@
         gsap.registerPlugin(window.DrawSVGPlugin);
         gsap.set('.ovg-needle', { transformOrigin: '100px 100px', rotation: 45 });
         gsap.set('.ovg-ring3', { transformOrigin: '50% 50%', rotation: 135, drawSVG: 0 });
-        gsap.set('.ovg-redzone', { transformOrigin: '50% 50%', drawSVG: '-7.8% 11.2%' });
 
         img.onload = function () { imgReady = true; maybeStart(); };
         ring.onload = function () { ringReady = true; maybeStart(); };
@@ -12857,7 +12944,7 @@
         if (scoreEl) scoreEl.textContent = Math.round(composite);
       }
       const verdictEl = document.getElementById('ov-ring-verdict');
-      const v = ovVerdict(composite);
+      const v = ovVerdict(composite, scores);
       if (verdictEl) { verdictEl.textContent = v.text; verdictEl.className = 'ov-ring-verdict ' + v.cls; }
       const modeEl = document.getElementById('ov-ring-mode');
       if (modeEl) modeEl.textContent = ovState.mode.toUpperCase();
@@ -13138,33 +13225,64 @@
 
     function ovRenderExecution(composite, scores) {
       const panelScores = { volatility: scores.volScore, trend: scores.trendScore, breadth: scores.breadthScore, momentum: scores.momentumScore, macro: scores.macroScore };
-      let verdict, verdictCls;
-      if (composite >= 70) { verdict = 'TRADE LONG'; verdictCls = 'long'; }
-      else if (composite >= 55) { verdict = 'SELECTIVE LONG'; verdictCls = 'long'; }
-      else if (composite >= 40) { verdict = 'REDUCED SIZE'; verdictCls = 'caution'; }
-      else if (composite >= 25) { verdict = 'CAUTION \u2014 HEDGE'; verdictCls = 'caution'; }
-      else { verdict = 'SIT OUT'; verdictCls = 'sit-out'; }
-      if (scores.trendScore < 30 && scores.momentumScore < 35 && composite < 40) { verdict = 'TRADE SHORT'; verdictCls = 'short'; }
+      const dir = ovDirectionalRead(composite, scores);
+      const EXEC_VERDICT = {
+        'long-strong': ['TRADE LONG', 'long'],
+        'long': ['SELECTIVE LONG', 'long'],
+        'hold': ['STAND ASIDE', 'sit-out'],
+        'reduce': ['REDUCE SIZE', 'caution'],
+        'exit-cash': ['EXIT \u2014 RAISE CASH', 'exit'],
+        'short': ['TRADE SHORT', 'short'],
+      };
+      const [verdict, verdictCls] = EXEC_VERDICT[dir.action] || EXEC_VERDICT.hold;
+
       const svals = Object.values(panelScores);
-      const bull = svals.filter(s => s > 60).length, bear = svals.filter(s => s < 40).length;
+      const bullN = svals.filter(s => s > 60).length, bearN = svals.filter(s => s < 40).length;
       let conf = 'MEDIUM', confCls = 'medium';
-      if (bull >= 4 || bear >= 4) { conf = 'HIGH'; confCls = 'high'; }
-      else if (bull <= 1 && bear <= 1) { conf = 'LOW'; confCls = 'low'; }
+      if (bullN >= 4 || bearN >= 4 || Math.abs(dir.net) >= 5) { conf = 'HIGH'; confCls = 'high'; }
+      else if (bullN <= 1 && bearN <= 1 && Math.abs(dir.net) < 2) { conf = 'LOW'; confCls = 'low'; }
+
       const VIX = scores.VIX || 20;
-      let baseSize = VIX < 15 ? 100 : VIX < 20 ? 85 : VIX < 25 ? 70 : VIX < 30 ? 50 : VIX < 35 ? 35 : 20;
-      let posSize = Math.max(5, Math.min(100, Math.round(baseSize * (composite / 100))));
-      let bias = 'NEUTRAL', biasCls = 'neutral';
-      if (scores.trendScore > 60 && scores.momentumScore > 55) { bias = 'LONG BIAS'; biasCls = 'long-bias'; }
-      else if (scores.trendScore < 40 && scores.momentumScore < 45) { bias = 'SHORT BIAS'; biasCls = 'short-bias'; }
-      const sigs = Object.entries(panelScores)
-        .map(([k, s]) => ({ label: k.charAt(0).toUpperCase() + k.slice(1), score: s }))
-        .sort((a, b) => Math.abs(b.score - 50) - Math.abs(a.score - 50))
-        .slice(0, 4)
-        .map(({ label, score }) => {
-          const icon = score > 60 ? '\u25b2' : score < 40 ? '\u25bc' : '\u25cf';
-          const tone = score > 60 ? 'Bullish' : score < 40 ? 'Bearish' : 'Neutral';
-          return `${icon} ${label}: ${Math.round(score)}/100 \u2014 ${tone}`;
-        });
+      const baseSize = VIX < 15 ? 100 : VIX < 20 ? 85 : VIX < 25 ? 70 : VIX < 30 ? 50 : VIX < 35 ? 35 : 20;
+      const longSize = Math.max(5, Math.min(100, Math.round(baseSize * (composite / 100))));
+      let sizeText;
+      if (dir.action === 'short') {
+        const shortSize = Math.max(10, Math.min(60, Math.round(baseSize * Math.min(1, dir.net / 8))));
+        sizeText = shortSize + '% SHORT';
+      } else if (dir.action === 'exit-cash') {
+        const keep = Math.min(40, longSize);
+        sizeText = 'Raise to ' + (100 - keep) + '% cash';
+      } else if (dir.action === 'reduce' || dir.action === 'hold') {
+        sizeText = Math.min(longSize, 35) + '% of Portfolio';
+      } else {
+        sizeText = longSize + '% of Portfolio';
+      }
+
+      const bias = dir.bias, biasCls = dir.biasCls;
+
+      // Active signals \u2014 lead with the directive, then the dominant drivers.
+      const ACTION_LINE = {
+        'long-strong': '\u25b2 LONG \u2014 trend supportive, press winners',
+        'long': '\u25b2 SELECTIVE LONG \u2014 only the strongest setups',
+        'hold': '\u25cf NO EDGE \u2014 wait for a direction',
+        'reduce': '\u25bc REDUCE \u2014 trim risk, tighten stops',
+        'exit-cash': '\u25bc EXIT \u2014 de-risk, move to cash',
+        'short': '\u25bc SHORT \u2014 downside confirmed, sell rallies',
+      };
+      const drivers = dir.net >= 0 ? dir.bearReasons : dir.bullReasons;
+      const drvIcon = dir.net >= 0 ? '\u25bc ' : '\u25b2 ';
+      const sigs = [ACTION_LINE[dir.action] || ACTION_LINE.hold];
+      drivers.slice(0, 3).forEach(r => sigs.push(drvIcon + r));
+      if (sigs.length < 4) {
+        Object.entries(panelScores)
+          .sort((a, b) => Math.abs(b[1] - 50) - Math.abs(a[1] - 50))
+          .slice(0, 4 - sigs.length)
+          .forEach(([k, sc]) => {
+            const icon = sc > 60 ? '\u25b2' : sc < 40 ? '\u25bc' : '\u25cf';
+            const tone = sc > 60 ? 'Bullish' : sc < 40 ? 'Bearish' : 'Neutral';
+            sigs.push(`${icon} ${k.charAt(0).toUpperCase() + k.slice(1)}: ${Math.round(sc)}/100 \u2014 ${tone}`);
+          });
+      }
       const riskNotes = [];
 
       // ── Volatility / tape risk ─────────────────────────
@@ -13235,7 +13353,7 @@
       const sigEl = document.getElementById('ov-exec-signals');
       if (sigEl) sigEl.innerHTML = sigs.map(s => `<li>${s}</li>`).join('');
       const szEl = document.getElementById('ov-exec-size');
-      if (szEl) szEl.textContent = posSize + '% of Portfolio';
+      if (szEl) szEl.textContent = sizeText;
       const bEl = document.getElementById('ov-exec-bias');
       if (bEl) { bEl.textContent = bias; bEl.className = 'ov-exec-kv-val ov-exec-bias ' + biasCls; }
       const rEl = document.getElementById('ov-exec-risks');
@@ -13270,21 +13388,34 @@
     }
 
     function ovRenderTerminal(composite, scores, geoRisk) {
-      const v = ovVerdict(composite);
+      const v = ovVerdict(composite, scores);
       const regimeMap = { strong_uptrend: 'strong uptrend', uptrend: 'uptrend', chop: 'choppy', downtrend: 'downtrend', strong_downtrend: 'strong downtrend' };
       const regimeText = regimeMap[scores.regime] || 'mixed';
-      const lead = composite >= 70 ? 'GREEN LIGHT.' : composite >= 55 ? 'SELECTIVE TAPE.' : composite >= 40 ? 'CAUTION.' : composite >= 25 ? 'REDUCE RISK.' : 'STAND DOWN.';
-      const summaryTone = composite >= 55 ? 'positive' : composite >= 40 ? 'caution' : 'danger';
-      const summary = composite >= 55 ?
+      const dir = ovDirectionalRead(composite, scores);
+      const LEAD = {
+        'long-strong': ['GREEN LIGHT.', 'positive'],
+        'long': ['SELECTIVE TAPE.', 'positive'],
+        'hold': ['NO EDGE.', 'caution'],
+        'reduce': ['REDUCE RISK.', 'caution'],
+        'exit-cash': ['RISK-OFF \u2014 RAISE CASH.', 'danger'],
+        'short': ['DOWNSIDE \u2014 TRADE SHORT.', 'danger'],
+      };
+      const [lead, summaryTone] = LEAD[dir.action] || LEAD.hold;
+      const bullishCtx = dir.action === 'long-strong' || dir.action === 'long';
+      const summary = bullishCtx ?
         `Trend is ${regimeText} with score ${Math.round(composite)}/100. VIX at ${scores.VIX?.toFixed(1) || '--'}. Sectors: ${Math.round(scores.pctAbove20)}% above 20MA. Leader: ${scores.leader?.symbol || '--'}.` :
-        `Mixed environment \u2014 score ${Math.round(composite)}/100. Regime: ${regimeText}. VIX: ${scores.VIX?.toFixed(1) || '--'}. ${Math.round(scores.pctAbove20)}% of sectors above 20MA.`;
+        `Score ${Math.round(composite)}/100, ${dir.bias.toLowerCase()} (net ${dir.net >= 0 ? '+' : ''}${dir.net}). Regime: ${regimeText}. VIX ${scores.VIX?.toFixed(1) || '--'}. ${Math.round(scores.pctAbove20)}% of sectors above 20MA.`;
 
       const detail1 = `Desk read: ${regimeText} | VIX ${scores.VIX?.toFixed(1) || '--'} | ${Math.round(scores.pctAbove20)}% above 20MA | ${Math.round(scores.pctAbove50)}% above 50MA | Leader: ${scores.leader?.symbol || '--'} (${ovFmtPct(scores.leader?.perf5d, 1, true)} 5D) | Laggard: ${scores.laggard?.symbol || '--'}`;
-      const playbook = composite >= 70 ? `Playbook: Lean with the ${regimeText}. Prioritize leaders, buy pullbacks, use normal ${ovState.mode} size.` :
-        composite >= 55 ? `Playbook: Stay selective. Trade only the strongest names, tighten entries, moderate size.` :
-          composite >= 40 ? `Playbook: Trade smaller, demand confirmation, avoid chasing late setups.` :
-            composite >= 25 ? `Playbook: Cut exposure, tighten risk, only take exceptional ${ovState.mode} setups.` :
-              `Playbook: No new risk unless tape materially improves. Preserve capital.`;
+      const PLAYBOOK = {
+        'long-strong': `Playbook: Lean with the ${regimeText}. Prioritize leaders, buy pullbacks, use normal ${ovState.mode} size.`,
+        'long': `Playbook: Stay selective. Trade only the strongest names, tighten entries, moderate size.`,
+        'hold': `Playbook: No directional edge — stand aside, wait for a trend or a clean reversal before committing risk.`,
+        'reduce': `Playbook: Trim exposure, tighten risk, demand confirmation, only take exceptional ${ovState.mode} setups.`,
+        'exit-cash': `Playbook: Risk-off — scale out of longs into cash, hedge core exposure, take no new longs until the tape stabilizes.`,
+        'short': `Playbook: Downside confirmed — favor short setups, sell rallies into resistance, trail stops above the prior swing high.`,
+      };
+      const playbook = PLAYBOOK[dir.action] || PLAYBOOK.hold;
 
       const sumEl = document.getElementById('ov-terminal-summary');
       if (sumEl) sumEl.innerHTML = `<span class="analysis-emphasis ${summaryTone}">${lead}</span> ${summary}`;
