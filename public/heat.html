@@ -2871,18 +2871,17 @@
       filter: drop-shadow(0 0 3px hsl(138, 85%, 50%));
     }
 
+    /* The group's measured height is just the score number (verdict + mode
+       are absolutely positioned below), so translate(-50%,-50%) centers the
+       number exactly on the gauge hub regardless of digit count. */
     .ov-ring-score-group {
       position: absolute;
-      top: 60%;
-      left: 51.6%;
-      transform: translate(-52%, -34%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
       pointer-events: none;
       z-index: 3;
-    }
-
-    #ov-ring-score {
-      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
     }
 
     #ov-ring-score {
@@ -2891,29 +2890,38 @@
       color: var(--text);
       line-height: 1;
       display: block;
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
     }
 
     #ov-ring-verdict {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 8px;
       font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-top: 33px;
-      display: block;
+      white-space: nowrap;
       background-color: black;
-      padding: 2px;
+      padding: 2px 6px;
       border: 1px solid var(--text);
       border-radius: 5px;
     }
 
     #ov-ring-mode {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 36px;
       font-size: 8px;
       color: var(--text3);
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      margin-top: 7px;
-      display: block;
+      white-space: nowrap;
     }
 
     .ov-ring-verdict.YES {
@@ -12769,9 +12777,10 @@
         if (Math.abs(target - mph) < 0.0005) mph = target;
 
         // Clip the flame to the filled sweep so the unused part of the dial
-        // stays transparent. Start angle matches the needle's zero position
-        // (canvas 90° down + SVG rotation 40° = 130°), sweeping 270° clockwise.
-        var startA = (130 * Math.PI) / 180;
+        // stays transparent. The dial is a symmetric 270° arc with the empty
+        // 90° gap centered at the bottom: value 0 sits at canvas 135° (lower
+        // left), value 100 at 45° (lower right), mirrored about straight down.
+        var startA = 0.75 * Math.PI; // 135°
         ctx.globalCompositeOperation = 'destination-in';
         ctx.beginPath();
         ctx.moveTo(cw / 2, ch / 2);
@@ -12783,7 +12792,9 @@
         hue = hueFor(mph);
         if (scoreEl) scoreEl.textContent = Math.round(mph * 100);
         gsap.set('.ovg-ring3', { drawSVG: '0 ' + (mph * 75) + '%' });
-        gsap.set('.ovg-needle', { rotation: 40 + mph * 270 });
+        // Needle base points straight down (canvas 90°); rotation 45 puts the
+        // zero position at canvas 135°, sweeping 270° to 45° at value 100.
+        gsap.set('.ovg-needle', { rotation: 45 + mph * 270 });
       }
 
       function init() {
@@ -12796,8 +12807,8 @@
         ctx = c.getContext('2d');
 
         gsap.registerPlugin(window.DrawSVGPlugin);
-        gsap.set('.ovg-needle', { transformOrigin: '100px 100px', rotation: 40 });
-        gsap.set('.ovg-ring3', { transformOrigin: '50% 50%', rotation: 130, drawSVG: 0 });
+        gsap.set('.ovg-needle', { transformOrigin: '100px 100px', rotation: 45 });
+        gsap.set('.ovg-ring3', { transformOrigin: '50% 50%', rotation: 135, drawSVG: 0 });
         gsap.set('.ovg-redzone', { transformOrigin: '50% 50%', drawSVG: '-7.8% 11.2%' });
 
         img.onload = function () { imgReady = true; maybeStart(); };
