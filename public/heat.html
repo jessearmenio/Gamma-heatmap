@@ -10,6 +10,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Market Engine Dashboard</title>
   <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="/gsap.min.js"></script>
+  <script src="/DrawSVGPlugin.min.js"></script>
   <style>
     /* ── Reset and Base ── */
     *,
@@ -2834,23 +2836,53 @@
       gap: 8px;
     }
 
+    #ov-ring-container {
+      position: relative;
+      width: 150px;
+      height: 170px;
+    }
+
+    #ovg-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
     #ov-ring-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
       display: block;
+      overflow: visible;
+      z-index: 2;
+      pointer-events: none;
+      transform: scale(1.1);
+    }
+
+    .ovg-needle line {
+      stroke-linecap: round;
+    }
+
+    .ovg-redzone {
+      filter: drop-shadow(0 0 3px hsl(138, 85%, 50%));
     }
 
     .ov-ring-score-group {
       position: absolute;
-      top: 50%;
+      top: 59%;
       left: 50%;
       transform: translate(-50%, -50%);
       text-align: center;
       pointer-events: none;
+      z-index: 3;
     }
 
-    #ov-ring-container {
-      position: relative;
-      width: 140px;
-      height: 140px;
+    #ov-ring-score {
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
     }
 
     #ov-ring-score {
@@ -7731,11 +7763,53 @@
               </div>
               <div id="ov-ring-wrap">
                 <div id="ov-ring-container">
-                  <svg id="ov-ring-svg" width="140" height="140" viewBox="0 0 140 140">
-                    <circle cx="70" cy="70" r="56" fill="none" stroke="var(--bg3)" stroke-width="10" />
-                    <circle id="ov-ring-arc" cx="70" cy="70" r="56" fill="none" stroke="var(--accent)" stroke-width="10"
-                      stroke-linecap="round" stroke-dasharray="351.858" stroke-dashoffset="351.858"
-                      transform="rotate(-90 70 70)" style="transition:stroke-dashoffset 0.7s ease,stroke 0.4s;" />
+                  <canvas id="ovg-canvas"></canvas>
+                  <svg id="ov-ring-svg" viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg"
+                    preserveAspectRatio="xMidYMid meet" stroke="#fff" fill="none">
+                    <defs>
+                      <mask id="ovg-m1">
+                        <rect fill="#fff" width="100%" height="100%" />
+                        <circle fill="#000" cx="300" cy="300" r="285" />
+                      </mask>
+                      <mask id="ovg-m2">
+                        <rect fill="#fff" width="100%" height="100%" />
+                        <circle fill="#000" cx="300" cy="300" r="272" />
+                      </mask>
+                    </defs>
+
+                    <circle class="ovg-ring1" cx="300" cy="300" r="210" stroke-width="220" stroke="#143938" />
+
+                    <g id="ovg-marks">
+                      <path mask="url(#ovg-m1)" opacity="0.5" d="M0.2,289.5l599.6,20.9 M6.6,237.6l586.9,124.7 M21.8,187.6l556.3,224.8 M45.6,141l508.8,318 M77.1,99.3
+        L300,300 M115.3,63.6L300,300 M300,300L159.2,35.1 M207.3,14.7L300,300 M258.2,2.9L300,300 M300,300L310.5,0.2 M362.4,6.6L300,300
+         M412.4,21.8L300,300 M459,45.6L300,300 M500.7,77.1L99.3,522.9 M63.6,484.7l472.8-369.4 M35.1,440.8l529.8-281.7 M14.7,392.7
+        l570.6-185.4 M2.9,341.8l594.2-83.5 M0.7,279.1l598.5,41.9 M8.9,227.4l582.2,145.2 M25.9,178l548.1,244 M51.3,132.2l497.4,335.5
+         M84.2,91.6L300,300 M123.7,57.3L300,300 M300,300L168.5,30.4 M217.3,11.6L300,300 M268.6,1.6L300,300 M300,300L320.9,0.7
+         M372.6,8.9L300,300 M422,25.9L300,300 M467.8,51.3L300,300 M508.4,84.2L91.6,515.8 M57.3,476.3l485.4-352.7 M30.4,431.5l539.3-263
+         M11.6,382.7l576.8-165.4 M1.6,331.4l596.7-62.7 M1.6,268.6l596.7,62.7 M11.6,217.3l576.8,165.4 M30.4,168.5l539.3,263 M57.3,123.7
+        l485.4,352.7 M91.6,84.2L300,300 M132.2,51.3L300,300 M300,300L178,25.9 M227.4,8.9L300,300 M279.1,0.7L300,300 M300,300L331.4,1.6
+         M382.7,11.6L300,300 M431.5,30.4L300,300 M476.3,57.3L300,300 M515.8,91.6L84.2,508.4 M51.3,467.8l497.4-335.5 M25.9,422
+        l548.1-244 M8.9,372.6l582.2-145.2 M0.7,320.9l598.5-41.9 M2.9,258.2l594.2,83.5 M14.7,207.3l570.6,185.4 M35.1,159.2l529.8,281.7
+         M63.6,115.3l472.8,369.4 M99.3,77.1L300,300 M141,45.6L300,300 M300,300L187.6,21.8 M237.6,6.6L300,300 M289.5,0.2L300,300
+         M300,300L341.8,2.9 M392.7,14.7L300,300 M440.8,35.1L300,300 M484.7,63.6L300,300 M522.9,99.3L77.1,500.7 M45.6,459l508.8-318
+         M21.8,412.4l556.3-224.8 M6.6,362.4l586.9-124.7 M0.2,310.5l599.6-20.9" />
+
+                      <path mask="url(#ovg-m2)" d="M4.6,247.9l590.9,104.2 M18.1,197.4l563.8,205.2 M40.2,150l519.6,300 M70.2,107.2l459.6,385.7 M107.2,70.2
+        L300,300 M150,40.2L300,300 M300,300L197.4,18.1 M247.9,4.6L300,300 M300,0v300 M300,300L352.1,4.6 M402.6,18.1L300,300 M450,40.2
+        L300,300 M492.8,70.2L300,300 M529.8,107.2L70.2,492.8 M40.2,450l519.6-300 M18.1,402.6l563.8-205.2 M4.6,352.1l590.9-104.2 M0,300
+        l600,0" />
+                    </g>
+
+                    <circle class="ovg-st2" cx="300" cy="300" r="118" stroke-width="1.5" opacity="0.7" />
+
+                    <g class="ovg-needle" stroke-width="2">
+                      <circle class="ovg-ring2" cx="300" cy="300" r="100" stroke-width="4.5" />
+                      <line x1="300" y1="400" x2="300" y2="600" stroke-width="3" />
+                    </g>
+
+                    <circle class="ovg-ring3" cx="300" cy="300" r="300" stroke-width="1.5" />
+
+                    <circle class="ovg-redzone" cx="300" cy="300" r="315" stroke-width="6" stroke="hsl(138,85%,50%)" />
                   </svg>
                   <div class="ov-ring-score-group">
                     <span id="ov-ring-score">--</span>
@@ -12603,17 +12677,142 @@
       return { text: 'SIT OUT', cls: 'SITOUT' };
     }
 
+    // ── Score gauge (animated flame speedometer) ──
+    // Ported from the CodePen speedometer, driven by the composite score
+    // (0–100) instead of mouse input. All classes/ids are scoped with an
+    // `ovg-` prefix so nothing leaks into the rest of the dashboard.
+    (function () {
+      var N = 4,
+          DUR = 3,
+          hue = 4,
+          mph = 0,        // currently displayed value, 0..1
+          target = 0,     // desired value, 0..1 (composite / 100)
+          started = false,
+          running = false,
+          c, ctx, cw, ch, size,
+          img = new Image(),
+          ring = new Image(),
+          imgReady = false,
+          ringReady = false,
+          particles = [],
+          scoreEl;
+
+      function hueFor(v) {
+        if (v < 0.2) return 4;    // red
+        if (v < 0.4) return 36;   // orange
+        if (v < 0.6) return 58;   // yellow
+        if (v < 0.8) return 76;   // yellow-green
+        return 138;               // green
+      }
+
+      function Particle(index) {
+        this.index = index;
+        this.rot = this.opacity = this.scale = 1;
+
+        this.draw = function () {
+          ctx.translate(cw / 2, ch / 2);
+          ctx.rotate(this.rot);
+          ctx.globalAlpha = this.opacity;
+          ctx.globalCompositeOperation = 'overlay';
+          ctx.drawImage(img, -size * this.scale / 2, -size * this.scale / 2, size * this.scale, size * this.scale);
+          ctx.rotate(-this.rot);
+          ctx.translate(-cw / 2, -ch / 2);
+        };
+
+        this.tl = gsap.timeline({ repeat: -1, repeatRefresh: true })
+          .fromTo(this, {
+            rot: () => Math.random() * -0.8,
+            scale: () => 3 + Math.random(),
+          }, {
+            duration: DUR,
+            scale: () => 0.5 + Math.random(),
+            rot: () => (this.index % 2 == 0) ? 1 : -0.8,
+            ease: 'none'
+          }, 0)
+          .fromTo(this, { opacity: 0 }, { duration: DUR / 2, opacity: 1, yoyo: true, repeat: 1, ease: 'power1.inOut' }, 0)
+          .progress(this.index / N);
+      }
+
+      function updateSize() {
+        if (!c) return;
+        var rect = c.getBoundingClientRect();
+        var dpr = window.devicePixelRatio || 1;
+        cw = c.width = Math.max(1, Math.round((rect.width || 150) * dpr));
+        ch = c.height = Math.max(1, Math.round((rect.height || 150) * dpr));
+        size = Math.min(cw, ch);
+      }
+
+      function maybeStart() {
+        if (running || !imgReady || !ringReady) return;
+        running = true;
+        updateSize();
+        for (var i = 0; i < N; i++) particles.push(new Particle(i));
+        if (window.ResizeObserver) {
+          new ResizeObserver(updateSize).observe(c);
+        }
+        gsap.ticker.add(redraw);
+      }
+
+      function redraw() {
+        ctx.clearRect(0, 0, cw, ch);
+        for (var i = 0; i < N; i++) particles[i].draw();
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'multiply';
+        ctx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+        ctx.fillRect(cw / 2 - size / 2, ch / 2 - size / 2, size, size);
+        ctx.globalCompositeOperation = 'destination-in';
+        ctx.drawImage(ring, cw / 2 - size / 2, ch / 2 - size / 2, size, size);
+
+        // Ease the displayed value toward the target composite score.
+        mph += (target - mph) * 0.07;
+        if (Math.abs(target - mph) < 0.0005) mph = target;
+
+        hue = hueFor(mph);
+        if (scoreEl) scoreEl.textContent = Math.round(mph * 100);
+        gsap.set('.ovg-ring3', { drawSVG: '0 ' + (mph * 75) + '%' });
+        gsap.set('.ovg-ring1', { drawSVG: (mph * 75) + '% 100%' });
+        gsap.set('.ovg-needle', { rotation: 40 + mph * 270 });
+      }
+
+      function init() {
+        if (started) return;
+        if (!window.gsap || !window.DrawSVGPlugin) return; // fallback path stays
+        c = document.getElementById('ovg-canvas');
+        scoreEl = document.getElementById('ov-ring-score');
+        if (!c || !document.getElementById('ov-ring-svg')) return;
+        started = true;
+        ctx = c.getContext('2d');
+
+        gsap.registerPlugin(window.DrawSVGPlugin);
+        gsap.set('.ovg-needle',  { transformOrigin: '100px 100px', rotation: 40 });
+        gsap.set('.ovg-ring1',   { transformOrigin: '50% 50%', rotation: 130, drawSVG: '0% 100%' });
+        gsap.set('.ovg-ring3',   { transformOrigin: '50% 50%', rotation: 130, drawSVG: 0 });
+        gsap.set('.ovg-redzone', { transformOrigin: '50% 50%', drawSVG: '-7.8% 11.2%' });
+
+        img.onload = function () { imgReady = true; maybeStart(); };
+        ring.onload = function () { ringReady = true; maybeStart(); };
+        img.src = '/grayscaleFlame.jpg';
+        ring.src = '/speedometerAlpha3.png';
+      }
+
+      // Public API: feed the composite score (0–100).
+      window.ovGaugeSet = function (composite) {
+        var v = Number(composite);
+        if (!isFinite(v)) v = 0;
+        target = Math.max(0, Math.min(1, v / 100));
+        if (!started) init();
+      };
+    })();
+
     // ── Render functions ──
     function ovRenderRing(composite, scores) {
-      const circumference = 2 * Math.PI * 56;
-      const offset = circumference - (composite / 100) * circumference;
-      const arc = document.getElementById('ov-ring-arc');
-      if (arc) {
-        arc.style.strokeDashoffset = offset;
-        arc.style.stroke = composite >= 60 ? 'var(--green)' : composite >= 40 ? 'var(--orange)' : 'var(--red)';
+      if (typeof window.ovGaugeSet === 'function') {
+        window.ovGaugeSet(composite);
+      } else {
+        // Fallback if the gauge engine / GSAP CDN failed to load.
+        const scoreEl = document.getElementById('ov-ring-score');
+        if (scoreEl) scoreEl.textContent = Math.round(composite);
       }
-      const scoreEl = document.getElementById('ov-ring-score');
-      if (scoreEl) scoreEl.textContent = Math.round(composite);
       const verdictEl = document.getElementById('ov-ring-verdict');
       const v = ovVerdict(composite);
       if (verdictEl) { verdictEl.textContent = v.text; verdictEl.className = 'ov-ring-verdict ' + v.cls; }
