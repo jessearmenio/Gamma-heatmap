@@ -12586,13 +12586,27 @@
         const v = cs.length ? ovN(cs[cs.length - 1].volume) : null;
         return (Number.isFinite(v) && v > 0) ? v : ovN(get(sym).totalVolume, 0);
       }
+      // Today's candle drives the up/down split and the base volume. The
+      // 5-day change applies a small discount when its trend disagrees with
+      // today, and the 1-month change an even smaller one. Agreement keeps
+      // the full weight (multi-timeframe confirmation only discounts, never
+      // boosts), with a floor so a sector never loses more than half its vol.
       let upVol = 0, downVol = 0;
       sectors.forEach(s => {
-        const v = sectorTodayVol(s.symbol);
-        if (!Number.isFinite(v) || v <= 0) return;
+        const baseVol = sectorTodayVol(s.symbol);
+        if (!Number.isFinite(baseVol) || baseVol <= 0) return;
         const ch = ovN(s.dayChangePct, 0);
-        if (ch > 0) upVol += v;
-        else if (ch < 0) downVol += v;
+        if (ch === 0) return;
+        const dir = ch > 0 ? 1 : -1;
+        const s5 = Math.sign(ovN(s.perf5d, 0));
+        const s1m = Math.sign(ovN(s.perf1m, 0));
+        let w = 1;
+        if (s5 !== 0 && s5 !== dir) w -= 0.15;   // 5-day trend contradicts today
+        if (s1m !== 0 && s1m !== dir) w -= 0.07;  // 1-month contradicts (smaller)
+        w = Math.max(0.5, w);
+        const v = baseVol * w;
+        if (dir > 0) upVol += v;
+        else downVol += v;
       });
       const upDownVolRatio = downVol > 0 ? upVol / downVol : (upVol > 0 ? 9.99 : null);
 
@@ -16312,43 +16326,43 @@
       return out;
     }
 
+    // JdK RS-Ratio / RS-Momentum, StockCharts methodology.
+    //   `series` MUST be weekly samples ({tradeDate, price, spy}) — StockCharts
+    //   computes the RRG on weekly closes, not daily.
+    //   • RS-Ratio    = normalized relative-strength line (security ÷ SPY).
+    //   • RS-Momentum = the rate-of-change of RS-Ratio, normalized the SAME
+    //     way so both axes share scale and a meaningful 100 centerline. A
+    //     sector losing ground vs SPY therefore reads below 100 on momentum
+    //     even if its own price is rising — which is what fixes the quadrants.
     function computeRrgSeries(series, opts = {}) {
-      const ratioPeriod = opts.ratioPeriod || 14;       // EMA smoothing for RS
-      const lookback = opts.lookback || 63;        // ~3 months of trading days
-      const momentumPeriod = opts.momentumPeriod || 5; // ROC window for momentum
+      if (!Array.isArray(series) || series.length < 4) return [];
+      const fast = opts.fast || 10;             // weeks: fast RS average
+      const slow = opts.slow || 30;             // weeks: slow RS average
+      const momLen = opts.momentumPeriod || 10; // weeks: RS-Ratio reference avg
+      const GAIN = 10;                          // visual spread around the 100 line
 
-      if (!Array.isArray(series) || series.length < 2) return [];
-
+      // Relative strength of the security vs the benchmark.
       const rs = series.map(p => (p.price / p.spy) * 100);
-      const rsSmooth = ema(rs, ratioPeriod);
 
-      const result = [];
-      for (let i = 0; i < rsSmooth.length; i++) {
-        // rolling window for normalization
-        const start = Math.max(0, i - lookback + 1);
-        const window = rsSmooth.slice(start, i + 1);
-        const mean = window.reduce((s, v) => s + v, 0) / window.length;
-        const variance = window.reduce((s, v) => s + (v - mean) ** 2, 0) / Math.max(1, window.length);
-        const stdev = Math.sqrt(variance) || 1e-9;
-        // Scale z-score so typical values land in ~[-5, 5] (deviation around 100)
-        const ratioDev = ((rsSmooth[i] - mean) / stdev) * 2.5;
-        result.push({
-          tradeDate: series[i].tradeDate,
-          strength: ratioDev,
-          momentum: 0
-        });
-      }
+      // RS-Ratio: a fast average of RS relative to a slow one. >100 means
+      // relative strength is above its own trend (outperforming), <100 below.
+      const rsFast = ema(rs, fast);
+      const rsSlow = ema(rs, slow);
+      const ratio = rs.map((_, i) => 100 * (rsFast[i] / (rsSlow[i] || 1e-9)));
 
-      // Momentum = ROC of RS-Ratio over `momentumPeriod` bars,
-      // smoothed lightly so the tail isn't too jagged.
-      const momRaw = result.map((p, i) => {
-        if (i < momentumPeriod) return 0;
-        return p.strength - result[i - momentumPeriod].strength;
-      });
-      const momSmooth = ema(momRaw, Math.max(2, Math.floor(momentumPeriod / 2)));
-      result.forEach((p, i) => { p.momentum = momSmooth[i]; });
+      // RS-Momentum: the RS-Ratio relative to its own average — i.e. is the
+      // relative-strength trend itself accelerating (>100) or rolling over
+      // (<100). This is what places a fading leader in Weakening and a
+      // deteriorating laggard in Lagging, matching StockCharts.
+      const ratioAvg = ema(ratio, momLen);
+      const mom = ratio.map((_, i) => 100 * (ratio[i] / (ratioAvg[i] || 1e-9)));
 
-      return result;
+      // Renderer centres the plot on 0 (it adds 100 back for axis labels).
+      return series.map((p, i) => ({
+        tradeDate: p.tradeDate,
+        strength: (ratio[i] - 100) * GAIN,
+        momentum: (mom[i] - 100) * GAIN
+      }));
     }
 
     // ── RRG state cache (full series, scrubbed by the timeframe slider) ──
@@ -16708,7 +16722,7 @@
 
         // Stable RRG smoothing — single fixed setting now that timeframe is
         // controlled by the slider scrubbing through weekly samples.
-        const rrgOpts = { ratioPeriod: 10, lookback: 63, momentumPeriod: 5 };
+        const rrgOpts = { fast: 10, slow: 30, momentumPeriod: 10 };
 
         // Reset the cache the SVG renderer reads from.
         etfRrgState.symbols = [];
@@ -16770,14 +16784,16 @@
             .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
 
           let fullSeries = [];
-          if (series.length >= 5) {
-            const rrg = computeRrgSeries(series, rrgOpts);
-            // Trim warm-up bars so the tail starts after smoothing has stabilized.
-            const warmup = Math.max(rrgOpts.ratioPeriod, rrgOpts.momentumPeriod);
+          // StockCharts computes the RRG on weekly closes — sample to weekly
+          // FIRST, then run the JdK math on that weekly series.
+          const weekly = rrgWeeklySample(series);
+          if (weekly.length >= 4) {
+            const rrg = computeRrgSeries(weekly, rrgOpts);
+            // Drop warm-up weeks where momentum isn't defined yet, but never
+            // empty the series (limited history must still plot a head dot).
+            const warmup = Math.min(rrg.length - 1, rrgOpts.momentumPeriod || 4);
             const stable = rrg.slice(warmup);
-            const usable = stable.length ? stable : rrg;
-            // Down-sample daily to weekly so the slider/tail stride matches StockCharts.
-            fullSeries = rrgWeeklySample(usable);
+            fullSeries = stable.length ? stable : rrg;
           }
 
           if (fullSeries.length) {
