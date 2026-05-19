@@ -8832,6 +8832,13 @@
                     <option value="20">20w</option>
                   </select>
                 </label>
+                <label class="etf-rrg-control">
+                  <span>Basis</span>
+                  <select id="etf-rrg-mode" onchange="etfRrgSetMode(this.value)">
+                    <option value="daily" selected>Daily</option>
+                    <option value="weekly">Weekly</option>
+                  </select>
+                </label>
               </div>
             </div>
 
@@ -16372,6 +16379,11 @@
       latestDate: null      // ISO date of the most recent sample
     };
 
+    // RRG computation basis: 'daily' (works with limited history — current
+    // default) or 'weekly' (StockCharts-style; pick once enough weekly
+    // history has accrued). Toggled from the control by the tail-length picker.
+    let etfRrgMode = 'daily';
+
     // Pick a "nice" tick step so axes feel readable.
     function rrgNiceStep(range) {
       const candidates = [0.5, 1, 2, 2.5, 5, 10, 20, 25];
@@ -16593,6 +16605,15 @@
       renderEtfRrg();
     }
 
+    // Toggle the RRG computation basis (Daily ↔ Weekly). Changing the basis
+    // changes the underlying series, so recompute by re-running the loader.
+    function etfRrgSetMode(mode) {
+      const next = mode === 'weekly' ? 'weekly' : 'daily';
+      if (next === etfRrgMode) return;
+      etfRrgMode = next;
+      loadEtfs();
+    }
+
     function etfSelect(symbol) {
       etfSelectedSymbol = symbol;
 
@@ -16784,16 +16805,18 @@
             .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
 
           let fullSeries = [];
-          // StockCharts computes the RRG on weekly closes, but until enough
-          // weekly history accrues we fall back to the daily series (with
-          // proportionally shorter periods) so limited history still plots.
+          // Basis is chosen by the Weekly/Daily toggle. Weekly = StockCharts
+          // style (pick once enough weekly history exists); Daily = works with
+          // limited history using proportionally shorter periods (default).
           const weekly = rrgWeeklySample(series);
           let basis = null, rOpts = null;
-          if (weekly.length >= 30) {
-            basis = weekly;
-            rOpts = rrgOpts; // { fast:10, slow:30, momentumPeriod:10 } weeks
+          if (etfRrgMode === 'weekly') {
+            if (weekly.length >= 4) {
+              basis = weekly;
+              rOpts = rrgOpts; // { fast:10, slow:30, momentumPeriod:10 } weeks
+            }
           } else if (series.length >= 10) {
-            basis = series; // daily fallback
+            basis = series; // daily
             rOpts = { fast: 4, slow: 12, momentumPeriod: 4 };
           }
           if (basis) {
