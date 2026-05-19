@@ -16784,14 +16784,23 @@
             .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate));
 
           let fullSeries = [];
-          // StockCharts computes the RRG on weekly closes — sample to weekly
-          // FIRST, then run the JdK math on that weekly series.
+          // StockCharts computes the RRG on weekly closes, but until enough
+          // weekly history accrues we fall back to the daily series (with
+          // proportionally shorter periods) so limited history still plots.
           const weekly = rrgWeeklySample(series);
-          if (weekly.length >= 4) {
-            const rrg = computeRrgSeries(weekly, rrgOpts);
-            // Drop warm-up weeks where momentum isn't defined yet, but never
+          let basis = null, rOpts = null;
+          if (weekly.length >= 30) {
+            basis = weekly;
+            rOpts = rrgOpts; // { fast:10, slow:30, momentumPeriod:10 } weeks
+          } else if (series.length >= 10) {
+            basis = series; // daily fallback
+            rOpts = { fast: 4, slow: 12, momentumPeriod: 4 };
+          }
+          if (basis) {
+            const rrg = computeRrgSeries(basis, rOpts);
+            // Drop warm-up bars where momentum isn't defined yet, but never
             // empty the series (limited history must still plot a head dot).
-            const warmup = Math.min(rrg.length - 1, rrgOpts.momentumPeriod || 4);
+            const warmup = Math.min(rrg.length - 1, rOpts.momentumPeriod || 4);
             const stable = rrg.slice(warmup);
             fullSeries = stable.length ? stable : rrg;
           }
