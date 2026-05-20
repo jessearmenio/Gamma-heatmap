@@ -709,7 +709,6 @@
       align-items: center;
       justify-content: center;
       gap: 3px;
-      margin-top: -3px;
     }
 
     #topbar-title {
@@ -874,6 +873,67 @@
       display: flex;
       align-items: center;
       gap: 5px;
+    }
+
+    /* Live countdown to the regular-session close. Sits directly below the
+       MARKET OPEN badge. Tabular-numeric monospace so the digits don't jitter
+       as they tick down. Hidden outside of regular hours. */
+    #market-countdown {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      line-height: 1;
+      padding: 3px 8px;
+      border-radius: 6px;
+      color: var(--green);
+      background: rgba(34, 221, 136, 0.08);
+      border: 1px solid rgba(34, 221, 136, 0.22);
+      text-shadow: 0 0 6px rgba(34, 221, 136, 0.35);
+      box-shadow: inset 0 0 6px rgba(34, 221, 136, 0.06);
+    }
+
+    #market-countdown[hidden] { display: none; }
+
+    /* Pre-market countdown — informative only, matches the Pre-Market pill. */
+    #market-countdown.pre {
+      color: var(--accent);
+      background: rgba(220, 255, 30, 0.06);
+      border-color: rgba(220, 255, 30, 0.28);
+      text-shadow: 0 0 6px rgba(220, 255, 30, 0.35);
+      box-shadow: inset 0 0 6px rgba(220, 255, 30, 0.08);
+    }
+
+    /* Final-hour treatment — slight warm shift to flag the close approaching. */
+    #market-countdown.urgent {
+      color: var(--orange);
+      background: rgba(255, 140, 59, 0.08);
+      border-color: rgba(255, 140, 59, 0.28);
+      text-shadow: 0 0 6px rgba(255, 140, 59, 0.4);
+      box-shadow: inset 0 0 6px rgba(255, 140, 59, 0.08);
+    }
+
+    /* Critical — last 15 minutes. Red, brighter glow, soft pulse to draw the eye. */
+    #market-countdown.critical {
+      color: var(--red);
+      background: rgba(255, 59, 92, 0.12);
+      border-color: rgba(255, 59, 92, 0.45);
+      text-shadow: 0 0 8px rgba(255, 59, 92, 0.6);
+      box-shadow: inset 0 0 6px rgba(255, 59, 92, 0.18), 0 0 8px rgba(255, 59, 92, 0.18);
+      animation: market-countdown-critical 1s ease-in-out infinite;
+    }
+
+    @keyframes market-countdown-critical {
+      0%, 100% {
+        box-shadow: inset 0 0 6px rgba(255, 59, 92, 0.18), 0 0 6px rgba(255, 59, 92, 0.15);
+        border-color: rgba(255, 59, 92, 0.45);
+      }
+      50% {
+        box-shadow: inset 0 0 10px rgba(255, 59, 92, 0.30), 0 0 14px rgba(255, 59, 92, 0.45);
+        border-color: rgba(255, 59, 92, 0.85);
+      }
     }
 
     #market-status-badge .ms-dot {
@@ -7610,6 +7670,7 @@
             <!--<span class="ms-dot"></span>-->
             <span id="ms-label" class="ms-label">Market Closed</span>
           </div>
+          <div id="market-countdown" hidden aria-live="polite" title="Time remaining in regular session"></div>
           <span id="updated-ago" style="display:none;">
             <spanu>updated</spanu><b id="ago-val">--</b>
           </span>
@@ -9622,6 +9683,7 @@
     let lastRefreshTime = null;
     let agoTimer = null;
     let sessionTimer = null;
+    let marketCountdownTimer = null;
     let calendarCursor = new Date(2026, 3, 1); // April 2026
     let calendarViewMode = "month";
     let calendarEarningsEvents = [];
@@ -11685,14 +11747,88 @@
       return session;
     }
 
+    // Live countdown of regular trading hours (8:30am–3:00pm CST, 6.5 h).
+    // Shows HH:MM normally, switches to HH:MM:SS in the final hour. Hidden
+    // outside the regular session (weekends, pre, post, and overnight).
+    function updateMarketCountdown() {
+      const el = document.getElementById('market-countdown');
+      if (!el) return;
+
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Chicago',
+        hour12: false,
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).formatToParts(new Date());
+      const get = (t) => parts.find(p => p.type === t)?.value || '';
+      const h = parseInt(get('hour'), 10) % 24;
+      const m = parseInt(get('minute'), 10);
+      const s = parseInt(get('second'), 10);
+      const wd = get('weekday');
+
+      const PRE_OPEN_SEC = 3 * 3600;          // 03:00 CST — pre-market starts
+      const OPEN_SEC = 8 * 3600 + 30 * 60;    // 08:30 CST — regular session opens
+      const CLOSE_SEC = 15 * 3600;            // 15:00 CST — regular session closes
+      const nowSec = h * 3600 + m * 60 + s;
+
+      // Pick which window we're counting down inside (open → close, or
+      // pre-market → open). Anything else gets hidden.
+      let target = null, mode = null;
+      if (wd !== 'Sat' && wd !== 'Sun') {
+        if (nowSec >= OPEN_SEC && nowSec < CLOSE_SEC) {
+          target = CLOSE_SEC; mode = 'open';
+        } else if (nowSec >= PRE_OPEN_SEC && nowSec < OPEN_SEC) {
+          target = OPEN_SEC; mode = 'pre';
+        }
+      }
+      if (target == null) {
+        el.hidden = true;
+        el.classList.remove('urgent', 'critical', 'pre');
+        return;
+      }
+
+      const remaining = target - nowSec;
+      const rh = Math.floor(remaining / 3600);
+      const rm = Math.floor((remaining % 3600) / 60);
+      const rs = remaining % 60;
+      const pad = (n) => String(n).padStart(2, '0');
+
+      if (mode === 'pre') {
+        // Informational — steady HH:MM the whole pre-market window, no tier
+        // changes. Picks up the Pre-Market pill's yellow-green styling.
+        el.textContent = `${pad(rh)}:${pad(rm)}`;
+        el.classList.remove('urgent', 'critical');
+        el.classList.add('pre');
+      } else {
+        // Regular-session countdown: red+pulse for the last 15 minutes, warm
+        // orange for the final hour, calm green earlier. Seconds appear once
+        // the remaining time drops below an hour.
+        el.classList.remove('pre');
+        const inFinalHour = remaining < 3600;
+        const isCritical = remaining < 15 * 60;
+        el.textContent = inFinalHour
+          ? `${pad(rh)}:${pad(rm)}:${pad(rs)}`
+          : `${pad(rh)}:${pad(rm)}`;
+        el.classList.toggle('critical', isCritical);
+        el.classList.toggle('urgent', inFinalHour && !isCritical);
+      }
+      el.hidden = false;
+    }
+
     function startSessionTicker() {
       updateMarketSessionBadge();
+      updateMarketCountdown();
       renderSessionsStrip();
       if (sessionTimer) clearInterval(sessionTimer);
       sessionTimer = setInterval(() => {
         updateMarketSessionBadge();
         renderSessionsStrip();
       }, 30000);
+      // 1-second ticker for the countdown digits.
+      if (marketCountdownTimer) clearInterval(marketCountdownTimer);
+      marketCountdownTimer = setInterval(updateMarketCountdown, 1000);
       // Smoother animation for the now-line: tick once a minute
       if (sessionsNowTimer) clearInterval(sessionsNowTimer);
       sessionsNowTimer = setInterval(updateSessionsNow, 60000);
