@@ -15303,6 +15303,19 @@
       const callWall = d.summary?.strongestCallWall?.strike;
       const putWall = d.summary?.strongestPutWall?.strike;
 
+      // Snap the "spot row" to whichever strike is actually closest to the
+      // underlying — this works for any strike grid (SPY $0.5/$1, SPX $5,
+      // VIX $1–$5). A fixed 0.5 tolerance silently misses SPX/VIX whose
+      // nearest strike can be several dollars from spot.
+      let spotStrike = null;
+      if (Number.isFinite(spotPrice) && spotPrice > 0 && d.matrix.length) {
+        spotStrike = d.matrix.reduce(
+          (best, row) =>
+            Math.abs(row.strike - spotPrice) < Math.abs(best - spotPrice) ? row.strike : best,
+          d.matrix[0].strike
+        );
+      }
+
       // Build header — NET GEX (sticky left) | STRIKE (sticky left+78) | exp cols
       const headerCols = activeExps.map(exp => {
         const meta = d.expirationMeta?.[exp] || {};
@@ -15314,7 +15327,7 @@
 
       d.matrix.forEach(row => {
         const isKing = row.strike === kingStrike;
-        const isSpot = Math.abs(row.strike - spotPrice) < 0.5;
+        const isSpot = spotStrike != null && row.strike === spotStrike;
         const isCallWall = row.strike === callWall;
         const isPutWall = row.strike === putWall;
 
