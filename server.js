@@ -992,12 +992,67 @@ function sortExpKeys(expKeys) {
   return [...expKeys].sort((a, b) => new Date(a) - new Date(b));
 }
 
-function buildHeatFromChain(chain) {
+// Schwab returns openInterest=0 across the entire $SPX/$VIX option chains.
+// For $SPX we synthesize realistic dealer gamma from SPY's OI by mapping each
+// SPY strike to its SPX-equivalent (× 10) and tagging the proxy row with a
+// multiplier of 1000 (= 100 contract multiplier × 10 notional scaling). The
+// proxy uses real SPY open interest only (no volume fallback) so it reflects
+// accumulated positioning rather than intraday flow.
+function buildSpyProxyRowsForSpx(spyChain) {
+  if (!spyChain || typeof spyChain !== "object") return [];
+  const STRIKE_SCALE = 10;
+  const NOTIONAL_MULT = 1000;
+  const out = [];
+
+  function scanMap(map, side) {
+    if (!map || typeof map !== "object") return;
+    for (const expKey of Object.keys(map)) {
+      const strikes = map[expKey];
+      if (!strikes || typeof strikes !== "object") continue;
+      for (const sk of Object.keys(strikes)) {
+        const contracts = strikes[sk];
+        if (!Array.isArray(contracts)) continue;
+        for (const c of contracts) {
+          const gamma = Number(c.gamma);
+          const oi = Number(c.openInterest);
+          if (!Number.isFinite(gamma) || !Number.isFinite(oi) || oi <= 0) continue;
+          const spyStrike = Number(c.strikePrice ?? sk);
+          if (!Number.isFinite(spyStrike)) continue;
+          // Snap SPY×10 onto the SPX $5 strike grid.
+          const mapped = Math.round((spyStrike * STRIKE_SCALE) / 5) * 5;
+          const expirationDate = normalizeExpirationDate(c, expKey);
+          if (!expirationDate) continue;
+          out.push({
+            side,
+            expKey: expirationDate,
+            sourceExpKey: expKey,
+            expirationDate,
+            strike: mapped,
+            gamma,
+            openInterest: oi,
+            multiplier: NOTIONAL_MULT,
+            daysToExpiration: Number(c.daysToExpiration) || 0,
+            symbol: c.symbol,
+            inTheMoney: !!c.inTheMoney
+          });
+        }
+      }
+    }
+  }
+
+  scanMap(spyChain.callExpDateMap, "CALL");
+  scanMap(spyChain.putExpDateMap, "PUT");
+  return out;
+}
+
+function buildHeatFromChain(chain, extraRows = []) {
   const underlyingPrice = Number(chain.underlyingPrice ?? 0);
 
   const calls = flattenExpDateMap(chain.callExpDateMap, "CALL");
   const puts = flattenExpDateMap(chain.putExpDateMap, "PUT");
-  const allRows = [...calls, ...puts];
+  // extraRows: pre-flattened rows from a proxy chain (e.g. SPY → $SPX), with
+  // an optional per-row `multiplier` used in the GEX formula instead of 100.
+  const allRows = [...calls, ...puts, ...(Array.isArray(extraRows) ? extraRows : [])];
 
   const byStrike = new Map();
   const byCell = new Map();
@@ -1042,7 +1097,7 @@ function buildHeatFromChain(chain) {
     }
 
     const cell = byCell.get(cellKey);
-    const gex = row.gamma * row.openInterest * 100;
+    const gex = row.gamma * row.openInterest * (row.multiplier || 100);
 
     if (row.side === "CALL") {
       strikeBucket.callOpenInterest += row.openInterest;
@@ -1270,7 +1325,8 @@ app.get("/api/heat", async (req, res) => {
     const actualSymbol = mapChainSymbol(requestedSymbol);
 
     const isVixRequest = actualSymbol === "$VIX";
-    const isIndexRequest = actualSymbol === "$VIX" || actualSymbol === "$SPX";
+    const isSpxRequest = actualSymbol === "$SPX";
+    const isIndexRequest = isVixRequest || isSpxRequest;
 
     // Build chain overrides. Heat Seeker should use the expirations returned by
     // the Schwab chain itself, not a fixed 7/14/30/45 DTE date window. $SPXW and
@@ -1317,15 +1373,34 @@ app.get("/api/heat", async (req, res) => {
       })
       : Promise.resolve({ data: { candles: [] } });
 
-    const [chainResult, quotesResponse, vixHistResponse] = await Promise.all([
+    // For $SPX we also pull SPY in parallel — Schwab returns OI=0 across the
+    // entire SPX chain, so SPY's open interest (scaled ×10 onto the SPX grid)
+    // is used as a proxy for dealer-gamma positioning at each strike.
+    const spyProxyPromise = isSpxRequest
+      ? fetchChainWithFallback("SPY", {
+          contractType: "ALL",
+          strikeCount: 100,
+          range: "ALL",
+          includeUnderlyingQuote: false
+        })
+        .then(r => r.response?.data || null)
+        .catch(err => {
+          console.warn("HEAT SPY proxy fetch failed:", err.message);
+          return null;
+        })
+      : Promise.resolve(null);
+
+    const [chainResult, quotesResponse, vixHistResponse, spyProxyChain] = await Promise.all([
       chainPromise,
       quotesPromise,
-      vixHistPromise
+      vixHistPromise,
+      spyProxyPromise
     ]);
 
     const response = chainResult.response;
     const chain = response?.data || {};
-    const heat = buildHeatFromChain(chain);
+    const extraRows = isSpxRequest ? buildSpyProxyRowsForSpx(spyProxyChain) : [];
+    const heat = buildHeatFromChain(chain, extraRows);
 
     if (!heat.contractCount) {
       // Surface what each fallback attempt actually returned so the issue is
@@ -1408,6 +1483,9 @@ app.get("/api/heat", async (req, res) => {
       request: response?.config?.params ?? null,
       attempts: chainResult.tried,
       succeededWith: chainResult.succeededWith,
+      ...(isSpxRequest && extraRows.length
+        ? { proxiedFrom: "SPY", proxyRowCount: extraRows.length }
+        : {}),
       quotes: quotesResponse.data,
       ...(vix ? { vix } : {}),
       ...heat
