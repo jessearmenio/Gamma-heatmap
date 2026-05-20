@@ -14001,6 +14001,9 @@
     let hsLwcChart = null;
     let hsLwcCandleSeries = null;
     let hsGammaData = [];
+    // Track call/put/king price lines so we can refresh them whenever a new
+    // heat snapshot lands, without piling duplicate lines on the chart.
+    let hsKeyLevelLines = [];
     let hsChartRenderToken = 0;
     let hsChartTf = '3M';
     let hsDailyCandles = null;      // cache of daily candles for current symbol
@@ -14082,6 +14085,7 @@
 
       if (hsLwcChart) { try { hsLwcChart.remove(); } catch (e) { } hsLwcChart = null; }
       hsLwcCandleSeries = null;
+      hsKeyLevelLines = [];
       hsChartRenderToken++;
       const renderToken = hsChartRenderToken;
       container.innerHTML = '<canvas id="hs-gamma-canvas"></canvas>';
@@ -14335,15 +14339,6 @@
           addLine(pdl, '#1848CC', 'PDL');
         }
 
-        // Heat seeker key levels (current symbol's own walls/king from lastHeatData)
-        const s = (lastHeatData && lastHeatData.summary) || {};
-        const callWall = Number(s.strongestCallWall?.strike);
-        const putWall = Number(s.strongestPutWall?.strike);
-        const king = Number(s.kingStrike?.strike);
-        if (callWall) addLine(callWall, '#DCFF1E', 'CALL WALL', LightweightCharts.LineStyle.Solid, false);
-        if (putWall) addLine(putWall, '#d470ff', 'PUT WALL', LightweightCharts.LineStyle.Solid, false);
-        if (king) addLine(king, '#f5a623', 'KING GEX', LightweightCharts.LineStyle.Solid, false);
-
         if (renderToken !== hsChartRenderToken) return;
 
         // ATH from the full daily candle set we already have
@@ -14353,6 +14348,50 @@
         }
         if (ath) addLine(ath, '#F23644', 'ATH', LightweightCharts.LineStyle.Solid);
       } catch (e) { console.warn('hsDrawChartLevels:', e); }
+
+      // Call/Put/King lines come from heat data and may not be ready yet at
+      // the moment hsDrawChartLevels runs (the heat fetch and the pricehistory
+      // fetch race). Apply them via the dedicated, idempotent helper which is
+      // also re-invoked from reloadHeat once `lastHeatData` is fresh.
+      hsApplyHeatKeyLevels();
+    }
+
+    // Re-applies the Call Wall / Put Wall / King GEX horizontal lines on the
+    // Heat Seeker chart from `lastHeatData`. Idempotent: removes the previously
+    // drawn key-level lines before adding new ones so it can be called multiple
+    // times across a single chart instance without duplicating lines.
+    function hsApplyHeatKeyLevels() {
+      if (!hsLwcCandleSeries) return;
+
+      // Remove any previously drawn key-level lines.
+      for (const pl of hsKeyLevelLines) {
+        try { hsLwcCandleSeries.removePriceLine(pl); } catch (e) { /* series may have been replaced */ }
+      }
+      hsKeyLevelLines = [];
+
+      const s = (lastHeatData && lastHeatData.summary) || {};
+      const callWall = Number(s.strongestCallWall?.strike);
+      const putWall = Number(s.strongestPutWall?.strike);
+      const king = Number(s.kingStrike?.strike);
+
+      const addKeyLine = (price, color, title) => {
+        if (!price || !isFinite(price)) return;
+        try {
+          const pl = hsLwcCandleSeries.createPriceLine({
+            price,
+            color,
+            lineWidth: 1,
+            lineStyle: LightweightCharts.LineStyle.Solid,
+            axisLabelVisible: false,
+            title: ''
+          });
+          hsKeyLevelLines.push(pl);
+        } catch (e) { /* chart destroyed mid-flight */ }
+      };
+
+      addKeyLine(callWall, '#DCFF1E', 'CALL WALL');
+      addKeyLine(putWall, '#d470ff', 'PUT WALL');
+      addKeyLine(king, '#f5a623', 'KING GEX');
     }
 
     let hsGammaHitBoxes = [];
@@ -15207,6 +15246,9 @@
         // Update heat-seeker chart gamma overlay from this matrix
         await chartLoadPromise;
         hsUpdateGammaFromHeat(d);
+        // Refresh the Call Wall / Put Wall / King GEX horizontal lines now
+        // that both the chart and the heat snapshot are guaranteed to be ready.
+        hsApplyHeatKeyLevels();
 
         if (heatSymbol === 'SPY') {
           saveGexHistoryFromHeat(d);
