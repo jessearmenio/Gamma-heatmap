@@ -953,10 +953,18 @@ function flattenExpDateMap(expDateMap, side) {
       if (!Array.isArray(contracts)) continue;
 
       for (const contract of contracts) {
+        const safeNum = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+
         const strike = Number(contract.strikePrice ?? strikeKey);
-        const gamma = Number(contract.gamma ?? 0);
-        const openInterest = Number(contract.openInterest ?? 0);
-        const daysToExpiration = Number(contract.daysToExpiration ?? 0);
+        const gamma = safeNum(contract.gamma);
+        const rawOI = safeNum(contract.openInterest);
+        const rawVol = safeNum(contract.totalVolume);
+        // Schwab returns openInterest = 0 on index option chains ($SPX, $VIX)
+        // even though the contracts have real positioning. Fall back to today's
+        // total volume so index gamma exposure isn't zeroed out. Regular equity
+        // chains keep using OI (rawOI > 0).
+        const openInterest = rawOI > 0 ? rawOI : rawVol;
+        const daysToExpiration = safeNum(contract.daysToExpiration);
         const expirationDate = normalizeExpirationDate(contract, expKey);
 
         if (!expirationDate || !Number.isFinite(strike)) continue;
