@@ -89,7 +89,7 @@
     }
 
     spanu {
-      padding-right: 5px;
+      padding-right: 3px;
       /* Updated: {time} ago */
     }
 
@@ -11796,9 +11796,12 @@
       const pad = (n) => String(n).padStart(2, '0');
 
       if (mode === 'pre') {
-        // Informational — steady HH:MM the whole pre-market window, no tier
-        // changes. Picks up the Pre-Market pill's yellow-green styling.
-        el.textContent = `${pad(rh)}:${pad(rm)}`;
+        // Informational — steady yellow-green styling the whole pre-market
+        // window (no urgent/critical escalation). HH:MM normally, switches
+        // to HH:MM:SS inside the final hour so the seconds tick down.
+        el.textContent = remaining < 3600
+          ? `${pad(rh)}:${pad(rm)}:${pad(rs)}`
+          : `${pad(rh)}:${pad(rm)}`;
         el.classList.remove('urgent', 'critical');
         el.classList.add('pre');
       } else {
