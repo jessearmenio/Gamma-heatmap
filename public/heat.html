@@ -906,6 +906,146 @@
       box-shadow: inset 0 0 6px rgba(220, 255, 30, 0.08);
     }
 
+    /* ── Market Open/Close Bell Overlay ─────────────────────────── */
+    #market-bell-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    #market-bell-overlay[hidden] { display: none; }
+
+    .mbell-backdrop {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(10, 20, 35, 0.84), rgba(3, 6, 12, 0.97));
+      backdrop-filter: blur(4px);
+      animation: mbell-fade 0.45s ease both;
+    }
+
+    .mbell-stage {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      animation: mbell-pop 0.85s cubic-bezier(0.18, 1.25, 0.4, 1) both;
+    }
+
+    #market-bell-overlay.closing .mbell-backdrop { animation: mbell-fade 0.5s ease reverse both; }
+    #market-bell-overlay.closing .mbell-stage { animation: mbell-fade 0.5s ease reverse both; }
+
+    .mbell-svg {
+      width: 340px;
+      height: auto;
+      overflow: visible;
+      filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.6));
+    }
+
+    /* Mount hardware */
+    .mbell-bracket { fill: #2a2f3a; stroke: rgba(255, 255, 255, 0.16); stroke-width: 1.5; }
+    .mbell-box { fill: url(#mbellBrass); stroke: #6e4c08; stroke-width: 2; }
+    .mbell-box-face { fill: rgba(0, 0, 0, 0.2); }
+    .mbell-bolt { fill: #b9831a; stroke: #6e4c08; stroke-width: 1.5; }
+
+    /* The bell — a round brass dome, fixed/wall-mounted; it only micro-
+       vibrates as the striker bangs it (it does not swing). */
+    .mbell-bell-shake {
+      transform-box: view-box;
+      transform-origin: 140px 160px;
+      animation: mbell-shake 0.26s ease-in-out infinite;
+    }
+    .mbell-dome { fill: url(#mbellDome); stroke: #7a5408; stroke-width: 2.5; }
+    .mbell-dome-rim { fill: none; stroke: rgba(255, 247, 214, 0.5); stroke-width: 2; }
+    .mbell-knob-base { fill: url(#mbellBrass); stroke: #6e4c08; stroke-width: 1.5; }
+    .mbell-knob { fill: url(#mbellDome); stroke: #6e4c08; stroke-width: 1.5; }
+    .mbell-gleam { fill: #fff7e0; }
+
+    /* Striker mechanism at the top — the arm rocks fast to bang the dome. */
+    .mbell-striker {
+      transform-box: view-box;
+      transform-origin: 140px 30px;
+      animation: mbell-strike 0.26s ease-in-out infinite;
+    }
+    .mbell-striker-arm { stroke: #9095a2; stroke-width: 6; stroke-linecap: round; }
+    .mbell-hammer { fill: #e2e5eb; stroke: #8b8f9b; stroke-width: 1.5; }
+    .mbell-striker-pivot { fill: #cfd2db; stroke: #6b7080; stroke-width: 1.5; }
+
+    /* Sound waves */
+    .mbell-waves {
+      transform-box: view-box;
+      transform-origin: 140px 150px;
+    }
+    .mbell-wave {
+      fill: none;
+      stroke: #ffd45e;
+      stroke-width: 4.5;
+      stroke-linecap: round;
+      opacity: 0;
+      animation: mbell-wave 0.52s ease-out infinite;
+    }
+    .mbell-wave.w2, .mbell-wave.w4 { animation-delay: 0.16s; stroke-width: 3.5; }
+
+    .mbell-label {
+      font-size: clamp(26px, 6vw, 40px);
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      line-height: 1;
+      text-align: center;
+    }
+    .mbell-sub {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text2);
+    }
+    #market-bell-overlay.open .mbell-label {
+      color: var(--green);
+      text-shadow: 0 0 26px rgba(34, 221, 136, 0.65);
+    }
+    #market-bell-overlay.close .mbell-label {
+      color: var(--red);
+      text-shadow: 0 0 26px rgba(255, 59, 92, 0.65);
+    }
+
+    @keyframes mbell-fade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes mbell-pop {
+      0% { transform: scale(0.25) rotate(-340deg); opacity: 0; }
+      60% { opacity: 1; }
+      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes mbell-strike {
+      0% { transform: rotate(-24deg); }
+      52% { transform: rotate(12deg); }
+      66% { transform: rotate(15deg); }   /* contact with the dome */
+      100% { transform: rotate(-24deg); }
+    }
+    @keyframes mbell-shake {
+      0%, 58%, 100% { transform: translate(0, 0) scale(1); }
+      70% { transform: translate(1.4px, 0.6px) scale(1.014); }
+      82% { transform: translate(-0.8px, -0.2px) scale(1.005); }
+    }
+    @keyframes mbell-wave {
+      0% { opacity: 0; transform: scale(0.7); }
+      28% { opacity: 0.95; }
+      100% { opacity: 0; transform: scale(1.18); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mbell-stage { animation-duration: 0.3s; }
+      .mbell-striker, .mbell-bell-shake, .mbell-wave { animation: none; }
+      .mbell-striker { transform: rotate(10deg); }
+    }
+
     /* Final-hour treatment — slight warm shift to flag the close approaching. */
     #market-countdown.urgent {
       color: var(--orange);
@@ -11824,6 +11964,77 @@
       el.hidden = false;
     }
 
+    // ── Market open/close bell overlay ──────────────────────────
+    // Full-screen animated NYSE-style bell shown for 10s at the open
+    // (8:30am CST) and close (3:00pm CST) of the regular session.
+    let _marketBellTimer = null;
+
+    function showMarketBell(kind) {
+      const overlay = document.getElementById('market-bell-overlay');
+      if (!overlay) return;
+      const isClose = kind === 'close';
+      const label = document.getElementById('market-bell-label');
+      const sub = document.getElementById('market-bell-sub');
+      if (label) label.textContent = isClose ? 'Market Closed' : 'Market Open';
+      if (sub) sub.textContent = isClose
+        ? 'Regular session has ended'
+        : 'Regular session is now open';
+      overlay.classList.remove('open', 'close', 'closing');
+      overlay.classList.add(isClose ? 'close' : 'open');
+      overlay.hidden = false;
+      // Auto-dismiss after 10 seconds.
+      clearTimeout(_marketBellTimer);
+      _marketBellTimer = setTimeout(hideMarketBell, 10000);
+    }
+
+    function hideMarketBell() {
+      const overlay = document.getElementById('market-bell-overlay');
+      if (!overlay || overlay.hidden) return;
+      clearTimeout(_marketBellTimer);
+      overlay.classList.add('closing');
+      setTimeout(() => {
+        overlay.hidden = true;
+        overlay.classList.remove('closing', 'open', 'close');
+      }, 500);
+    }
+
+    // Manual trigger for testing: testMarketBell('open' | 'close').
+    window.testMarketBell = (kind) => showMarketBell(kind === 'close' ? 'close' : 'open');
+
+    // Fires the bell once at 08:30:00 and 15:00:00 CST on weekdays. Deduped
+    // per day+event via sessionStorage so the 10s window (and reloads inside
+    // it) don't re-trigger.
+    function checkMarketBellSchedule() {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Chicago',
+        hour12: false,
+        weekday: 'short',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }).formatToParts(new Date());
+      const g = (t) => parts.find(p => p.type === t)?.value || '';
+      const wd = g('weekday');
+      if (wd === 'Sat' || wd === 'Sun') return;
+
+      const h = parseInt(g('hour'), 10) % 24;
+      const m = parseInt(g('minute'), 10);
+      const s = parseInt(g('second'), 10);
+
+      let kind = null;
+      if (h === 8 && m === 30 && s < 10) kind = 'open';
+      else if (h === 15 && m === 0 && s < 10) kind = 'close';
+      if (!kind) return;
+
+      const fireKey = `${g('year')}-${g('month')}-${g('day')}:${kind}`;
+      if (sessionStorage.getItem('mbellFired') === fireKey) return;
+      sessionStorage.setItem('mbellFired', fireKey);
+      showMarketBell(kind);
+    }
+
     function startSessionTicker() {
       updateMarketSessionBadge();
       updateMarketCountdown();
@@ -11833,9 +12044,12 @@
         updateMarketSessionBadge();
         renderSessionsStrip();
       }, 30000);
-      // 1-second ticker for the countdown digits.
+      // 1-second ticker: countdown digits + the open/close bell scheduler.
       if (marketCountdownTimer) clearInterval(marketCountdownTimer);
-      marketCountdownTimer = setInterval(updateMarketCountdown, 1000);
+      marketCountdownTimer = setInterval(() => {
+        updateMarketCountdown();
+        checkMarketBellSchedule();
+      }, 1000);
       // Smoother animation for the now-line: tick once a minute
       if (sessionsNowTimer) clearInterval(sessionsNowTimer);
       sessionsNowTimer = setInterval(updateSessionsNow, 60000);
@@ -19285,6 +19499,69 @@
       }, FIRST_DELAY_MS);
     })();
   </script>
+
+  <!-- ── Market Open/Close Bell Overlay ── -->
+  <div id="market-bell-overlay" hidden onclick="hideMarketBell()">
+    <div class="mbell-backdrop"></div>
+    <div class="mbell-stage">
+      <svg class="mbell-svg" viewBox="0 0 280 340" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="mbellDome" cx="0.36" cy="0.3" r="0.96">
+            <stop offset="0" stop-color="#fff3c4" />
+            <stop offset="0.4" stop-color="#f3bd3c" />
+            <stop offset="0.78" stop-color="#cc8c14" />
+            <stop offset="1" stop-color="#7c520a" />
+          </radialGradient>
+          <linearGradient id="mbellBrass" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffe79a" />
+            <stop offset="0.5" stop-color="#e0a52a" />
+            <stop offset="1" stop-color="#8a5d0c" />
+          </linearGradient>
+        </defs>
+
+        <!-- striker mechanism at the very top -->
+        <rect class="mbell-bracket" x="120" y="13" width="40" height="14" rx="4" />
+        <g class="mbell-striker">
+          <line class="mbell-striker-arm" x1="140" y1="30" x2="140" y2="56" />
+          <circle class="mbell-hammer" cx="140" cy="60" r="10" />
+        </g>
+        <circle class="mbell-striker-pivot" cx="140" cy="30" r="6.5" />
+
+        <!-- the bell: round brass dome + mount box (micro-vibrates on strike) -->
+        <g class="mbell-bell-shake">
+          <rect class="mbell-box" x="116" y="250" width="48" height="72" rx="5" />
+          <rect class="mbell-box-face" x="126" y="262" width="28" height="46" rx="3" />
+          <rect class="mbell-bolt" x="132" y="320" width="16" height="14" rx="3" />
+
+          <ellipse class="mbell-dome" cx="140" cy="158" rx="118" ry="112" />
+          <ellipse class="mbell-dome-rim" cx="140" cy="158" rx="104" ry="99" />
+
+          <!-- polished reflections -->
+          <ellipse class="mbell-gleam" cx="104" cy="116" rx="40" ry="25" opacity="0.5"
+            transform="rotate(-32 104 116)" />
+          <ellipse class="mbell-gleam" cx="170" cy="210" rx="46" ry="13" opacity="0.2"
+            transform="rotate(-20 170 210)" />
+          <ellipse class="mbell-gleam" cx="92" cy="190" rx="9" ry="30" opacity="0.26"
+            transform="rotate(-16 92 190)" />
+
+          <!-- center finial knob -->
+          <ellipse class="mbell-knob-base" cx="140" cy="160" rx="22" ry="20" />
+          <ellipse class="mbell-knob" cx="140" cy="158" rx="13" ry="12" />
+          <circle class="mbell-gleam" cx="135" cy="153" r="3.6" opacity="0.75" />
+        </g>
+
+        <!-- ring waves -->
+        <g class="mbell-waves">
+          <path class="mbell-wave w1" d="M266,118 A54,54 0 0 1 266,198" />
+          <path class="mbell-wave w2" d="M284,102 A76,76 0 0 1 284,214" />
+          <path class="mbell-wave w3" d="M14,118 A54,54 0 0 0 14,198" />
+          <path class="mbell-wave w4" d="M-4,102 A76,76 0 0 0 -4,214" />
+        </g>
+      </svg>
+      <div class="mbell-label" id="market-bell-label">MARKET OPEN</div>
+      <div class="mbell-sub" id="market-bell-sub">Regular session is now open</div>
+    </div>
+  </div>
 </body>
 
 </html>
