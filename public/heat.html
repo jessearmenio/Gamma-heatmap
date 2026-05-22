@@ -5307,24 +5307,28 @@
 
     .rrg-symbol-group.active .rrg-head-dot {
       stroke: var(--cyan);
-      stroke-width: 2;
+      stroke-width: 3;
+      r: 8;
+      filter: drop-shadow(0 0 8px var(--cyan));
     }
 
     .rrg-symbol-group.active .rrg-tail-line {
       stroke: var(--cyan);
-      stroke-width: 2;
+      stroke-width: 4.5;
       opacity: 1;
-      filter: drop-shadow(0 0 6px var(--cyan));
+      filter: drop-shadow(0 0 8px var(--cyan));
     }
 
     .rrg-symbol-group.active .rrg-tail-line-base {
-      stroke-width: 2.4;
+      stroke-width: 5;
       opacity: 1;
     }
 
     .rrg-symbol-group.active .rrg-tail-dot {
       opacity: 1;
-      filter: drop-shadow(0 0 5px currentColor);
+      stroke: rgba(255, 255, 255, 0.55);
+      stroke-width: 1;
+      filter: drop-shadow(0 0 6px currentColor);
     }
 
     .rrg-symbol-group.active .rrg-head-label {
