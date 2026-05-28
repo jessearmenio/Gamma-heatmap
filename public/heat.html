@@ -2078,13 +2078,16 @@
       gap: 10px;
     }
 
-    #heat-controls {
+    #heat-controls,
+    #sm-controls {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
       flex-shrink: 0;
     }
+
+    #sm-controls { margin-bottom: 12px; }
 
     .symbol-pill {
       padding: 5px 12px;
@@ -8922,8 +8925,34 @@
            5. SMART MONEY
       ════════════════════════════════════ -->
         <div id="smart-page" class="page" style="display:none;">
+          <div id="sm-controls">
+            <!-- Symbol pills (independent of Heat Seeker) -->
+            <button class="symbol-pill active" onclick="setSmSymbol(this,'SPY')">$SPY</button>
+            <button class="symbol-pill" onclick="setSmSymbol(this,'$SPX')">$SPX</button>
+            <button class="symbol-pill" onclick="setSmSymbol(this,'QQQ')">QQQ</button>
+            <button class="symbol-pill" onclick="setSmSymbol(this,'IWM')">IWM</button>
+            <button class="symbol-pill" onclick="setSmSymbol(this,'$VIX')">$VIX</button>
+            <div style="width:1px;height:22px;background:var(--border2);"></div>
+            <!-- Custom symbol search -->
+            <input id="sm-symbol-search" type="text" placeholder="Search ticker..." autocomplete="off"
+              style="background:var(--bg3);color:var(--text);border:1px solid var(--border2);border-radius:5px;padding:5px 10px;font-size:11px;font-family:inherit;width:110px;text-transform:uppercase;"
+              onkeydown="if(event.key === 'Enter') searchSmSymbol();" />
+            <button onclick="searchSmSymbol()"
+              style="background:var(--bg3);color:var(--text2);border:1px solid var(--border2);border-radius:5px;padding:5px 10px;font-size:10px;font-weight:700;font-family:inherit;cursor:pointer;">
+              LOAD
+            </button>
+            <div style="width:1px;height:22px;background:var(--border2);"></div>
+            <span style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Strikes:</span>
+            <input id="sm-strike-count" type="number" value="50" min="5" max="100" step="5" onchange="reloadSmHeat()">
+            <button
+              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
+              class="dte-btn" onclick="reloadSmHeat()">
+              ↻ Load
+            </button>
+          </div>
+
           <div class="card mb12">
-            <div class="card-header"><span class="card-title">Call vs Put Dollar Flow</span></div>
+            <div class="card-header"><span class="card-title" id="sm-flow-title">Call vs Put Dollar Flow</span></div>
             <div class="card-body" id="sm-flow-bars">
               <div class="text-muted fs10">Please log in.</div>
             </div>
@@ -8935,7 +8964,7 @@
             </div>
           </div>
           <div class="card mb12">
-            <div class="card-header"><span class="card-title">Open Interest by Strike (SPY)</span></div>
+            <div class="card-header"><span class="card-title" id="sm-oi-title">Open Interest by Strike (SPY)</span></div>
             <div class="card-body" id="sm-oi-chart">
               <canvas id="oi-chart" width="100%" height="180" style="width:100%;height:180px;"></canvas>
             </div>
@@ -14993,20 +15022,15 @@
 
     // Build hsGammaData from the latest heat matrix (same logic as ovGammaData build).
     function hsUpdateGammaFromHeat(heat) {
-      if (!heat || !heat.matrix || !heat.expirations) { hsGammaData = []; return; }
-      const MAX_DTE = 45;
-      const validExps = new Set(
-        (heat.expirations || []).filter(exp => {
-          const dtePart = exp.split(':')[1];
-          return dtePart ? parseInt(dtePart) <= MAX_DTE : true;
-        })
-      );
+      if (!heat || !heat.matrix) { hsGammaData = []; return; }
+      // Aggregate every expiration the heat snapshot contains — the same set
+      // used by the table below and by the server-computed Call Wall / Put
+      // Wall / King pills. Filtering by DTE here used to silently exclude
+      // long-dated strikes, so the chart bars disagreed with the King ★.
       const strikeMap = {};
       heat.matrix.forEach(row => {
         let rowSum = 0;
-        (row.cells || []).forEach(c => {
-          if (validExps.has(c.expKey)) rowSum += c.netGex;
-        });
+        (row.cells || []).forEach(c => { rowSum += (c.netGex || 0); });
         if (rowSum !== 0) strikeMap[row.strike] = (strikeMap[row.strike] || 0) + rowSum;
       });
       hsGammaData = Object.entries(strikeMap).map(([s, g]) => ({ strike: Number(s), netGex: g }));
@@ -15442,25 +15466,17 @@
           </div>`;
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 
-        // ── Build gamma bar data for chart overlay: net GEX per $1 strike, ≤45 DTE ──
-        // Uses the same `heat` source selected above so the overlay strikes match
-        // the key-level pills (and the Heat Seeker page when SPY is loaded there).
-        if (heat.matrix && heat.expirations) {
-          const MAX_DTE = 45;
-          // Which expiration keys are within 45 DTE?
-          const validExps = new Set(
-            (heat.expirations || []).filter(exp => {
-              const dtePart = String(exp).split(':')[1];
-              return dtePart ? parseInt(dtePart) <= MAX_DTE : true;
-            })
-          );
-          // Sum net GEX per strike across valid expirations
+        // ── Build gamma bar data for chart overlay ─────────────────
+        // Aggregate net GEX per strike across EVERY expiration the heat
+        // snapshot contains — same set the table and the server-computed
+        // Call Wall / Put Wall / King pills use. Filtering by DTE here
+        // would re-introduce the bug where the chart's biggest bar
+        // disagreed with the King ★.
+        if (heat.matrix) {
           const strikeMap = {};
           heat.matrix.forEach(row => {
             let rowSum = 0;
-            (row.cells || []).forEach(c => {
-              if (validExps.has(c.expKey)) rowSum += c.netGex;
-            });
+            (row.cells || []).forEach(c => { rowSum += (c.netGex || 0); });
             if (rowSum !== 0) strikeMap[row.strike] = (strikeMap[row.strike] || 0) + rowSum;
           });
           ovGammaData = Object.entries(strikeMap).map(([s, g]) => ({ strike: Number(s), netGex: g }));
@@ -16846,7 +16862,11 @@
       }
 
       const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 5));
-      const offset = slider ? Number(slider.value) || 0 : 0; // 0 = head at most recent
+      // Slider is inverted: right end (value = max) = head at most recent,
+      // left end (value = 0) = oldest. Offset grows as user scrubs left.
+      const offset = slider
+        ? Math.max(0, (Number(slider.max) || 0) - (Number(slider.value) || 0))
+        : 0;
 
       // Build per-symbol tail at this offset.
       const plotted = symbols.map(item => {
@@ -17004,13 +17024,19 @@
 
     function etfRrgRedraw() {
       // Keep the slider range in sync when the tail length changes so the
-      // user can’t scrub past the start of the available history.
+      // user can’t scrub past the start of the available history. Slider is
+      // inverted (right = latest), so preserve the user's *offset* (weeks
+      // back from latest) across a max change rather than the raw value.
       const slider = document.getElementById('etf-rrg-timeframe');
       if (slider && etfRrgState.maxLen) {
+        const oldMax = Number(slider.max) || 0;
+        const oldVal = Number(slider.value) || 0;
+        const offset = Math.max(0, oldMax - oldVal);
         const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 5));
         const newMax = Math.max(0, etfRrgState.maxLen - tailLen);
         slider.max = String(newMax);
-        if (Number(slider.value) > newMax) slider.value = String(newMax);
+        const newOffset = Math.min(newMax, offset);
+        slider.value = String(newMax - newOffset);
       }
       renderEtfRrg();
     }
@@ -17264,13 +17290,15 @@
 
         console.log('[ETF RRG] symbols charted:', etfRrgState.symbols.length, '/ ' + rows.length);
 
-        // Configure the timeline slider so 0 = head at the most recent week
-        // and higher values scrub backward (one week per tick).
+        // Configure the timeline slider so the RIGHT end = head at the most
+        // recent week and scrubbing left walks backward (one week per tick).
+        // (Offset is computed as `slider.max - slider.value` in renderEtfRrg.)
         const slider = document.getElementById('etf-rrg-timeframe');
         if (slider) {
           const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 5));
-          slider.max = String(Math.max(0, etfRrgState.maxLen - tailLen));
-          slider.value = '0';
+          const newMax = Math.max(0, etfRrgState.maxLen - tailLen);
+          slider.max = String(newMax);
+          slider.value = String(newMax);
         }
 
         renderEtfRrg();
@@ -18540,25 +18568,59 @@
   `;
     }
 
-    async function loadSmartMoney() {
+    // ── Smart Money: own state, independent of Heat Seeker ────────
+    // Smart Money fetches its own /api/heat snapshot into `smHeatData`
+    // so changing the Heat Seeker symbol no longer mutates this page.
+    let smSymbol = 'SPY';
+    let smHeatData = null;
+
+    window.setSmSymbol = function (btn, sym) {
+      document.querySelectorAll('#sm-controls .symbol-pill').forEach(p => p.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      smSymbol = sym;
+      const input = document.getElementById('sm-symbol-search');
+      if (input) input.value = sym;
+      reloadSmHeat();
+    };
+
+    window.searchSmSymbol = function () {
+      const input = document.getElementById('sm-symbol-search');
+      const raw = String(input?.value || '').trim().toUpperCase();
+      if (!raw) return;
+      const clean = raw.replace(/[^A-Z0-9.$-]/g, '');
+      if (!clean) return;
+      document.querySelectorAll('#sm-controls .symbol-pill').forEach(p => p.classList.remove('active'));
+      smSymbol = clean;
+      input.value = clean;
+      reloadSmHeat();
+    };
+
+    async function reloadSmHeat() {
       if (!isConnected) {
-        document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Connect Schwab first to derive Smart Money signals.</div>`;
+        const el = document.getElementById('sm-flow-bars');
+        if (el) el.innerHTML = `<div class="text-muted fs10">Connect Schwab first to derive Smart Money signals.</div>`;
         return;
       }
-
-      if (!lastHeatData) {
-        document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Loading SPY Heat Seeker data…</div>`;
-
-        try {
-          await reloadHeat();
-        } catch (e) {
-          document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Failed to load Heat Seeker data.</div>`;
-          return;
-        }
-
-        if (!lastHeatData) return;
+      const strikeCount = document.getElementById('sm-strike-count')?.value || 50;
+      const sym = encodeURIComponent(smSymbol);
+      const flowEl = document.getElementById('sm-flow-bars');
+      if (flowEl) flowEl.innerHTML = `<div class="text-muted fs10">Loading ${smSymbol} data…</div>`;
+      try {
+        const d = await apiGet(`/api/heat?symbol=${sym}&strikeCount=${strikeCount}&range=ALL`);
+        if (!d.ok) throw new Error(d.error);
+        smHeatData = d;
+        renderSmartMoney();
+      } catch (e) {
+        if (flowEl) flowEl.innerHTML = `<div class="text-muted fs10">Failed to load Smart Money data: ${e.message}</div>`;
       }
-      const s = lastHeatData.strikes || [];
+    }
+
+    function renderSmartMoney() {
+      if (!smHeatData) return;
+      const titleEl = document.getElementById('sm-oi-title');
+      if (titleEl) titleEl.textContent = `Open Interest by Strike (${smSymbol})`;
+
+      const s = smHeatData.strikes || [];
       const callOI = s.reduce((a, r) => a + r.callOpenInterest, 0);
       const putOI = s.reduce((a, r) => a + r.putOpenInterest, 0);
       const callGex = s.reduce((a, r) => a + r.callGex, 0);
@@ -18586,7 +18648,7 @@
         <span style="color:#d470ff;font-weight:700">Put GEX: ${fmtDollar(putGex)}</span>
       </div>
     </div>
-      ${renderSmartMoneyKeyLevelPills(lastHeatData)}`;
+      ${renderSmartMoneyKeyLevelPills(smHeatData)}`;
 
       // Sweeps = highest OI strikes
       const topCalls = [...s].sort((a, b) => b.callOpenInterest - a.callOpenInterest).slice(0, 5);
@@ -18604,8 +18666,22 @@
     </div>
   </div>`;
 
-      // OI chart (canvas bar chart)
-      drawOIChart();
+      // OI chart (canvas bar chart) — pass Smart Money's own snapshot
+      drawOIChart(smHeatData);
+    }
+
+    async function loadSmartMoney() {
+      if (!isConnected) {
+        document.getElementById('sm-flow-bars').innerHTML = `<div class="text-muted fs10">Connect Schwab first to derive Smart Money signals.</div>`;
+        return;
+      }
+      // Sync the symbol-search input with the current Smart Money symbol.
+      const input = document.getElementById('sm-symbol-search');
+      if (input && !input.value) input.value = smSymbol;
+
+      // First visit → fetch; subsequent visits → just re-render cached data.
+      if (!smHeatData) await reloadSmHeat();
+      else renderSmartMoney();
     }
 
     async function loadGexHistory() {
@@ -18646,16 +18722,17 @@
       }
     }
 
-    function drawOIChart() {
+    function drawOIChart(data) {
+      const src = data || smHeatData;
       const canvas = document.getElementById('oi-chart');
-      if (!canvas || !lastHeatData) return;
+      if (!canvas || !src) return;
       const ctx = canvas.getContext('2d');
       canvas.width = canvas.offsetWidth * window.devicePixelRatio;
       canvas.height = 180 * window.devicePixelRatio;
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
       const w = canvas.offsetWidth, h = 180;
 
-      const strikes = lastHeatData.strikes.slice(0, 20).reverse();
+      const strikes = src.strikes.slice(0, 20).reverse();
       const maxOI = Math.max(...strikes.map(s => Math.max(s.callOpenInterest, s.putOpenInterest))) || 1;
       const bw = (w - 60) / strikes.length;
 
