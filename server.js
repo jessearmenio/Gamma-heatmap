@@ -1157,10 +1157,33 @@ function buildHeatFromChain(chain, extraRows = []) {
   const strikesWithCallGamma = strikes.filter(s => Math.abs(s.callGex) > 0);
   const strikesWithPutGamma  = strikes.filter(s => Math.abs(s.putGex)  > 0);
 
+  // Call Wall must live ABOVE spot (resistance) and Put Wall BELOW spot
+  // (support). Without this filter both walls collapse to whichever ATM
+  // strike has the heaviest gamma on both sides — e.g. SPY 750 when spot
+  // is 750.46 (massive 0DTE call AND put OI at the same strike), which
+  // produced Call Wall == Put Wall == 750 in the UI. We pick the strongest
+  // per-side gex within the appropriate half of the chain; if the chain
+  // doesn't have any strikes on the proper side (very thin OI), we fall
+  // back to the unfiltered pool so something still renders.
+  const callPool = (() => {
+    if (Number.isFinite(underlyingPrice) && underlyingPrice > 0) {
+      const above = strikesWithCallGamma.filter(s => s.strike > underlyingPrice);
+      if (above.length) return above;
+    }
+    return strikesWithCallGamma;
+  })();
+  const putPool = (() => {
+    if (Number.isFinite(underlyingPrice) && underlyingPrice > 0) {
+      const below = strikesWithPutGamma.filter(s => s.strike < underlyingPrice);
+      if (below.length) return below;
+    }
+    return strikesWithPutGamma;
+  })();
+
   const strongestCallWall =
-    [...strikesWithCallGamma].sort((a, b) => Math.abs(b.callGex) - Math.abs(a.callGex))[0] || null;
+    [...callPool].sort((a, b) => Math.abs(b.callGex) - Math.abs(a.callGex))[0] || null;
   const strongestPutWall =
-    [...strikesWithPutGamma].sort((a, b) => Math.abs(b.putGex) - Math.abs(a.putGex))[0] || null;
+    [...putPool].sort((a, b) => Math.abs(b.putGex) - Math.abs(a.putGex))[0] || null;
   const strongestPositiveGex =
     [...strikes].sort((a, b) => b.netGex - a.netGex)[0] || null;
   const strongestNegativeGex =

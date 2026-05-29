@@ -16900,19 +16900,26 @@
         text.innerHTML = `<strong>${tailLen} weeks ending ${rrgFormatDate(headDate)}</strong> · vs SPY benchmark`;
       }
 
-      // ── Compute axis bounds (centered on 0; symmetric same-step on both axes) ──
+      // ── Compute axis bounds — tight per-axis fit ─────────────────
+      // Snap each axis just past the data extents (with a small margin) so
+      // the chart zooms into the active rotations instead of wasting space
+      // on empty quadrants. The 0 centerline is always kept in view so the
+      // four-quadrant split stays meaningful.
       const allX = plotted.flatMap(p => p.tail.map(pt => pt.strength));
       const allY = plotted.flatMap(p => p.tail.map(pt => pt.momentum));
-      const padFactor = 1.18;
-      const xExtent = Math.max(2, Math.max(...allX.map(Math.abs), 0.5) * padFactor);
-      const yExtent = Math.max(2, Math.max(...allY.map(Math.abs), 0.5) * padFactor);
-      const extent = Math.max(xExtent, yExtent);
-      const step = rrgNiceStep(extent);
-      // Round extent up to a multiple of `step` so ticks land cleanly.
-      const niceExtent = Math.ceil(extent / step) * step;
 
-      const xMin = -niceExtent, xMax = niceExtent;
-      const yMin = -niceExtent, yMax = niceExtent;
+      function rrgTightAxis(values, minSpan) {
+        let lo = Math.min(0, ...values);
+        let hi = Math.max(0, ...values);
+        const span = Math.max(hi - lo, minSpan);
+        const pad = span * 0.10;
+        lo -= pad;
+        hi += pad;
+        const step = rrgNiceStep(hi - lo);
+        return [Math.floor(lo / step) * step, Math.ceil(hi / step) * step, step];
+      }
+      const [xMin, xMax, xStep] = rrgTightAxis(allX, 4);
+      const [yMin, yMax, yStep] = rrgTightAxis(allY, 4);
 
       // ── SVG layout ──
       const W = 1000, H = 1000;
@@ -16923,12 +16930,15 @@
       const xToPx = (v) => M.left + ((v - xMin) / (xMax - xMin)) * innerW;
       const yToPx = (v) => M.top + (1 - (v - yMin) / (yMax - yMin)) * innerH;
 
-      // Axis ticks (from -niceExtent to +niceExtent in `step` increments).
-      const ticks = [];
-      for (let v = -niceExtent; v <= niceExtent + 1e-9; v += step) {
-        ticks.push(Math.round(v * 1000) / 1000);
+      function rrgTickArr(lo, hi, step) {
+        const out = [];
+        for (let v = lo; v <= hi + 1e-9; v += step) out.push(Math.round(v * 1000) / 1000);
+        return out;
       }
-      const tickLabel = (v) => (100 + v).toFixed(step < 1 ? 1 : 0);
+      const xTicks = rrgTickArr(xMin, xMax, xStep);
+      const yTicks = rrgTickArr(yMin, yMax, yStep);
+      const tickLabelX = (v) => (100 + v).toFixed(xStep < 1 ? 1 : 0);
+      const tickLabelY = (v) => (100 + v).toFixed(yStep < 1 ? 1 : 0);
 
       const cx0 = xToPx(0);
       const cy0 = yToPx(0);
@@ -16953,14 +16963,16 @@
         <rect class="rrg-quad-fill weakening" x="${cx0}"     y="${cy0}"               width="${M.left + innerW - cx0}" height="${M.top + innerH - cy0}" />
       `);
 
-      // Gridlines.
-      ticks.forEach(v => {
+      // Gridlines (per-axis ticks).
+      xTicks.forEach(v => {
+        if (Math.abs(v) <= 1e-9) return;
         const px = xToPx(v);
+        parts.push(`<line class="rrg-grid-line" x1="${px}" y1="${M.top}" x2="${px}" y2="${M.top + innerH}"/>`);
+      });
+      yTicks.forEach(v => {
+        if (Math.abs(v) <= 1e-9) return;
         const py = yToPx(v);
-        if (Math.abs(v) > 1e-9) {
-          parts.push(`<line class="rrg-grid-line" x1="${px}" y1="${M.top}" x2="${px}" y2="${M.top + innerH}"/>`);
-          parts.push(`<line class="rrg-grid-line" x1="${M.left}" y1="${py}" x2="${M.left + innerW}" y2="${py}"/>`);
-        }
+        parts.push(`<line class="rrg-grid-line" x1="${M.left}" y1="${py}" x2="${M.left + innerW}" y2="${py}"/>`);
       });
 
       // Center axes (at value=100).
@@ -16970,12 +16982,14 @@
       // Plot border.
       parts.push(`<rect x="${M.left}" y="${M.top}" width="${innerW}" height="${innerH}" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1" />`);
 
-      // Tick labels.
-      ticks.forEach(v => {
+      // Tick labels (per-axis).
+      xTicks.forEach(v => {
         const px = xToPx(v);
+        parts.push(`<text class="rrg-tick-label" x="${px}" y="${M.top + innerH + 16}" text-anchor="middle">${tickLabelX(v)}</text>`);
+      });
+      yTicks.forEach(v => {
         const py = yToPx(v);
-        parts.push(`<text class="rrg-tick-label" x="${px}" y="${M.top + innerH + 16}" text-anchor="middle">${tickLabel(v)}</text>`);
-        parts.push(`<text class="rrg-tick-label" x="${M.left - 8}" y="${py + 3}" text-anchor="end">${tickLabel(v)}</text>`);
+        parts.push(`<text class="rrg-tick-label" x="${M.left - 8}" y="${py + 3}" text-anchor="end">${tickLabelY(v)}</text>`);
       });
 
       // Axis titles.
