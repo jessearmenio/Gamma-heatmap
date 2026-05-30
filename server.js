@@ -102,9 +102,23 @@ async function initTurso() {
     )
   `);
 
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS trade_entry (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      spy_level REAL,
+      vix_level REAL,
+      triggers_met TEXT,
+      capital_deployed REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
+
+  console.log("Turso trade_entry table ready.");
 }
 
 async function saveEtfSnapshot({ symbol, price, changePct, volume }) {
@@ -553,6 +567,130 @@ app.get("/api/fear-greed", async (_req, res) => {
       error: "Failed to fetch fear and greed index.",
       details: error.response?.data || error.message
     });
+  }
+});
+
+// ── Media stress (Google News RSS) ───────────────────────────────────
+// Counts recent crash/panic headlines about U.S. equities. Used by the
+// Trade Authorization Checklist (sent-3) to auto-flag a media regime
+// dominated by crash chatter.
+//
+// Methodology (calibrated against live data — Nov 2024 normal day returned
+// ~6–8 noisy matches before filtering; real selloffs clear 20+):
+//   • Focused Google News query (market-context + strong-stress vocab)
+//   • Post-filter: TITLE must contain a market-context word AND a stress
+//     word — drops sector-only tumbles ("Space stocks tumble") and
+//     metaphor ("Wall Street dumps crash hedges").
+//   • Dedupe syndicated reprints by normalized title (same Bloomberg
+//     story republished on NDTV/Yahoo/MarketWatch counts once).
+//   • Threshold: ≥ 5 unique qualifying stories in last 48h → triggered.
+const MEDIA_STRESS_QUERY =
+  '(stocks OR "Wall Street" OR "S&P 500" OR Dow OR Nasdaq) ' +
+  '(crash OR meltdown OR panic OR capitulation OR plunge OR freefall OR rout OR "bear market" OR "sell-off" OR selloff OR tumble)';
+// Calibrated against live data: calm days returned ~6–9 noisy matches after
+// filtering (sector tumbles, speculative AI-bubble pieces); a real selloff
+// (Aug 2024 carry-trade style) easily clears 20+; mild corrections 12–18.
+// 10 sits in the gap — won't fire on noise floor, fires on real stress.
+const MEDIA_STRESS_THRESHOLD = 10;
+const MEDIA_STRESS_WINDOW_MS = 48 * 60 * 60 * 1000; // last 48 hours
+const MEDIA_STRESS_CACHE_MS = 10 * 60 * 1000;       // refresh at most every 10 min
+
+// Title-level guards.
+const MEDIA_MARKET_RE = /\b(stocks?|equit(?:y|ies)|wall\s*street|s&?p\s*500?|dow(?:\s*jones)?|nasdaq|nyse|futures|market(?:s)?)\b/i;
+const MEDIA_STRONG_RE = /\b(crash(?:es|ed|ing)?|meltdown|panic|capitulation|freefall)\b/i;
+const MEDIA_MEDIUM_RE = /\b(plunge[ds]?|rout|sell-?off|tumble[ds]?|bear\s+market)\b/i;
+
+let mediaStressCache = { data: null, fetchedAt: 0 };
+
+function normalizeMediaTitle(t) {
+  return String(t || "")
+    .toLowerCase()
+    .replace(/\s+-\s+[^-]+$/, "")            // strip trailing " - Outlet.com"
+    .replace(/&amp;/g, "&")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 80);
+}
+
+async function fetchMediaStressFromGoogleNews() {
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(MEDIA_STRESS_QUERY)}&hl=en-US&gl=US&ceid=US:en`;
+  const resp = await axios.get(url, {
+    timeout: 15000,
+    headers: {
+      "User-Agent": "Mozilla/5.0 (compatible; HeatseekerBot/1.0; +https://stock-market-dash.onrender.com)",
+      "Accept": "application/rss+xml, application/xml, text/xml"
+    }
+  });
+  const xml = String(resp.data || "");
+
+  // Lightweight regex-based RSS parse (no extra dependency).
+  const items = [];
+  const itemRe = /<item>([\s\S]*?)<\/item>/g;
+  let m;
+  while ((m = itemRe.exec(xml)) !== null) {
+    const block = m[1];
+    const rawTitle = (block.match(/<title>([\s\S]*?)<\/title>/) || [])[1] || "";
+    const title = rawTitle.replace(/<!\[CDATA\[|\]\]>/g, "").trim();
+    const pubDateStr = (block.match(/<pubDate>([\s\S]*?)<\/pubDate>/) || [])[1] || "";
+    const pubDate = pubDateStr ? new Date(pubDateStr).getTime() : NaN;
+    if (title && Number.isFinite(pubDate)) items.push({ title, pubDate });
+  }
+
+  const cutoff = Date.now() - MEDIA_STRESS_WINDOW_MS;
+  const recent = items.filter(i => i.pubDate >= cutoff);
+
+  // Title-context + stress filter, then dedupe.
+  const seen = new Set();
+  const dropped = [];
+  let count = 0, score = 0;
+  const matched = [];
+  for (const r of recent) {
+    const hasStrong = MEDIA_STRONG_RE.test(r.title);
+    const hasMedium = MEDIA_MEDIUM_RE.test(r.title);
+    if (!hasStrong && !hasMedium) { dropped.push(r.title); continue; }
+    if (!MEDIA_MARKET_RE.test(r.title)) { dropped.push(r.title); continue; }
+    const key = normalizeMediaTitle(r.title);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    count++;
+    score += hasStrong ? 3 : 2;
+    matched.push(r.title);
+  }
+
+  const payload = {
+    triggered: count >= MEDIA_STRESS_THRESHOLD,
+    count,
+    score,
+    threshold: MEDIA_STRESS_THRESHOLD,
+    windowHours: MEDIA_STRESS_WINDOW_MS / 3600000,
+    rawItems: recent.length,
+    headlines: matched.slice(0, 8)
+  };
+  mediaStressCache = { data: payload, fetchedAt: Date.now() };
+  return payload;
+}
+
+app.get("/api/media-stress", async (_req, res) => {
+  try {
+    const fresh = mediaStressCache.data && (Date.now() - mediaStressCache.fetchedAt < MEDIA_STRESS_CACHE_MS);
+    if (!fresh) {
+      try { await fetchMediaStressFromGoogleNews(); }
+      catch (e) {
+        console.warn("MEDIA_STRESS fetch failed:", e.message);
+        if (!mediaStressCache.data) {
+          return res.json({ ok: true, data: { triggered: false, count: 0, score: 0, threshold: MEDIA_STRESS_THRESHOLD, headlines: [], error: e.message } });
+        }
+      }
+    }
+    res.json({
+      ok: true,
+      data: mediaStressCache.data,
+      cache: { fetchedAt: mediaStressCache.fetchedAt, stale: !fresh }
+    });
+  } catch (error) {
+    console.error("MEDIA_STRESS ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to fetch media stress.", details: error.message });
   }
 });
 
@@ -2330,6 +2468,61 @@ app.post("/api/gex-history/snapshot", async (req, res) => {
       error: "Failed to save GEX history.",
       details: error.message
     });
+  }
+});
+
+// ── Trade journal (Market Overview trade-entry checklist) ─────────────
+// POST /api/trade-entry  → save a new trade entry
+// GET  /api/trade-entries → list recent entries (most recent first)
+app.post("/api/trade-entry", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.status(503).json({ ok: false, error: "Trade journal storage is not configured." });
+    }
+    const body = req.body || {};
+    const date = body.date ? String(body.date).slice(0, 10) : getCstDateKey();
+    const spy = body.spy_level != null && body.spy_level !== "" ? Number(body.spy_level) : null;
+    const vix = body.vix_level != null && body.vix_level !== "" ? Number(body.vix_level) : null;
+    const cap = body.capital_deployed != null && body.capital_deployed !== "" ? Number(body.capital_deployed) : null;
+    let triggers = body.triggers_met;
+    if (triggers && typeof triggers !== "string") {
+      try { triggers = JSON.stringify(triggers); } catch (_) { triggers = String(triggers); }
+    }
+    const result = await turso.execute({
+      sql: `
+        INSERT INTO trade_entry (date, spy_level, vix_level, triggers_met, capital_deployed)
+        VALUES (?, ?, ?, ?, ?)
+      `,
+      args: [
+        date,
+        Number.isFinite(spy) ? spy : null,
+        Number.isFinite(vix) ? vix : null,
+        triggers || null,
+        Number.isFinite(cap) ? cap : null
+      ]
+    });
+    res.json({ ok: true, id: Number(result.lastInsertRowid) });
+  } catch (error) {
+    console.error("TRADE_ENTRY SAVE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to save trade entry.", details: error.message });
+  }
+});
+
+app.get("/api/trade-entries", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+    const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 500);
+    const result = await turso.execute({
+      sql: `SELECT id, date, spy_level, vix_level, triggers_met, capital_deployed, created_at
+            FROM trade_entry ORDER BY id DESC LIMIT ?`,
+      args: [limit]
+    });
+    res.json({ ok: true, rows: result.rows });
+  } catch (error) {
+    console.error("TRADE_ENTRIES READ ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to load trade entries.", details: error.message });
   }
 });
 

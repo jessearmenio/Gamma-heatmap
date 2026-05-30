@@ -3961,6 +3961,334 @@
       line-height: 1.5;
     }
 
+    /* ── Overview: Trade Authorization Checklist ── */
+    .ov-row-checklist { margin-bottom: 12px; }
+
+    #ov-checklist-card {
+      background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
+      border: 1px solid var(--border3);
+      box-shadow: 0 0 0 1px rgba(15, 37, 66, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    #ov-checklist-card .cl-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.015);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #ov-checklist-card .card-title { color: var(--accent); font-size: 13px; }
+    .cl-header-sub { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    /* Three objective columns */
+    .cl-objectives {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 14px;
+    }
+    @media (max-width: 1100px) {
+      .cl-objectives { grid-template-columns: 1fr; }
+    }
+
+    .cl-obj {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .cl-obj[data-status="active"] {
+      border-color: rgba(34, 221, 136, 0.5);
+      box-shadow: 0 0 0 1px rgba(34, 221, 136, 0.18), inset 0 0 12px rgba(34, 221, 136, 0.05);
+    }
+
+    .cl-obj-head { display: flex; align-items: center; gap: 10px; }
+    .cl-obj-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: rgba(220, 255, 30, 0.12);
+      color: var(--accent);
+      font-size: 12px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .cl-obj-title { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
+    .cl-obj-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px; }
+
+    .cl-obj-items { display: flex; flex-direction: column; gap: 5px; }
+
+    /* Pill-style check items */
+    .cl-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text2);
+      transition: background 0.12s, border-color 0.12s, color 0.12s;
+    }
+    .cl-item:hover { background: rgba(255, 255, 255, 0.04); border-color: var(--border); }
+    .cl-item input[type="checkbox"] {
+      appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 3px;
+      border: 1.5px solid var(--border);
+      background: var(--bg3);
+      flex-shrink: 0;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    .cl-item input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .cl-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 1px; left: 4px;
+      width: 4px; height: 8px;
+      border: solid #07111d;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+    .cl-item:has(input:checked) { color: var(--text); border-color: rgba(220, 255, 30, 0.25); background: rgba(220, 255, 30, 0.04); }
+    .cl-item.small { font-size: 10px; padding: 5px 8px; }
+
+    /* Auto-evaluated items are read-only — driven by clEvaluate from live data. */
+    .cl-item-readonly { cursor: default; }
+    .cl-item-readonly:hover { background: var(--bg3); border-color: var(--border2); }
+    .cl-item-readonly input[type="checkbox"] { cursor: default; opacity: 0.95; }
+    .cl-item-readonly:has(input:checked) { background: rgba(220, 255, 30, 0.05); border-color: rgba(220, 255, 30, 0.22); }
+
+    /* Status toggle is now a read-only display reflecting the auto status. */
+    .cl-status-readonly .cl-status-btn { cursor: default; }
+    .cl-status-readonly .cl-status-btn:hover { color: var(--text3); background: transparent; }
+    .cl-status-readonly .cl-status-btn.selected[data-status="active"]:hover { color: var(--green); background: rgba(34, 221, 136, 0.16); }
+    .cl-status-readonly .cl-status-btn.selected[data-status="inactive"]:hover { color: var(--red); background: rgba(255, 59, 92, 0.14); }
+
+    /* Status toggle (segmented) */
+    .cl-obj-status { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 4px; }
+    .cl-status-label { font-size: 9px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+    .cl-status-toggle {
+      display: inline-flex;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      overflow: hidden;
+      flex: 1;
+    }
+    .cl-status-btn {
+      flex: 1;
+      padding: 5px 10px;
+      background: transparent;
+      border: none;
+      color: var(--text3);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.12s, color 0.12s;
+    }
+    .cl-status-btn:hover { color: var(--text2); }
+    .cl-status-btn.selected[data-status="active"] { background: rgba(34, 221, 136, 0.16); color: var(--green); }
+    .cl-status-btn.selected[data-status="inactive"] { background: rgba(255, 59, 92, 0.14); color: var(--red); }
+
+    .cl-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+      margin: 0 14px;
+    }
+
+    /* Authorization bar */
+    .cl-auth {
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .cl-auth-title { font-size: 11px; font-weight: 800; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text2); }
+    .cl-auth-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .cl-auth-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 18px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text3);
+      transition: all 0.15s;
+    }
+    .cl-auth-pill .cl-auth-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--text3);
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .cl-auth-pill.on {
+      color: var(--green);
+      background: rgba(34, 221, 136, 0.12);
+      border-color: rgba(34, 221, 136, 0.4);
+    }
+    .cl-auth-pill.on .cl-auth-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+    .cl-auth-verdict { margin-left: auto; font-size: 11px; color: var(--text3); font-style: italic; }
+    .cl-auth-verdict.go { color: var(--green); font-weight: 700; font-style: normal; }
+    .cl-auth-verdict.wait { color: var(--orange); font-weight: 700; font-style: normal; }
+    .cl-auth-verdict.standdown { color: var(--red); font-weight: 700; font-style: normal; }
+
+    /* Reminders */
+    .cl-reminders {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      padding: 14px;
+    }
+    @media (max-width: 1100px) {
+      .cl-reminders { grid-template-columns: 1fr; }
+    }
+    .cl-reminder {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .cl-rem-title { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: var(--text); }
+    .cl-rem-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; }
+    .cl-rem-items { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+
+    /* Trade entry */
+    .cl-trade-entry { padding: 14px; }
+    .cl-te-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .cl-te-title { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: var(--text); }
+    .cl-te-new {
+      background: linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);
+      color: #09111d;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .cl-te-form {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .cl-te-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    @media (max-width: 900px) { .cl-te-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .cl-te-field { display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; }
+    .cl-te-field input {
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-family: inherit;
+    }
+    .cl-te-field input:focus { border-color: var(--accent); outline: none; }
+    .cl-te-triggers { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .cl-te-trig-label { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+    .cl-trig-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      font-size: 11px; color: var(--text2);
+      cursor: pointer;
+    }
+    .cl-trig-chip input[type="checkbox"] {
+      appearance: none;
+      width: 12px; height: 12px;
+      border-radius: 3px;
+      border: 1.5px solid var(--border);
+      background: var(--bg3);
+      cursor: pointer; position: relative;
+    }
+    .cl-trig-chip input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+    .cl-trig-chip input[type="checkbox"]:checked::after {
+      content: ''; position: absolute; top: 1px; left: 3px;
+      width: 3px; height: 6px;
+      border: solid #07111d; border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    .cl-trig-chip:has(input:checked) { color: var(--text); border-color: rgba(220, 255, 30, 0.3); background: rgba(220, 255, 30, 0.06); }
+
+    .cl-te-actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+    .cl-te-msg { font-size: 11px; color: var(--text3); flex: 1; }
+    .cl-te-msg.ok { color: var(--green); }
+    .cl-te-msg.err { color: var(--red); }
+    .cl-te-cancel {
+      background: var(--bg3); color: var(--text3);
+      border: 1px solid var(--border2);
+      border-radius: 5px; padding: 6px 12px;
+      font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .cl-te-save {
+      background: linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);
+      color: #09111d; border: none;
+      border-radius: 5px; padding: 6px 14px;
+      font-size: 11px; font-weight: 800; cursor: pointer; font-family: inherit;
+    }
+
+    .cl-te-list { display: flex; flex-direction: column; gap: 6px; }
+    .cl-te-empty { font-size: 10px; color: var(--text3); padding: 12px; text-align: center; background: rgba(255, 255, 255, 0.02); border-radius: 6px; }
+    .cl-te-row {
+      display: grid;
+      grid-template-columns: 90px 80px 80px 1fr 110px 90px;
+      gap: 10px;
+      align-items: center;
+      padding: 8px 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text2);
+    }
+    .cl-te-row .te-date { color: var(--text); font-weight: 700; }
+    .cl-te-row .te-trigs { display: flex; gap: 4px; flex-wrap: wrap; }
+    .cl-te-row .te-trig-tag {
+      font-size: 9px; padding: 2px 6px; border-radius: 8px;
+      background: rgba(220, 255, 30, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(220, 255, 30, 0.2);
+      letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;
+    }
+    @media (max-width: 800px) {
+      .cl-te-row { grid-template-columns: 1fr; }
+    }
+
     /* ── Overview: Terminal Analysis ── */
     #ov-terminal-card {
       background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
@@ -8457,6 +8785,187 @@
             </div>
 
           </div><!-- end ov-row4 -->
+
+          <!-- ── ROW 4.5: Trade Authorization Checklist (full width) ── -->
+          <div class="ov-row-checklist">
+            <div id="ov-checklist-card">
+              <div class="cl-header">
+                <span class="card-title">📋 Trade Authorization Checklist</span>
+                <span class="cl-header-sub">Buy-the-dip qualification framework · state saved locally</span>
+              </div>
+
+              <div class="cl-objectives">
+                <!-- 1. PRICE -->
+                <div class="cl-obj" data-cl-obj="price">
+                  <div class="cl-obj-head">
+                    <span class="cl-obj-num">1</span>
+                    <div>
+                      <div class="cl-obj-title">Price Damage Trigger</div>
+                      <div class="cl-obj-sub">Market Stress · check all that apply</div>
+                    </div>
+                  </div>
+                  <div class="cl-obj-items">
+                    <label class="cl-item"><input type="checkbox" data-cl-item="price-1"/><span>SPY down −8% to −15% from recent high</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="price-2"/><span>Two consecutive weekly red candles</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="price-3"/><span>Break below 50-day MA with volume</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="price-4"/><span>Daily SPY candle &gt; −2%</span></label>
+                  </div>
+                  <div class="cl-obj-status">
+                    <span class="cl-status-label">Status</span>
+                    <div class="cl-status-toggle" data-cl-status="price">
+                      <button type="button" class="cl-status-btn" data-status="active">ACTIVE</button>
+                      <button type="button" class="cl-status-btn" data-status="inactive">NOT ACTIVE</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 2. VOLATILITY -->
+                <div class="cl-obj" data-cl-obj="volatility">
+                  <div class="cl-obj-head">
+                    <span class="cl-obj-num">2</span>
+                    <div>
+                      <div class="cl-obj-title">Volatility Trigger</div>
+                      <div class="cl-obj-sub">Fear Expansion · check all that apply</div>
+                    </div>
+                  </div>
+                  <div class="cl-obj-items">
+                    <label class="cl-item"><input type="checkbox" data-cl-item="vol-1"/><span>VIX above 22</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="vol-2"/><span>VIX spike +20% in one session</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="vol-3"/><span>SPY daily range exceeds 2%</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="vol-4"/><span>IV rank elevated vs 30-day avg</span></label>
+                  </div>
+                  <div class="cl-obj-status">
+                    <span class="cl-status-label">Status</span>
+                    <div class="cl-status-toggle" data-cl-status="volatility">
+                      <button type="button" class="cl-status-btn" data-status="active">ACTIVE</button>
+                      <button type="button" class="cl-status-btn" data-status="inactive">NOT ACTIVE</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. SENTIMENT -->
+                <div class="cl-obj" data-cl-obj="sentiment">
+                  <div class="cl-obj-head">
+                    <span class="cl-obj-num">3</span>
+                    <div>
+                      <div class="cl-obj-title">Sentiment Trigger</div>
+                      <div class="cl-obj-sub">Capitulation · check all that apply</div>
+                    </div>
+                  </div>
+                  <div class="cl-obj-items">
+                    <label class="cl-item"><input type="checkbox" data-cl-item="sent-1"/><span>Put/Call ratio greater than 1.10</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="sent-2"/><span>CNN Fear Index = Extreme Fear</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="sent-3"/><span>Media dominated by crash/recession headlines</span></label>
+                    <label class="cl-item"><input type="checkbox" data-cl-item="sent-4"/><span>Retail flow heavily skewed to puts</span></label>
+                  </div>
+                  <div class="cl-obj-status">
+                    <span class="cl-status-label">Status</span>
+                    <div class="cl-status-toggle" data-cl-status="sentiment">
+                      <button type="button" class="cl-status-btn" data-status="active">ACTIVE</button>
+                      <button type="button" class="cl-status-btn" data-status="inactive">NOT ACTIVE</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cl-divider"></div>
+
+              <!-- AUTHORIZATION -->
+              <div class="cl-auth">
+                <div class="cl-auth-title">🔓 Authorization Check</div>
+                <div class="cl-auth-pills">
+                  <span class="cl-auth-pill" data-cl-auth="price"><span class="cl-auth-dot"></span>Price</span>
+                  <span class="cl-auth-pill" data-cl-auth="volatility"><span class="cl-auth-dot"></span>Volatility</span>
+                  <span class="cl-auth-pill" data-cl-auth="sentiment"><span class="cl-auth-dot"></span>Sentiment</span>
+                </div>
+                <div class="cl-auth-verdict" id="cl-auth-verdict">Set each objective above to see authorization status</div>
+              </div>
+
+              <div class="cl-divider"></div>
+
+              <!-- REMINDERS -->
+              <div class="cl-reminders">
+                <div class="cl-reminder">
+                  <div class="cl-rem-title">🛡️ Fail-Safe Rule</div>
+                  <div class="cl-rem-sub">If after entry $SPY drops another −5% or more:</div>
+                  <div class="cl-rem-items">
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-1"/><span>Deploy next tranche</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-2"/><span>Improve cost basis</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-3"/><span>Increase convex exposure</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-4"/><span>Do NOT panic sell</span></label>
+                  </div>
+                </div>
+
+                <div class="cl-reminder">
+                  <div class="cl-rem-title">🎯 Exit Management</div>
+                  <div class="cl-rem-sub">Manage winners with discipline:</div>
+                  <div class="cl-rem-items">
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-1"/><span>Trim 25–40% of contracts after 300%+ gains</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-2"/><span>Hold core positions once delta &gt; 0.75</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-3"/><span>Let deep ITM positions mature to intrinsic phase</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-4"/><span>Roll profits forward to next LEAP cycle</span></label>
+                  </div>
+                </div>
+
+                <div class="cl-reminder">
+                  <div class="cl-rem-title">🧠 Mindset Rule</div>
+                  <div class="cl-rem-sub">Stay disciplined under stress:</div>
+                  <div class="cl-rem-items">
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-1"/><span>Buy fear — not strength</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-2"/><span>Deploy with discipline — not emotion</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-3"/><span>Let time and delta do the work</span></label>
+                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-4"/><span>Capital preservation first, leverage second</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="cl-divider"></div>
+
+              <!-- TRADE ENTRY JOURNAL -->
+              <div class="cl-trade-entry">
+                <div class="cl-te-header">
+                  <span class="cl-te-title">📝 Trade Entry Journal</span>
+                  <button type="button" class="cl-te-new" onclick="clShowEntryForm()">+ New Entry</button>
+                </div>
+
+                <form id="cl-entry-form" class="cl-te-form" hidden onsubmit="clSaveEntry(event)">
+                  <div class="cl-te-grid">
+                    <label class="cl-te-field">
+                      <span>Date</span>
+                      <input type="date" name="date" required/>
+                    </label>
+                    <label class="cl-te-field">
+                      <span>SPY Level</span>
+                      <input type="number" step="0.01" name="spy_level" placeholder="e.g. 593.45"/>
+                    </label>
+                    <label class="cl-te-field">
+                      <span>VIX Level</span>
+                      <input type="number" step="0.01" name="vix_level" placeholder="e.g. 22.4"/>
+                    </label>
+                    <label class="cl-te-field">
+                      <span>Capital Deployed ($)</span>
+                      <input type="number" step="any" name="capital_deployed" placeholder="e.g. 5000"/>
+                    </label>
+                  </div>
+                  <div class="cl-te-triggers">
+                    <span class="cl-te-trig-label">Triggers Met:</span>
+                    <label class="cl-trig-chip"><input type="checkbox" name="t-price"/><span>Price</span></label>
+                    <label class="cl-trig-chip"><input type="checkbox" name="t-vol"/><span>Volatility</span></label>
+                    <label class="cl-trig-chip"><input type="checkbox" name="t-sent"/><span>Sentiment</span></label>
+                  </div>
+                  <div class="cl-te-actions">
+                    <span class="cl-te-msg" id="cl-te-msg"></span>
+                    <button type="button" class="cl-te-cancel" onclick="clHideEntryForm()">Cancel</button>
+                    <button type="submit" class="cl-te-save">Save Entry</button>
+                  </div>
+                </form>
+
+                <div class="cl-te-list" id="cl-te-list">
+                  <div class="cl-te-empty">No saved trade entries yet. Click <strong>+ New Entry</strong> to log one.</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- ── ROW 5: Terminal Analysis (full width) ── -->
           <div class="ov-row5">
@@ -13086,7 +13595,8 @@
         tnxDayChg, uupDayChg, tltDayChg, tenYearTrend, uupTrend,
         fomc, cpi, jolts,
         sectors,
-        spyCandles: (histMap['SPY'] || [])
+        spyCandles: (histMap['SPY'] || []),
+        vixCandles: (histMap['$VIX'] || [])
       };
     }
 
@@ -13501,6 +14011,19 @@
       ovSetMetric('ovm-spread', 'ovt-spread', sc.perfSpread != null ? sc.perfSpread.toFixed(1) + '%' : '--', sc.perfSpread > 3 ? 'Rotation' : 'Tight', spTone);
     }
 
+    // CNN's official Fear & Greed Index 5-tier scheme.
+    //   0–24: Extreme Fear · 25–44: Fear · 45–55: Neutral
+    //   56–74: Greed · 75–100: Extreme Greed
+    function cnnFearGreedLabel(score) {
+      const n = Number(score);
+      if (!Number.isFinite(n)) return '--';
+      if (n <= 24) return 'Extreme Fear';
+      if (n <= 44) return 'Fear';
+      if (n <= 55) return 'Neutral';
+      if (n <= 74) return 'Greed';
+      return 'Extreme Greed';
+    }
+
     function ovRenderMacro(sc, fearGreed) {
       ovSetScore('ovpanel-macro-score', 'ovpanel-macro-bar', sc.macroScore);
 
@@ -13534,13 +14057,15 @@
         tltTone
       );
 
-      // Fear & Greed
+      // Fear & Greed — normalize to CNN's canonical 5-tier wording so the
+      // label is consistent regardless of what the upstream API returns
+      // (some providers emit variants like "Mild Greed" / "Strong Fear").
       const fgScore = Number.isFinite(Number(fearGreed?.score)) ? Number(fearGreed.score) : null;
-      const fgLabel = fearGreed?.label || '--';
+      const fgLabel = fgScore != null ? cnnFearGreedLabel(fgScore) : '--';
       const fgTone =
         fgScore == null ? 'neutral' :
           fgScore >= 75 ? 'positive' :
-            fgScore >= 55 ? 'positive' :
+            fgScore >= 56 ? 'positive' :
               fgScore >= 45 ? 'neutral' :
                 fgScore >= 25 ? 'danger' :
                   'danger';
@@ -15164,6 +15689,19 @@
       ovRenderChart(scores.spyCandles);
       ovRenderGeoRisk(geoRisk);
       ovRenderTerminal(composite, scores, geoRisk);
+      if (typeof clEvaluate === 'function') clEvaluate();
+    }
+
+    // Cached media-stress payload from /api/media-stress (Google News).
+    let lastMediaStress = null;
+    async function fetchMediaStress() {
+      try {
+        const r = await apiGet('/api/media-stress');
+        if (r && r.ok) { lastMediaStress = r.data || null; }
+      } catch (e) { console.warn('media-stress fetch failed:', e.message); }
+      // Re-run checklist eval so the sent-3 item picks up the new value.
+      if (typeof clEvaluate === 'function') clEvaluate();
+      return lastMediaStress;
     }
 
     async function fetchFearGreed() {
@@ -15331,6 +15869,10 @@
           ovSetLoadingProgress(88, 'Heat Seeker loaded...', 'Preloading SPY gamma levels for Smart Money');
           return r;
         });
+
+        // Media stress (Google News crash headlines) — non-blocking, the
+        // checklist's clEvaluate uses whatever has landed at evaluation time.
+        fetchMediaStress();
 
         const [ovData, geoRiskResult, fearGreedResult] = await Promise.all([
           ovPromise,
@@ -18455,8 +18997,14 @@
         const spyScore = Math.max(0, Math.min(100, 50 + (spy.netPercentChange ?? 0) * 10));
         const score = Math.round((vixScore * 0.4 + pcrScore * 0.4 + spyScore * 0.2));
 
-        const label = score > 65 ? 'Greed' : score > 55 ? 'Bullish' : score > 45 ? 'Neutral' : score > 35 ? 'Bearish' : 'Fear';
-        const color = score > 55 ? 'var(--green)' : score > 45 ? 'var(--text2)' : 'var(--red)';
+        // Match CNN's Fear & Greed wording so the Sentiment gauge speaks
+        // the same language as the Market Overview F&G row.
+        const label = cnnFearGreedLabel(score);
+        const color = score >= 75 ? 'var(--green)' :
+                      score >= 56 ? 'var(--green)' :
+                      score >= 45 ? 'var(--text2)' :
+                      score >= 25 ? 'var(--red)' :
+                                    'var(--red)';
 
         document.getElementById('sent-score-body').innerHTML = `
       <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
@@ -19277,6 +19825,336 @@
     // ═══════════════════════════════════════════════════════
     //  INIT
     // ═══════════════════════════════════════════════════════
+    // ── Trade Authorization Checklist ─────────────────────────────
+    // State (item checks + objective statuses) lives in localStorage so it
+    // survives reloads. Trade journal entries persist server-side via
+    // /api/trade-entry → Turso `trade_entry` table.
+    const CL_LS_KEY = 'cl.state.v1';
+    function clReadState() {
+      try { return JSON.parse(localStorage.getItem(CL_LS_KEY)) || { items: {}, status: {} }; }
+      catch (_) { return { items: {}, status: {} }; }
+    }
+    function clWriteState(s) {
+      try { localStorage.setItem(CL_LS_KEY, JSON.stringify(s)); } catch (_) {}
+    }
+
+    function clInit() {
+      const card = document.getElementById('ov-checklist-card');
+      if (!card) return;
+      const state = clReadState();
+
+      // Item handlers: objective items are AUTO (driven by clEvaluate from
+      // live data) — disable them and skip listeners. Reminder items remain
+      // user-toggleable and persist to localStorage.
+      card.querySelectorAll('input[data-cl-item]').forEach(inp => {
+        const id = inp.dataset.clItem;
+        const inObjective = !!inp.closest('.cl-obj');
+        if (inObjective) {
+          inp.disabled = true;
+          const itemEl = inp.closest('.cl-item');
+          if (itemEl) itemEl.classList.add('cl-item-readonly');
+          return; // no restore, no listener
+        }
+        inp.checked = !!state.items[id];
+        inp.addEventListener('change', () => {
+          const s = clReadState();
+          s.items[id] = inp.checked;
+          clWriteState(s);
+        });
+      });
+
+      // Status toggle is a read-only display: it reflects whether all four
+      // items in its objective are true. No user click handlers.
+      card.querySelectorAll('.cl-status-toggle').forEach(group => {
+        group.classList.add('cl-status-readonly');
+        group.querySelectorAll('.cl-status-btn').forEach(btn => { btn.disabled = true; });
+      });
+
+      // First evaluation — guards if data isn't loaded yet.
+      clEvaluate();
+      clLoadEntries();
+    }
+
+    // Compute each objective item from live data + drive the auth bar.
+    // Called once on init and on every ovRerender (every ~90s refresh).
+    function clEvaluate() {
+      const card = document.getElementById('ov-checklist-card');
+      if (!card) return;
+      const snap = (typeof ovState !== 'undefined') && ovState.snapshot;
+      const scores = snap && snap.scores;
+      if (!scores) { clRenderEvaluation({}); return; }
+      const heat = (typeof lastHeatData !== 'undefined') ? lastHeatData : null;
+
+      const spy = Number(scores.SPY);
+      const vix = Number(scores.VIX);
+      const spy50 = Number(scores.spy50);
+      const spyCandles = Array.isArray(scores.spyCandles) ? scores.spyCandles : [];
+      const vixCandles = Array.isArray(scores.vixCandles) ? scores.vixCandles : [];
+
+      // ── PRICE ─────────────────────────────────────────────────
+      // 1. Drawdown −8 to −15% from recent (60-day) high
+      const recent = spyCandles.slice(-60);
+      const recentHigh = recent.length ? Math.max(...recent.map(c => Number(c.high))) : null;
+      const drawdownPct = (Number.isFinite(spy) && Number.isFinite(recentHigh) && recentHigh > 0)
+        ? ((spy - recentHigh) / recentHigh) * 100 : null;
+      const priceDamage = drawdownPct != null && drawdownPct <= -8 && drawdownPct >= -15;
+
+      // 2. Two consecutive weekly red candles (Mon-anchored).
+      function weeklyCandles(daily, weeks) {
+        if (!daily || daily.length < 5) return [];
+        const byWeek = new Map();
+        daily.forEach(c => {
+          const d = new Date(Number(c.datetime));
+          const dayOffset = (d.getUTCDay() + 6) % 7;
+          const monday = new Date(d); monday.setUTCDate(d.getUTCDate() - dayOffset);
+          const key = monday.toISOString().slice(0, 10);
+          const cur = byWeek.get(key);
+          if (!cur) {
+            byWeek.set(key, { firstT: Number(c.datetime), lastT: Number(c.datetime),
+              open: Number(c.open), close: Number(c.close), high: Number(c.high), low: Number(c.low) });
+          } else {
+            cur.high = Math.max(cur.high, Number(c.high));
+            cur.low = Math.min(cur.low, Number(c.low));
+            if (Number(c.datetime) < cur.firstT) { cur.open = Number(c.open); cur.firstT = Number(c.datetime); }
+            if (Number(c.datetime) > cur.lastT) { cur.close = Number(c.close); cur.lastT = Number(c.datetime); }
+          }
+        });
+        return Array.from(byWeek.values()).sort((a, b) => a.firstT - b.firstT).slice(-weeks);
+      }
+      const last2 = weeklyCandles(spyCandles, 2);
+      const twoRedWeeks = last2.length === 2 && last2.every(w => w.close < w.open);
+
+      // 3. Break below 50-day MA WITH volume (today's vol > 1.2× 20d avg).
+      const lastC = spyCandles[spyCandles.length - 1];
+      const lastVol = lastC ? Number(lastC.volume) || 0 : 0;
+      const recent20 = spyCandles.slice(-20);
+      const avgVol20 = recent20.length
+        ? recent20.reduce((s, c) => s + (Number(c.volume) || 0), 0) / recent20.length : 0;
+      const belowMAWithVol = Number.isFinite(spy) && Number.isFinite(spy50)
+        && spy < spy50 && lastVol > avgVol20 * 1.2;
+
+      // 4. Daily SPY closed down more than 2%.
+      const prevC = spyCandles[spyCandles.length - 2];
+      const dayChgPct = (lastC && prevC && Number(prevC.close) > 0)
+        ? ((Number(lastC.close) - Number(prevC.close)) / Number(prevC.close)) * 100 : null;
+      const bigDownDay = dayChgPct != null && dayChgPct <= -2;
+
+      // ── VOLATILITY ────────────────────────────────────────────
+      const vixOver22 = Number.isFinite(vix) && vix > 22;
+      const lastV = vixCandles[vixCandles.length - 1];
+      const prevV = vixCandles[vixCandles.length - 2];
+      const vixDayChgPct = (lastV && prevV && Number(prevV.close) > 0)
+        ? ((Number(lastV.close) - Number(prevV.close)) / Number(prevV.close)) * 100 : null;
+      const vixSpike = vixDayChgPct != null && vixDayChgPct >= 20;
+      const dailyRangePct = (lastC && Number(lastC.close) > 0)
+        ? ((Number(lastC.high) - Number(lastC.low)) / Number(lastC.close)) * 100 : null;
+      const wideRange = dailyRangePct != null && dailyRangePct > 2;
+      // IV rank proxy: current VIX vs 30-day average of VIX closes.
+      const recent30V = vixCandles.slice(-30);
+      const avg30V = recent30V.length
+        ? recent30V.reduce((s, c) => s + (Number(c.close) || 0), 0) / recent30V.length : 0;
+      const ivElevated = Number.isFinite(vix) && avg30V > 0 && vix > avg30V;
+
+      // ── SENTIMENT ────────────────────────────────────────────
+      let pcr = null;
+      if (heat && heat.strikes) {
+        const callOI = heat.strikes.reduce((s, r) => s + (r.callOpenInterest || 0), 0);
+        const putOI = heat.strikes.reduce((s, r) => s + (r.putOpenInterest || 0), 0);
+        if (callOI > 0) pcr = putOI / callOI;
+      }
+      const pcrOver110 = pcr != null && pcr > 1.10;
+      const pcrOver120 = pcr != null && pcr > 1.20;
+
+      // Our fear gauge — same composite as the Sentiment page (loadSentiment).
+      let ourScore = null;
+      if (Number.isFinite(vix)) {
+        const vixScore = Math.max(0, Math.min(100, 100 - (vix - 10) * 2.5));
+        const pcrScore = pcr != null ? Math.max(0, Math.min(100, 100 - (pcr - 0.7) * 80)) : 50;
+        const spyScore = Math.max(0, Math.min(100, 50 + (dayChgPct != null ? dayChgPct : 0) * 10));
+        ourScore = Math.round(vixScore * 0.4 + pcrScore * 0.4 + spyScore * 0.2);
+      }
+      const fearExtreme = ourScore != null && ourScore <= 24;
+
+      // Driven by /api/media-stress (Google News RSS). Triggers when ≥ 5
+      // market-crash headlines land in the last 48h. Falls back to false
+      // when the fetch hasn't returned yet or hit an error.
+      const mediaCrashHeadlines = !!(lastMediaStress && lastMediaStress.triggered);
+      // Retail-puts proxy: stricter total PCR threshold (no retail-tagged
+      // feed available from Schwab). Swap for a real feed when integrated.
+      const retailPuts = pcrOver120;
+
+      clRenderEvaluation({
+        'price-1': priceDamage,
+        'price-2': twoRedWeeks,
+        'price-3': belowMAWithVol,
+        'price-4': bigDownDay,
+        'vol-1': vixOver22,
+        'vol-2': vixSpike,
+        'vol-3': wideRange,
+        'vol-4': ivElevated,
+        'sent-1': pcrOver110,
+        'sent-2': fearExtreme,
+        'sent-3': mediaCrashHeadlines,
+        'sent-4': retailPuts
+      });
+    }
+
+    function clRenderEvaluation(items) {
+      const card = document.getElementById('ov-checklist-card');
+      if (!card) return;
+      // Apply item checks (auto items live inside `.cl-obj`).
+      card.querySelectorAll('.cl-obj input[data-cl-item]').forEach(inp => {
+        const id = inp.dataset.clItem;
+        inp.checked = !!items[id];
+      });
+
+      const objs = {
+        price: ['price-1', 'price-2', 'price-3', 'price-4'],
+        volatility: ['vol-1', 'vol-2', 'vol-3', 'vol-4'],
+        sentiment: ['sent-1', 'sent-2', 'sent-3', 'sent-4']
+      };
+      let activeCount = 0;
+      Object.entries(objs).forEach(([obj, ids]) => {
+        const allTrue = ids.every(id => items[id]);
+        if (allTrue) activeCount++;
+        const objCard = card.querySelector(`.cl-obj[data-cl-obj="${obj}"]`);
+        if (objCard) {
+          if (allTrue) objCard.dataset.status = 'active';
+          else objCard.removeAttribute('data-status');
+        }
+        const toggle = card.querySelector(`.cl-status-toggle[data-cl-status="${obj}"]`);
+        if (toggle) {
+          toggle.querySelectorAll('.cl-status-btn').forEach(btn => {
+            const target = allTrue ? 'active' : 'inactive';
+            btn.classList.toggle('selected', btn.dataset.status === target);
+          });
+        }
+        const pill = document.querySelector(`.cl-auth-pill[data-cl-auth="${obj}"]`);
+        if (pill) pill.classList.toggle('on', allTrue);
+      });
+
+      const verdict = document.getElementById('cl-auth-verdict');
+      if (!verdict) return;
+      verdict.className = 'cl-auth-verdict';
+      if (activeCount === 3) {
+        verdict.classList.add('go');
+        verdict.textContent = '✓ GO — all three triggers active. Authorized to deploy.';
+      } else if (activeCount > 0) {
+        verdict.classList.add('wait');
+        verdict.textContent = `Wait — ${activeCount}/3 triggers active. Need ${3 - activeCount} more for authorization.`;
+      } else {
+        verdict.textContent = 'Awaiting market stress · objectives auto-evaluate from live data.';
+      }
+    }
+
+    window.clShowEntryForm = function () {
+      const form = document.getElementById('cl-entry-form');
+      if (!form) return;
+      form.hidden = false;
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      const dateInput = form.querySelector('input[name="date"]');
+      if (dateInput && !dateInput.value) dateInput.value = `${yyyy}-${mm}-${dd}`;
+
+      // Pre-fill SPY / VIX from the latest overview snapshot when we have it.
+      const scores = (typeof ovState !== 'undefined') && ovState.snapshot && ovState.snapshot.scores;
+      const spyInput = form.querySelector('input[name="spy_level"]');
+      const vixInput = form.querySelector('input[name="vix_level"]');
+      if (spyInput && !spyInput.value && scores && Number.isFinite(scores.SPY)) spyInput.value = Number(scores.SPY).toFixed(2);
+      if (vixInput && !vixInput.value && scores && Number.isFinite(scores.VIX)) vixInput.value = Number(scores.VIX).toFixed(2);
+
+      // Pre-fill trigger chips from current objective statuses.
+      const state = clReadState();
+      const tPrice = form.querySelector('input[name="t-price"]');
+      const tVol = form.querySelector('input[name="t-vol"]');
+      const tSent = form.querySelector('input[name="t-sent"]');
+      if (tPrice) tPrice.checked = state.status.price === 'active';
+      if (tVol) tVol.checked = state.status.volatility === 'active';
+      if (tSent) tSent.checked = state.status.sentiment === 'active';
+
+      const msg = document.getElementById('cl-te-msg');
+      if (msg) { msg.textContent = ''; msg.className = 'cl-te-msg'; }
+      form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    window.clHideEntryForm = function () {
+      const form = document.getElementById('cl-entry-form');
+      if (form) form.hidden = true;
+    };
+
+    window.clSaveEntry = async function (ev) {
+      ev.preventDefault();
+      const form = document.getElementById('cl-entry-form');
+      const msg = document.getElementById('cl-te-msg');
+      if (!form) return;
+      const data = new FormData(form);
+      const triggers = [];
+      if (data.get('t-price')) triggers.push('price');
+      if (data.get('t-vol')) triggers.push('volatility');
+      if (data.get('t-sent')) triggers.push('sentiment');
+      const body = {
+        date: data.get('date'),
+        spy_level: data.get('spy_level'),
+        vix_level: data.get('vix_level'),
+        capital_deployed: data.get('capital_deployed'),
+        triggers_met: triggers
+      };
+      if (msg) { msg.textContent = 'Saving…'; msg.className = 'cl-te-msg'; }
+      try {
+        const r = await fetch('/api/trade-entry', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || 'Save failed');
+        if (msg) { msg.textContent = `Saved entry #${j.id}.`; msg.className = 'cl-te-msg ok'; }
+        form.reset();
+        clHideEntryForm();
+        clLoadEntries();
+      } catch (e) {
+        if (msg) { msg.textContent = 'Failed to save: ' + e.message; msg.className = 'cl-te-msg err'; }
+      }
+    };
+
+    async function clLoadEntries() {
+      const list = document.getElementById('cl-te-list');
+      if (!list) return;
+      try {
+        const r = await fetch('/api/trade-entries?limit=20');
+        const j = await r.json();
+        const rows = (j && j.rows) || [];
+        if (!rows.length) {
+          list.innerHTML = '<div class="cl-te-empty">No saved trade entries yet. Click <strong>+ New Entry</strong> to log one.</div>';
+          return;
+        }
+        list.innerHTML = rows.map(row => {
+          let trigs = [];
+          try { trigs = JSON.parse(row.triggers_met || '[]'); }
+          catch (_) { trigs = String(row.triggers_met || '').split(',').map(s => s.trim()).filter(Boolean); }
+          if (!Array.isArray(trigs)) trigs = [];
+          const tags = trigs.map(t => `<span class="te-trig-tag">${t}</span>`).join('');
+          const cap = row.capital_deployed != null ? '$' + Number(row.capital_deployed).toLocaleString() : '—';
+          const spy = row.spy_level != null ? Number(row.spy_level).toFixed(2) : '—';
+          const vix = row.vix_level != null ? Number(row.vix_level).toFixed(2) : '—';
+          return `
+            <div class="cl-te-row">
+              <span class="te-date">${row.date || '—'}</span>
+              <span>SPY ${spy}</span>
+              <span>VIX ${vix}</span>
+              <span class="te-trigs">${tags || '<span style="color:var(--text3)">no triggers</span>'}</span>
+              <span>${cap}</span>
+              <span style="color:var(--text3);font-size:10px;">#${row.id}</span>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        list.innerHTML = `<div class="cl-te-empty">Failed to load trade entries: ${e.message}</div>`;
+      }
+    }
+
     (async function init() {
       // Show placeholder until Schwab data loads
       ovRenderChart(null);
@@ -19294,6 +20172,7 @@
       // Start client-side session badge and ago timers immediately (no auth needed)
       startSessionTicker();
       startAgoTimer();
+      clInit();
 
       // If we just returned from OAuth callback, show the loading overlay immediately
       const fromOAuth = sessionStorage.getItem('ov_from_oauth');
