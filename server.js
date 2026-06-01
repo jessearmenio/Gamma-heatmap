@@ -114,6 +114,27 @@ async function initTurso() {
     )
   `);
 
+  // ┌──────────────────────────────────────────────────────────────────┐
+  // │  ONE-TIME MIGRATION — `direction` + `notes` columns              │
+  // │  After the first successful boot, REMOVE the two try/catch       │
+  // │  blocks below (lines marked "MIGRATION").  SQLite's              │
+  // │  ALTER TABLE ADD COLUMN errors if the column already exists, so  │
+  // │  on subsequent boots these blocks will fall into the catch and   │
+  // │  print "already exists" — harmless but no longer needed.         │
+  // └──────────────────────────────────────────────────────────────────┘
+  try {  // MIGRATION ▼
+    await turso.execute(`ALTER TABLE trade_entry ADD COLUMN direction TEXT`);
+    console.log("Migrated trade_entry: added column 'direction'.");
+  } catch (e) {
+    console.log("trade_entry.direction already exists — skipping.");
+  }    // MIGRATION ▲
+  try {  // MIGRATION ▼
+    await turso.execute(`ALTER TABLE trade_entry ADD COLUMN notes TEXT`);
+    console.log("Migrated trade_entry: added column 'notes'.");
+  } catch (e) {
+    console.log("trade_entry.notes already exists — skipping.");
+  }    // MIGRATION ▲
+
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
@@ -587,6 +608,9 @@ app.get("/api/fear-greed", async (_req, res) => {
 const MEDIA_STRESS_QUERY =
   '(stocks OR "Wall Street" OR "S&P 500" OR Dow OR Nasdaq) ' +
   '(crash OR meltdown OR panic OR capitulation OR plunge OR freefall OR rout OR "bear market" OR "sell-off" OR selloff OR tumble)';
+const MEDIA_EUPHORIA_QUERY =
+  '(stocks OR "Wall Street" OR "S&P 500" OR Dow OR Nasdaq) ' +
+  '(rally OR "melt up" OR meltup OR euphoria OR FOMO OR "all-time high" OR "record high" OR "fresh high" OR surge OR soar OR breakout OR "bull market" OR moonshot OR parabolic)';
 // Calibrated against live data: calm days returned ~6–9 noisy matches after
 // filtering (sector tumbles, speculative AI-bubble pieces); a real selloff
 // (Aug 2024 carry-trade style) easily clears 20+; mild corrections 12–18.
@@ -597,8 +621,12 @@ const MEDIA_STRESS_CACHE_MS = 10 * 60 * 1000;       // refresh at most every 10 
 
 // Title-level guards.
 const MEDIA_MARKET_RE = /\b(stocks?|equit(?:y|ies)|wall\s*street|s&?p\s*500?|dow(?:\s*jones)?|nasdaq|nyse|futures|market(?:s)?)\b/i;
+// Crash side
 const MEDIA_STRONG_RE = /\b(crash(?:es|ed|ing)?|meltdown|panic|capitulation|freefall)\b/i;
 const MEDIA_MEDIUM_RE = /\b(plunge[ds]?|rout|sell-?off|tumble[ds]?|bear\s+market)\b/i;
+// Euphoria side
+const MEDIA_EUPH_STRONG_RE = /\b(euphoria|meltup|melt\s*up|moonshot|parabolic|FOMO|all-?time\s+high|record\s+high|fresh\s+high)\b/i;
+const MEDIA_EUPH_MEDIUM_RE = /\b(rally|surge[ds]?|soar(?:s|ed|ing)?|breakout|bull\s+market|jump[ds]?)\b/i;
 
 let mediaStressCache = { data: null, fetchedAt: 0 };
 
@@ -613,8 +641,8 @@ function normalizeMediaTitle(t) {
     .slice(0, 80);
 }
 
-async function fetchMediaStressFromGoogleNews() {
-  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(MEDIA_STRESS_QUERY)}&hl=en-US&gl=US&ceid=US:en`;
+async function fetchGoogleNewsItems(query) {
+  const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=en-US&gl=US&ceid=US:en`;
   const resp = await axios.get(url, {
     timeout: 15000,
     headers: {
@@ -623,8 +651,6 @@ async function fetchMediaStressFromGoogleNews() {
     }
   });
   const xml = String(resp.data || "");
-
-  // Lightweight regex-based RSS parse (no extra dependency).
   const items = [];
   const itemRe = /<item>([\s\S]*?)<\/item>/g;
   let m;
@@ -636,20 +662,20 @@ async function fetchMediaStressFromGoogleNews() {
     const pubDate = pubDateStr ? new Date(pubDateStr).getTime() : NaN;
     if (title && Number.isFinite(pubDate)) items.push({ title, pubDate });
   }
+  return items;
+}
 
+function scoreMediaItems(items, strongRe, mediumRe) {
   const cutoff = Date.now() - MEDIA_STRESS_WINDOW_MS;
   const recent = items.filter(i => i.pubDate >= cutoff);
-
-  // Title-context + stress filter, then dedupe.
   const seen = new Set();
-  const dropped = [];
   let count = 0, score = 0;
   const matched = [];
   for (const r of recent) {
-    const hasStrong = MEDIA_STRONG_RE.test(r.title);
-    const hasMedium = MEDIA_MEDIUM_RE.test(r.title);
-    if (!hasStrong && !hasMedium) { dropped.push(r.title); continue; }
-    if (!MEDIA_MARKET_RE.test(r.title)) { dropped.push(r.title); continue; }
+    const hasStrong = strongRe.test(r.title);
+    const hasMedium = mediumRe.test(r.title);
+    if (!hasStrong && !hasMedium) continue;
+    if (!MEDIA_MARKET_RE.test(r.title)) continue;
     const key = normalizeMediaTitle(r.title);
     if (!key || seen.has(key)) continue;
     seen.add(key);
@@ -657,8 +683,7 @@ async function fetchMediaStressFromGoogleNews() {
     score += hasStrong ? 3 : 2;
     matched.push(r.title);
   }
-
-  const payload = {
+  return {
     triggered: count >= MEDIA_STRESS_THRESHOLD,
     count,
     score,
@@ -667,8 +692,20 @@ async function fetchMediaStressFromGoogleNews() {
     rawItems: recent.length,
     headlines: matched.slice(0, 8)
   };
-  mediaStressCache = { data: payload, fetchedAt: Date.now() };
-  return payload;
+}
+
+async function fetchMediaStressFromGoogleNews() {
+  const [crashItems, euphItems] = await Promise.all([
+    fetchGoogleNewsItems(MEDIA_STRESS_QUERY),
+    fetchGoogleNewsItems(MEDIA_EUPHORIA_QUERY).catch(e => {
+      console.warn("MEDIA euphoria fetch failed:", e.message);
+      return [];
+    })
+  ]);
+  const crash = scoreMediaItems(crashItems, MEDIA_STRONG_RE, MEDIA_MEDIUM_RE);
+  const euphoria = scoreMediaItems(euphItems, MEDIA_EUPH_STRONG_RE, MEDIA_EUPH_MEDIUM_RE);
+  mediaStressCache = { data: { crash, euphoria }, fetchedAt: Date.now() };
+  return mediaStressCache.data;
 }
 
 app.get("/api/media-stress", async (_req, res) => {
@@ -679,7 +716,8 @@ app.get("/api/media-stress", async (_req, res) => {
       catch (e) {
         console.warn("MEDIA_STRESS fetch failed:", e.message);
         if (!mediaStressCache.data) {
-          return res.json({ ok: true, data: { triggered: false, count: 0, score: 0, threshold: MEDIA_STRESS_THRESHOLD, headlines: [], error: e.message } });
+          const empty = { triggered: false, count: 0, score: 0, threshold: MEDIA_STRESS_THRESHOLD, headlines: [], error: e.message };
+          return res.json({ ok: true, data: { crash: empty, euphoria: empty } });
         }
       }
     }
@@ -2488,17 +2526,22 @@ app.post("/api/trade-entry", async (req, res) => {
     if (triggers && typeof triggers !== "string") {
       try { triggers = JSON.stringify(triggers); } catch (_) { triggers = String(triggers); }
     }
+    const dirRaw = String(body.direction || "").toLowerCase();
+    const direction = (dirRaw === "short" || dirRaw === "long") ? dirRaw : null;
+    const notes = body.notes ? String(body.notes).slice(0, 2000) : null;
     const result = await turso.execute({
       sql: `
-        INSERT INTO trade_entry (date, spy_level, vix_level, triggers_met, capital_deployed)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO trade_entry (date, spy_level, vix_level, triggers_met, capital_deployed, direction, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       args: [
         date,
         Number.isFinite(spy) ? spy : null,
         Number.isFinite(vix) ? vix : null,
         triggers || null,
-        Number.isFinite(cap) ? cap : null
+        Number.isFinite(cap) ? cap : null,
+        direction,
+        notes
       ]
     });
     res.json({ ok: true, id: Number(result.lastInsertRowid) });
@@ -2515,7 +2558,8 @@ app.get("/api/trade-entries", async (req, res) => {
     }
     const limit = Math.min(Math.max(Number(req.query.limit) || 50, 1), 500);
     const result = await turso.execute({
-      sql: `SELECT id, date, spy_level, vix_level, triggers_met, capital_deployed, created_at
+      sql: `SELECT id, date, spy_level, vix_level, triggers_met, capital_deployed,
+                   direction, notes, created_at
             FROM trade_entry ORDER BY id DESC LIMIT ?`,
       args: [limit]
     });
