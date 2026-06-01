@@ -8594,6 +8594,11 @@
                   <span class="ov-metric-tag neutral" id="ovt-above200">--</span>
                 </div>
                 <div class="ov-metric-row">
+                  <span class="ov-metric-label">Sectors &gt; SPY (5D)</span>
+                  <span class="ov-metric-value" id="ovm-sectors-op">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-sectors-op">--</span>
+                </div>
+                <div class="ov-metric-row">
                   <span class="ov-metric-label">Thrust</span>
                   <span class="ov-metric-value" id="ovm-thrust">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-thrust">--</span>
@@ -13516,6 +13521,16 @@
       const thrustBear = upDownVolRatio != null && upDownVolRatio <= 0.5 && pctAbove20 < 40;
       breadthScore += thrustBull ? 5 : thrustBear ? 0 : 2;
       breadthScore += ovN(leader.perf5d, 0) > 0 && ovN(laggard.perf5d, 0) > -3 ? 5 : 2;
+
+      // Leadership Breadth: percent of sectors outperforming SPY over 5 days.
+      // Catches concentration risk the % > MA metrics can't — SPY can sit at
+      // ATH with only 3/11 sectors actually beating it (mega-cap-driven).
+      const spyPerf5d = perf5d('SPY');
+      const sectorsOPCount = (Number.isFinite(spyPerf5d))
+        ? sectors.filter(s => Number.isFinite(s.perf5d) && s.perf5d > spyPerf5d).length
+        : 0;
+      const sectorsOPpct = (sectorsOPCount / n) * 100;
+      breadthScore += Math.min(8, sectorsOPpct * 0.08);
       breadthScore = ovClamp(breadthScore);
 
       // Momentum
@@ -13591,6 +13606,7 @@
         regime, vixSlope, vixPct, vixTermRatio, sma2050Diff, trendDir20d,
         spyRsi, macdResult, stochResult,
         pctAbove20, pctAbove50, pctAbove200, sectorAdPct,
+        sectorsOPCount, sectorsOPpct, sectorsTotal: n,
         thrustBull, thrustBear, upDownVolRatio, leader, laggard, perfSpread,
         tnxDayChg, uupDayChg, tltDayChg, tenYearTrend, uupTrend,
         fomc, cpi, jolts,
@@ -13940,6 +13956,16 @@
       bRow('ovm-above20', 'ovt-above20', sc.pctAbove20);
       bRow('ovm-above50', 'ovt-above50', sc.pctAbove50);
       bRow('ovm-above200', 'ovt-above200', sc.pctAbove200);
+
+      // Sectors > SPY (5D) — leadership breadth.
+      const opPct = Number.isFinite(sc.sectorsOPpct) ? sc.sectorsOPpct : null;
+      const opCount = Number.isFinite(sc.sectorsOPCount) ? sc.sectorsOPCount : null;
+      const opTotal = Number.isFinite(sc.sectorsTotal) ? sc.sectorsTotal : 11;
+      const opValue = (opCount != null && opTotal) ? `${opCount}/${opTotal}` : '--';
+      const opTone = opPct == null ? 'neutral' : opPct >= 60 ? 'positive' : opPct >= 40 ? 'caution' : 'danger';
+      const opTag = opPct == null ? '--' : opPct >= 60 ? 'Broad' : opPct >= 40 ? 'Mixed' : 'Narrow';
+      ovSetMetric('ovm-sectors-op', 'ovt-sectors-op', opValue, opTag, opTone);
+
       const r = sc.upDownVolRatio;
       const thrustValue = r != null ? r.toFixed(2) : '--';
       let thrustTag, thrustTone;
