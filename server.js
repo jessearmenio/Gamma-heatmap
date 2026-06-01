@@ -114,27 +114,6 @@ async function initTurso() {
     )
   `);
 
-  // ┌──────────────────────────────────────────────────────────────────┐
-  // │  ONE-TIME MIGRATION — `direction` + `notes` columns              │
-  // │  After the first successful boot, REMOVE the two try/catch       │
-  // │  blocks below (lines marked "MIGRATION").  SQLite's              │
-  // │  ALTER TABLE ADD COLUMN errors if the column already exists, so  │
-  // │  on subsequent boots these blocks will fall into the catch and   │
-  // │  print "already exists" — harmless but no longer needed.         │
-  // └──────────────────────────────────────────────────────────────────┘
-  try {  // MIGRATION ▼
-    await turso.execute(`ALTER TABLE trade_entry ADD COLUMN direction TEXT`);
-    console.log("Migrated trade_entry: added column 'direction'.");
-  } catch (e) {
-    console.log("trade_entry.direction already exists — skipping.");
-  }    // MIGRATION ▲
-  try {  // MIGRATION ▼
-    await turso.execute(`ALTER TABLE trade_entry ADD COLUMN notes TEXT`);
-    console.log("Migrated trade_entry: added column 'notes'.");
-  } catch (e) {
-    console.log("trade_entry.notes already exists — skipping.");
-  }    // MIGRATION ▲
-
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
