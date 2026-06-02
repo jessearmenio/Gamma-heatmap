@@ -3365,6 +3365,15 @@
       text-overflow: ellipsis;
     }
 
+    .ov-metric-pc-history {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text3);
+      opacity: 0.75;
+      letter-spacing: 0.02em;
+      margin-left: 4px;
+    }
+
     .ov-metric-value {
       font-size: 10px;
       font-weight: 700;
@@ -8590,7 +8599,7 @@
                   <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
                 </div>
                 <div class="ov-metric-row">
-                  <span class="ov-metric-label">P/C Ratio</span>
+                  <span class="ov-metric-label">P/C Ratio <span class="ov-metric-pc-history" id="ovm-pc-history"></span></span>
                   <span class="ov-metric-value" id="ovm-pc">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
                 </div>
@@ -10554,6 +10563,51 @@
       const tone = pcrN > 1.2 ? 'danger' : pcrN > 0.9 ? 'caution' : 'positive';
       const tag = pcrN > 1.2 ? 'Bearish' : pcrN > 0.7 ? 'Neutral' : 'Bullish';
       if (typeof ovSetMetric === 'function') ovSetMetric('ovm-pc', 'ovt-pc', pcr, tag, tone);
+      savePutCallHistoryFromHeat(pcrN);
+      loadPcHistoryAccent();
+    }
+
+    async function savePutCallHistoryFromHeat(pcrN) {
+      try {
+        if (!lastHeatData || !Number.isFinite(pcrN)) return;
+        if (heatSymbol && heatSymbol !== 'SPY') return;
+        const q = lastHeatData.quotes?.SPY?.quote || {};
+        const spyOpen = q.openPrice ?? null;
+        const spyClose = lastHeatData.underlyingPrice ?? q.lastPrice ?? q.closePrice ?? null;
+        const spyChange = Number.isFinite(Number(q.netPercentChange)) ? Number(q.netPercentChange) : null;
+        await fetch('/api/put-call-history/snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            p_c_ratio: pcrN,
+            spy_open: spyOpen,
+            spy_close: spyClose,
+            spy_change: spyChange
+          })
+        });
+      } catch (err) {
+        console.warn('Put/Call history save failed:', err.message);
+      }
+    }
+
+    let pcHistoryAccentLoaded = false;
+    async function loadPcHistoryAccent() {
+      if (pcHistoryAccentLoaded) return;
+      pcHistoryAccentLoaded = true;
+      try {
+        const res = await fetch('/api/put-call-history/lookback');
+        const data = await res.json();
+        if (!data?.ok) return;
+        const el = document.getElementById('ovm-pc-history');
+        if (!el) return;
+        const fmt = (r) => r && Number.isFinite(Number(r.p_c_ratio)) ? Number(r.p_c_ratio).toFixed(2) : '--';
+        const oneM = fmt(data.oneMonth);
+        const oneW = fmt(data.oneWeek);
+        el.textContent = `1M:${oneM} - 1W:${oneW}`;
+      } catch (err) {
+        pcHistoryAccentLoaded = false;
+        console.warn('P/C history accent load failed:', err.message);
+      }
     }
     let lastQuotesData = null;
     let autoRefreshTimer = null;
@@ -20625,6 +20679,7 @@
       startSessionTicker();
       startAgoTimer();
       clInit();
+      loadPcHistoryAccent();
 
       // If we just returned from OAuth callback, show the loading overlay immediately
       const fromOAuth = sessionStorage.getItem('ov_from_oauth');

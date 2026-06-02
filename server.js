@@ -114,6 +114,19 @@ async function initTurso() {
     )
   `);
 
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS put_call_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL UNIQUE,
+      p_c_ratio REAL,
+      spy_open REAL,
+      spy_close REAL,
+      spy_change REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
@@ -197,6 +210,38 @@ async function saveGexHistorySnapshot(row) {
       row.spyOpen,
       row.spyClose,
       row.spyChange
+    ].map(v => Number.isFinite(Number(v)) ? Number(v) : v ?? null)
+  });
+}
+
+async function savePutCallHistorySnapshot(row) {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return;
+
+  await turso.execute({
+    sql: `
+      INSERT INTO put_call_history (
+        date,
+        p_c_ratio,
+        spy_open,
+        spy_close,
+        spy_change,
+        updated_at
+      )
+      VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(date)
+      DO UPDATE SET
+        p_c_ratio = excluded.p_c_ratio,
+        spy_open = excluded.spy_open,
+        spy_close = excluded.spy_close,
+        spy_change = excluded.spy_change,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [
+      row.date || getCstDateKey(),
+      row.p_c_ratio,
+      row.spy_open,
+      row.spy_close,
+      row.spy_change
     ].map(v => Number.isFinite(Number(v)) ? Number(v) : v ?? null)
   });
 }
@@ -2483,6 +2528,92 @@ app.post("/api/gex-history/snapshot", async (req, res) => {
     res.status(500).json({
       ok: false,
       error: "Failed to save GEX history.",
+      details: error.message
+    });
+  }
+});
+
+app.post("/api/put-call-history/snapshot", async (req, res) => {
+  try {
+    await savePutCallHistorySnapshot(req.body || {});
+    res.json({ ok: true, saved: 1 });
+  } catch (error) {
+    console.error("PUT_CALL HISTORY SAVE ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to save put/call history.",
+      details: error.message
+    });
+  }
+});
+
+app.get("/api/put-call-history/lookback", async (_req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, oneWeek: null, oneMonth: null });
+    }
+
+    const today = getCstDateKey();
+
+    const result = await turso.execute({
+      sql: `
+        SELECT date, p_c_ratio
+        FROM put_call_history
+        WHERE date <= ?
+        ORDER BY date DESC
+        LIMIT 60
+      `,
+      args: [today]
+    });
+
+    const rows = result.rows || [];
+
+    function pickClosest(daysBack) {
+      const target = new Date(`${today}T00:00:00Z`);
+      target.setUTCDate(target.getUTCDate() - daysBack);
+      const targetKey = target.toISOString().slice(0, 10);
+      const match = rows.find(r => String(r.date) <= targetKey);
+      return match
+        ? { date: match.date, p_c_ratio: Number(match.p_c_ratio) }
+        : null;
+    }
+
+    res.json({
+      ok: true,
+      oneWeek: pickClosest(7),
+      oneMonth: pickClosest(30)
+    });
+  } catch (error) {
+    console.error("PUT_CALL HISTORY READ ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to load put/call history.",
+      details: error.message
+    });
+  }
+});
+
+app.get("/api/put-call-history", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+    const limit = Math.min(Math.max(Number(req.query.limit) || 60, 1), 500);
+    const result = await turso.execute({
+      sql: `
+        SELECT date, p_c_ratio, spy_open, spy_close, spy_change
+        FROM put_call_history
+        ORDER BY date DESC
+        LIMIT ?
+      `,
+      args: [limit]
+    });
+    res.json({ ok: true, count: result.rows?.length || 0, rows: result.rows || [] });
+  } catch (error) {
+    console.error("PUT_CALL HISTORY READ ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to load put/call history.",
       details: error.message
     });
   }
