@@ -3368,11 +3368,20 @@
     .ov-metric-pc-history {
       font-size: 9px;
       font-weight: 500;
-      color: var(--text3);
+      color: var(--text);
       opacity: 0.75;
       letter-spacing: 0.02em;
       margin-left: 4px;
     }
+
+    .ov-metric-pc-change {
+      font-size: 9px;
+      font-weight: 600;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .ov-metric-pc-change.pos { color: var(--green, #22c55e); }
+    .ov-metric-pc-change.neg { color: var(--red, #ef4444); }
 
     .ov-metric-value {
       font-size: 10px;
@@ -8600,6 +8609,7 @@
                 </div>
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">P/C Ratio <span class="ov-metric-pc-history" id="ovm-pc-history"></span></span>
+                  <span class="ov-metric-pc-change" id="ovm-pc-change"></span>
                   <span class="ov-metric-value" id="ovm-pc">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
                 </div>
@@ -10563,8 +10573,25 @@
       const tone = pcrN > 1.2 ? 'danger' : pcrN > 0.9 ? 'caution' : 'positive';
       const tag = pcrN > 1.2 ? 'Bearish' : pcrN > 0.7 ? 'Neutral' : 'Bullish';
       if (typeof ovSetMetric === 'function') ovSetMetric('ovm-pc', 'ovt-pc', pcr, tag, tone);
+      renderPcChange(pcrN);
       savePutCallHistoryFromHeat(pcrN);
       loadPcHistoryAccent();
+    }
+
+    let pcPreviousRatio = null;
+    function renderPcChange(pcrN) {
+      const el = document.getElementById('ovm-pc-change');
+      if (!el) return;
+      if (!Number.isFinite(pcrN) || !Number.isFinite(pcPreviousRatio) || pcPreviousRatio === 0) {
+        el.textContent = '';
+        el.classList.remove('pos', 'neg');
+        return;
+      }
+      const pct = ((pcrN - pcPreviousRatio) / pcPreviousRatio) * 100;
+      const sign = pct > 0 ? '+' : '';
+      el.textContent = `(${sign}${Math.round(pct)}%)`;
+      el.classList.toggle('pos', pct > 0);
+      el.classList.toggle('neg', pct < 0);
     }
 
     async function savePutCallHistoryFromHeat(pcrN) {
@@ -10599,11 +10626,20 @@
         const data = await res.json();
         if (!data?.ok) return;
         const el = document.getElementById('ovm-pc-history');
-        if (!el) return;
-        const fmt = (r) => r && Number.isFinite(Number(r.p_c_ratio)) ? Number(r.p_c_ratio).toFixed(2) : '--';
-        const oneM = fmt(data.oneMonth);
-        const oneW = fmt(data.oneWeek);
-        el.textContent = `1M:${oneM} - 1W:${oneW}`;
+        if (el) {
+          const fmt = (r) => r && Number.isFinite(Number(r.p_c_ratio)) ? Number(r.p_c_ratio).toFixed(2) : '--';
+          const oneM = fmt(data.oneMonth);
+          const oneW = fmt(data.oneWeek);
+          el.textContent = `1M: ${oneM} - 1W: ${oneW}`;
+        }
+        const prev = Number(data.previous?.p_c_ratio);
+        pcPreviousRatio = Number.isFinite(prev) ? prev : null;
+        if (lastHeatData) {
+          const strikes = lastHeatData.strikes || [];
+          const totalCallOI = strikes.reduce((s, r) => s + (r.callOpenInterest || 0), 0);
+          const totalPutOI = strikes.reduce((s, r) => s + (r.putOpenInterest || 0), 0);
+          if (totalCallOI > 0) renderPcChange(totalPutOI / totalCallOI);
+        }
       } catch (err) {
         pcHistoryAccentLoaded = false;
         console.warn('P/C history accent load failed:', err.message);

@@ -2578,10 +2578,16 @@ app.get("/api/put-call-history/lookback", async (_req, res) => {
         : null;
     }
 
+    const previousRow = rows.find(r => String(r.date) < today) || null;
+    const previous = previousRow
+      ? { date: previousRow.date, p_c_ratio: Number(previousRow.p_c_ratio) }
+      : null;
+
     res.json({
       ok: true,
       oneWeek: pickClosest(7),
-      oneMonth: pickClosest(30)
+      oneMonth: pickClosest(30),
+      previous
     });
   } catch (error) {
     console.error("PUT_CALL HISTORY READ ERROR:", error.message);
