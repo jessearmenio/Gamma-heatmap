@@ -3374,10 +3374,16 @@
       margin-left: 4px;
     }
 
+    .ov-metric-value-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
     .ov-metric-pc-change {
       font-size: 9px;
       font-weight: 600;
-      margin-right: 4px;
       white-space: nowrap;
     }
     .ov-metric-pc-change.pos { color: var(--green, #22c55e); }
@@ -8609,8 +8615,10 @@
                 </div>
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">P/C Ratio <span class="ov-metric-pc-history" id="ovm-pc-history"></span></span>
-                  <span class="ov-metric-pc-change" id="ovm-pc-change"></span>
-                  <span class="ov-metric-value" id="ovm-pc">--</span>
+                  <span class="ov-metric-value-group">
+                    <span class="ov-metric-pc-change" id="ovm-pc-change"></span>
+                    <span class="ov-metric-value" id="ovm-pc">--</span>
+                  </span>
                   <span class="ov-metric-tag neutral" id="ovt-pc">--</span>
                 </div>
               </div>
