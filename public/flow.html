@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Flow</title>
+<style>
+  :root {
+    --bg: #0f1419;
+    --bg-2: #1a1f26;
+    --bg-3: #232a33;
+    --border: #2a323d;
+    --text: #e6e8eb;
+    --muted: #8b95a1;
+    --link: #4a9eff;
+    --green: #1a7f4e;
+    --green-soft: #133b29;
+    --red: #c0392b;
+    --red-soft: #3b1717;
+    --accent: #2563eb;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px; line-height: 1.45;
+  }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- top nav ---------- */
+  header.nav {
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    padding: 14px 28px;
+    display: flex; align-items: center; gap: 22px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .nav .brand { font-weight: 700; font-size: 16px; margin-right: 4px; }
+  .nav .theme {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 6px; width: 30px; height: 30px;
+    color: var(--text); cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center;
+  }
+  .nav a.tab { color: var(--muted); font-size: 14px; }
+  .nav a.tab.active, .nav a.tab:hover { color: var(--text); text-decoration: none; }
+
+  /* ---------- page layout ---------- */
+  main { padding: 32px 28px 80px; max-width: 1400px; margin: 0 auto; }
+  h1 { font-size: 32px; margin: 0 0 8px; font-weight: 600; }
+  .subtitle { color: var(--muted); margin-bottom: 28px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ---------- forms ---------- */
+  .field {
+    position: relative; background: var(--bg-2);
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 12px;
+  }
+  .field label {
+    position: absolute; top: -8px; left: 10px;
+    background: var(--bg); padding: 0 6px;
+    font-size: 11px; color: var(--muted);
+  }
+  .field input {
+    width: 100%; background: transparent; border: 0; outline: 0;
+    color: var(--text); font-size: 14px; padding: 4px 0;
+    font-family: inherit;
+  }
+  .row { display: grid; gap: 14px; margin-bottom: 18px; }
+  .row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .row.cols-5 { grid-template-columns: 2fr 1fr 1fr 1fr 1fr; }
+  .checks { display: flex; gap: 22px; margin: 6px 0 14px; color: var(--muted); }
+  .checks label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .btn-search {
+    width: 100%; background: var(--accent); color: #fff;
+    border: 0; border-radius: 8px; padding: 14px; font-size: 15px;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn-go {
+    background: var(--accent); color: #fff; border: 0;
+    border-radius: 6px; padding: 0 22px; font-size: 14px;
+    cursor: pointer; height: 42px;
+  }
+
+  /* ---------- tables ---------- */
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 14px; text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); }
+  tbody tr { border-bottom: 1px solid var(--border); }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+  .pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600;
+    min-width: 84px; justify-content: center;
+  }
+  .pill.up { background: var(--green); color: #d6f5e3; }
+  .pill.down { background: var(--red); color: #fbe3df; }
+
+  .badge {
+    display: inline-block; border-radius: 4px;
+    padding: 2px 10px; font-size: 12px; font-weight: 600; color: #fff;
+  }
+  .badge.calls { background: var(--green); }
+  .badge.puts-sold { background: var(--green); }
+  .badge.puts-bought { background: var(--red); }
+
+  /* ---------- panels (Option Flow, Ranking, Ticker Search lists) ---------- */
+  .panels { display: grid; gap: 16px; }
+  .panels.cols-2 { grid-template-columns: 1fr 1fr; }
+  .panels.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .panel { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .panel-header { padding: 14px 18px; font-size: 18px; font-weight: 600; }
+  .panel-header.green { background: var(--green); color: #fff; }
+  .panel-header.green-tint { background: #16432e; color: #fff; }
+  .panel-header.red { background: var(--red); color: #fff; }
+  .panel-header.red-tint { background: #4a2020; color: #fff; }
+  .panel-header.plain { background: var(--bg-3); color: var(--text); font-size: 14px; }
+  .panel-header .muted { color: rgba(255,255,255,0.7); font-weight: 400; font-size: 13px; margin-left: 6px; }
+  .panel table th { padding: 10px 14px; font-size: 12px; }
+  .panel table td { padding: 9px 14px; font-size: 13px; }
+
+  /* sparkline cell */
+  .spark { display: inline-block; vertical-align: middle; }
+
+  /* ---------- bullish flow top gainers (rounded rows) ---------- */
+  .gainers { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+  .gainers th { color: var(--muted); padding: 12px 18px; font-size: 13px; border: 0; }
+  .gainers td { background: var(--bg-2); padding: 14px 18px; border: 0; }
+  .gainers tr td:first-child { border-radius: 6px 0 0 6px; }
+  .gainers tr td:last-child { border-radius: 0 6px 6px 0; }
+
+  /* daily chart placeholder */
+  .chart-box {
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 24px; min-height: 420px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+  }
+
+  /* sectors page */
+  .view-toggle { display: flex; gap: 8px; margin-bottom: 18px; }
+  .vt-btn {
+    background: transparent; border: 0; padding: 10px 16px;
+    border-radius: 8px; color: var(--link); font-size: 14px;
+    cursor: pointer; font-family: inherit; text-decoration: none;
+  }
+  .vt-btn.active { background: var(--accent); color: #fff; }
+  .vt-btn:hover:not(.active) { text-decoration: underline; }
+
+  .window-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--muted); }
+  .window-row select {
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); padding: 6px 10px; font-family: inherit; font-size: 13px;
+  }
+
+  .etf-tag { color: var(--muted); font-size: 12px; font-weight: 500; }
+  .score.pos { color: #4ade80; font-weight: 600; }
+  .score.neg { color: #f87171; font-weight: 600; }
+
+  .dist-bar {
+    display: inline-block; width: 240px; height: 14px;
+    background: #2a323d; border-radius: 3px; overflow: hidden;
+    vertical-align: middle;
+  }
+  .dist-bar .fill { display: block; height: 100%; background: var(--green); }
+
+  h2.section-h { font-size: 22px; margin: 32px 0 16px; font-weight: 600; }
+
+  .sector-grid {
+    display: grid; gap: 16px;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  @media (max-width: 1100px) { .sector-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 720px)  { .sector-grid { grid-template-columns: 1fr; } }
+
+  .sector-card {
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden;
+  }
+  .sector-card .sc-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; border-bottom: 1px solid var(--border);
+    font-size: 14px; font-weight: 600;
+  }
+  .sector-card .sc-head .grow { flex: 1; }
+  .sector-card table { width: 100%; }
+  .sector-card th { padding: 8px 14px; font-size: 12px; }
+  .sector-card td { padding: 7px 14px; font-size: 13px; border-bottom: 0; }
+  .sector-card tbody tr + tr td { border-top: 1px solid var(--border); }
+
+  footer.foot {
+    border-top: 1px solid var(--border); margin-top: 60px;
+    padding: 20px 28px; color: var(--muted);
+    display: flex; justify-content: space-between;
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <span class="brand">Flow</span>
+  <button class="theme" title="Toggle theme">☾</button>
+  <a href="#ticker"   class="tab" data-page="ticker">Ticker Search</a>
+  <a href="#flow"     class="tab" data-page="flow">Option Flow</a>
+  <a href="#rank"     class="tab" data-page="rank">Rankings</a>
+  <a href="#chart"    class="tab" data-page="chart">Daily Chart</a>
+  <a href="#gainers"  class="tab" data-page="gainers">Bullish Flow Top Gainers</a>
+  <a href="#sectors"  class="tab" data-page="sectors">Sectors</a>
+</header>
+
+<main>
+
+  <!-- ============ TICKER SEARCH ============ -->
+  <section class="page" id="page-ticker">
+    <h1>Ticker Search</h1>
+    <div class="subtitle">Type a symbol to jump to its dashboard. Or pick from the lists below.</div>
+
+    <div style="display: flex; gap: 12px; max-width: 700px; margin-bottom: 36px;">
+      <div class="field" style="flex: 1;">
+        <label>Symbol</label>
+        <input placeholder="Symbol (e.g. AAPL, NVDA, ARM)" />
+      </div>
+      <button class="btn-go">Go</button>
+    </div>
+
+    <div class="panels cols-2">
+      <div class="panel">
+        <div class="panel-header plain"><strong>Top Ranked</strong><span class="muted">— bullish score, past 7 days</span></div>
+        <table>
+          <thead><tr>
+            <th>#</th><th>Ticker</th><th class="num">Score</th>
+            <th class="num">Trades</th><th class="num">7d Premium</th>
+          </tr></thead>
+          <tbody id="tbl-top-ranked"></tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="panel-header plain"><strong>Biggest Daily Premium</strong><span class="muted">— today's flow</span></div>
+        <table>
+          <thead><tr>
+            <th>#</th><th>Ticker</th>
+            <th class="num">Today's Premium</th><th class="num">Trades</th>
+          </tr></thead>
+          <tbody id="tbl-biggest-premium"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ OPTION FLOW ============ -->
+  <section class="page" id="page-flow">
+    <h1>Option Flow</h1>
+
+    <div class="row cols-5">
+      <div class="field"><label>Symbol</label><input value="AMZN" /></div>
+      <div class="field"><label>From</label><input type="date" /></div>
+      <div class="field"><label>To</label><input type="date" /></div>
+      <div class="field"><label>Expiry From</label><input type="date" /></div>
+      <div class="field"><label>Expiry To</label><input type="date" /></div>
+    </div>
+
+    <div class="checks">
+      <label><input type="checkbox" checked /> Calls Bought</label>
+      <label><input type="checkbox" checked /> Puts Bought</label>
+      <label><input type="checkbox" checked /> Puts Sold</label>
+      <label><input type="checkbox" /> Show Expired</label>
+      <label><input type="checkbox" /> Show Chart</label>
+    </div>
+
+    <button class="btn-search">Search</button>
+
+    <div style="margin: 22px 0 12px; color: var(--muted);">
+      Displaying items <strong style="color:var(--text)">1-100</strong> of <strong style="color:var(--text)">215</strong> in total
+    </div>
+
+    <div class="panel">
+      <table>
+        <thead><tr>
+          <th>Trade Date</th><th>Order Type</th><th>Symbol</th>
+          <th>Strike</th><th>Expiry</th>
+          <th class="num">Contracts</th><th class="num">Premium</th>
+        </tr></thead>
+        <tbody id="tbl-flow"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============ RANKINGS ============ -->
+  <section class="page" id="page-rank">
+    <h1>Rankings</h1>
+
+    <div class="row cols-3">
+      <div class="field"><label>From</label><input type="date" /></div>
+      <div class="field"><label>To</label><input type="date" /></div>
+      <div class="field"><label>Limit</label><input value="20" /></div>
+    </div>
+    <button class="btn-search" style="margin-bottom: 24px;">Search</button>
+
+    <div class="panels cols-2">
+      <div class="panel">
+        <div class="panel-header green">Bullish</div>
+        <table>
+          <thead><tr>
+            <th>Symbol</th><th class="num">Trades</th>
+            <th>Last Trade</th><th class="num">Score</th><th class="num">Premium</th>
+          </tr></thead>
+          <tbody id="tbl-rank-bull"></tbody>
+        </table>
+      </div>
+      <div class="panel">
+        <div class="panel-header red">Bearish</div>
+        <table>
+          <thead><tr>
+            <th>Symbol</th><th class="num">Trades</th>
+            <th>Last Trade</th><th class="num">Score</th><th class="num">Premium</th>
+          </tr></thead>
+          <tbody id="tbl-rank-bear"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DAILY CHART ============ -->
+  <section class="page" id="page-chart">
+    <h1>Daily Chart</h1>
+    <div class="subtitle">Aggregate daily flow by date.</div>
+
+    <div class="row cols-3">
+      <div class="field"><label>Symbol</label><input placeholder="(optional)" /></div>
+      <div class="field"><label>From</label><input type="date" /></div>
+      <div class="field"><label>To</label><input type="date" /></div>
+    </div>
+    <button class="btn-search" style="margin-bottom: 24px;">Search</button>
+
+    <div class="chart-box">[ daily flow chart ]</div>
+  </section>
+
+  <!-- ============ BULLISH FLOW TOP GAINERS ============ -->
+  <section class="page" id="page-gainers">
+    <h1>Bullish Flow Top Gainers</h1>
+    <div class="subtitle">Showing today's price changes for tickers with bullish flow (Calls Bought + Puts Sold) from <span id="gainers-date"></span></div>
+
+    <table class="gainers">
+      <thead><tr>
+        <th>Symbol</th>
+        <th class="num">Previous Close</th>
+        <th class="num">Current Price</th>
+        <th class="num">% Change</th>
+      </tr></thead>
+      <tbody id="tbl-gainers"></tbody>
+    </table>
+  </section>
+
+  <!-- ============ SECTORS ============ -->
+  <section class="page" id="page-sectors">
+    <h1>Sector Rankings</h1>
+    <div class="subtitle">Aggregated option flow by classification — non-expired trades over the past 7 days. Score = (calls bought + puts sold) – (puts bought).</div>
+
+    <div class="view-toggle">
+      <button class="vt-btn active" data-view="sector">Sector view (SPDR ETFs)</button>
+      <button class="vt-btn" data-view="russell">Russell view (R1K / R2K / ADR)</button>
+    </div>
+
+    <div class="window-row">
+      <label>Window:</label>
+      <select>
+        <option>7 days</option>
+        <option>14 days</option>
+        <option>30 days</option>
+      </select>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header plain" id="sector-table-title">Sector Net Flow Score (GICS / SPDR ETF)</div>
+      <table>
+        <thead><tr id="sector-table-head"></tr></thead>
+        <tbody id="tbl-sectors"></tbody>
+      </table>
+    </div>
+
+    <h2 class="section-h" id="top-tickers-title">Top Tickers by Sector</h2>
+    <div class="sector-grid" id="sector-grid"></div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  <span>© 2026 Flow.</span>
+  <a href="#">FAQ</a>
+</footer>
+
+<script>
+  // ---------- router ----------
+  const tabs = document.querySelectorAll('.tab');
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.page === id));
+    const el = document.getElementById('page-' + id);
+    if (el) el.classList.add('active');
+  }
+  tabs.forEach(t => t.addEventListener('click', e => { e.preventDefault(); location.hash = t.dataset.page; }));
+  window.addEventListener('hashchange', () => showPage(location.hash.slice(1) || 'ticker'));
+  showPage(location.hash.slice(1) || 'ticker');
+
+  // ---------- mock data ----------
+  const topRanked = [
+    ['INTC',17,19,'$57.3M'],['MSFT',14,16,'$79M'],['IBM',11,11,'$111.2M'],
+    ['NVDA',9,13,'$147.2M'],['META',8,10,'$18.9M'],['MRVL',8,8,'$33.7M'],
+    ['BSX',7,7,'$29.9M'],['NOW',7,7,'$17.6M'],['TSLA',7,9,'$24.4M'],['AMZN',6,6,'$14.5M'],
+  ];
+  const biggestPrem = [
+    ['NVDA','$123.0M',3],['IBM','$91.3M',3],['GOOG','$25.5M',2],['MRVL','$21.9M',5],
+    ['QQQ','$19.8M',1],['AVGO','$17.7M',3],['INTC','$16.5M',6],['MSFT','$12.4M',2],
+    ['IREN','$9.2M',1],['MU','$8.7M',2],
+  ];
+  const flowRows = [
+    ['2026-06-02 10:21','calls','AMZN','290C','2026-07-17',2000,'$536K'],
+    ['2026-06-02 10:08','calls','AMZN','275C','2026-09-18',1000,'$1.36M'],
+    ['2026-06-02 09:52','puts-sold','AMZN','230P','2026-08-21',5000,'$3.35M'],
+    ['2026-06-01 09:59','puts-sold','AMZN','225P','2026-08-21',4500,'$1.9M'],
+    ['2026-05-29 11:05','puts-sold','AMZN','250P','2026-10-16',1000,'$1.2M'],
+    ['2026-05-27 10:41','calls','AMZN','275C','2027-01-15',2000,'$6.18M'],
+    ['2026-05-26 11:21','calls','AMZN','290C','2026-07-17',4000,'$1.94M'],
+    ['2026-05-22 11:17','calls','AMZN','290C','2026-07-17',1000,'$545K'],
+    ['2026-05-22 10:13','puts-sold','AMZN','220P','2027-01-15',1500,'$1.31M'],
+    ['2026-05-21 12:22','puts-sold','AMZN','275P','2026-07-17',2550,'$4.34M'],
+    ['2026-05-21 10:18','puts-sold','AMZN','260P','2026-07-17',2500,'$2.53M'],
+    ['2026-05-20 09:35','calls','AMZN','300C','2026-07-17',3000,'$681K'],
+    ['2026-05-19 09:38','calls','AMZN','290C','2026-07-17',2000,'$760K'],
+    ['2026-05-18 10:58','puts-sold','AMZN','285P','2026-06-05',6950,'$13M'],
+    ['2026-05-18 10:58','calls','AMZN','280C','2027-12-17',3250,'$16.4M'],
+    ['2026-05-12 12:41','puts-sold','AMZN','230P','2026-11-20',900,'$973K'],
+    ['2026-05-11 10:49','puts-bought','AMZN','255P','2026-06-12',2500,'$838K'],
+  ];
+  const rankBull = [
+    ['INTC',19,'2026-06-02',17,'$57.3M'],['MSFT',16,'2026-06-02',14,'$79M'],
+    ['IBM',11,'2026-06-02',11,'$111M'],['NVDA',13,'2026-06-02',9,'$147M'],
+    ['META',10,'2026-06-02',8,'$18.9M'],['MRVL',8,'2026-06-02',8,'$33.7M'],
+    ['BSX',7,'2026-06-01',7,'$29.9M'],['NOW',7,'2026-06-02',7,'$17.6M'],
+    ['TSLA',9,'2026-06-02',7,'$24.4M'],['AMZN',6,'2026-06-02',6,'$14.5M'],
+    ['NBIS',8,'2026-06-02',6,'$36.5M'],['ORCL',8,'2026-06-02',6,'$40.4M'],
+    ['PLTR',6,'2026-06-01',6,'$19.7M'],['AAPL',7,'2026-06-01',5,'$192M'],
+  ];
+  const rankBear = [
+    ['LRCX',7,'2026-06-02',-7,'$71.4M'],['EEM',3,'2026-06-02',-3,'$18M'],
+    ['IBIT',3,'2026-06-02',-3,'$1.55M'],['MTUM',2,'2026-06-02',-2,'$4.75M'],
+    ['SMH',2,'2026-05-29',-2,'$8.83M'],['SOXX',2,'2026-05-28',-2,'$9.18M'],
+    ['SPCE',2,'2026-06-01',-2,'$1.13M'],['TSM',2,'2026-05-29',-2,'$5.93M'],
+    ['ARKK',1,'2026-05-27',-1,'$1.19M'],['ASHR',1,'2026-05-27',-1,'$800K'],
+    ['ASND',1,'2026-05-29',-1,'$2.7M'],['BRUN',1,'2026-06-01',-1,'$698K'],
+    ['BX',1,'2026-06-02',-1,'$461K'],['CCJ',1,'2026-06-02',-1,'$498K'],
+  ];
+  const gainers = [
+    ['MRVL',219.43,290.79,32.52],['COHR',362.90,426.89,17.63],['UMAC',28.88,33.42,15.72],
+    ['STM',69.02,79.51,15.2],['CAMT',163.09,187.52,14.98],['ENPH',63.74,72.33,13.48],
+    ['INFQ',17.69,19.87,12.32],['VSH',55.99,62.49,11.61],['VIAV',47.49,52.88,11.35],
+    ['BE',273.51,302.85,10.73],['RLAY',14.26,15.70,10.1],['ADEA',28.61,30.66,7.17],
+    ['SMCI',46.88,50.17,7.02],['BB',9.72,10.32,6.17],['MCHP',91.52,96.96,5.94],
+    ['ACLS',150.42,158.78,5.56],['CSCO',121.33,128.00,5.5],['AMPX',21.75,22.91,5.33],
+    ['QCOM',228.99,240.84,5.17],['AVGO',459.97,481.57,4.7],['XME',127.46,132.83,4.21],
+    ['AKAM',154.01,160.32,4.1],
+  ];
+  // Sector view rows: [name, etf, score, bullish, bearish, trades, premium, premiumNum]
+  const sectorRows = [
+    ['Information Technology','XLK', 273, 319, -46, 365, '$1.78B', 1780],
+    ['Consumer Discretionary','XLY',  59,  63,  -4,  67, '$113M',   113],
+    ['Industrials',           'XLI',  52,  61,  -9,  70, '$96.8M',   96.8],
+    ['Health Care',           'XLV',  49,  53,  -4,  57, '$79.5M',   79.5],
+    ['Communication Services','XLC',  39,  43,  -4,  47, '$98.8M',   98.8],
+    ['Unclassified',          '—',   34,  37,  -3,  40, '$30.4M',   30.4],
+    ['Financials',            'XLF',  24,  32,  -8,  40, '$40.5M',   40.5],
+    ['Energy',                'XLE',  23,  24,  -1,  25, '$26.2M',   26.2],
+    ['Materials',             'XLB',  14,  18,  -4,  22, '$39.6M',   39.6],
+    ['Consumer Staples',      'XLP',  14,  14,   0,  14, '$11.9M',   11.9],
+    ['Utilities',             'XLU',   5,   5,   0,   5, '$5.14M',    5.14],
+    ['Real Estate',           'XLRE',  3,   3,   0,   3, '$1.14M',    1.14],
+    ['ETF / Index',           '—',    2,  19, -17,  36, '$348M',   348],
+  ];
+
+  // Russell view rows: [name, score, bullish, bearish, trades, premium, premiumNum]
+  const russellRows = [
+    ['Russell 1000', 371, 420, -49, 469, '$1.66B', 1660],
+    ['Russell 2000', 104, 114, -10, 124, '$190M',   190],
+    ['ADR',           29,  33,  -4,  37, '$241M',   241],
+  ];
+
+  const sectorTickers = [
+    ['Information Technology','XLK', 273, [
+      ['INTC',17,19,'$57.3M'],['MSFT',14,16,'$79M'],['IBM',11,11,'$111M'],
+      ['NVDA',10,12,'$146M'],['MRVL',8,8,'$33.7M'],['NOW',7,7,'$17.6M'],
+      ['NBIS',6,8,'$36.5M'],['ORCL',6,8,'$40.4M'],['PLTR',6,6,'$19.7M'],['AAPL',5,7,'$192M'],
+    ]],
+    ['Consumer Discretionary','XLY', 59, [
+      ['AMZN',6,6,'$14.5M'],['TSLA',6,8,'$23.8M'],['F',4,4,'$3.19M'],['PDD',4,4,'$6.19M'],
+      ['AAP',3,3,'$20.1M'],['BABA',3,3,'$3.65M'],['CMG',3,3,'$2.44M'],['RIVN',3,3,'$1.74M'],
+      ['APTV',2,2,'$1.4M'],['BURL',2,2,'$3.56M'],
+    ]],
+    ['Industrials','XLI', 52, [
+      ['BE',4,4,'$18.4M'],['AMPX',3,3,'$2.71M'],['FLNC',3,3,'$7.7M'],['UBER',3,3,'$3.4M'],
+      ['GEV',2,2,'$1.49M'],['KTOS',2,2,'$3.23M'],['MEC',2,2,'$515K'],['RKLB',2,2,'$4.29M'],
+      ['RUN',2,2,'$3.16M'],['UPS',2,2,'$1.4M'],
+    ]],
+    ['Health Care','XLV', 49, [
+      ['BSX',7,7,'$29.9M'],['MRNA',3,3,'$2.95M'],['AMGN',2,2,'$8.38M'],['BRKR',2,2,'$1.74M'],
+      ['NVO',2,2,'$1.2M'],['TEM',2,2,'$1.42M'],['XLV',2,2,'$2.91M'],['ABT',1,1,'$405K'],
+      ['ALMS',1,1,'$240K'],['APGE',1,1,'$330K'],
+    ]],
+    ['Communication Services','XLC', 39, [
+      ['META',8,10,'$18.9M'],['NFLX',5,5,'$16.7M'],['NOK',5,5,'$7.23M'],['GOOGL',4,4,'$8.43M'],
+      ['CMCSA',3,3,'$5.06M'],['TTD',3,3,'$3.37M'],['SATS',2,2,'$3.55M'],['TTWO',2,2,'$1.64M'],
+      ['GLIBK',1,1,'$154K'],['GOOG',1,3,'$28.1M'],
+    ]],
+    ['Unclassified','—', 34, [
+      ['BNO',3,3,'$6.15M'],['LOGI',2,2,'$580K'],['AAOX',1,1,'$690K'],['AGI',1,1,'$1.06M'],
+      ['ARKG',1,1,'$945K'],['ASX',1,1,'$1.61M'],['BNY',1,1,'$404K'],['CAMT',1,1,'$381K'],
+      ['CCLD',1,1,'$342K'],['DIA',1,1,'$1.66M'],
+    ]],
+    ['Financials','XLF', 24, [
+      ['HOOD',5,5,'$6.22M'],['NU',3,3,'$3.7M'],['V',3,3,'$2.05M'],['AXP',2,2,'$1.52M'],
+      ['CBOE',2,2,'$1.43M'],['SOFI',2,2,'$1.51M'],['BAC',1,1,'$580K'],['C',1,3,'$5.86M'],
+    ]],
+    ['Energy','XLE', 23, [
+      ['DVN',2,2,'$3.48M'],['EXE',2,2,'$1.76M'],['XLE',2,2,'$1.47M'],['AR',1,1,'$172K'],
+      ['BTU',1,1,'$416K'],['COP',1,1,'$927K'],['CVX',1,1,'$2.33M'],['EOG',1,1,'$740K'],
+    ]],
+    ['Materials','XLB', 14, [
+      ['CLF',3,3,'$4.34M'],['MOS',3,3,'$760K'],['COPX',2,2,'$5.47M'],['NEM',2,2,'$1.02M'],
+      ['ASPI',1,1,'$1.12M'],['BHP',1,1,'$360K'],['EMN',1,1,'$188K'],['HCC',1,1,'$15.2M'],
+    ]],
+  ];
+
+  const russellTickers = [
+    ['Russell 1000','', 371, [
+      ['INTC',17,19,'$57.3M'],['MSFT',14,16,'$79M'],['IBM',11,11,'$111M'],
+      ['NVDA',10,12,'$146M'],['META',8,10,'$18.9M'],['MRVL',8,8,'$33.7M'],
+      ['BSX',7,7,'$29.9M'],['NOW',7,7,'$17.6M'],['AMZN',6,6,'$14.5M'],['ORCL',6,8,'$40.4M'],
+    ]],
+    ['Russell 2000','', 104, [
+      ['BE',4,4,'$18.4M'],['PENG',4,4,'$9.66M'],['AAP',3,3,'$20.1M'],['AMPX',3,3,'$2.71M'],
+      ['BTDR',3,3,'$11.6M'],['FLNC',3,3,'$7.7M'],['VIAV',3,3,'$1.81M'],['ACMR',2,2,'$1.03M'],
+      ['KTOS',2,2,'$3.23M'],['MEC',2,2,'$515K'],
+    ]],
+    ['ADR','', 29, [
+      ['ARM',5,7,'$199M'],['NOK',5,5,'$7.23M'],['PDD',4,4,'$6.19M'],['BABA',3,3,'$3.65M'],
+      ['NVO',2,2,'$1.2M'],['ASX',1,1,'$1.61M'],['BHP',1,1,'$360K'],['BIDU',1,1,'$3.41M'],
+      ['GDS',1,1,'$429K'],['PBR',1,1,'$600K'],
+    ]],
+  ];
+
+  // ---------- renderers ----------
+  const fmt$ = n => '$' + n.toFixed(2);
+  const fmtPct = n => (n>=0?'+':'') + n.toFixed(2) + '%';
+
+  function tr(cells) {
+    return '<tr>' + cells.map(c => typeof c === 'object'
+      ? `<td class="${c.cls||''}">${c.html}</td>` : `<td>${c}</td>`).join('') + '</tr>';
+  }
+
+  // Ticker Search tables
+  document.getElementById('tbl-top-ranked').innerHTML = topRanked.map((r,i) => `
+    <tr><td>${i+1}</td><td><a href="#flow">${r[0]}</a></td>
+    <td class="num">${r[1]}</td><td class="num">${r[2]}</td><td class="num">${r[3]}</td></tr>`).join('');
+
+  document.getElementById('tbl-biggest-premium').innerHTML = biggestPrem.map((r,i) => `
+    <tr><td>${i+1}</td><td><a href="#flow">${r[0]}</a></td>
+    <td class="num">${r[1]}</td><td class="num">${r[2]}</td></tr>`).join('');
+
+  // Option Flow rows
+  const orderBadge = t => ({
+    'calls': '<span class="badge calls">Calls Bought</span>',
+    'puts-sold': '<span class="badge puts-sold">Puts Sold</span>',
+    'puts-bought': '<span class="badge puts-bought">Puts Bought</span>',
+  }[t]);
+  document.getElementById('tbl-flow').innerHTML = flowRows.map(r => `
+    <tr><td>${r[0]}</td><td>${orderBadge(r[1])}</td>
+    <td><a href="#flow">${r[2]}</a></td><td>${r[3]}</td><td>${r[4]}</td>
+    <td class="num">${r[5]}</td><td class="num">${r[6]}</td></tr>`).join('');
+
+  // Rankings
+  function sparkSVG(up) {
+    const pts = Array.from({length:8}, () => Math.random()*16 + 4);
+    const path = pts.map((y,i)=>`${i===0?'M':'L'}${i*8} ${y}`).join(' ');
+    const color = up ? '#4ade80' : '#f87171';
+    return `<svg class="spark" width="64" height="22" viewBox="0 0 56 22"><path d="${path}" fill="none" stroke="${color}" stroke-width="1.5"/></svg>`;
+  }
+  document.getElementById('tbl-rank-bull').innerHTML = rankBull.map(r => `
+    <tr><td><a href="#flow">${r[0]}</a><br>${sparkSVG(true)}</td>
+    <td class="num">${r[1]}</td><td>${r[2]}</td>
+    <td class="num">${r[3]}</td><td class="num">${r[4]}</td></tr>`).join('');
+  document.getElementById('tbl-rank-bear').innerHTML = rankBear.map(r => `
+    <tr><td><a href="#flow">${r[0]}</a><br>${sparkSVG(false)}</td>
+    <td class="num">${r[1]}</td><td>${r[2]}</td>
+    <td class="num">${r[3]}</td><td class="num">${r[4]}</td></tr>`).join('');
+
+  // Gainers
+  document.getElementById('gainers-date').textContent =
+    new Date().toLocaleDateString('en-US', {month:'long', day:'2-digit', year:'numeric'});
+  document.getElementById('tbl-gainers').innerHTML = gainers.map(r => `
+    <tr>
+      <td><a href="#flow">${r[0]}</a></td>
+      <td class="num">${fmt$(r[1])}</td>
+      <td class="num">${fmt$(r[2])}</td>
+      <td class="num"><span class="pill ${r[3]>=0?'up':'down'}">▲ ${fmtPct(r[3])}</span></td>
+    </tr>`).join('');
+
+  // ---------- Sectors page ----------
+  const scoreCell = n => `<span class="score ${n>=0?'pos':'neg'}">${n>=0?'+'+n:'−'+Math.abs(n)}</span>`;
+  const bullCell  = n => `<span class="score pos">+${n}</span>`;
+  const bearCell  = n => `<span class="score neg">${n===0?'−0':'−'+Math.abs(n)}</span>`;
+
+  function renderSectorsView(view) {
+    const isSector = view === 'sector';
+    const rows  = isSector ? sectorRows : russellRows;
+    const cards = isSector ? sectorTickers : russellTickers;
+    const maxPrem = Math.max(...rows.map(r => isSector ? r[7] : r[6]));
+
+    document.querySelectorAll('.vt-btn').forEach(b =>
+      b.classList.toggle('active', b.dataset.view === view));
+
+    document.getElementById('sector-table-title').textContent =
+      isSector ? 'Sector Net Flow Score (GICS / SPDR ETF)' : 'Russell Index Net Flow Score';
+    document.getElementById('top-tickers-title').textContent =
+      isSector ? 'Top Tickers by Sector' : 'Top Tickers by Russell Group';
+
+    const head = isSector
+      ? ['Sector','ETF','Score','Bullish','Bearish','Trades','Premium','Distribution']
+      : ['Index / Group','Score','Bullish','Bearish','Trades','Premium','Distribution'];
+    document.getElementById('sector-table-head').innerHTML =
+      head.map((h,i) => {
+        const numCol = (isSector ? (i>=2 && i<=6) : (i>=1 && i<=5));
+        return `<th class="${numCol ? 'num' : ''}">${h}</th>`;
+      }).join('');
+
+    document.getElementById('tbl-sectors').innerHTML = rows.map(r => {
+      const o = isSector ? 0 : -1;
+      const name    = r[0];
+      const etf     = isSector ? r[1] : null;
+      const score   = r[2+o];
+      const bull    = r[3+o];
+      const bear    = r[4+o];
+      const trades  = r[5+o];
+      const prem    = r[6+o];
+      const premNum = r[7+o];
+      const pct = Math.max(2, Math.round((premNum/maxPrem)*100));
+      const etfCell = isSector ? `<td><span class="etf-tag">${etf}</span></td>` : '';
+      return `<tr>
+        <td><a href="#flow">${name}</a></td>
+        ${etfCell}
+        <td class="num">${scoreCell(score)}</td>
+        <td class="num">${bullCell(bull)}</td>
+        <td class="num">${bearCell(bear)}</td>
+        <td class="num">${trades}</td>
+        <td class="num">${prem}</td>
+        <td><span class="dist-bar"><span class="fill" style="width:${pct}%"></span></span></td>
+      </tr>`;
+    }).join('');
+
+    document.getElementById('sector-grid').innerHTML = cards.map(c => {
+      const [name, etf, total, list] = c;
+      return `<div class="sector-card">
+        <div class="sc-head">
+          <span>${name}</span>
+          ${etf ? `<span class="etf-tag">${etf}</span>` : ''}
+          <span class="grow"></span>
+          <span class="score pos">+${total}</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th>Symbol</th><th class="num">Score</th>
+            <th class="num">Trades</th><th class="num">Premium</th>
+          </tr></thead>
+          <tbody>
+            ${list.map(t => `<tr>
+              <td><a href="#flow">${t[0]}</a></td>
+              <td class="num">${scoreCell(t[1])}</td>
+              <td class="num">${t[2]}</td>
+              <td class="num">${t[3]}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }).join('');
+  }
+
+  document.querySelectorAll('.vt-btn').forEach(b =>
+    b.addEventListener('click', () => renderSectorsView(b.dataset.view)));
+  renderSectorsView('sector');
+</script>
+</body>
+</html>
