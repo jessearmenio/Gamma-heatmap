@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Flow</title>
 <style>
-  :root {
+  :root, [data-theme="dark"] {
     --bg: #0f1419;
     --bg-2: #1a1f26;
     --bg-3: #232a33;
@@ -18,7 +18,29 @@
     --red: #c0392b;
     --red-soft: #3b1717;
     --accent: #2563eb;
+    --dist-track: #2a323d;
+    --row-hover: rgba(255,255,255,0.02);
   }
+  [data-theme="light"] {
+    --bg: #ffffff;
+    --bg-2: #f6f7f9;
+    --bg-3: #eceff3;
+    --border: #d9dde2;
+    --text: #0f1419;
+    --muted: #5b6573;
+    --link: #1d4ed8;
+    --green: #15803d;
+    --green-soft: #d1fae5;
+    --red: #b91c1c;
+    --red-soft: #fee2e2;
+    --accent: #2563eb;
+    --dist-track: #e4e7eb;
+    --row-hover: rgba(0,0,0,0.03);
+  }
+  [data-theme="light"] .score.pos { color: #15803d; }
+  [data-theme="light"] .score.neg { color: #b91c1c; }
+  [data-theme="light"] .pill.up { color: #064e2c; }
+  [data-theme="light"] .pill.down { color: #5e1313; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -38,10 +60,13 @@
   .nav .brand { font-weight: 700; font-size: 16px; margin-right: 4px; }
   .nav .theme {
     background: transparent; border: 1px solid var(--border);
-    border-radius: 6px; width: 30px; height: 30px;
+    border-radius: 6px; width: 32px; height: 32px;
     color: var(--text); cursor: pointer; display: inline-flex;
     align-items: center; justify-content: center;
+    margin-left: auto; font-size: 16px; line-height: 1;
+    transition: background 120ms, color 120ms;
   }
+  .nav .theme:hover { background: var(--bg-2); }
   .nav a.tab { color: var(--muted); font-size: 14px; }
   .nav a.tab.active, .nav a.tab:hover { color: var(--text); text-decoration: none; }
 
@@ -89,7 +114,7 @@
   th, td { padding: 12px 14px; text-align: left; }
   th { color: var(--muted); font-weight: 600; font-size: 13px; border-bottom: 1px solid var(--border); }
   tbody tr { border-bottom: 1px solid var(--border); }
-  tbody tr:hover { background: rgba(255,255,255,0.02); }
+  tbody tr:hover { background: var(--row-hover); }
   td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 
   .pill {
@@ -163,7 +188,7 @@
 
   .dist-bar {
     display: inline-block; width: 240px; height: 14px;
-    background: #2a323d; border-radius: 3px; overflow: hidden;
+    background: var(--dist-track); border-radius: 3px; overflow: hidden;
     vertical-align: middle;
   }
   .dist-bar .fill { display: block; height: 100%; background: var(--green); }
@@ -202,14 +227,14 @@
 <body>
 
 <header class="nav">
-  <span class="brand">Flow</span>
-  <button class="theme" title="Toggle theme">☾</button>
+  <span class="brand">Beta Flow v1.00</span>
   <a href="#ticker"   class="tab" data-page="ticker">Ticker Search</a>
   <a href="#flow"     class="tab" data-page="flow">Option Flow</a>
   <a href="#rank"     class="tab" data-page="rank">Rankings</a>
   <a href="#chart"    class="tab" data-page="chart">Daily Chart</a>
   <a href="#gainers"  class="tab" data-page="gainers">Bullish Flow Top Gainers</a>
   <a href="#sectors"  class="tab" data-page="sectors">Sectors</a>
+  <button class="theme" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">☾</button>
 </header>
 
 <main>
@@ -394,6 +419,20 @@
 </footer>
 
 <script>
+  // ---------- theme ----------
+  const themeBtn = document.getElementById('theme-toggle');
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'light' ? '☀' : '☾';
+    themeBtn.title = t === 'light' ? 'Switch to dark mode' : 'Switch to light mode';
+  }
+  applyTheme(localStorage.getItem('flow-theme') || 'dark');
+  themeBtn.addEventListener('click', () => {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    localStorage.setItem('flow-theme', next);
+    applyTheme(next);
+  });
+
   // ---------- router ----------
   const tabs = document.querySelectorAll('.tab');
   function showPage(id) {
