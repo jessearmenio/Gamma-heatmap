@@ -226,6 +226,26 @@ async function initTurso() {
     )
   `);
 
+  // Best-effort migrations to add annotation/override columns to the broker
+  // trade table without breaking older deployments. SQLite has no
+  // ALTER TABLE … IF NOT EXISTS so we swallow "duplicate column" errors.
+  const brokerAdds = [
+    ["Thesis", "TEXT"],
+    ["Tags", "TEXT"],
+    ["SetupType", "TEXT"],
+    ["Grade", "TEXT"],
+    ["Emotion", "TEXT"],
+    ["Mistakes", "TEXT"],
+    ["Lessons", "TEXT"],
+    ["ScreenshotUrl", "TEXT"],
+    ["Notes", "TEXT"]
+  ];
+  for (const [col, type] of brokerAdds) {
+    try {
+      await turso.execute(`ALTER TABLE broker_log_hist_trades ADD COLUMN ${col} ${type}`);
+    } catch (_) { /* column already exists — ignore */ }
+  }
+
   await turso.execute(`
     CREATE TABLE IF NOT EXISTS TradeEntries (
       EntryID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3678,6 +3698,320 @@ app.get("/api/trade-journal/broker", async (_req, res) => {
   } catch (error) {
     console.error("BROKER_LIST ERROR:", error.message);
     res.status(500).json({ ok: false, error: "Failed to load broker trades.", details: error.message });
+  }
+});
+
+// ── Broker trade CRUD ────────────────────────────────────────────────
+// After any entry/close edit we re-run FIFO matching for just this trade
+// and rewrite the matches table + aggregate fields on the parent row, so
+// realized P/L, average cost, status, etc. stay in sync with the legs.
+async function tjBrokerReaggregateTrade(tradeId) {
+  const parentRes = await turso.execute({
+    sql: `SELECT * FROM broker_log_hist_trades WHERE TradeID = ?`, args: [tradeId]
+  });
+  const parent = parentRes.rows?.[0];
+  if (!parent) return null;
+
+  const entries = (await turso.execute({
+    sql: `SELECT * FROM broker_log_hist_entries WHERE TradeID = ? ORDER BY ActivityDate ASC, EntryID ASC`,
+    args: [tradeId]
+  })).rows || [];
+  const closes = (await turso.execute({
+    sql: `SELECT * FROM broker_log_hist_closes WHERE TradeID = ? ORDER BY ActivityDate ASC, CloseID ASC`,
+    args: [tradeId]
+  })).rows || [];
+
+  // Interleave entries and closes in chronological order. Entries break ties
+  // by going before closes so an STC on the same day matches against its open.
+  const legs = [];
+  for (const e of entries) legs.push({ kind: 'open', leg: e, ts: e.ActivityDate || '', id: e.EntryID });
+  for (const c of closes) legs.push({ kind: 'close', leg: c, ts: c.ActivityDate || '', id: c.CloseID });
+  legs.sort((a, b) => {
+    if (a.ts !== b.ts) return a.ts < b.ts ? -1 : 1;
+    if (a.kind !== b.kind) return a.kind === 'open' ? -1 : 1;
+    return a.id - b.id;
+  });
+
+  const mult = parent.AssetType === 'option' ? 100 : 1;
+  // FIFO state.
+  let openLots = [];
+  const newMatches = [];
+  for (const item of legs) {
+    if (item.kind === 'open') {
+      const q = Number(item.leg.Quantity) || 0;
+      const amt = item.leg.Amount;
+      const cost = amt != null
+        ? Math.abs(Number(amt))
+        : (Number(item.leg.Price) * q * mult);
+      openLots.push({
+        entryId: item.leg.EntryID,
+        origQty: q,
+        origCost: cost,
+        remainingQty: q
+      });
+    } else {
+      let qtyToClose = Number(item.leg.Quantity) || 0;
+      const closeQty = qtyToClose;
+      const closeAmt = item.leg.Amount;
+      const proceeds = closeAmt != null
+        ? Math.abs(Number(closeAmt))
+        : (Number(item.leg.Price) * closeQty * mult);
+      while (qtyToClose > 1e-9 && openLots.length) {
+        const lot = openLots[0];
+        const matchQty = Math.min(qtyToClose, lot.remainingQty);
+        const fracLot = lot.origQty > 0 ? matchQty / lot.origQty : 0;
+        const fracClose = closeQty > 0 ? matchQty / closeQty : 0;
+        const allocCost = lot.origCost * fracLot;
+        const allocProc = proceeds * fracClose;
+        const pl = allocProc - allocCost;
+        newMatches.push({
+          entryId: lot.entryId,
+          closeId: item.leg.CloseID,
+          matchedQuantity: matchQty,
+          allocatedEntryCost: allocCost,
+          allocatedCloseProceeds: allocProc,
+          realizedPL: pl,
+          realizedPLPercent: allocCost > 0 ? (pl / allocCost) * 100 : null
+        });
+        lot.remainingQty -= matchQty;
+        qtyToClose -= matchQty;
+        if (lot.remainingQty <= 1e-9) openLots.shift();
+      }
+      // If qtyToClose > 0 we silently drop the excess; the trade row's stats
+      // will reflect total opened vs. total closed and the editor can spot it.
+    }
+  }
+
+  // Replace matches.
+  await turso.execute({ sql: `DELETE FROM broker_log_hist_matches WHERE TradeID = ?`, args: [tradeId] });
+  for (const m of newMatches) {
+    await turso.execute({
+      sql: `INSERT INTO broker_log_hist_matches
+        (TradeID, EntryID, CloseID, MatchedQuantity, AllocatedEntryCost, AllocatedCloseProceeds, RealizedPL, RealizedPLPercent)
+        VALUES (?,?,?,?,?,?,?,?)`,
+      args: [tradeId, m.entryId, m.closeId, m.matchedQuantity, m.allocatedEntryCost, m.allocatedCloseProceeds, m.realizedPL, m.realizedPLPercent]
+    });
+  }
+
+  const totalOpened = entries.reduce((s, e) => s + (Number(e.Quantity) || 0), 0);
+  const totalClosed = closes.reduce((s, c) => s + (Number(c.Quantity) || 0), 0);
+  const remaining = totalOpened - totalClosed;
+  const totalCostOpened = entries.reduce((s, e) => s + (Number(e.CostBasis) || 0), 0);
+  const matchedCost = newMatches.reduce((s, m) => s + m.allocatedEntryCost, 0);
+  const totalProceeds = newMatches.reduce((s, m) => s + m.allocatedCloseProceeds, 0);
+  const realizedPL = newMatches.reduce((s, m) => s + m.realizedPL, 0);
+  const realizedPLPct = matchedCost > 0 ? (realizedPL / matchedCost) * 100 : null;
+  const remainingCost = totalCostOpened - matchedCost;
+  const avgCost = remaining > 1e-9 ? remainingCost / remaining : (totalOpened > 0 ? totalCostOpened / totalOpened : 0);
+  const firstEntryDate = entries[0]?.ActivityDate || null;
+  const lastCloseDate = closes.length ? closes[closes.length - 1].ActivityDate : null;
+  const status = remaining <= 1e-9 && totalClosed > 0
+    ? 'Closed'
+    : (totalClosed > 1e-9 ? 'Partially Closed' : 'Open');
+
+  await turso.execute({
+    sql: `UPDATE broker_log_hist_trades SET
+      Status = ?, FirstEntryDate = ?, LastCloseDate = ?,
+      TotalOpenedQuantity = ?, TotalClosedQuantity = ?, RemainingQuantity = ?,
+      AverageCostBasis = ?, TotalCostBasis = ?, TotalProceeds = ?,
+      RealizedPL = ?, RealizedPLPercent = ?, UpdatedAt = CURRENT_TIMESTAMP
+      WHERE TradeID = ?`,
+    args: [status, firstEntryDate, lastCloseDate, totalOpened, totalClosed, remaining,
+           avgCost, totalCostOpened, totalProceeds, realizedPL, realizedPLPct, tradeId]
+  });
+
+  return { status, realizedPL, realizedPLPercent: realizedPLPct, remaining };
+}
+
+// PUT /api/trade-journal/broker/:id — edit parent fields (annotations + instrument fixes)
+app.put("/api/trade-journal/broker/:id(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const b = req.body || {};
+    const allowed = [
+      ['Ticker', 'ticker', v => v == null ? null : String(v).toUpperCase().trim() || null],
+      ['AssetType', 'assetType', v => { const s = String(v || '').toLowerCase(); return (s === 'stock' || s === 'option') ? s : null; }],
+      ['OptionType', 'optionType', v => v == null ? null : (String(v).toLowerCase() || null)],
+      ['ExpirationDate', 'expirationDate', tjStr],
+      ['Strike', 'strike', tjNum],
+      ['Thesis', 'thesis', tjStr],
+      ['Tags', 'tags', tjStr],
+      ['SetupType', 'setupType', tjStr],
+      ['Grade', 'grade', tjStr],
+      ['Emotion', 'emotion', tjStr],
+      ['Mistakes', 'mistakes', tjStr],
+      ['Lessons', 'lessons', tjStr],
+      ['Notes', 'notes', tjStr],
+      ['ScreenshotUrl', 'screenshotUrl', tjStr]
+    ];
+    const sets = [], args = [];
+    for (const [col, key, conv] of allowed) {
+      if (b[key] !== undefined) {
+        sets.push(`${col} = ?`);
+        args.push(conv(b[key]));
+      }
+    }
+    if (!sets.length) return res.json({ ok: true, updated: 0 });
+    sets.push(`UpdatedAt = CURRENT_TIMESTAMP`);
+    args.push(tradeId);
+    await turso.execute({
+      sql: `UPDATE broker_log_hist_trades SET ${sets.join(', ')} WHERE TradeID = ?`,
+      args
+    });
+    // If the instrument key bits changed, refresh InstrumentKey too.
+    if (b.ticker !== undefined || b.optionType !== undefined || b.expirationDate !== undefined || b.strike !== undefined) {
+      const r = (await turso.execute({ sql: `SELECT * FROM broker_log_hist_trades WHERE TradeID = ?`, args: [tradeId] })).rows?.[0];
+      if (r) {
+        const key = r.AssetType === 'option'
+          ? `OPT|${r.Ticker}|${r.ExpirationDate}|${r.OptionType}|${r.Strike}`
+          : `STK|${r.Ticker}`;
+        await turso.execute({ sql: `UPDATE broker_log_hist_trades SET InstrumentKey = ? WHERE TradeID = ?`, args: [key, tradeId] });
+      }
+    }
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_PUT ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to update broker trade.", details: error.message });
+  }
+});
+
+// DELETE /api/trade-journal/broker/:id — cascade delete one broker trade
+app.delete("/api/trade-journal/broker/:id(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    await turso.execute({ sql: `DELETE FROM broker_log_hist_matches WHERE TradeID = ?`, args: [tradeId] });
+    await turso.execute({ sql: `DELETE FROM broker_log_hist_closes WHERE TradeID = ?`, args: [tradeId] });
+    await turso.execute({ sql: `DELETE FROM broker_log_hist_entries WHERE TradeID = ?`, args: [tradeId] });
+    await turso.execute({ sql: `DELETE FROM broker_log_hist_trades WHERE TradeID = ?`, args: [tradeId] });
+    res.json({ ok: true, deleted: tradeId });
+  } catch (error) {
+    console.error("BROKER_DELETE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to delete broker trade.", details: error.message });
+  }
+});
+
+// Entry CRUD — also triggers re-aggregation of the parent trade.
+function brokerLegFieldUpdates(b) {
+  const map = [
+    ['ActivityDate', 'activityDate', tjStr],
+    ['Quantity', 'quantity', tjNum],
+    ['Price', 'price', tjNum],
+    ['Amount', 'amount', tjNum]
+  ];
+  const sets = [], args = [];
+  for (const [col, key, conv] of map) {
+    if (b[key] !== undefined) { sets.push(`${col} = ?`); args.push(conv(b[key])); }
+  }
+  return { sets, args };
+}
+
+app.put("/api/trade-journal/broker/:id(\\d+)/entry/:entryId(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const entryId = Number(req.params.entryId);
+    const b = req.body || {};
+    const { sets, args } = brokerLegFieldUpdates(b);
+    // Refresh CostBasis from Amount (or Price×Qty fallback) so re-aggregation
+    // sees a consistent column. We re-fetch after the field updates.
+    if (sets.length) {
+      args.push(entryId);
+      await turso.execute({
+        sql: `UPDATE broker_log_hist_entries SET ${sets.join(', ')} WHERE EntryID = ?`,
+        args
+      });
+    }
+    const fresh = (await turso.execute({
+      sql: `SELECT e.*, t.AssetType FROM broker_log_hist_entries e
+            JOIN broker_log_hist_trades t ON t.TradeID = e.TradeID
+            WHERE e.EntryID = ?`,
+      args: [entryId]
+    })).rows?.[0];
+    if (fresh) {
+      const mult = fresh.AssetType === 'option' ? 100 : 1;
+      const cb = fresh.Amount != null
+        ? Math.abs(Number(fresh.Amount))
+        : (Number(fresh.Price) * Number(fresh.Quantity) * mult);
+      await turso.execute({
+        sql: `UPDATE broker_log_hist_entries SET CostBasis = ? WHERE EntryID = ?`,
+        args: [Number.isFinite(cb) ? cb : null, entryId]
+      });
+    }
+    await tjBrokerReaggregateTrade(tradeId);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_ENTRY_PUT ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to update entry.", details: error.message });
+  }
+});
+
+app.delete("/api/trade-journal/broker/:id(\\d+)/entry/:entryId(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const entryId = Number(req.params.entryId);
+    await turso.execute({
+      sql: `DELETE FROM broker_log_hist_matches WHERE EntryID = ? AND TradeID = ?`,
+      args: [entryId, tradeId]
+    });
+    await turso.execute({ sql: `DELETE FROM broker_log_hist_entries WHERE EntryID = ?`, args: [entryId] });
+    await tjBrokerReaggregateTrade(tradeId);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_ENTRY_DELETE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to delete entry.", details: error.message });
+  }
+});
+
+app.put("/api/trade-journal/broker/:id(\\d+)/close/:closeId(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const closeId = Number(req.params.closeId);
+    const b = req.body || {};
+    const { sets, args } = brokerLegFieldUpdates(b);
+    if (sets.length) {
+      args.push(closeId);
+      await turso.execute({
+        sql: `UPDATE broker_log_hist_closes SET ${sets.join(', ')} WHERE CloseID = ?`,
+        args
+      });
+    }
+    const fresh = (await turso.execute({
+      sql: `SELECT c.*, t.AssetType FROM broker_log_hist_closes c
+            JOIN broker_log_hist_trades t ON t.TradeID = c.TradeID
+            WHERE c.CloseID = ?`,
+      args: [closeId]
+    })).rows?.[0];
+    if (fresh) {
+      const mult = fresh.AssetType === 'option' ? 100 : 1;
+      const proceeds = fresh.Amount != null
+        ? Math.abs(Number(fresh.Amount))
+        : (Number(fresh.Price) * Number(fresh.Quantity) * mult);
+      await turso.execute({
+        sql: `UPDATE broker_log_hist_closes SET Proceeds = ? WHERE CloseID = ?`,
+        args: [Number.isFinite(proceeds) ? proceeds : null, closeId]
+      });
+    }
+    await tjBrokerReaggregateTrade(tradeId);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_CLOSE_PUT ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to update close.", details: error.message });
+  }
+});
+
+app.delete("/api/trade-journal/broker/:id(\\d+)/close/:closeId(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const closeId = Number(req.params.closeId);
+    await turso.execute({
+      sql: `DELETE FROM broker_log_hist_matches WHERE CloseID = ? AND TradeID = ?`,
+      args: [closeId, tradeId]
+    });
+    await turso.execute({ sql: `DELETE FROM broker_log_hist_closes WHERE CloseID = ?`, args: [closeId] });
+    await tjBrokerReaggregateTrade(tradeId);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_CLOSE_DELETE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to delete close.", details: error.message });
   }
 });
 

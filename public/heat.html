@@ -21434,7 +21434,8 @@
           <td onclick="event.stopPropagation()">
             <div class="tj-row-actions">
               ${isBroker
-                ? `<button title="Imported from broker — read-only" disabled style="opacity:.5; cursor:not-allowed;">ⓘ</button>`
+                ? `<button onclick="tjOpenBrokerEditModal(${t._broker.TradeID})" title="Edit broker trade">✏️</button>
+                   <button onclick="tjDeleteBrokerTrade(${t._broker.TradeID})" title="Delete broker trade">🗑</button>`
                 : `<button onclick="tjOpenEditModal(${t.TradeID})" title="Edit">✏️</button>
                    ${t.Status !== 'closed' ? `<button onclick="tjOpenAverageInModal(${t.TradeID})" title="Average in">➕</button>` : ''}
                    ${t.Status !== 'closed' ? `<button onclick="tjOpenCloseModal(${t.TradeID})" title="Close trade">🔒</button>` : ''}
@@ -21870,6 +21871,229 @@
         const d = await r.json();
         if (!d.ok) throw new Error(d.error || 'Failed');
         await tjLoad();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    // ── Broker trade CRUD (UI) ──────────────────────────────────────
+    async function tjDeleteBrokerTrade(brokerId) {
+      if (!confirm('Delete this broker-imported trade and all its entries, closes, and matches?\n\nThis cannot be undone.')) return;
+      try {
+        const r = await fetch('/api/trade-journal/broker/' + brokerId, { method: 'DELETE' });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        await tjLoad();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    function tjOpenBrokerEditModal(brokerId) {
+      const t = tjBroker.find(x => Number(x.TradeID) === Number(brokerId));
+      if (!t) return;
+      const inst = t.AssetType === 'option'
+        ? `<div class="tj-form-row-3">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Option Type</label>
+              <select class="tj-form-select" id="tj-be-optType">
+                <option value="call" ${t.OptionType === 'call' ? 'selected' : ''}>Call</option>
+                <option value="put"  ${t.OptionType === 'put'  ? 'selected' : ''}>Put</option>
+              </select>
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Strike</label>
+              <input class="tj-form-input" id="tj-be-strike" type="number" step="0.01" value="${t.Strike ?? ''}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Expiration</label>
+              <input class="tj-form-input" id="tj-be-exp" type="date" value="${t.ExpirationDate || ''}">
+            </div>
+          </div>`
+        : '';
+
+      const entryRows = (t.entries || []).map(e => `
+        <tr data-entry-id="${e.EntryID}">
+          <td><input class="tj-form-input" type="date" data-f="activityDate" value="${e.ActivityDate || ''}"></td>
+          <td><input class="tj-form-input" type="number" step="0.0001" data-f="quantity" value="${e.Quantity ?? ''}"></td>
+          <td><input class="tj-form-input" type="number" step="0.0001" data-f="price" value="${e.Price ?? ''}"></td>
+          <td><input class="tj-form-input" type="number" step="0.01" data-f="amount" value="${e.Amount ?? ''}"></td>
+          <td><span class="tj-tag-chip">${e.EntryType}</span></td>
+          <td><button class="tj-btn tj-btn-danger" style="padding:2px 6px;" onclick="tjDeleteBrokerEntry(${t.TradeID}, ${e.EntryID})">🗑</button></td>
+        </tr>`).join('');
+
+      const closeRows = (t.closes || []).map(c => `
+        <tr data-close-id="${c.CloseID}">
+          <td><input class="tj-form-input" type="date" data-f="activityDate" value="${c.ActivityDate || ''}"></td>
+          <td><input class="tj-form-input" type="number" step="0.0001" data-f="quantity" value="${c.Quantity ?? ''}"></td>
+          <td><input class="tj-form-input" type="number" step="0.0001" data-f="price" value="${c.Price ?? ''}"></td>
+          <td><input class="tj-form-input" type="number" step="0.01" data-f="amount" value="${c.Amount ?? ''}"></td>
+          <td><span class="tj-tag-chip" style="color:var(--red);">${c.OriginalTransCode || 'close'}</span></td>
+          <td><button class="tj-btn tj-btn-danger" style="padding:2px 6px;" onclick="tjDeleteBrokerClose(${t.TradeID}, ${c.CloseID})">🗑</button></td>
+        </tr>`).join('');
+
+      const html = `
+        <div style="font-size:10px; color:var(--text3); margin-bottom:10px;">
+          Editing broker trade <strong>#${t.TradeID}</strong> · ${t.AssetType.toUpperCase()} ·
+          <code style="font-size:9px;">${t.InstrumentKey || ''}</code>
+        </div>
+        <div class="tj-form-row">
+          <div class="tj-form-group">
+            <label class="tj-form-label">Ticker</label>
+            <input class="tj-form-input" id="tj-be-ticker" value="${t.Ticker || ''}">
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Asset Type</label>
+            <select class="tj-form-select" id="tj-be-assetType">
+              <option value="stock"  ${t.AssetType === 'stock'  ? 'selected' : ''}>Stock</option>
+              <option value="option" ${t.AssetType === 'option' ? 'selected' : ''}>Option</option>
+            </select>
+          </div>
+        </div>
+        ${inst}
+        <div class="tj-form-row">
+          <div class="tj-form-group"><label class="tj-form-label">Tags (comma-separated)</label><input class="tj-form-input" id="tj-be-tags" value="${(t.Tags || '').replace(/"/g, '&quot;')}"></div>
+          <div class="tj-form-group"><label class="tj-form-label">Setup</label><input class="tj-form-input" id="tj-be-setup" value="${(t.SetupType || '').replace(/"/g, '&quot;')}"></div>
+        </div>
+        <div class="tj-form-row-3">
+          <div class="tj-form-group"><label class="tj-form-label">Grade</label>
+            <select class="tj-form-select" id="tj-be-grade">
+              ${['','A','B','C','D','F'].map(g => `<option value="${g}" ${t.Grade === g ? 'selected' : ''}>${g || '—'}</option>`).join('')}
+            </select>
+          </div>
+          <div class="tj-form-group"><label class="tj-form-label">Emotion</label><input class="tj-form-input" id="tj-be-emotion" value="${(t.Emotion || '').replace(/"/g, '&quot;')}"></div>
+          <div class="tj-form-group"><label class="tj-form-label">Mistakes</label><input class="tj-form-input" id="tj-be-mistakes" value="${(t.Mistakes || '').replace(/"/g, '&quot;')}"></div>
+        </div>
+        <div class="tj-form-group">
+          <label class="tj-form-label">Thesis / Notes</label>
+          <textarea class="tj-form-textarea" id="tj-be-thesis">${t.Thesis || ''}</textarea>
+        </div>
+        <div class="tj-form-group">
+          <label class="tj-form-label">Lessons learned</label>
+          <textarea class="tj-form-textarea" id="tj-be-lessons">${t.Lessons || ''}</textarea>
+        </div>
+
+        <div class="tj-form-derived" style="margin-top:18px;">
+          <strong>Entries (open legs)</strong> — editing any field re-runs FIFO matching and recomputes realized P/L.
+          <table id="tj-be-entries" style="width:100%; margin-top:8px; font-size:11px;">
+            <thead><tr style="color:var(--text3); font-size:9px;">
+              <th style="text-align:left;">Date</th><th style="text-align:left;">Qty</th><th style="text-align:left;">Price</th><th style="text-align:left;">Amount</th><th style="text-align:left;">Type</th><th></th>
+            </tr></thead>
+            <tbody>${entryRows || '<tr><td colspan="6" style="color:var(--text3);">No entries</td></tr>'}</tbody>
+          </table>
+        </div>
+
+        <div class="tj-form-derived">
+          <strong>Closes</strong>
+          <table id="tj-be-closes" style="width:100%; margin-top:8px; font-size:11px;">
+            <thead><tr style="color:var(--text3); font-size:9px;">
+              <th style="text-align:left;">Date</th><th style="text-align:left;">Qty</th><th style="text-align:left;">Price</th><th style="text-align:left;">Amount</th><th style="text-align:left;">Code</th><th></th>
+            </tr></thead>
+            <tbody>${closeRows || '<tr><td colspan="6" style="color:var(--text3);">No closes</td></tr>'}</tbody>
+          </table>
+        </div>
+
+        <div class="tj-modal-footer">
+          <button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Cancel</button>
+          <button class="tj-btn tj-btn-primary" onclick="tjSaveBrokerEdit(${t.TradeID})">Save All Changes</button>
+        </div>`;
+      tjOpenModal('Edit Broker Trade · ' + (t.Ticker || ''), html);
+    }
+
+    async function tjSaveBrokerEdit(tradeId) {
+      const get = id => document.getElementById(id);
+      const v = id => { const el = get(id); return el ? el.value : null; };
+      const t = tjBroker.find(x => Number(x.TradeID) === Number(tradeId));
+      if (!t) return;
+      const assetType = v('tj-be-assetType');
+      const parentBody = {
+        ticker: v('tj-be-ticker'),
+        assetType,
+        tags: v('tj-be-tags'),
+        setupType: v('tj-be-setup'),
+        grade: v('tj-be-grade'),
+        emotion: v('tj-be-emotion'),
+        mistakes: v('tj-be-mistakes'),
+        thesis: v('tj-be-thesis'),
+        lessons: v('tj-be-lessons')
+      };
+      if (assetType === 'option') {
+        parentBody.optionType = v('tj-be-optType');
+        parentBody.strike = v('tj-be-strike');
+        parentBody.expirationDate = v('tj-be-exp');
+      }
+      try {
+        // Parent first
+        let r = await fetch('/api/trade-journal/broker/' + tradeId, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(parentBody)
+        });
+        if (!(await r.json()).ok) throw new Error('Parent update failed');
+
+        // Diff each entry row vs original; PUT only if any input value differs.
+        const collectLeg = (originalLeg, tr) => {
+          const next = {};
+          tr.querySelectorAll('input[data-f]').forEach(inp => {
+            const f = inp.dataset.f;
+            const raw = inp.value;
+            const newVal = f === 'activityDate' ? (raw || null) : (raw === '' ? null : Number(raw));
+            const oldKey = { activityDate: 'ActivityDate', quantity: 'Quantity', price: 'Price', amount: 'Amount' }[f];
+            const oldVal = originalLeg[oldKey];
+            const oldNorm = f === 'activityDate' ? (oldVal || null) : (oldVal == null ? null : Number(oldVal));
+            if (newVal !== oldNorm && !(newVal == null && oldNorm == null)) next[f] = newVal;
+          });
+          return next;
+        };
+
+        for (const row of document.querySelectorAll('#tj-be-entries tbody tr[data-entry-id]')) {
+          const entryId = Number(row.dataset.entryId);
+          const orig = t.entries.find(e => Number(e.EntryID) === entryId);
+          if (!orig) continue;
+          const body = collectLeg(orig, row);
+          if (Object.keys(body).length) {
+            await fetch(`/api/trade-journal/broker/${tradeId}/entry/${entryId}`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+          }
+        }
+        for (const row of document.querySelectorAll('#tj-be-closes tbody tr[data-close-id]')) {
+          const closeId = Number(row.dataset.closeId);
+          const orig = t.closes.find(c => Number(c.CloseID) === closeId);
+          if (!orig) continue;
+          const body = collectLeg(orig, row);
+          if (Object.keys(body).length) {
+            await fetch(`/api/trade-journal/broker/${tradeId}/close/${closeId}`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body)
+            });
+          }
+        }
+
+        tjCloseModal();
+        await tjLoad();
+      } catch (e) {
+        alert('Save error: ' + e.message);
+      }
+    }
+
+    async function tjDeleteBrokerEntry(tradeId, entryId) {
+      if (!confirm('Delete this entry leg? Realized P/L will be recomputed.')) return;
+      try {
+        const r = await fetch(`/api/trade-journal/broker/${tradeId}/entry/${entryId}`, { method: 'DELETE' });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error);
+        tjCloseModal();
+        await tjLoad();
+        tjOpenBrokerEditModal(tradeId);
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+    async function tjDeleteBrokerClose(tradeId, closeId) {
+      if (!confirm('Delete this close leg? Realized P/L will be recomputed.')) return;
+      try {
+        const r = await fetch(`/api/trade-journal/broker/${tradeId}/close/${closeId}`, { method: 'DELETE' });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error);
+        tjCloseModal();
+        await tjLoad();
+        tjOpenBrokerEditModal(tradeId);
       } catch (e) { alert('Error: ' + e.message); }
     }
 
