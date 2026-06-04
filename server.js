@@ -115,6 +115,132 @@ async function initTurso() {
   `);
 
   await turso.execute(`
+    CREATE TABLE IF NOT EXISTS TradeJournal (
+      TradeID INTEGER PRIMARY KEY AUTOINCREMENT,
+      TradeType TEXT NOT NULL,
+      Ticker TEXT NOT NULL,
+      EntryDate TEXT,
+      EntryTime TEXT,
+      Thesis TEXT,
+      TargetPrice REAL,
+      StopLoss REAL,
+      Status TEXT DEFAULT 'open',
+      CloseDate TEXT,
+      CloseTime TEXT,
+      RealizedPL REAL,
+      RealizedPLPercent REAL,
+      OptionType TEXT,
+      Strike REAL,
+      Expiration TEXT,
+      Tags TEXT,
+      SetupType TEXT,
+      Grade TEXT,
+      Emotion TEXT,
+      Mistakes TEXT,
+      Lessons TEXT,
+      ScreenshotUrl TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS broker_log_hist_trades (
+      TradeID INTEGER PRIMARY KEY AUTOINCREMENT,
+      AssetType TEXT NOT NULL,
+      Ticker TEXT NOT NULL,
+      OptionType TEXT,
+      ExpirationDate TEXT,
+      Strike REAL,
+      Status TEXT,
+      FirstEntryDate TEXT,
+      LastCloseDate TEXT,
+      TotalOpenedQuantity REAL,
+      TotalClosedQuantity REAL,
+      RemainingQuantity REAL,
+      AverageCostBasis REAL,
+      TotalCostBasis REAL,
+      TotalProceeds REAL,
+      RealizedPL REAL,
+      RealizedPLPercent REAL,
+      InstrumentKey TEXT,
+      ImportBatchID TEXT,
+      CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+      UpdatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS broker_log_hist_entries (
+      EntryID INTEGER PRIMARY KEY AUTOINCREMENT,
+      TradeID INTEGER NOT NULL,
+      ActivityDate TEXT,
+      Quantity REAL,
+      Price REAL,
+      Amount REAL,
+      CostBasis REAL,
+      EntryType TEXT,
+      OriginalCSVRowNumber INTEGER,
+      OriginalDescription TEXT,
+      OriginalTransCode TEXT,
+      CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS broker_log_hist_closes (
+      CloseID INTEGER PRIMARY KEY AUTOINCREMENT,
+      TradeID INTEGER NOT NULL,
+      ActivityDate TEXT,
+      Quantity REAL,
+      Price REAL,
+      Amount REAL,
+      Proceeds REAL,
+      OriginalCSVRowNumber INTEGER,
+      OriginalDescription TEXT,
+      OriginalTransCode TEXT,
+      CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS broker_log_hist_matches (
+      MatchID INTEGER PRIMARY KEY AUTOINCREMENT,
+      TradeID INTEGER NOT NULL,
+      EntryID INTEGER NOT NULL,
+      CloseID INTEGER NOT NULL,
+      MatchedQuantity REAL,
+      AllocatedEntryCost REAL,
+      AllocatedCloseProceeds REAL,
+      RealizedPL REAL,
+      RealizedPLPercent REAL,
+      CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS broker_log_hist_warnings (
+      WarningID INTEGER PRIMARY KEY AUTOINCREMENT,
+      ImportBatchID TEXT,
+      OriginalCSVRowNumber INTEGER,
+      WarningType TEXT,
+      WarningMessage TEXT,
+      RawRowJSON TEXT,
+      CreatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS TradeEntries (
+      EntryID INTEGER PRIMARY KEY AUTOINCREMENT,
+      TradeID INTEGER NOT NULL,
+      EntryType TEXT NOT NULL,
+      Quantity REAL,
+      Price REAL,
+      EntryDate TEXT,
+      EntryTime TEXT,
+      Notes TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await turso.execute(`
     CREATE TABLE IF NOT EXISTS put_call_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       date TEXT NOT NULL UNIQUE,
@@ -497,7 +623,7 @@ async function fetchFearGreedFromRapidApi() {
 }
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // Basic health check
@@ -2622,6 +2748,951 @@ app.get("/api/put-call-history", async (req, res) => {
       error: "Failed to load put/call history.",
       details: error.message
     });
+  }
+});
+
+// ── Trade Journal (full lifecycle: open / average-in / close) ─────────
+// Uses two tables: TradeJournal (parent) + TradeEntries (initial / averagein / close legs).
+function tjNowParts() {
+  const p = getCstParts();
+  return { date: `${p.year}-${p.month}-${p.day}`, time: `${p.hour}:${p.minute}:${p.second}` };
+}
+
+function tjNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function tjStr(v) {
+  if (v === undefined || v === null) return null;
+  const s = String(v).trim();
+  return s.length ? s : null;
+}
+
+async function tjLoadEntries(tradeId) {
+  const r = await turso.execute({
+    sql: `SELECT EntryID, TradeID, EntryType, Quantity, Price, EntryDate, EntryTime, Notes
+          FROM TradeEntries WHERE TradeID = ? ORDER BY EntryID ASC`,
+    args: [tradeId]
+  });
+  return r.rows || [];
+}
+
+function tjAggregate(trade, entries) {
+  let qtyOpen = 0, costOpen = 0;
+  let qtyClosed = 0, proceeds = 0, costBasisClosed = 0;
+  // Use moving weighted average. Closes consume at avg cost-at-time.
+  let avg = 0;
+  for (const e of entries) {
+    const q = Number(e.Quantity) || 0;
+    const px = Number(e.Price) || 0;
+    if (e.EntryType === 'initial' || e.EntryType === 'averagein') {
+      const newQty = qtyOpen + q;
+      const newCost = costOpen + q * px;
+      qtyOpen = newQty;
+      costOpen = newCost;
+      avg = qtyOpen > 0 ? costOpen / qtyOpen : 0;
+    } else if (e.EntryType === 'close') {
+      const closeQ = Math.min(q, qtyOpen);
+      qtyClosed += closeQ;
+      proceeds += closeQ * px;
+      costBasisClosed += closeQ * avg;
+      qtyOpen -= closeQ;
+      costOpen = qtyOpen * avg;
+    }
+  }
+  const mult = trade.TradeType === 'option' ? 100 : 1;
+  const realizedPL = (proceeds - costBasisClosed) * mult;
+  const realizedPLPct = costBasisClosed > 0 ? ((proceeds - costBasisClosed) / costBasisClosed) * 100 : null;
+  const totalOpenedQty = entries
+    .filter(e => e.EntryType === 'initial' || e.EntryType === 'averagein')
+    .reduce((s, e) => s + (Number(e.Quantity) || 0), 0);
+  const totalClosedQty = entries
+    .filter(e => e.EntryType === 'close')
+    .reduce((s, e) => s + (Number(e.Quantity) || 0), 0);
+  const totalCapital = entries
+    .filter(e => e.EntryType === 'initial' || e.EntryType === 'averagein')
+    .reduce((s, e) => s + (Number(e.Quantity) || 0) * (Number(e.Price) || 0), 0) * mult;
+  return {
+    quantityOpen: qtyOpen,
+    quantityClosed: totalClosedQty,
+    quantityTotal: totalOpenedQty,
+    avgCostBasis: totalOpenedQty > 0 ? (entries
+      .filter(e => e.EntryType === 'initial' || e.EntryType === 'averagein')
+      .reduce((s, e) => s + (Number(e.Quantity) || 0) * (Number(e.Price) || 0), 0) / totalOpenedQty) : 0,
+    totalCapital,
+    realizedPL,
+    realizedPLPercent: realizedPLPct,
+    fullyClosed: qtyOpen <= 0.0000001 && totalClosedQty > 0
+  };
+}
+
+async function tjLoadTradeWithEntries(tradeId) {
+  const t = await turso.execute({
+    sql: `SELECT * FROM TradeJournal WHERE TradeID = ?`,
+    args: [tradeId]
+  });
+  const trade = t.rows?.[0] || null;
+  if (!trade) return null;
+  const entries = await tjLoadEntries(tradeId);
+  const agg = tjAggregate(trade, entries);
+  return { ...trade, entries, ...agg };
+}
+
+app.get("/api/trade-journal", async (_req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+    const t = await turso.execute(`SELECT * FROM TradeJournal ORDER BY TradeID DESC`);
+    const trades = t.rows || [];
+    const e = await turso.execute(`SELECT EntryID, TradeID, EntryType, Quantity, Price, EntryDate, EntryTime, Notes FROM TradeEntries ORDER BY EntryID ASC`);
+    const byTrade = new Map();
+    for (const row of (e.rows || [])) {
+      const k = Number(row.TradeID);
+      if (!byTrade.has(k)) byTrade.set(k, []);
+      byTrade.get(k).push(row);
+    }
+    const out = trades.map(tr => {
+      const entries = byTrade.get(Number(tr.TradeID)) || [];
+      const agg = tjAggregate(tr, entries);
+      return { ...tr, entries, ...agg };
+    });
+    res.json({ ok: true, rows: out });
+  } catch (error) {
+    console.error("TRADE_JOURNAL LIST ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to load trade journal.", details: error.message });
+  }
+});
+
+app.get("/api/trade-journal/:id(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    if (!Number.isFinite(tradeId)) return res.status(400).json({ ok: false, error: "Invalid id" });
+    const trade = await tjLoadTradeWithEntries(tradeId);
+    if (!trade) return res.status(404).json({ ok: false, error: "Trade not found" });
+    res.json({ ok: true, trade });
+  } catch (error) {
+    console.error("TRADE_JOURNAL READ ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to load trade.", details: error.message });
+  }
+});
+
+app.post("/api/trade-journal", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.status(503).json({ ok: false, error: "Trade journal storage is not configured." });
+    }
+    const b = req.body || {};
+    const tradeType = String(b.tradeType || '').toLowerCase();
+    if (tradeType !== 'stock' && tradeType !== 'option') {
+      return res.status(400).json({ ok: false, error: "tradeType must be 'stock' or 'option'." });
+    }
+    const ticker = tjStr(b.ticker);
+    if (!ticker) return res.status(400).json({ ok: false, error: "ticker is required." });
+    const quantity = tjNum(b.quantity);
+    const price = tjNum(b.price);
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      return res.status(400).json({ ok: false, error: "quantity must be > 0." });
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      return res.status(400).json({ ok: false, error: "price must be > 0." });
+    }
+    const now = tjNowParts();
+    const entryDate = tjStr(b.entryDate) || now.date;
+    const entryTime = tjStr(b.entryTime) || now.time;
+
+    const insert = await turso.execute({
+      sql: `INSERT INTO TradeJournal
+        (TradeType, Ticker, EntryDate, EntryTime, Thesis, TargetPrice, StopLoss, Status,
+         OptionType, Strike, Expiration, Tags, SetupType, Grade, Emotion, Mistakes, Lessons, ScreenshotUrl)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 'open', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        tradeType,
+        ticker.toUpperCase(),
+        entryDate,
+        entryTime,
+        tjStr(b.thesis),
+        tjNum(b.targetPrice),
+        tjNum(b.stopLoss),
+        tradeType === 'option' ? tjStr(b.optionType)?.toLowerCase() : null,
+        tradeType === 'option' ? tjNum(b.strike) : null,
+        tradeType === 'option' ? tjStr(b.expiration) : null,
+        tjStr(b.tags),
+        tjStr(b.setupType),
+        tjStr(b.grade),
+        tjStr(b.emotion),
+        tjStr(b.mistakes),
+        tjStr(b.lessons),
+        tjStr(b.screenshotUrl)
+      ]
+    });
+    const tradeId = Number(insert.lastInsertRowid);
+
+    await turso.execute({
+      sql: `INSERT INTO TradeEntries (TradeID, EntryType, Quantity, Price, EntryDate, EntryTime, Notes)
+            VALUES (?, 'initial', ?, ?, ?, ?, ?)`,
+      args: [tradeId, quantity, price, entryDate, entryTime, tjStr(b.entryNotes)]
+    });
+
+    const trade = await tjLoadTradeWithEntries(tradeId);
+    res.json({ ok: true, trade });
+  } catch (error) {
+    console.error("TRADE_JOURNAL CREATE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to create trade.", details: error.message });
+  }
+});
+
+app.put("/api/trade-journal/:id(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    if (!Number.isFinite(tradeId)) return res.status(400).json({ ok: false, error: "Invalid id" });
+    const b = req.body || {};
+    const allowed = [
+      ['Thesis', 'thesis', tjStr],
+      ['TargetPrice', 'targetPrice', tjNum],
+      ['StopLoss', 'stopLoss', tjNum],
+      ['Tags', 'tags', tjStr],
+      ['SetupType', 'setupType', tjStr],
+      ['Grade', 'grade', tjStr],
+      ['Emotion', 'emotion', tjStr],
+      ['Mistakes', 'mistakes', tjStr],
+      ['Lessons', 'lessons', tjStr],
+      ['ScreenshotUrl', 'screenshotUrl', tjStr],
+      ['Ticker', 'ticker', v => tjStr(v)?.toUpperCase() || null],
+      ['OptionType', 'optionType', v => tjStr(v)?.toLowerCase() || null],
+      ['Strike', 'strike', tjNum],
+      ['Expiration', 'expiration', tjStr]
+    ];
+    const sets = [];
+    const args = [];
+    for (const [col, key, conv] of allowed) {
+      if (b[key] !== undefined) {
+        sets.push(`${col} = ?`);
+        args.push(conv(b[key]));
+      }
+    }
+    if (!sets.length) return res.json({ ok: true, updated: 0 });
+    sets.push(`updated_at = CURRENT_TIMESTAMP`);
+    args.push(tradeId);
+    await turso.execute({
+      sql: `UPDATE TradeJournal SET ${sets.join(', ')} WHERE TradeID = ?`,
+      args
+    });
+    const trade = await tjLoadTradeWithEntries(tradeId);
+    res.json({ ok: true, trade });
+  } catch (error) {
+    console.error("TRADE_JOURNAL UPDATE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to update trade.", details: error.message });
+  }
+});
+
+app.delete("/api/trade-journal/:id(\\d+)", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    if (!Number.isFinite(tradeId)) return res.status(400).json({ ok: false, error: "Invalid id" });
+    await turso.execute({ sql: `DELETE FROM TradeEntries WHERE TradeID = ?`, args: [tradeId] });
+    await turso.execute({ sql: `DELETE FROM TradeJournal WHERE TradeID = ?`, args: [tradeId] });
+    res.json({ ok: true, deleted: tradeId });
+  } catch (error) {
+    console.error("TRADE_JOURNAL DELETE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to delete trade.", details: error.message });
+  }
+});
+
+app.post("/api/trade-journal/:id(\\d+)/average-in", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    if (!Number.isFinite(tradeId)) return res.status(400).json({ ok: false, error: "Invalid id" });
+    const b = req.body || {};
+    const quantity = tjNum(b.quantity);
+    const price = tjNum(b.price);
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      return res.status(400).json({ ok: false, error: "quantity must be > 0." });
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      return res.status(400).json({ ok: false, error: "price must be > 0." });
+    }
+    const now = tjNowParts();
+    await turso.execute({
+      sql: `INSERT INTO TradeEntries (TradeID, EntryType, Quantity, Price, EntryDate, EntryTime, Notes)
+            VALUES (?, 'averagein', ?, ?, ?, ?, ?)`,
+      args: [tradeId, quantity, price, tjStr(b.date) || now.date, tjStr(b.time) || now.time, tjStr(b.notes)]
+    });
+    // Re-open trade if it was previously fully closed.
+    await turso.execute({
+      sql: `UPDATE TradeJournal SET Status = 'open', CloseDate = NULL, CloseTime = NULL,
+            RealizedPL = NULL, RealizedPLPercent = NULL, updated_at = CURRENT_TIMESTAMP
+            WHERE TradeID = ?`,
+      args: [tradeId]
+    });
+    const trade = await tjLoadTradeWithEntries(tradeId);
+    res.json({ ok: true, trade });
+  } catch (error) {
+    console.error("TRADE_JOURNAL AVG-IN ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to add average-in.", details: error.message });
+  }
+});
+
+app.post("/api/trade-journal/:id(\\d+)/close", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    if (!Number.isFinite(tradeId)) return res.status(400).json({ ok: false, error: "Invalid id" });
+    const b = req.body || {};
+    const quantity = tjNum(b.quantity);
+    const price = tjNum(b.price);
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+      return res.status(400).json({ ok: false, error: "quantity must be > 0." });
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+      return res.status(400).json({ ok: false, error: "price must be > 0." });
+    }
+    const now = tjNowParts();
+    const closeDate = tjStr(b.date) || now.date;
+    const closeTime = tjStr(b.time) || now.time;
+    await turso.execute({
+      sql: `INSERT INTO TradeEntries (TradeID, EntryType, Quantity, Price, EntryDate, EntryTime, Notes)
+            VALUES (?, 'close', ?, ?, ?, ?, ?)`,
+      args: [tradeId, quantity, price, closeDate, closeTime, tjStr(b.notes)]
+    });
+
+    // Recompute, persist Status/RealizedPL on parent when fully closed.
+    const trade = await tjLoadTradeWithEntries(tradeId);
+    if (trade.fullyClosed) {
+      await turso.execute({
+        sql: `UPDATE TradeJournal SET Status = 'closed', CloseDate = ?, CloseTime = ?,
+              RealizedPL = ?, RealizedPLPercent = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE TradeID = ?`,
+        args: [closeDate, closeTime, trade.realizedPL, trade.realizedPLPercent, tradeId]
+      });
+    } else {
+      await turso.execute({
+        sql: `UPDATE TradeJournal SET RealizedPL = ?, RealizedPLPercent = ?, updated_at = CURRENT_TIMESTAMP
+              WHERE TradeID = ?`,
+        args: [trade.realizedPL, trade.realizedPLPercent, tradeId]
+      });
+    }
+    const fresh = await tjLoadTradeWithEntries(tradeId);
+    res.json({ ok: true, trade: fresh });
+  } catch (error) {
+    console.error("TRADE_JOURNAL CLOSE ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to close trade.", details: error.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────
+// Broker CSV import (Robinhood-style activity log → historical trades)
+// ─────────────────────────────────────────────────────────────────────
+
+// RFC-4180-ish CSV parser. Handles quoted fields, escaped quotes, and
+// embedded commas. Returns array of arrays.
+function parseCsvText(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false, i = 0;
+  const src = String(text).replace(/^﻿/, '');
+  while (i < src.length) {
+    const c = src[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (src[i + 1] === '"') { field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += c; i++; continue;
+    }
+    if (c === '"') { inQuotes = true; i++; continue; }
+    if (c === ',') { row.push(field); field = ''; i++; continue; }
+    if (c === '\r') { i++; continue; }
+    if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; i++; continue; }
+    field += c; i++;
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  // Drop trailing empty rows
+  while (rows.length && rows[rows.length - 1].every(c => !String(c).trim())) rows.pop();
+  return rows;
+}
+
+// Money normalization per spec:
+//   "$1,134.92"   →  1134.92
+//   "($1,099.04)" → -1099.04
+//   "-$50.00"     →   -50.00
+//   ""/null       →  null
+function parseMoney(v) {
+  if (v == null) return null;
+  let s = String(v).trim();
+  if (!s) return null;
+  let neg = false;
+  if (/^\(.*\)$/.test(s)) { neg = true; s = s.slice(1, -1); }
+  if (s.startsWith('-')) { neg = true; s = s.slice(1); }
+  s = s.replace(/[$,\s]/g, '');
+  if (!s) return null;
+  const n = Number(s);
+  if (!Number.isFinite(n)) return null;
+  return neg ? -n : n;
+}
+
+function parseQty(v) {
+  if (v == null) return null;
+  const s = String(v).trim().replace(/[,\s]/g, '');
+  if (!s) return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : null;
+}
+
+// Normalize a date to ISO YYYY-MM-DD. Accepts M/D/YYYY, MM/DD/YYYY, YYYY-MM-DD.
+function normalizeBrokerDate(v) {
+  if (!v) return null;
+  const s = String(v).trim();
+  if (!s) return null;
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  }
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (m) {
+    let yr = m[3];
+    if (yr.length === 2) yr = '20' + yr;
+    return `${yr}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+  }
+  return s; // fallback
+}
+
+// Build a {logical key -> column index} map from header row.
+function mapBrokerHeader(headerRow) {
+  const norm = headerRow.map(h => String(h || '').trim().toLowerCase());
+  const find = (...candidates) => {
+    for (const c of candidates) {
+      const i = norm.indexOf(c);
+      if (i >= 0) return i;
+    }
+    // partial-match fallback
+    for (let i = 0; i < norm.length; i++) {
+      for (const c of candidates) {
+        if (norm[i].includes(c)) return i;
+      }
+    }
+    return -1;
+  };
+  return {
+    activityDate: find('activity date', 'date', 'trade date'),
+    symbol: find('instrument', 'symbol', 'ticker'),
+    description: find('description'),
+    transCode: find('trans code', 'transaction code', 'action', 'type'),
+    quantity: find('quantity', 'qty', 'shares'),
+    price: find('price'),
+    amount: find('amount', 'net amount')
+  };
+}
+
+// Identify trade rows. Non-trade activity (ACH, dividends, etc.) is skipped.
+function classifyTransCode(raw) {
+  const c = String(raw || '').trim().toUpperCase();
+  if (!c) return { skip: true };
+  if (c === 'BTO') return { side: 'open',  assetType: 'option' };
+  if (c === 'STC') return { side: 'close', assetType: 'option' };
+  if (c === 'BUY') return { side: 'open',  assetType: 'stock' };
+  if (c === 'SELL') return { side: 'close', assetType: 'stock' };
+  // Anything else (ACH, DIV, INT, JNL, WIRE, SWEEP, REC, etc.) is non-trade.
+  return { skip: true };
+}
+
+// Parse option description: "SPY 7/17/2026 Put $720.00".
+// Returns { ticker, expirationDate, optionType, strike } or null.
+function parseOptionDescription(desc) {
+  if (!desc) return null;
+  const re = /^([A-Za-z.][A-Za-z.0-9-]{0,9})\s+(\d{1,2}\/\d{1,2}\/\d{2,4})\s+(Call|Put)\s+\$?\s*([0-9][0-9,]*\.?\d*)/i;
+  const m = String(desc).trim().match(re);
+  if (!m) return null;
+  return {
+    ticker: m[1].toUpperCase(),
+    expirationDate: normalizeBrokerDate(m[2]),
+    optionType: m[3].toLowerCase(),
+    strike: Number(m[4].replace(/,/g, ''))
+  };
+}
+
+function instrumentKeyFor(parsed) {
+  if (parsed.assetType === 'option') {
+    return `OPT|${parsed.ticker}|${parsed.expirationDate}|${parsed.optionType}|${parsed.strike}`;
+  }
+  return `STK|${parsed.ticker}`;
+}
+
+// Core matcher. Takes already-parsed rows in chronological order.
+// Returns { trades: [...], warnings: [...] } where each trade includes
+// entries, closes, and matches with temporary IDs.
+function matchBrokerRows(rows) {
+  const trades = [];
+  const warnings = [];
+  const groups = new Map(); // instrumentKey -> { currentIdx, openLots: [] }
+  let entryCounter = 0, closeCounter = 0;
+
+  for (const r of rows) {
+    let g = groups.get(r.instrumentKey);
+    if (!g) { g = { currentIdx: null, openLots: [] }; groups.set(r.instrumentKey, g); }
+
+    if (r.side === 'open') {
+      let trade;
+      if (g.currentIdx == null) {
+        trade = {
+          assetType: r.assetType,
+          ticker: r.ticker,
+          optionType: r.optionType || null,
+          expirationDate: r.expirationDate || null,
+          strike: r.strike ?? null,
+          instrumentKey: r.instrumentKey,
+          entries: [],
+          closes: [],
+          matches: []
+        };
+        trades.push(trade);
+        g.currentIdx = trades.length - 1;
+      } else {
+        trade = trades[g.currentIdx];
+      }
+
+      const mult = r.assetType === 'option' ? 100 : 1;
+      // Amount already includes fees → preferred. Fallback to price × qty × mult.
+      const rawAmt = r.amount;
+      const costBasis = rawAmt != null
+        ? Math.abs(rawAmt)
+        : (r.price != null && r.quantity != null ? r.price * r.quantity * mult : null);
+      const entry = {
+        tempId: ++entryCounter,
+        tradeIdx: g.currentIdx,
+        activityDate: r.activityDate,
+        quantity: r.quantity,
+        price: r.price,
+        amount: rawAmt,
+        costBasis,
+        entryType: trade.entries.length === 0 ? 'Initial' : 'AverageIn',
+        csvRow: r.csvRow,
+        description: r.description,
+        transCode: r.transCode
+      };
+      trade.entries.push(entry);
+      g.openLots.push({
+        entryTempId: entry.tempId,
+        origQty: r.quantity,
+        origCost: costBasis,
+        remainingQty: r.quantity
+      });
+
+      // Sign sanity: BTO/Buy amounts should be negative (debit). Warn if not.
+      if (rawAmt != null && rawAmt > 0) {
+        warnings.push({
+          csvRow: r.csvRow,
+          type: 'sign_mismatch',
+          message: `${r.transCode} should be a debit (negative Amount) but Amount is positive (${rawAmt}). Direction taken from Trans Code.`,
+          raw: r.raw
+        });
+      }
+    } else {
+      // close
+      if (g.currentIdx == null || g.openLots.length === 0) {
+        warnings.push({
+          csvRow: r.csvRow,
+          type: 'unmatched_close',
+          message: `${r.transCode} without prior matching open lot for ${r.instrumentKey}.`,
+          raw: r.raw
+        });
+        continue;
+      }
+      const trade = trades[g.currentIdx];
+      const mult = r.assetType === 'option' ? 100 : 1;
+      const rawAmt = r.amount;
+      const proceeds = rawAmt != null
+        ? Math.abs(rawAmt)
+        : (r.price != null && r.quantity != null ? r.price * r.quantity * mult : null);
+      const closeRow = {
+        tempId: ++closeCounter,
+        tradeIdx: g.currentIdx,
+        activityDate: r.activityDate,
+        quantity: r.quantity,
+        price: r.price,
+        amount: rawAmt,
+        proceeds,
+        csvRow: r.csvRow,
+        description: r.description,
+        transCode: r.transCode
+      };
+      trade.closes.push(closeRow);
+
+      if (rawAmt != null && rawAmt < 0) {
+        warnings.push({
+          csvRow: r.csvRow,
+          type: 'sign_mismatch',
+          message: `${r.transCode} should be a credit (positive Amount) but Amount is negative (${rawAmt}). Direction taken from Trans Code.`,
+          raw: r.raw
+        });
+      }
+
+      // FIFO match.
+      let qtyToClose = r.quantity;
+      while (qtyToClose > 1e-9 && g.openLots.length) {
+        const lot = g.openLots[0];
+        const matchQty = Math.min(qtyToClose, lot.remainingQty);
+        const fracOfLot = lot.origQty > 0 ? matchQty / lot.origQty : 0;
+        const fracOfClose = closeRow.quantity > 0 ? matchQty / closeRow.quantity : 0;
+        const allocatedEntryCost = (lot.origCost || 0) * fracOfLot;
+        const allocatedCloseProceeds = (closeRow.proceeds || 0) * fracOfClose;
+        const realizedPL = allocatedCloseProceeds - allocatedEntryCost;
+        trade.matches.push({
+          tradeIdx: g.currentIdx,
+          entryTempId: lot.entryTempId,
+          closeTempId: closeRow.tempId,
+          matchedQuantity: matchQty,
+          allocatedEntryCost,
+          allocatedCloseProceeds,
+          realizedPL,
+          realizedPLPercent: allocatedEntryCost > 0 ? (realizedPL / allocatedEntryCost) * 100 : null
+        });
+        lot.remainingQty -= matchQty;
+        qtyToClose -= matchQty;
+        if (lot.remainingQty <= 1e-9) g.openLots.shift();
+      }
+
+      if (qtyToClose > 1e-9) {
+        warnings.push({
+          csvRow: r.csvRow,
+          type: 'partial_unmatched_close',
+          message: `Close quantity ${r.quantity} exceeded available open quantity by ${qtyToClose.toFixed(6)}. Matched what was available.`,
+          raw: r.raw
+        });
+      }
+
+      // If the position is fully flat, the next open starts a brand-new TradeID.
+      if (g.openLots.length === 0) g.currentIdx = null;
+    }
+  }
+
+  return { trades, warnings };
+}
+
+function computeBrokerTradeAggregates(t) {
+  const totalOpened = t.entries.reduce((s, e) => s + (e.quantity || 0), 0);
+  const totalClosed = t.closes.reduce((s, c) => s + (c.quantity || 0), 0);
+  const remaining = totalOpened - totalClosed;
+  const totalCostOpened = t.entries.reduce((s, e) => s + (e.costBasis || 0), 0);
+  const matchedCost = t.matches.reduce((s, m) => s + (m.allocatedEntryCost || 0), 0);
+  const totalProceeds = t.matches.reduce((s, m) => s + (m.allocatedCloseProceeds || 0), 0);
+  const realizedPL = t.matches.reduce((s, m) => s + (m.realizedPL || 0), 0);
+  const realizedPLPercent = matchedCost > 0 ? (realizedPL / matchedCost) * 100 : null;
+  const remainingCost = totalCostOpened - matchedCost;
+  const avgCostBasis = remaining > 1e-9 ? remainingCost / remaining : (totalOpened > 0 ? totalCostOpened / totalOpened : 0);
+  const dates = [...t.entries.map(e => e.activityDate), ...t.closes.map(c => c.activityDate)].filter(Boolean).sort();
+  const firstEntryDate = t.entries[0]?.activityDate || dates[0] || null;
+  const lastCloseDate = t.closes.length ? t.closes[t.closes.length - 1].activityDate : null;
+  const status = remaining <= 1e-9
+    ? 'Closed'
+    : (totalClosed > 1e-9 ? 'Partially Closed' : 'Open');
+  Object.assign(t, {
+    totalOpened, totalClosed, remaining,
+    totalCostBasis: totalCostOpened,
+    totalProceeds,
+    averageCostBasis: avgCostBasis,
+    realizedPL,
+    realizedPLPercent,
+    firstEntryDate,
+    lastCloseDate,
+    status
+  });
+}
+
+async function persistBrokerImport(matched, warnings, batchId) {
+  const insertedTradeIds = [];
+  for (const t of matched.trades) {
+    const tr = await turso.execute({
+      sql: `INSERT INTO broker_log_hist_trades
+        (AssetType, Ticker, OptionType, ExpirationDate, Strike, Status,
+         FirstEntryDate, LastCloseDate, TotalOpenedQuantity, TotalClosedQuantity,
+         RemainingQuantity, AverageCostBasis, TotalCostBasis, TotalProceeds,
+         RealizedPL, RealizedPLPercent, InstrumentKey, ImportBatchID)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        t.assetType, t.ticker, t.optionType, t.expirationDate, t.strike, t.status,
+        t.firstEntryDate, t.lastCloseDate, t.totalOpened, t.totalClosed,
+        t.remaining, t.averageCostBasis, t.totalCostBasis, t.totalProceeds,
+        t.realizedPL, t.realizedPLPercent, t.instrumentKey, batchId
+      ]
+    });
+    const tradeId = Number(tr.lastInsertRowid);
+    insertedTradeIds.push(tradeId);
+
+    // Persist entries, capture real EntryIDs by temp.
+    const entryTempToReal = new Map();
+    for (const e of t.entries) {
+      const er = await turso.execute({
+        sql: `INSERT INTO broker_log_hist_entries
+          (TradeID, ActivityDate, Quantity, Price, Amount, CostBasis,
+           EntryType, OriginalCSVRowNumber, OriginalDescription, OriginalTransCode)
+          VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        args: [tradeId, e.activityDate, e.quantity, e.price, e.amount,
+               e.costBasis, e.entryType, e.csvRow, e.description, e.transCode]
+      });
+      entryTempToReal.set(e.tempId, Number(er.lastInsertRowid));
+    }
+
+    const closeTempToReal = new Map();
+    for (const c of t.closes) {
+      const cr = await turso.execute({
+        sql: `INSERT INTO broker_log_hist_closes
+          (TradeID, ActivityDate, Quantity, Price, Amount, Proceeds,
+           OriginalCSVRowNumber, OriginalDescription, OriginalTransCode)
+          VALUES (?,?,?,?,?,?,?,?,?)`,
+        args: [tradeId, c.activityDate, c.quantity, c.price, c.amount,
+               c.proceeds, c.csvRow, c.description, c.transCode]
+      });
+      closeTempToReal.set(c.tempId, Number(cr.lastInsertRowid));
+    }
+
+    for (const m of t.matches) {
+      await turso.execute({
+        sql: `INSERT INTO broker_log_hist_matches
+          (TradeID, EntryID, CloseID, MatchedQuantity, AllocatedEntryCost,
+           AllocatedCloseProceeds, RealizedPL, RealizedPLPercent)
+          VALUES (?,?,?,?,?,?,?,?)`,
+        args: [
+          tradeId,
+          entryTempToReal.get(m.entryTempId),
+          closeTempToReal.get(m.closeTempId),
+          m.matchedQuantity,
+          m.allocatedEntryCost,
+          m.allocatedCloseProceeds,
+          m.realizedPL,
+          m.realizedPLPercent
+        ]
+      });
+    }
+  }
+
+  for (const w of warnings) {
+    await turso.execute({
+      sql: `INSERT INTO broker_log_hist_warnings
+        (ImportBatchID, OriginalCSVRowNumber, WarningType, WarningMessage, RawRowJSON)
+        VALUES (?,?,?,?,?)`,
+      args: [batchId, w.csvRow ?? null, w.type, w.message, w.raw ? JSON.stringify(w.raw) : null]
+    });
+  }
+  return insertedTradeIds;
+}
+
+// POST /api/trade-journal/broker-import — body: { csv: "..." } or rows: [...]
+app.post("/api/trade-journal/broker-import", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.status(503).json({ ok: false, error: "Storage not configured." });
+    }
+    const csv = req.body?.csv;
+    if (typeof csv !== 'string' || !csv.trim()) {
+      return res.status(400).json({ ok: false, error: "Missing CSV body (field: csv)." });
+    }
+    const replaceExisting = req.body?.replaceExisting === true;
+
+    const rawRows = parseCsvText(csv);
+    if (rawRows.length < 2) {
+      return res.status(400).json({ ok: false, error: "CSV has no data rows." });
+    }
+
+    const headerMap = mapBrokerHeader(rawRows[0]);
+    if (headerMap.activityDate < 0 || headerMap.transCode < 0 ||
+        headerMap.symbol < 0 || headerMap.description < 0) {
+      return res.status(400).json({
+        ok: false,
+        error: "CSV missing required columns. Need Activity Date, Symbol/Instrument, Description, Trans Code.",
+        detectedHeaders: rawRows[0]
+      });
+    }
+
+    const warnings = [];
+    const tradeRows = [];
+
+    for (let i = 1; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      const csvRow = i + 1; // 1-based with header
+      const get = (idx) => idx >= 0 && idx < row.length ? row[idx] : '';
+
+      const transCodeRaw = String(get(headerMap.transCode) || '').trim();
+      const classify = classifyTransCode(transCodeRaw);
+      if (classify.skip) continue;
+
+      const description = String(get(headerMap.description) || '').trim();
+      const symbol = String(get(headerMap.symbol) || '').trim();
+      const activityDate = normalizeBrokerDate(get(headerMap.activityDate));
+      const quantity = parseQty(get(headerMap.quantity));
+      const price = parseMoney(get(headerMap.price));
+      const amount = parseMoney(get(headerMap.amount));
+
+      if (quantity == null || quantity <= 0) {
+        warnings.push({
+          csvRow,
+          type: 'invalid_quantity',
+          message: `Quantity missing or non-positive. Skipped.`,
+          raw: { row }
+        });
+        continue;
+      }
+
+      let assetType = classify.assetType;
+      let ticker = null, optionType = null, expirationDate = null, strike = null;
+
+      if (assetType === 'option') {
+        const opt = parseOptionDescription(description);
+        if (!opt) {
+          warnings.push({
+            csvRow,
+            type: 'unparsed_option',
+            message: `Could not parse option description: "${description}". Row not matched.`,
+            raw: { row }
+          });
+          continue;
+        }
+        ticker = opt.ticker;
+        optionType = opt.optionType;
+        expirationDate = opt.expirationDate;
+        strike = opt.strike;
+        // Prefer Symbol column when present and consistent (e.g. SPY column for SPY options)
+        if (symbol && symbol.toUpperCase() !== ticker.toUpperCase()) {
+          // Trust the description's ticker (broker symbol may include sub-codes)
+          // but log a soft warning if drastically different.
+          if (!ticker.startsWith(symbol.toUpperCase())) {
+            warnings.push({
+              csvRow,
+              type: 'symbol_mismatch',
+              message: `Symbol column "${symbol}" differs from option description ticker "${ticker}". Used description.`,
+              raw: { row }
+            });
+          }
+        }
+      } else {
+        // stock
+        if (!symbol) {
+          warnings.push({
+            csvRow,
+            type: 'missing_symbol',
+            message: 'Stock row missing Symbol/Ticker. Skipped.',
+            raw: { row }
+          });
+          continue;
+        }
+        ticker = symbol.toUpperCase();
+      }
+
+      const parsed = {
+        side: classify.side,
+        assetType,
+        ticker,
+        optionType,
+        expirationDate,
+        strike,
+        activityDate,
+        quantity,
+        price,
+        amount,
+        transCode: transCodeRaw,
+        description,
+        csvRow,
+        raw: row
+      };
+      parsed.instrumentKey = instrumentKeyFor(parsed);
+      tradeRows.push(parsed);
+    }
+
+    // Chronological sort with CSV row number as tie-breaker.
+    tradeRows.sort((a, b) => {
+      const da = a.activityDate || '';
+      const db = b.activityDate || '';
+      if (da !== db) return da < db ? -1 : 1;
+      return a.csvRow - b.csvRow;
+    });
+
+    const matched = matchBrokerRows(tradeRows);
+    matched.warnings = [...warnings, ...matched.warnings];
+
+    for (const t of matched.trades) computeBrokerTradeAggregates(t);
+
+    if (replaceExisting) {
+      await turso.execute(`DELETE FROM broker_log_hist_matches`);
+      await turso.execute(`DELETE FROM broker_log_hist_closes`);
+      await turso.execute(`DELETE FROM broker_log_hist_entries`);
+      await turso.execute(`DELETE FROM broker_log_hist_warnings`);
+      await turso.execute(`DELETE FROM broker_log_hist_trades`);
+    }
+
+    const batchId = `import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const insertedIds = await persistBrokerImport(matched, matched.warnings, batchId);
+
+    res.json({
+      ok: true,
+      batchId,
+      tradesImported: insertedIds.length,
+      warningsCount: matched.warnings.length,
+      summary: {
+        rowsProcessed: tradeRows.length,
+        rawCsvRows: rawRows.length - 1,
+        skippedNonTrade: (rawRows.length - 1) - tradeRows.length - matched.warnings.filter(w =>
+          ['invalid_quantity','unparsed_option','missing_symbol'].includes(w.type)).length
+      }
+    });
+  } catch (error) {
+    console.error("BROKER_IMPORT ERROR:", error);
+    res.status(500).json({ ok: false, error: "Import failed.", details: error.message });
+  }
+});
+
+// GET /api/trade-journal/broker — list with entries, closes, matches, warnings
+app.get("/api/trade-journal/broker", async (_req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [], warnings: [] });
+    }
+    const t = await turso.execute(`SELECT * FROM broker_log_hist_trades ORDER BY FirstEntryDate DESC, TradeID DESC`);
+    const e = await turso.execute(`SELECT * FROM broker_log_hist_entries ORDER BY EntryID ASC`);
+    const c = await turso.execute(`SELECT * FROM broker_log_hist_closes ORDER BY CloseID ASC`);
+    const m = await turso.execute(`SELECT * FROM broker_log_hist_matches ORDER BY MatchID ASC`);
+    const w = await turso.execute(`SELECT * FROM broker_log_hist_warnings ORDER BY WarningID DESC LIMIT 200`);
+    const entriesByTrade = new Map();
+    const closesByTrade = new Map();
+    const matchesByTrade = new Map();
+    for (const row of (e.rows || [])) {
+      const k = Number(row.TradeID);
+      if (!entriesByTrade.has(k)) entriesByTrade.set(k, []);
+      entriesByTrade.get(k).push(row);
+    }
+    for (const row of (c.rows || [])) {
+      const k = Number(row.TradeID);
+      if (!closesByTrade.has(k)) closesByTrade.set(k, []);
+      closesByTrade.get(k).push(row);
+    }
+    for (const row of (m.rows || [])) {
+      const k = Number(row.TradeID);
+      if (!matchesByTrade.has(k)) matchesByTrade.set(k, []);
+      matchesByTrade.get(k).push(row);
+    }
+    const trades = (t.rows || []).map(tr => ({
+      ...tr,
+      entries: entriesByTrade.get(Number(tr.TradeID)) || [],
+      closes: closesByTrade.get(Number(tr.TradeID)) || [],
+      matches: matchesByTrade.get(Number(tr.TradeID)) || []
+    }));
+    res.json({ ok: true, rows: trades, warnings: w.rows || [] });
+  } catch (error) {
+    console.error("BROKER_LIST ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to load broker trades.", details: error.message });
+  }
+});
+
+// DELETE /api/trade-journal/broker — clear all broker imports
+app.delete("/api/trade-journal/broker", async (_req, res) => {
+  try {
+    await turso.execute(`DELETE FROM broker_log_hist_matches`);
+    await turso.execute(`DELETE FROM broker_log_hist_closes`);
+    await turso.execute(`DELETE FROM broker_log_hist_entries`);
+    await turso.execute(`DELETE FROM broker_log_hist_warnings`);
+    await turso.execute(`DELETE FROM broker_log_hist_trades`);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_CLEAR ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to clear broker trades.", details: error.message });
   }
 });
 

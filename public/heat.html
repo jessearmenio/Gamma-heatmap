@@ -7975,6 +7975,157 @@
       background: rgba(255, 176, 32, 0.06) !important;
     }
 
+    /* ── Trade Journal page ─────────────────────────────────── */
+    #trade-journal-page { padding: 18px 22px; color: var(--text); }
+    .tj-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; gap:18px; }
+    .tj-title { font-size:18px; font-weight:800; letter-spacing:.02em; }
+    .tj-sub { font-size:11px; color:var(--text3); margin-top:4px; }
+    .tj-header-actions { display:flex; gap:8px; }
+    .tj-btn {
+      background: var(--panel); color: var(--text); border: 1px solid var(--border2);
+      padding: 7px 14px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      letter-spacing: .03em; cursor: pointer; transition: background .15s;
+    }
+    .tj-btn:hover { background: var(--bg3); }
+    .tj-btn-primary { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
+    .tj-btn-primary:hover { background: var(--accent2); }
+    .tj-btn-danger { background: rgba(255,59,92,0.12); color: var(--red); border-color: rgba(255,59,92,0.3); }
+    .tj-btn-ghost { background: transparent; border-color: var(--border); color: var(--text3); }
+
+    .tj-kpis {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px; margin-bottom: 16px;
+    }
+    .tj-kpi {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px;
+    }
+    .tj-kpi-label { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; }
+    .tj-kpi-value { font-size: 18px; font-weight: 800; margin-top: 6px; color: var(--text); }
+    .tj-kpi-value.pos { color: var(--green); }
+    .tj-kpi-value.neg { color: var(--red); }
+
+    .tj-charts-row { display:flex; gap:12px; margin-bottom:14px; flex-wrap: wrap; }
+    .tj-chart-card {
+      flex: 1; min-width: 260px;
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px;
+    }
+    .tj-chart-title { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+    .tj-chart-body { position: relative; height: 200px; display:flex; align-items:center; justify-content:center; }
+    .tj-chart-body canvas { width: 100% !important; height: 100% !important; }
+    .tj-bar-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
+    .tj-bar-row { display: grid; grid-template-columns: 80px 1fr 80px; gap: 8px; align-items: center; font-size: 11px; }
+    .tj-bar-row .tj-bar-label { color: var(--text); font-weight: 600; }
+    .tj-bar-row .tj-bar-track { background: var(--bg3); border-radius: 4px; overflow: hidden; height: 10px; position: relative; }
+    .tj-bar-row .tj-bar-fill { height: 100%; }
+    .tj-bar-row .tj-bar-fill.pos { background: var(--green); }
+    .tj-bar-row .tj-bar-fill.neg { background: var(--red); }
+    .tj-bar-row .tj-bar-value { text-align: right; font-weight: 700; }
+    .tj-bar-row .tj-bar-value.pos { color: var(--green); }
+    .tj-bar-row .tj-bar-value.neg { color: var(--red); }
+    .tj-bar-empty { color: var(--text3); font-size: 11px; padding: 10px; text-align: center; }
+
+    .tj-history-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .tj-history-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap: wrap; }
+    .tj-history-title { font-size: 13px; font-weight: 800; letter-spacing:.04em; }
+    .tj-filters { display:flex; gap:6px; flex-wrap: wrap; }
+    .tj-filters select, .tj-filters input {
+      background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
+      font-size: 11px; padding: 5px 8px; border-radius: 4px; min-width: 90px;
+    }
+    .tj-history-table-wrap { overflow-x: auto; }
+    .tj-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tj-table th {
+      text-align: left; padding: 8px 6px; font-weight: 700; color: var(--text3);
+      border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
+      white-space: nowrap; letter-spacing: .03em;
+    }
+    .tj-table th:hover { color: var(--text); }
+    .tj-table td { padding: 8px 6px; border-bottom: 1px solid rgba(30,34,48,.5); vertical-align: top; }
+    .tj-table tr.tj-row:hover td { background: rgba(255,255,255,0.02); }
+    .tj-table tr.tj-row.open td { border-left: 2px solid var(--blue); }
+    .tj-table tr.tj-row.closed.win td { border-left: 2px solid var(--green); }
+    .tj-table tr.tj-row.closed.loss td { border-left: 2px solid var(--red); }
+    .tj-table .tj-pl-pos { color: var(--green); font-weight: 700; }
+    .tj-table .tj-pl-neg { color: var(--red); font-weight: 700; }
+    .tj-status-badge {
+      display: inline-block; padding: 2px 7px; border-radius: 4px;
+      font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .tj-status-badge.open { background: rgba(59,140,255,.18); color: var(--blue); }
+    .tj-status-badge.closed { background: rgba(113,130,157,.15); color: var(--text2); }
+    .tj-type-badge {
+      display:inline-block; padding: 2px 6px; border-radius: 3px; font-size: 9px;
+      font-weight: 700; letter-spacing: .06em; background: var(--bg3); color: var(--text2);
+    }
+    .tj-type-badge.option.call { color: var(--green); }
+    .tj-type-badge.option.put { color: var(--red); }
+    .tj-tag-chip {
+      display: inline-block; padding: 1px 5px; margin: 1px 2px 1px 0;
+      background: var(--bg3); color: var(--text2); border-radius: 3px; font-size: 9px;
+    }
+    .tj-row-actions { display: flex; gap: 4px; }
+    .tj-row-actions button {
+      background: var(--bg3); border: 1px solid var(--border2); color: var(--text2);
+      padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;
+    }
+    .tj-row-actions button:hover { color: var(--text); }
+    .tj-detail-row td { padding: 12px 14px !important; background: var(--bg2); }
+    .tj-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .tj-detail-grid > div { font-size: 11px; }
+    .tj-detail-grid .lbl { font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3px; }
+    .tj-detail-entries { margin-top: 10px; }
+    .tj-detail-entries table { width: 100%; font-size: 10px; }
+    .tj-detail-entries td, .tj-detail-entries th { padding: 4px 6px; border-bottom: 1px solid rgba(30,34,48,.5); text-align: left; }
+
+    .tj-empty { color: var(--text3); font-size: 12px; padding: 30px 0; text-align: center; }
+
+    /* Trade Journal Modal */
+    .tj-modal-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 9999;
+      background: rgba(3,9,21,.75); backdrop-filter: blur(4px);
+      align-items: flex-start; justify-content: center; padding: 60px 20px;
+      overflow-y: auto;
+    }
+    .tj-modal-backdrop.open { display: flex; }
+    .tj-modal {
+      background: var(--panel); border: 1px solid var(--border2); border-radius: 10px;
+      width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      max-height: calc(100vh - 120px); display: flex; flex-direction: column;
+    }
+    .tj-modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; border-bottom: 1px solid var(--border);
+    }
+    .tj-modal-title { font-size: 14px; font-weight: 800; letter-spacing: .03em; }
+    .tj-modal-close {
+      background: none; border: none; color: var(--text2); font-size: 22px;
+      cursor: pointer; line-height: 1;
+    }
+    .tj-modal-body { padding: 18px; overflow-y: auto; }
+    .tj-form-group { margin-bottom: 12px; }
+    .tj-form-label { display: block; font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
+    .tj-form-input, .tj-form-select, .tj-form-textarea {
+      width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+      color: var(--text); padding: 8px 10px; border-radius: 5px; font-size: 12px;
+      font-family: inherit;
+    }
+    .tj-form-textarea { min-height: 70px; resize: vertical; }
+    .tj-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tj-form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .tj-form-derived {
+      background: var(--bg2); border: 1px dashed var(--border2); border-radius: 5px;
+      padding: 10px; font-size: 11px; color: var(--text2); margin: 8px 0;
+    }
+    .tj-type-toggle { display: flex; gap: 0; margin-bottom: 18px; border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+    .tj-type-toggle button {
+      flex: 1; background: var(--bg3); border: none; color: var(--text2);
+      padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    .tj-type-toggle button.active { background: var(--accent); color: var(--text4); }
+    .tj-modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
     .jnl-empty {
       text-align: center;
       padding: 60px 20px;
@@ -8192,6 +8343,9 @@
           <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
         </li>-->
         <li class="nav-section-label">Tools</li>
+        <li class="nav-item" data-page="trade-journal-page" onclick="navTo(this)">
+          <span class="nav-icon">📒</span><span class="nav-label">Trade Journal</span>
+        </li>
         <li class="nav-item" data-page="journal-page" onclick="navTo(this)">
           <span class="nav-icon">📓</span><span class="nav-label">Journal</span>
         </li>
@@ -10551,6 +10705,125 @@
 
         </div><!-- /journal-page -->
 
+        <!-- ── Trade Journal page ───────────────────────────── -->
+        <div id="trade-journal-page" class="page" style="display:none;">
+          <div class="tj-header">
+            <div>
+              <div class="tj-title">Trade Journal</div>
+              <div class="tj-sub" id="tj-sub">Track every entry, average-in, and exit — across stocks and options.</div>
+            </div>
+            <div class="tj-header-actions">
+              <input type="file" id="tj-csv-input" accept=".csv,text/csv" style="display:none" onchange="tjHandleCsvUpload(event)">
+              <button class="tj-btn" onclick="document.getElementById('tj-csv-input').click()" title="Import broker activity CSV">⬆ Import Broker CSV</button>
+              <button class="tj-btn tj-btn-ghost" onclick="tjShowImportWarnings()" id="tj-warnings-btn" style="display:none;">⚠ <span id="tj-warnings-count">0</span></button>
+              <button class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New Trade</button>
+            </div>
+          </div>
+
+          <!-- KPI cards -->
+          <div class="tj-kpis">
+            <div class="tj-kpi"><div class="tj-kpi-label">Today P/L</div><div class="tj-kpi-value" id="tj-kpi-today">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Week P/L</div><div class="tj-kpi-value" id="tj-kpi-week">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Month P/L</div><div class="tj-kpi-value" id="tj-kpi-month">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">All-Time P/L</div><div class="tj-kpi-value" id="tj-kpi-all">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Win Rate</div><div class="tj-kpi-value" id="tj-kpi-winrate">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Avg Winner</div><div class="tj-kpi-value pos" id="tj-kpi-avgwin">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Avg Loser</div><div class="tj-kpi-value neg" id="tj-kpi-avgloss">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Profit Factor</div><div class="tj-kpi-value" id="tj-kpi-pf">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Total Trades</div><div class="tj-kpi-value" id="tj-kpi-total">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Open</div><div class="tj-kpi-value" id="tj-kpi-open">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Closed</div><div class="tj-kpi-value" id="tj-kpi-closed">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Best Trade</div><div class="tj-kpi-value pos" id="tj-kpi-best">--</div></div>
+            <div class="tj-kpi"><div class="tj-kpi-label">Worst Trade</div><div class="tj-kpi-value neg" id="tj-kpi-worst">--</div></div>
+          </div>
+
+          <!-- Charts row -->
+          <div class="tj-charts-row">
+            <div class="tj-chart-card" style="flex:2;">
+              <div class="tj-chart-title">Equity Curve</div>
+              <div class="tj-chart-body"><canvas id="tj-equity-canvas" height="180"></canvas></div>
+            </div>
+            <div class="tj-chart-card">
+              <div class="tj-chart-title">Monthly P/L</div>
+              <div class="tj-chart-body"><canvas id="tj-monthly-canvas" height="180"></canvas></div>
+            </div>
+            <div class="tj-chart-card">
+              <div class="tj-chart-title">Win / Loss</div>
+              <div class="tj-chart-body"><canvas id="tj-pie-canvas" width="180" height="180"></canvas></div>
+            </div>
+          </div>
+
+          <div class="tj-charts-row">
+            <div class="tj-chart-card" style="flex:1;">
+              <div class="tj-chart-title">P/L by Ticker</div>
+              <div class="tj-bar-list" id="tj-bytkr"></div>
+            </div>
+            <div class="tj-chart-card" style="flex:1;">
+              <div class="tj-chart-title">P/L by Setup</div>
+              <div class="tj-bar-list" id="tj-bysetup"></div>
+            </div>
+          </div>
+
+          <!-- Historical trades section -->
+          <div class="tj-history-card">
+            <div class="tj-history-header">
+              <div class="tj-history-title">Historical Trades</div>
+              <div class="tj-filters">
+                <select id="tj-f-status" onchange="tjRenderHistory()">
+                  <option value="all">All status</option>
+                  <option value="open">Open</option>
+                  <option value="closed">Closed</option>
+                </select>
+                <select id="tj-f-type" onchange="tjRenderHistory()">
+                  <option value="all">Stocks + Options</option>
+                  <option value="stock">Stocks</option>
+                  <option value="option">Options</option>
+                </select>
+                <select id="tj-f-result" onchange="tjRenderHistory()">
+                  <option value="all">Winners + Losers</option>
+                  <option value="win">Winners</option>
+                  <option value="loss">Losers</option>
+                </select>
+                <input id="tj-f-ticker" type="text" placeholder="Ticker…" oninput="tjRenderHistory()">
+                <input id="tj-f-from" type="date" onchange="tjRenderHistory()">
+                <input id="tj-f-to" type="date" onchange="tjRenderHistory()">
+              </div>
+            </div>
+            <div class="tj-history-table-wrap">
+              <table class="tj-table">
+                <thead>
+                  <tr>
+                    <th data-sort="EntryDate">Date ▾</th>
+                    <th data-sort="Ticker">Ticker</th>
+                    <th data-sort="TradeType">Type</th>
+                    <th data-sort="quantityTotal">Size</th>
+                    <th data-sort="avgCostBasis">Cost Basis</th>
+                    <th data-sort="Status">Status</th>
+                    <th data-sort="realizedPL">P/L $</th>
+                    <th data-sort="realizedPLPercent">P/L %</th>
+                    <th>Thesis</th>
+                    <th>Tags</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="tj-tbody"></tbody>
+              </table>
+              <div class="tj-empty" id="tj-empty">No trades yet. Click <strong>＋ New Trade</strong> to add one.</div>
+            </div>
+          </div>
+        </div><!-- /trade-journal-page -->
+
+        <!-- Trade Journal modal -->
+        <div class="tj-modal-backdrop" id="tj-modal" onclick="if(event.target===this)tjCloseModal()">
+          <div class="tj-modal">
+            <div class="tj-modal-header">
+              <div class="tj-modal-title" id="tj-modal-title">New Trade</div>
+              <button class="tj-modal-close" onclick="tjCloseModal()">×</button>
+            </div>
+            <div class="tj-modal-body" id="tj-modal-body"></div>
+          </div>
+        </div>
+
       </div><!-- /page-content -->
     </div><!-- /main -->
   </div><!-- /app -->
@@ -10738,6 +11011,7 @@
         case 'scanner-page': loadScanner(); break;
         case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
         case 'journal-page': jnlInit(); break;
+        case 'trade-journal-page': tjLoad(); break;
       }
     }
 
@@ -20706,6 +20980,897 @@
       } catch (e) {
         list.innerHTML = `<div class="cl-te-empty">Failed to load trade entries: ${e.message}</div>`;
       }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    //  TRADE JOURNAL
+    // ═══════════════════════════════════════════════════════
+    // tjTrades = manual trades; tjBroker = broker-imported trades.
+    // The two are kept in separate stores (different schemas) but merged
+    // for the dashboard KPIs/charts and history grid, with a [BROKER] badge
+    // distinguishing imports from active managed trades.
+    let tjTrades = [];
+    let tjBroker = [];
+    let tjBrokerWarnings = [];
+    let tjSort = { key: 'EntryDate', dir: 'desc' };
+
+    // Project a broker trade row into the same shape as a manual trade so
+    // the existing renderers (KPIs, charts, history grid) work unchanged.
+    function tjProjectBroker(b) {
+      const status = b.Status === 'Closed' ? 'closed' : 'open';
+      const realized = Number(b.RealizedPL) || 0;
+      return {
+        TradeID: 'b' + b.TradeID,
+        _source: 'broker',
+        _broker: b,
+        TradeType: b.AssetType,
+        Ticker: b.Ticker,
+        OptionType: b.OptionType,
+        Strike: b.Strike,
+        Expiration: b.ExpirationDate,
+        EntryDate: b.FirstEntryDate,
+        EntryTime: '',
+        Status: status,
+        CloseDate: b.LastCloseDate,
+        Thesis: '',
+        Tags: '',
+        SetupType: '',
+        Grade: '',
+        Emotion: '',
+        Mistakes: '',
+        Lessons: '',
+        TargetPrice: null,
+        StopLoss: null,
+        RealizedPL: realized,
+        RealizedPLPercent: b.RealizedPLPercent,
+        quantityTotal: Number(b.TotalOpenedQuantity) || 0,
+        quantityClosed: Number(b.TotalClosedQuantity) || 0,
+        quantityOpen: Number(b.RemainingQuantity) || 0,
+        avgCostBasis: Number(b.AverageCostBasis) || 0,
+        totalCapital: Number(b.TotalCostBasis) || 0,
+        realizedPL: realized,
+        realizedPLPercent: Number(b.RealizedPLPercent),
+        fullyClosed: status === 'closed',
+        entries: (b.entries || []).map(e => ({
+          EntryType: e.EntryType === 'AverageIn' ? 'averagein' : 'initial',
+          Quantity: e.Quantity,
+          Price: e.Price,
+          EntryDate: e.ActivityDate,
+          EntryTime: '',
+          Notes: e.OriginalTransCode + ' · row ' + e.OriginalCSVRowNumber
+        })).concat((b.closes || []).map(c => ({
+          EntryType: 'close',
+          Quantity: c.Quantity,
+          Price: c.Price,
+          EntryDate: c.ActivityDate,
+          EntryTime: '',
+          Notes: c.OriginalTransCode + ' · row ' + c.OriginalCSVRowNumber
+        })))
+      };
+    }
+    function tjAllTrades() {
+      return [...tjTrades, ...tjBroker.map(tjProjectBroker)];
+    }
+
+    function tjFmtMoney(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '--';
+      const sign = n < 0 ? '-' : '';
+      const abs = Math.abs(n);
+      return sign + '$' + abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function tjFmtMoneySigned(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '--';
+      const sign = n >= 0 ? '+' : '-';
+      const abs = Math.abs(n);
+      return sign + '$' + abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function tjFmtPct(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n)) return '--';
+      return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+    }
+    function tjPlClass(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n) || n === 0) return '';
+      return n > 0 ? 'pos' : 'neg';
+    }
+
+    async function tjLoad() {
+      try {
+        const [mRes, bRes] = await Promise.all([
+          fetch('/api/trade-journal'),
+          fetch('/api/trade-journal/broker')
+        ]);
+        const m = await mRes.json();
+        const b = await bRes.json();
+        tjTrades = m.ok ? (m.rows || []) : [];
+        tjBroker = b.ok ? (b.rows || []) : [];
+        tjBrokerWarnings = b.ok ? (b.warnings || []) : [];
+      } catch (e) {
+        tjTrades = []; tjBroker = []; tjBrokerWarnings = [];
+      }
+      const wBtn = document.getElementById('tj-warnings-btn');
+      if (wBtn) {
+        document.getElementById('tj-warnings-count').textContent = String(tjBrokerWarnings.length);
+        wBtn.style.display = tjBrokerWarnings.length ? '' : 'none';
+      }
+      tjRenderAll();
+    }
+
+    async function tjHandleCsvUpload(ev) {
+      const file = ev.target.files?.[0];
+      ev.target.value = '';
+      if (!file) return;
+      let text;
+      try { text = await file.text(); }
+      catch (e) { alert('Could not read file: ' + e.message); return; }
+      const replace = confirm('Replace existing broker import data with this new upload?\n\nOK = Replace all existing broker rows\nCancel = Append to existing broker rows');
+      try {
+        const r = await fetch('/api/trade-journal/broker-import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ csv: text, replaceExisting: replace })
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error + (d.detectedHeaders ? '\nDetected headers: ' + d.detectedHeaders.join(', ') : ''));
+        alert(`Import complete.\n\nTrades imported: ${d.tradesImported}\nRows processed: ${d.summary.rowsProcessed}\nNon-trade rows skipped: ${d.summary.skippedNonTrade}\nWarnings: ${d.warningsCount}`);
+        await tjLoad();
+      } catch (e) {
+        alert('Import error: ' + e.message);
+      }
+    }
+
+    function tjShowImportWarnings() {
+      const html = tjBrokerWarnings.length
+        ? `<div style="max-height:60vh; overflow-y:auto;">
+            <table style="width:100%; font-size:11px;">
+              <thead><tr style="color:var(--text3);"><th style="text-align:left; padding:6px;">CSV Row</th><th style="text-align:left; padding:6px;">Type</th><th style="text-align:left; padding:6px;">Message</th></tr></thead>
+              <tbody>${tjBrokerWarnings.map(w => `<tr style="border-top:1px solid var(--border);">
+                <td style="padding:6px; color:var(--text2);">${w.OriginalCSVRowNumber ?? '—'}</td>
+                <td style="padding:6px;"><span class="tj-tag-chip" style="color:var(--gold);">${w.WarningType}</span></td>
+                <td style="padding:6px;">${(w.WarningMessage || '').replace(/</g, '&lt;')}</td>
+              </tr>`).join('')}</tbody>
+            </table>
+          </div>
+          <div class="tj-modal-footer">
+            <button class="tj-btn tj-btn-danger" onclick="tjClearBrokerImports()">Delete ALL broker imports</button>
+            <button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Close</button>
+          </div>`
+        : `<div style="text-align:center; color:var(--text3); padding:20px;">No import warnings 🎉</div>
+           <div class="tj-modal-footer"><button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Close</button></div>`;
+      tjOpenModal('Import Warnings', html);
+    }
+
+    async function tjClearBrokerImports() {
+      if (!confirm('Delete ALL broker-imported trades, entries, closes, matches, and warnings?')) return;
+      try {
+        await fetch('/api/trade-journal/broker', { method: 'DELETE' });
+        tjCloseModal();
+        await tjLoad();
+      } catch (e) { alert('Failed: ' + e.message); }
+    }
+
+    function tjRenderAll() {
+      tjRenderKpis();
+      tjRenderCharts();
+      tjRenderHistory();
+    }
+
+    function tjRenderKpis() {
+      const all = tjAllTrades();
+      const closed = all.filter(t => t.Status === 'closed');
+      const open = all.filter(t => t.Status !== 'closed');
+      const wins = closed.filter(t => Number(t.RealizedPL) > 0);
+      const losses = closed.filter(t => Number(t.RealizedPL) < 0);
+      const totalPL = closed.reduce((s, t) => s + (Number(t.RealizedPL) || 0), 0);
+      const sumWin = wins.reduce((s, t) => s + Number(t.RealizedPL), 0);
+      const sumLoss = Math.abs(losses.reduce((s, t) => s + Number(t.RealizedPL), 0));
+
+      const now = new Date();
+      const todayIso = now.toISOString().slice(0, 10);
+      const weekStart = new Date(now); weekStart.setDate(now.getDate() - 7);
+      const monthStart = new Date(now); monthStart.setDate(now.getDate() - 30);
+
+      const sumIn = (list) => list.reduce((s, t) => s + (Number(t.RealizedPL) || 0), 0);
+      const today = sumIn(closed.filter(t => t.CloseDate === todayIso));
+      const week = sumIn(closed.filter(t => t.CloseDate && new Date(t.CloseDate) >= weekStart));
+      const month = sumIn(closed.filter(t => t.CloseDate && new Date(t.CloseDate) >= monthStart));
+
+      const setKpi = (id, val, cls) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = val;
+        el.classList.remove('pos','neg');
+        if (cls) el.classList.add(cls);
+      };
+      setKpi('tj-kpi-today', tjFmtMoneySigned(today), tjPlClass(today));
+      setKpi('tj-kpi-week', tjFmtMoneySigned(week), tjPlClass(week));
+      setKpi('tj-kpi-month', tjFmtMoneySigned(month), tjPlClass(month));
+      setKpi('tj-kpi-all', tjFmtMoneySigned(totalPL), tjPlClass(totalPL));
+      setKpi('tj-kpi-winrate', closed.length ? ((wins.length / closed.length) * 100).toFixed(1) + '%' : '--');
+      setKpi('tj-kpi-avgwin', wins.length ? tjFmtMoneySigned(sumWin / wins.length) : '--');
+      setKpi('tj-kpi-avgloss', losses.length ? tjFmtMoneySigned(-sumLoss / losses.length) : '--');
+      setKpi('tj-kpi-pf', sumLoss > 0 ? (sumWin / sumLoss).toFixed(2) : (sumWin > 0 ? '∞' : '--'));
+      setKpi('tj-kpi-total', String(all.length));
+      setKpi('tj-kpi-open', String(open.length));
+      setKpi('tj-kpi-closed', String(closed.length));
+      const best = closed.length ? Math.max(...closed.map(t => Number(t.RealizedPL) || 0)) : null;
+      const worst = closed.length ? Math.min(...closed.map(t => Number(t.RealizedPL) || 0)) : null;
+      setKpi('tj-kpi-best', best != null ? tjFmtMoneySigned(best) : '--');
+      setKpi('tj-kpi-worst', worst != null ? tjFmtMoneySigned(worst) : '--');
+    }
+
+    function tjRenderCharts() {
+      tjDrawEquityCurve();
+      tjDrawMonthlyBar();
+      tjDrawWinLossPie();
+      tjRenderByTicker();
+      tjRenderBySetup();
+    }
+
+    function tjPrepCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.max(2, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(2, Math.floor(rect.height * dpr));
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w: rect.width, h: rect.height };
+    }
+
+    function tjDrawEquityCurve() {
+      const canvas = document.getElementById('tj-equity-canvas');
+      if (!canvas) return;
+      const { ctx, w, h } = tjPrepCanvas(canvas);
+      ctx.clearRect(0, 0, w, h);
+      const closed = tjAllTrades().filter(t => t.Status === 'closed' && t.CloseDate)
+        .sort((a, b) => new Date(a.CloseDate) - new Date(b.CloseDate));
+      if (!closed.length) {
+        ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('No closed trades yet', w / 2, h / 2);
+        return;
+      }
+      let cum = 0;
+      const points = closed.map(t => { cum += Number(t.RealizedPL) || 0; return cum; });
+      const min = Math.min(0, ...points), max = Math.max(0, ...points);
+      const range = max - min || 1;
+      const padL = 38, padR = 8, padT = 10, padB = 18;
+      const innerW = w - padL - padR, innerH = h - padT - padB;
+      const xAt = (i) => padL + (points.length > 1 ? (i * innerW / (points.length - 1)) : innerW / 2);
+      const yAt = (v) => padT + innerH - ((v - min) / range) * innerH;
+      // baseline (0)
+      ctx.strokeStyle = '#252a3a'; ctx.lineWidth = 1; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(padL, yAt(0)); ctx.lineTo(w - padR, yAt(0)); ctx.stroke();
+      ctx.setLineDash([]);
+      // y-axis labels
+      ctx.fillStyle = '#71829d'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+      [max, (max + min) / 2, min].forEach(v => ctx.fillText('$' + Math.round(v).toLocaleString(), padL - 4, yAt(v) + 3));
+      // fill
+      ctx.beginPath();
+      points.forEach((p, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(p)); else ctx.lineTo(xAt(i), yAt(p)); });
+      const lastX = xAt(points.length - 1);
+      ctx.lineTo(lastX, yAt(0)); ctx.lineTo(padL, yAt(0)); ctx.closePath();
+      ctx.fillStyle = points[points.length - 1] >= 0 ? 'rgba(34,221,136,0.12)' : 'rgba(255,59,92,0.12)';
+      ctx.fill();
+      // line
+      ctx.beginPath();
+      points.forEach((p, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(p)); else ctx.lineTo(xAt(i), yAt(p)); });
+      ctx.strokeStyle = points[points.length - 1] >= 0 ? '#22dd88' : '#ff3b5c';
+      ctx.lineWidth = 2; ctx.stroke();
+    }
+
+    function tjDrawMonthlyBar() {
+      const canvas = document.getElementById('tj-monthly-canvas');
+      if (!canvas) return;
+      const { ctx, w, h } = tjPrepCanvas(canvas);
+      ctx.clearRect(0, 0, w, h);
+      const months = {};
+      tjAllTrades().filter(t => t.Status === 'closed' && t.CloseDate).forEach(t => {
+        const k = String(t.CloseDate).slice(0, 7);
+        months[k] = (months[k] || 0) + (Number(t.RealizedPL) || 0);
+      });
+      const keys = Object.keys(months).sort();
+      if (!keys.length) {
+        ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('No monthly P/L yet', w / 2, h / 2);
+        return;
+      }
+      const values = keys.map(k => months[k]);
+      const min = Math.min(0, ...values), max = Math.max(0, ...values);
+      const range = max - min || 1;
+      const padL = 32, padR = 8, padT = 12, padB = 22;
+      const innerW = w - padL - padR, innerH = h - padT - padB;
+      const bw = innerW / keys.length;
+      const yAt = (v) => padT + innerH - ((v - min) / range) * innerH;
+      ctx.strokeStyle = '#252a3a'; ctx.beginPath(); ctx.moveTo(padL, yAt(0)); ctx.lineTo(w - padR, yAt(0)); ctx.stroke();
+      values.forEach((v, i) => {
+        const x = padL + i * bw + bw * 0.1;
+        const y = yAt(Math.max(v, 0));
+        const barH = Math.abs(yAt(v) - yAt(0));
+        ctx.fillStyle = v >= 0 ? '#22dd88' : '#ff3b5c';
+        ctx.fillRect(x, v >= 0 ? y : yAt(0), bw * 0.8, barH);
+      });
+      ctx.fillStyle = '#71829d'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+      keys.forEach((k, i) => ctx.fillText(k.slice(5), padL + i * bw + bw / 2, h - 6));
+    }
+
+    function tjDrawWinLossPie() {
+      const canvas = document.getElementById('tj-pie-canvas');
+      if (!canvas) return;
+      const { ctx, w, h } = tjPrepCanvas(canvas);
+      ctx.clearRect(0, 0, w, h);
+      const closed = tjAllTrades().filter(t => t.Status === 'closed');
+      const wins = closed.filter(t => Number(t.RealizedPL) > 0).length;
+      const losses = closed.filter(t => Number(t.RealizedPL) < 0).length;
+      const total = wins + losses;
+      if (!total) {
+        ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('No closed trades', w / 2, h / 2);
+        return;
+      }
+      const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 12;
+      let start = -Math.PI / 2;
+      const slices = [
+        { v: wins, color: '#22dd88' },
+        { v: losses, color: '#ff3b5c' }
+      ];
+      slices.forEach(s => {
+        const angle = (s.v / total) * Math.PI * 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, start, start + angle); ctx.closePath();
+        ctx.fillStyle = s.color; ctx.fill();
+        start += angle;
+      });
+      ctx.beginPath(); ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = '#151820'; ctx.fill();
+      ctx.fillStyle = '#e0e4f0'; ctx.font = 'bold 16px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(((wins / total) * 100).toFixed(0) + '%', cx, cy + 2);
+      ctx.fillStyle = '#71829d'; ctx.font = '9px sans-serif';
+      ctx.fillText('WIN RATE', cx, cy + 16);
+    }
+
+    function tjGroupedBar(containerId, groups) {
+      const wrap = document.getElementById(containerId);
+      if (!wrap) return;
+      const entries = Object.entries(groups);
+      if (!entries.length) { wrap.innerHTML = '<div class="tj-bar-empty">No data yet</div>'; return; }
+      entries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+      const max = Math.max(...entries.map(([, v]) => Math.abs(v))) || 1;
+      wrap.innerHTML = entries.slice(0, 12).map(([k, v]) => {
+        const pct = (Math.abs(v) / max) * 100;
+        const cls = v >= 0 ? 'pos' : 'neg';
+        return `<div class="tj-bar-row">
+          <div class="tj-bar-label">${k}</div>
+          <div class="tj-bar-track"><div class="tj-bar-fill ${cls}" style="width:${pct}%;"></div></div>
+          <div class="tj-bar-value ${cls}">${tjFmtMoneySigned(v)}</div>
+        </div>`;
+      }).join('');
+    }
+
+    function tjRenderByTicker() {
+      const groups = {};
+      tjAllTrades().filter(t => t.Status === 'closed').forEach(t => {
+        const k = t.Ticker || '—';
+        groups[k] = (groups[k] || 0) + (Number(t.RealizedPL) || 0);
+      });
+      tjGroupedBar('tj-bytkr', groups);
+    }
+    function tjRenderBySetup() {
+      const groups = {};
+      tjAllTrades().filter(t => t.Status === 'closed').forEach(t => {
+        const k = t.SetupType || 'Unspecified';
+        groups[k] = (groups[k] || 0) + (Number(t.RealizedPL) || 0);
+      });
+      tjGroupedBar('tj-bysetup', groups);
+    }
+
+    function tjFilteredTrades() {
+      const status = document.getElementById('tj-f-status')?.value || 'all';
+      const type = document.getElementById('tj-f-type')?.value || 'all';
+      const result = document.getElementById('tj-f-result')?.value || 'all';
+      const ticker = (document.getElementById('tj-f-ticker')?.value || '').trim().toUpperCase();
+      const from = document.getElementById('tj-f-from')?.value || '';
+      const to = document.getElementById('tj-f-to')?.value || '';
+      return tjAllTrades().filter(t => {
+        if (status !== 'all' && (t.Status || 'open') !== status) return false;
+        if (type !== 'all' && t.TradeType !== type) return false;
+        if (result === 'win' && !(Number(t.RealizedPL) > 0)) return false;
+        if (result === 'loss' && !(Number(t.RealizedPL) < 0)) return false;
+        if (ticker && !String(t.Ticker || '').toUpperCase().includes(ticker)) return false;
+        if (from && String(t.EntryDate || '') < from) return false;
+        if (to && String(t.EntryDate || '') > to) return false;
+        return true;
+      });
+    }
+
+    function tjRenderHistory() {
+      const tbody = document.getElementById('tj-tbody');
+      const empty = document.getElementById('tj-empty');
+      if (!tbody) return;
+      let rows = tjFilteredTrades();
+      const { key, dir } = tjSort;
+      rows = [...rows].sort((a, b) => {
+        const av = a[key] ?? 0, bv = b[key] ?? 0;
+        const num = Number(av) - Number(bv);
+        const cmp = Number.isFinite(num) && (typeof av !== 'string' || !isNaN(Number(av)))
+          ? num
+          : String(av).localeCompare(String(bv));
+        return dir === 'asc' ? cmp : -cmp;
+      });
+      if (!rows.length) {
+        tbody.innerHTML = '';
+        if (empty) empty.style.display = 'block';
+        return;
+      }
+      if (empty) empty.style.display = 'none';
+      tbody.innerHTML = rows.map(t => {
+        const pl = Number(t.realizedPL);
+        const plPct = Number(t.realizedPLPercent);
+        const isClosed = t.Status === 'closed';
+        const isBroker = t._source === 'broker';
+        const partial = isBroker && t._broker?.Status === 'Partially Closed';
+        const rowCls = `tj-row ${isClosed ? 'closed' : 'open'} ${pl > 0 ? 'win' : pl < 0 ? 'loss' : ''}`;
+        const typeBadge = t.TradeType === 'option'
+          ? `<span class="tj-type-badge option ${t.OptionType || ''}">${(t.OptionType || 'OPT').toUpperCase()} ${t.Strike || ''}</span>`
+          : `<span class="tj-type-badge">STOCK</span>`;
+        const sourceBadge = isBroker ? `<span class="tj-tag-chip" style="color:var(--blue);background:rgba(59,140,255,.15);">BROKER</span>` : '';
+        const tags = (t.Tags || '').split(',').map(s => s.trim()).filter(Boolean).map(g => `<span class="tj-tag-chip">${g}</span>`).join('');
+        const statusLbl = partial ? 'PARTIAL' : (t.Status || 'open').toUpperCase();
+        const statusCls = partial ? 'open' : (t.Status || 'open');
+        const idArg = isBroker ? `'${t.TradeID}'` : t.TradeID;
+        return `<tr class="${rowCls}" data-id="${t.TradeID}" onclick="tjToggleDetail(${idArg})" style="cursor:pointer;">
+          <td>${t.EntryDate || ''}</td>
+          <td><strong>${t.Ticker}</strong> ${sourceBadge}</td>
+          <td>${typeBadge}</td>
+          <td>${(t.quantityOpen || 0) > 0 ? Math.round(t.quantityOpen) + ' open / ' : ''}${Math.round(t.quantityTotal || 0)}</td>
+          <td>${(t.avgCostBasis || 0).toFixed(2)}</td>
+          <td><span class="tj-status-badge ${statusCls}">${statusLbl}</span></td>
+          <td class="${tjPlClass(pl) === 'pos' ? 'tj-pl-pos' : tjPlClass(pl) === 'neg' ? 'tj-pl-neg' : ''}">${isClosed || pl ? tjFmtMoneySigned(pl) : '--'}</td>
+          <td class="${tjPlClass(plPct) === 'pos' ? 'tj-pl-pos' : tjPlClass(plPct) === 'neg' ? 'tj-pl-neg' : ''}">${isClosed || pl ? tjFmtPct(plPct) : '--'}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(t.Thesis || '').replace(/"/g,'&quot;')}">${t.Thesis || ''}</td>
+          <td>${tags}</td>
+          <td onclick="event.stopPropagation()">
+            <div class="tj-row-actions">
+              ${isBroker
+                ? `<button title="Imported from broker — read-only" disabled style="opacity:.5; cursor:not-allowed;">ⓘ</button>`
+                : `<button onclick="tjOpenEditModal(${t.TradeID})" title="Edit">✏️</button>
+                   ${t.Status !== 'closed' ? `<button onclick="tjOpenAverageInModal(${t.TradeID})" title="Average in">➕</button>` : ''}
+                   ${t.Status !== 'closed' ? `<button onclick="tjOpenCloseModal(${t.TradeID})" title="Close trade">🔒</button>` : ''}
+                   <button onclick="tjDeleteTrade(${t.TradeID})" title="Delete">🗑</button>`}
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+      // Attach sort handlers
+      document.querySelectorAll('#trade-journal-page .tj-table th[data-sort]').forEach(th => {
+        th.onclick = () => {
+          const k = th.dataset.sort;
+          if (tjSort.key === k) tjSort.dir = tjSort.dir === 'asc' ? 'desc' : 'asc';
+          else { tjSort.key = k; tjSort.dir = 'desc'; }
+          tjRenderHistory();
+        };
+      });
+    }
+
+    function tjToggleDetail(id) {
+      const tr = document.querySelector(`#tj-tbody tr[data-id="${id}"]`);
+      if (!tr) return;
+      const next = tr.nextElementSibling;
+      if (next && next.classList.contains('tj-detail-row')) { next.remove(); return; }
+      const t = tjAllTrades().find(x => String(x.TradeID) === String(id));
+      if (!t) return;
+      const broker = t._broker;
+      const entriesHtml = (t.entries || []).map(e =>
+        `<tr><td>${e.EntryDate || ''} ${e.EntryTime || ''}</td>
+            <td>${e.EntryType}</td>
+            <td>${Number(e.Quantity).toLocaleString()}</td>
+            <td>$${Number(e.Price).toFixed(2)}</td>
+            <td>${e.Notes || ''}</td></tr>`).join('');
+      const cells = Math.max(11, 0);
+      const row = document.createElement('tr');
+      row.className = 'tj-detail-row';
+      row.innerHTML = `<td colspan="${cells}">
+        <div class="tj-detail-grid">
+          <div><div class="lbl">Target</div>${t.TargetPrice ?? '—'}</div>
+          <div><div class="lbl">Stop</div>${t.StopLoss ?? '—'}</div>
+          <div><div class="lbl">Setup</div>${t.SetupType || '—'}</div>
+          <div><div class="lbl">Grade</div>${t.Grade || '—'}</div>
+          <div><div class="lbl">Emotion</div>${t.Emotion || '—'}</div>
+          <div><div class="lbl">Days held</div>${t.CloseDate && t.EntryDate ? Math.round((new Date(t.CloseDate) - new Date(t.EntryDate)) / 86400000) : '—'}</div>
+          <div><div class="lbl">Risk/Reward</div>${(() => {
+            const tg = Number(t.TargetPrice), sl = Number(t.StopLoss), ep = Number((t.entries || [])[0]?.Price);
+            if (!Number.isFinite(tg) || !Number.isFinite(sl) || !Number.isFinite(ep) || sl === ep) return '—';
+            const r = Math.abs(tg - ep) / Math.abs(ep - sl);
+            return r.toFixed(2) + ':1';
+          })()}</div>
+          <div><div class="lbl">Total capital</div>${tjFmtMoney(t.totalCapital)}</div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;"><strong>Thesis:</strong> ${t.Thesis || '—'}</div>
+        ${t.Mistakes ? `<div style="margin-top:6px;font-size:11px;color:var(--red);"><strong>Mistakes:</strong> ${t.Mistakes}</div>` : ''}
+        ${t.Lessons ? `<div style="margin-top:6px;font-size:11px;color:var(--blue);"><strong>Lessons:</strong> ${t.Lessons}</div>` : ''}
+        <div class="tj-detail-entries">
+          <table>
+            <thead><tr><th>When</th><th>Type</th><th>Qty</th><th>Price</th><th>Notes</th></tr></thead>
+            <tbody>${entriesHtml || '<tr><td colspan="5" style="color:var(--text3);">No legs</td></tr>'}</tbody>
+          </table>
+        </div>
+        ${broker ? `
+          <div class="tj-detail-entries" style="margin-top:10px;">
+            <div style="font-size:9px; color:var(--text3); font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px;">FIFO Match Ledger · Instrument key: <code>${broker.InstrumentKey}</code></div>
+            <table>
+              <thead><tr><th>Matched Qty</th><th>Allocated Cost</th><th>Allocated Proceeds</th><th>P/L $</th><th>P/L %</th></tr></thead>
+              <tbody>
+                ${(broker.matches || []).map(m => {
+                  const pl = Number(m.RealizedPL); const cls = pl > 0 ? 'tj-pl-pos' : pl < 0 ? 'tj-pl-neg' : '';
+                  return `<tr>
+                    <td>${m.MatchedQuantity}</td>
+                    <td>$${Number(m.AllocatedEntryCost).toFixed(2)}</td>
+                    <td>$${Number(m.AllocatedCloseProceeds).toFixed(2)}</td>
+                    <td class="${cls}">${tjFmtMoneySigned(pl)}</td>
+                    <td class="${cls}">${m.RealizedPLPercent != null ? tjFmtPct(m.RealizedPLPercent) : '—'}</td>
+                  </tr>`;
+                }).join('') || '<tr><td colspan="5" style="color:var(--text3);">No matches</td></tr>'}
+              </tbody>
+            </table>
+          </div>` : ''}
+      </td>`;
+      tr.after(row);
+    }
+
+    // ── Modals ─────────────────────────────────────────────
+    function tjOpenModal(title, html) {
+      document.getElementById('tj-modal-title').textContent = title;
+      document.getElementById('tj-modal-body').innerHTML = html;
+      document.getElementById('tj-modal').classList.add('open');
+    }
+    function tjCloseModal() {
+      document.getElementById('tj-modal').classList.remove('open');
+    }
+
+    let tjNewType = 'stock';
+    function tjOpenNewTradeModal() {
+      tjNewType = 'stock';
+      tjOpenModal('New Trade', tjRenderNewTradeForm());
+    }
+    function tjSwitchNewType(type) {
+      tjNewType = type;
+      document.getElementById('tj-modal-body').innerHTML = tjRenderNewTradeForm();
+    }
+    function tjRenderNewTradeForm() {
+      const now = new Date();
+      const date = now.toISOString().slice(0, 10);
+      const time = now.toTimeString().slice(0, 8);
+      const isStock = tjNewType === 'stock';
+      return `
+        <div class="tj-type-toggle">
+          <button class="${isStock ? 'active' : ''}" onclick="tjSwitchNewType('stock')">📈 Stock</button>
+          <button class="${!isStock ? 'active' : ''}" onclick="tjSwitchNewType('option')">🎯 Option</button>
+        </div>
+        <form id="tj-new-form" onsubmit="tjSubmitNewTrade(event)">
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Ticker *</label>
+              <input class="tj-form-input" name="ticker" required style="text-transform:uppercase;">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Setup Type</label>
+              <select class="tj-form-select" name="setupType">
+                <option value="">—</option>
+                <option>Breakout</option>
+                <option>Failed Breakdown</option>
+                <option>Support Bounce</option>
+                <option>Earnings</option>
+                <option>Swing</option>
+                <option>Day Trade</option>
+              </select>
+            </div>
+          </div>
+          ${isStock ? `
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Shares *</label>
+              <input class="tj-form-input" type="number" name="quantity" min="0" step="any" required oninput="tjUpdateDerived()">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Entry Price *</label>
+              <input class="tj-form-input" type="number" name="price" min="0" step="any" required oninput="tjUpdateDerived()">
+            </div>
+          </div>` : `
+          <div class="tj-form-row-3">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Call / Put *</label>
+              <select class="tj-form-select" name="optionType" required>
+                <option value="call">Call</option>
+                <option value="put">Put</option>
+              </select>
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Strike *</label>
+              <input class="tj-form-input" type="number" name="strike" step="any" required>
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Expiration *</label>
+              <input class="tj-form-input" type="date" name="expiration" required>
+            </div>
+          </div>
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Contracts *</label>
+              <input class="tj-form-input" type="number" name="quantity" min="0" step="any" required oninput="tjUpdateDerived()">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Entry Premium *</label>
+              <input class="tj-form-input" type="number" name="price" min="0" step="any" required oninput="tjUpdateDerived()">
+            </div>
+          </div>`}
+          <div class="tj-form-derived" id="tj-derived">
+            Total Cost: <strong id="tj-derived-cost">$0.00</strong> &nbsp;·&nbsp;
+            Avg Cost Basis: <strong id="tj-derived-basis">$0.00</strong>
+          </div>
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Price Target</label>
+              <input class="tj-form-input" type="number" name="targetPrice" step="any">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Stop Loss</label>
+              <input class="tj-form-input" type="number" name="stopLoss" step="any">
+            </div>
+          </div>
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Entry Date</label>
+              <input class="tj-form-input" type="date" name="entryDate" value="${date}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Entry Time</label>
+              <input class="tj-form-input" type="time" name="entryTime" step="1" value="${time}">
+            </div>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Tags (comma separated)</label>
+            <input class="tj-form-input" name="tags" placeholder="momentum, gap-up, AI">
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Thesis / Notes</label>
+            <textarea class="tj-form-textarea" name="thesis" placeholder="Why this trade? What's the catalyst?"></textarea>
+          </div>
+          <div class="tj-modal-footer">
+            <button type="button" class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Cancel</button>
+            <button type="submit" class="tj-btn tj-btn-primary">Create Trade</button>
+          </div>
+        </form>
+      `;
+    }
+
+    function tjUpdateDerived() {
+      const form = document.getElementById('tj-new-form');
+      if (!form) return;
+      const q = Number(form.elements.quantity?.value) || 0;
+      const p = Number(form.elements.price?.value) || 0;
+      const mult = tjNewType === 'option' ? 100 : 1;
+      document.getElementById('tj-derived-cost').textContent = '$' + (q * p * mult).toFixed(2);
+      document.getElementById('tj-derived-basis').textContent = '$' + p.toFixed(2);
+    }
+
+    async function tjSubmitNewTrade(ev) {
+      ev.preventDefault();
+      const form = ev.target;
+      const fd = Object.fromEntries(new FormData(form).entries());
+      fd.tradeType = tjNewType;
+      try {
+        const r = await fetch('/api/trade-journal', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fd)
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed to create');
+        tjCloseModal();
+        await tjLoad();
+      } catch (e) {
+        alert('Error creating trade: ' + e.message);
+      }
+    }
+
+    function tjOpenEditModal(id) {
+      const t = tjTrades.find(x => x.TradeID === id);
+      if (!t) return;
+      tjOpenModal('Edit Trade · ' + t.Ticker, `
+        <form id="tj-edit-form" onsubmit="tjSubmitEdit(event, ${id})">
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Setup</label>
+              <input class="tj-form-input" name="setupType" value="${t.SetupType || ''}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Grade</label>
+              <select class="tj-form-select" name="grade">
+                ${['','A','B','C','D','F'].map(g => `<option value="${g}" ${g === t.Grade ? 'selected' : ''}>${g || '—'}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Price Target</label>
+              <input class="tj-form-input" type="number" name="targetPrice" step="any" value="${t.TargetPrice ?? ''}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Stop Loss</label>
+              <input class="tj-form-input" type="number" name="stopLoss" step="any" value="${t.StopLoss ?? ''}">
+            </div>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Tags</label>
+            <input class="tj-form-input" name="tags" value="${(t.Tags || '').replace(/"/g,'&quot;')}">
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Emotional State</label>
+            <select class="tj-form-select" name="emotion">
+              ${['','Calm','Confident','FOMO','Fear','Greed','Frustrated','Bored','Patient'].map(e =>
+                `<option value="${e}" ${e === t.Emotion ? 'selected' : ''}>${e || '—'}</option>`
+              ).join('')}
+            </select>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Thesis</label>
+            <textarea class="tj-form-textarea" name="thesis">${t.Thesis || ''}</textarea>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Mistakes</label>
+            <textarea class="tj-form-textarea" name="mistakes" placeholder="What went wrong?">${t.Mistakes || ''}</textarea>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Lessons Learned</label>
+            <textarea class="tj-form-textarea" name="lessons" placeholder="What did you learn?">${t.Lessons || ''}</textarea>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Screenshot URL</label>
+            <input class="tj-form-input" name="screenshotUrl" value="${t.ScreenshotUrl || ''}" placeholder="https://…">
+          </div>
+          <div class="tj-modal-footer">
+            <button type="button" class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Cancel</button>
+            <button type="submit" class="tj-btn tj-btn-primary">Save</button>
+          </div>
+        </form>
+      `);
+    }
+
+    async function tjSubmitEdit(ev, id) {
+      ev.preventDefault();
+      const fd = Object.fromEntries(new FormData(ev.target).entries());
+      try {
+        const r = await fetch('/api/trade-journal/' + id, {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fd)
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        tjCloseModal();
+        await tjLoad();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    function tjOpenAverageInModal(id) {
+      const t = tjTrades.find(x => x.TradeID === id);
+      if (!t) return;
+      const label = t.TradeType === 'option' ? 'Contracts' : 'Shares';
+      const priceLabel = t.TradeType === 'option' ? 'Premium' : 'Price';
+      const now = new Date();
+      tjOpenModal('Average Into · ' + t.Ticker, `
+        <form id="tj-avg-form" onsubmit="tjSubmitAverageIn(event, ${id})">
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">${label} *</label>
+              <input class="tj-form-input" type="number" name="quantity" min="0" step="any" required>
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">${priceLabel} *</label>
+              <input class="tj-form-input" type="number" name="price" min="0" step="any" required>
+            </div>
+          </div>
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Date</label>
+              <input class="tj-form-input" type="date" name="date" value="${now.toISOString().slice(0,10)}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Time</label>
+              <input class="tj-form-input" type="time" name="time" step="1" value="${now.toTimeString().slice(0,8)}">
+            </div>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Notes</label>
+            <textarea class="tj-form-textarea" name="notes"></textarea>
+          </div>
+          <div class="tj-modal-footer">
+            <button type="button" class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Cancel</button>
+            <button type="submit" class="tj-btn tj-btn-primary">Add Average-In</button>
+          </div>
+        </form>
+      `);
+    }
+
+    async function tjSubmitAverageIn(ev, id) {
+      ev.preventDefault();
+      const fd = Object.fromEntries(new FormData(ev.target).entries());
+      try {
+        const r = await fetch('/api/trade-journal/' + id + '/average-in', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fd)
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        tjCloseModal();
+        await tjLoad();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    function tjOpenCloseModal(id) {
+      const t = tjTrades.find(x => x.TradeID === id);
+      if (!t) return;
+      const label = t.TradeType === 'option' ? 'Contracts Closed' : 'Shares Closed';
+      const priceLabel = t.TradeType === 'option' ? 'Exit Premium' : 'Exit Price';
+      const now = new Date();
+      const remaining = Number(t.quantityOpen) || 0;
+      tjOpenModal('Close · ' + t.Ticker, `
+        <div class="tj-form-derived" style="margin-bottom:14px;">
+          Remaining open: <strong>${remaining}</strong> ${t.TradeType === 'option' ? 'contracts' : 'shares'} @ avg cost <strong>$${(Number(t.avgCostBasis)||0).toFixed(2)}</strong>
+        </div>
+        <form id="tj-close-form" onsubmit="tjSubmitClose(event, ${id})">
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">${label} *</label>
+              <input class="tj-form-input" type="number" name="quantity" min="0" step="any" max="${remaining}" required value="${remaining}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">${priceLabel} *</label>
+              <input class="tj-form-input" type="number" name="price" min="0" step="any" required>
+            </div>
+          </div>
+          <div class="tj-form-row">
+            <div class="tj-form-group">
+              <label class="tj-form-label">Close Date</label>
+              <input class="tj-form-input" type="date" name="date" value="${now.toISOString().slice(0,10)}">
+            </div>
+            <div class="tj-form-group">
+              <label class="tj-form-label">Close Time</label>
+              <input class="tj-form-input" type="time" name="time" step="1" value="${now.toTimeString().slice(0,8)}">
+            </div>
+          </div>
+          <div class="tj-form-group">
+            <label class="tj-form-label">Notes</label>
+            <textarea class="tj-form-textarea" name="notes"></textarea>
+          </div>
+          <div class="tj-modal-footer">
+            <button type="button" class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Cancel</button>
+            <button type="submit" class="tj-btn tj-btn-primary">Close Trade</button>
+          </div>
+        </form>
+      `);
+    }
+
+    async function tjSubmitClose(ev, id) {
+      ev.preventDefault();
+      const fd = Object.fromEntries(new FormData(ev.target).entries());
+      try {
+        const r = await fetch('/api/trade-journal/' + id + '/close', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fd)
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        tjCloseModal();
+        await tjLoad();
+      } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    async function tjDeleteTrade(id) {
+      if (!confirm('Delete this trade and all its legs?')) return;
+      try {
+        const r = await fetch('/api/trade-journal/' + id, { method: 'DELETE' });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        await tjLoad();
+      } catch (e) { alert('Error: ' + e.message); }
     }
 
     (async function init() {
