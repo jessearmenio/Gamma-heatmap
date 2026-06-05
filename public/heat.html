@@ -8029,6 +8029,16 @@
       box-shadow: 0 4px 12px rgba(0,0,0,.4);
     }
     .tj-canvas-tip strong { color: var(--text5); font-weight: 700; }
+
+    .tj-wn-summary { display:flex; flex-wrap:wrap; gap:6px; }
+    .tj-wn-chip {
+      background: var(--bg3); border: 1px solid var(--border2); color: var(--text3);
+      padding: 4px 10px; border-radius: 14px; font-size: 10px; font-weight: 600;
+      letter-spacing: .03em; cursor: pointer; transition: background .12s, color .12s;
+    }
+    .tj-wn-chip:hover { color: var(--text); }
+    .tj-wn-chip.active { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
+    .tj-wn-chip strong { font-weight: 800; margin-left: 4px; }
     .tj-canvas-tip .pos { color: var(--green); font-weight: 700; }
     .tj-canvas-tip .neg { color: var(--red); font-weight: 700; }
     .tj-chart-body { position: relative; height: 200px; display:flex; align-items:center; justify-content:center; }
@@ -10760,15 +10770,24 @@
           <div class="tj-charts-row">
             <div class="tj-chart-card" style="flex:2;">
               <div class="tj-chart-title">Equity Curve</div>
-              <div class="tj-chart-body"><canvas id="tj-equity-canvas" height="180"></canvas></div>
+              <div class="tj-chart-body" style="position:relative;">
+                <canvas id="tj-equity-canvas" height="180"></canvas>
+                <div class="tj-canvas-tip" id="tj-equity-tip"></div>
+              </div>
             </div>
             <div class="tj-chart-card">
               <div class="tj-chart-title">Monthly P/L</div>
-              <div class="tj-chart-body"><canvas id="tj-monthly-canvas" height="180"></canvas></div>
+              <div class="tj-chart-body" style="position:relative;">
+                <canvas id="tj-monthly-canvas" height="180"></canvas>
+                <div class="tj-canvas-tip" id="tj-monthly-tip"></div>
+              </div>
             </div>
             <div class="tj-chart-card">
               <div class="tj-chart-title">Win / Loss</div>
-              <div class="tj-chart-body"><canvas id="tj-pie-canvas" width="180" height="180"></canvas></div>
+              <div class="tj-chart-body" style="position:relative;">
+                <canvas id="tj-pie-canvas" width="180" height="180"></canvas>
+                <div class="tj-canvas-tip" id="tj-pie-tip"></div>
+              </div>
             </div>
           </div>
 
@@ -21171,24 +21190,92 @@
     }
 
     function tjShowImportWarnings() {
-      const html = tjBrokerWarnings.length
-        ? `<div style="max-height:60vh; overflow-y:auto;">
-            <table style="width:100%; font-size:11px;">
-              <thead><tr style="color:var(--text3);"><th style="text-align:left; padding:6px;">CSV Row</th><th style="text-align:left; padding:6px;">Type</th><th style="text-align:left; padding:6px;">Message</th></tr></thead>
-              <tbody>${tjBrokerWarnings.map(w => `<tr style="border-top:1px solid var(--border);">
-                <td style="padding:6px; color:var(--text2);">${w.OriginalCSVRowNumber ?? '—'}</td>
-                <td style="padding:6px;"><span class="tj-tag-chip" style="color:var(--gold);">${w.WarningType}</span></td>
-                <td style="padding:6px;">${(w.WarningMessage || '').replace(/</g, '&lt;')}</td>
-              </tr>`).join('')}</tbody>
-            </table>
-          </div>
-          <div class="tj-modal-footer">
-            <button class="tj-btn tj-btn-danger" onclick="tjClearBrokerImports()">Delete ALL broker imports</button>
-            <button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Close</button>
-          </div>`
-        : `<div style="text-align:center; color:var(--text3); padding:20px;">No import warnings 🎉</div>
-           <div class="tj-modal-footer"><button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Close</button></div>`;
+      if (!tjBrokerWarnings.length) {
+        tjOpenModal('Import Warnings',
+          `<div style="text-align:center; color:var(--text3); padding:20px;">No import warnings 🎉</div>
+           <div class="tj-modal-footer"><button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Close</button></div>`);
+        return;
+      }
+      // Group counts by WarningType so the user immediately sees what's
+      // dominating the total. Each chip in the summary doubles as a filter
+      // — click a type to scope the table to just that bucket.
+      const counts = {};
+      for (const w of tjBrokerWarnings) {
+        const t = w.WarningType || 'unknown';
+        counts[t] = (counts[t] || 0) + 1;
+      }
+      const types = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      const total = tjBrokerWarnings.length;
+      const chips = types.map(([t, n]) =>
+        `<button class="tj-wn-chip" data-type="${t}" onclick="tjWnFilter('${t}')">
+          ${t} <strong>${n}</strong>
+        </button>`).join('');
+
+      const html = `
+        <div style="font-size:11px; color:var(--text3); margin-bottom:10px;">
+          <strong style="color:var(--gold);">${total}</strong> warnings across
+          <strong>${types.length}</strong> distinct types.
+        </div>
+        <div class="tj-wn-summary" id="tj-wn-summary">
+          <button class="tj-wn-chip active" data-type="" onclick="tjWnFilter('')">
+            All <strong>${total}</strong>
+          </button>
+          ${chips}
+        </div>
+        <div style="margin:10px 0;">
+          <input class="tj-form-input" id="tj-wn-search" placeholder="Search by row #, ticker, or message…" oninput="tjWnRender()">
+        </div>
+        <div style="max-height:50vh; overflow-y:auto;" id="tj-wn-wrap">
+          <table style="width:100%; font-size:11px;">
+            <thead><tr style="color:var(--text3);">
+              <th style="text-align:left; padding:6px; position:sticky; top:0; background:var(--panel);">CSV Row</th>
+              <th style="text-align:left; padding:6px; position:sticky; top:0; background:var(--panel);">Type</th>
+              <th style="text-align:left; padding:6px; position:sticky; top:0; background:var(--panel);">Message</th>
+            </tr></thead>
+            <tbody id="tj-wn-tbody"></tbody>
+          </table>
+        </div>
+        <div class="tj-modal-footer">
+          <span style="color:var(--text3); font-size:10px; margin-right:auto;" id="tj-wn-count"></span>
+          <button class="tj-btn tj-btn-danger" onclick="tjClearBrokerImports()">Delete ALL broker imports</button>
+          <button class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Close</button>
+        </div>`;
       tjOpenModal('Import Warnings', html);
+      tjWnFilterType = '';
+      tjWnRender();
+    }
+
+    let tjWnFilterType = '';
+    function tjWnFilter(t) {
+      tjWnFilterType = t;
+      document.querySelectorAll('#tj-wn-summary .tj-wn-chip').forEach(b =>
+        b.classList.toggle('active', (b.dataset.type || '') === t));
+      tjWnRender();
+    }
+    function tjWnRender() {
+      const search = (document.getElementById('tj-wn-search')?.value || '').toLowerCase();
+      const tbody = document.getElementById('tj-wn-tbody');
+      const counter = document.getElementById('tj-wn-count');
+      if (!tbody) return;
+      const filtered = tjBrokerWarnings.filter(w => {
+        if (tjWnFilterType && (w.WarningType || '') !== tjWnFilterType) return false;
+        if (!search) return true;
+        const hay = `${w.OriginalCSVRowNumber || ''} ${w.WarningType || ''} ${w.WarningMessage || ''}`.toLowerCase();
+        return hay.includes(search);
+      });
+      // Cap rendered rows at 1000 to keep the DOM responsive; tell user how
+      // many more exist past the cap.
+      const cap = 1000;
+      const shown = filtered.slice(0, cap);
+      tbody.innerHTML = shown.map(w => `<tr style="border-top:1px solid var(--border);">
+        <td style="padding:6px; color:var(--text2);">${w.OriginalCSVRowNumber ?? '—'}</td>
+        <td style="padding:6px;"><span class="tj-tag-chip" style="color:var(--gold);">${w.WarningType}</span></td>
+        <td style="padding:6px;">${(w.WarningMessage || '').replace(/</g, '&lt;')}</td>
+      </tr>`).join('') || `<tr><td colspan="3" style="text-align:center; padding:20px; color:var(--text3);">No matches.</td></tr>`;
+      if (counter) {
+        const more = filtered.length > cap ? ` (showing first ${cap})` : '';
+        counter.textContent = `${filtered.length} of ${tjBrokerWarnings.length} warnings${more}`;
+      }
     }
 
     async function tjClearBrokerImports() {
@@ -21395,7 +21482,7 @@
           if (!b) { tip.style.display = 'none'; return; }
           const open = Math.max(0, b.total - b.wins - b.losses);
           tip.innerHTML = `
-            <div><strong>${b.label}</strong></div>
+            <div><strong>${b.tipLabel || b.label}</strong></div>
             <div>Total trades: <strong>${b.total}</strong></div>
             <div><span class="pos">▲ ${b.wins} wins</span> · <span class="neg">▼ ${b.losses} losses</span></div>
             ${open ? `<div style="color:var(--text3);">Open: ${open}</div>` : ''}
@@ -21425,9 +21512,16 @@
       tjDrawStackedBars('tj-dow-canvas', 'tj-dow-tip', buckets, tjDowMode);
     }
 
+    // 24h hour → 12h compact label: 0→"12a", 9→"9a", 12→"12p", 15→"3p", 23→"11p"
+    function tjHour12Label(h) {
+      const period = h < 12 ? 'a' : 'p';
+      const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+      return `${h12}${period}`;
+    }
+
     function tjDrawHod() {
       // 24 one-hour buckets, labelled every 3 hours for readability.
-      const labels = Array.from({ length: 24 }, (_, h) => (h % 3 === 0) ? `${h}h` : '');
+      const labels = Array.from({ length: 24 }, (_, h) => (h % 3 === 0) ? tjHour12Label(h) : '');
       const buckets = tjBucket(tjAllTrades(), t => {
         if (!t.EntryTime) return null;
         const m = String(t.EntryTime).match(/^(\d{1,2}):/);
@@ -21445,13 +21539,17 @@
         let last = buckets.length - 1 - [...buckets].reverse().findIndex(b => b.total > 0);
         first = Math.max(0, first - 1);
         last = Math.min(buckets.length - 1, last + 1);
-        display = buckets.slice(first, last + 1).map((b, i) => ({
-          ...b,
-          label: (() => {
-            const h = first + i;
-            return (h % 2 === 0) ? `${h}h` : '';
-          })()
-        }));
+        display = buckets.slice(first, last + 1).map((b, i) => {
+          const h = first + i;
+          // Keep the hour stored for the tooltip even when the axis label is blanked.
+          return {
+            ...b,
+            label: (h % 2 === 0) ? tjHour12Label(h) : '',
+            tipLabel: tjHour12Label(h)
+          };
+        });
+      } else {
+        display = buckets.map((b, h) => ({ ...b, tipLabel: tjHour12Label(h) }));
       }
       tjDrawStackedBars('tj-hod-canvas', 'tj-hod-tip', display, tjHodMode);
     }
@@ -21466,6 +21564,36 @@
       return { ctx, w: rect.width, h: rect.height };
     }
 
+    // Generic canvas hover binding. `hitTest(mx,my,rect)` returns the hovered
+    // datum (any shape) or null. `renderTip(datum)` returns the tooltip HTML.
+    // We attach the listener once per canvas and refresh the closures on each
+    // draw via canvas._tjHover so re-renders don't accumulate handlers.
+    function tjBindCanvasHover(canvas, tipId, hitTest, renderTip) {
+      const tip = document.getElementById(tipId);
+      if (!tip) return;
+      canvas._tjHover = { hitTest, renderTip, tip };
+      if (canvas._tjHoverBound) return;
+      canvas._tjHoverBound = true;
+      canvas.addEventListener('mousemove', (ev) => {
+        const ctx = canvas._tjHover;
+        if (!ctx) return;
+        const r = canvas.getBoundingClientRect();
+        const mx = ev.clientX - r.left, my = ev.clientY - r.top;
+        const hit = ctx.hitTest(mx, my, r);
+        if (!hit) { ctx.tip.style.display = 'none'; return; }
+        ctx.tip.innerHTML = ctx.renderTip(hit);
+        ctx.tip.style.display = 'block';
+        // Position tooltip near the cursor but keep it inside the chart body.
+        const tx = Math.min(r.width - 150, Math.max(0, mx + 10));
+        const ty = Math.max(0, my - 8);
+        ctx.tip.style.left = tx + 'px';
+        ctx.tip.style.top = ty + 'px';
+      });
+      canvas.addEventListener('mouseleave', () => {
+        canvas._tjHover?.tip && (canvas._tjHover.tip.style.display = 'none');
+      });
+    }
+
     function tjDrawEquityCurve() {
       const canvas = document.getElementById('tj-equity-canvas');
       if (!canvas) return;
@@ -21476,15 +21604,20 @@
       if (!closed.length) {
         ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('No closed trades yet', w / 2, h / 2);
+        tjBindCanvasHover(canvas, 'tj-equity-tip', () => null, () => '');
         return;
       }
       let cum = 0;
-      const points = closed.map(t => { cum += Number(t.RealizedPL) || 0; return cum; });
-      const min = Math.min(0, ...points), max = Math.max(0, ...points);
+      const pts = closed.map(t => {
+        cum += Number(t.RealizedPL) || 0;
+        return { trade: t, cum, pl: Number(t.RealizedPL) || 0 };
+      });
+      const values = pts.map(p => p.cum);
+      const min = Math.min(0, ...values), max = Math.max(0, ...values);
       const range = max - min || 1;
       const padL = 38, padR = 8, padT = 10, padB = 18;
       const innerW = w - padL - padR, innerH = h - padT - padB;
-      const xAt = (i) => padL + (points.length > 1 ? (i * innerW / (points.length - 1)) : innerW / 2);
+      const xAt = (i) => padL + (pts.length > 1 ? (i * innerW / (pts.length - 1)) : innerW / 2);
       const yAt = (v) => padT + innerH - ((v - min) / range) * innerH;
       // baseline (0)
       ctx.strokeStyle = '#252a3a'; ctx.lineWidth = 1; ctx.setLineDash([2,3]);
@@ -21495,16 +21628,42 @@
       [max, (max + min) / 2, min].forEach(v => ctx.fillText('$' + Math.round(v).toLocaleString(), padL - 4, yAt(v) + 3));
       // fill
       ctx.beginPath();
-      points.forEach((p, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(p)); else ctx.lineTo(xAt(i), yAt(p)); });
-      const lastX = xAt(points.length - 1);
+      pts.forEach((p, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(p.cum)); else ctx.lineTo(xAt(i), yAt(p.cum)); });
+      const lastX = xAt(pts.length - 1);
       ctx.lineTo(lastX, yAt(0)); ctx.lineTo(padL, yAt(0)); ctx.closePath();
-      ctx.fillStyle = points[points.length - 1] >= 0 ? 'rgba(34,221,136,0.12)' : 'rgba(255,59,92,0.12)';
+      ctx.fillStyle = pts[pts.length - 1].cum >= 0 ? 'rgba(34,221,136,0.12)' : 'rgba(255,59,92,0.12)';
       ctx.fill();
       // line
       ctx.beginPath();
-      points.forEach((p, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(p)); else ctx.lineTo(xAt(i), yAt(p)); });
-      ctx.strokeStyle = points[points.length - 1] >= 0 ? '#22dd88' : '#ff3b5c';
+      pts.forEach((p, i) => { if (i === 0) ctx.moveTo(xAt(i), yAt(p.cum)); else ctx.lineTo(xAt(i), yAt(p.cum)); });
+      ctx.strokeStyle = pts[pts.length - 1].cum >= 0 ? '#22dd88' : '#ff3b5c';
       ctx.lineWidth = 2; ctx.stroke();
+
+      // Hover hit-testing: snap to nearest x; show point marker only on hover
+      // via a separate (re-rendered) layer would be ideal, but a tooltip is
+      // sufficient and matches the rest of the dashboard's interaction model.
+      const hitTest = (mx) => {
+        if (mx < padL || mx > w - padR) return null;
+        // nearest index
+        let bestI = 0, bestD = Infinity;
+        for (let i = 0; i < pts.length; i++) {
+          const dx = Math.abs(xAt(i) - mx);
+          if (dx < bestD) { bestD = dx; bestI = i; }
+        }
+        return pts[bestI];
+      };
+      tjBindCanvasHover(canvas, 'tj-equity-tip', hitTest, (p) => {
+        const pl = p.pl;
+        const cls = pl > 0 ? 'pos' : pl < 0 ? 'neg' : '';
+        const cumCls = p.cum > 0 ? 'pos' : p.cum < 0 ? 'neg' : '';
+        const tk = p.trade.Ticker || '—';
+        const date = p.trade.CloseDate || '';
+        return `
+          <div><strong>${tk}</strong> · ${date}</div>
+          <div>Trade P/L: <span class="${cls}">${tjFmtMoneySigned(pl)}</span></div>
+          <div>Cumulative: <span class="${cumCls}">${tjFmtMoneySigned(p.cum)}</span></div>
+        `;
+      });
     }
 
     function tjDrawMonthlyBar() {
@@ -21512,18 +21671,26 @@
       if (!canvas) return;
       const { ctx, w, h } = tjPrepCanvas(canvas);
       ctx.clearRect(0, 0, w, h);
+      // Per-month aggregates also track trade counts + win/loss split so the
+      // tooltip can show what's behind each bar, not just the dollar total.
       const months = {};
       tjAllTrades().filter(t => t.Status === 'closed' && t.CloseDate).forEach(t => {
         const k = String(t.CloseDate).slice(0, 7);
-        months[k] = (months[k] || 0) + (Number(t.RealizedPL) || 0);
+        const pl = Number(t.RealizedPL) || 0;
+        if (!months[k]) months[k] = { pl: 0, count: 0, wins: 0, losses: 0 };
+        months[k].pl += pl;
+        months[k].count++;
+        if (pl > 0) months[k].wins++;
+        else if (pl < 0) months[k].losses++;
       });
       const keys = Object.keys(months).sort();
       if (!keys.length) {
         ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('No monthly P/L yet', w / 2, h / 2);
+        tjBindCanvasHover(canvas, 'tj-monthly-tip', () => null, () => '');
         return;
       }
-      const values = keys.map(k => months[k]);
+      const values = keys.map(k => months[k].pl);
       const min = Math.min(0, ...values), max = Math.max(0, ...values);
       const range = max - min || 1;
       const padL = 32, padR = 8, padT = 12, padB = 22;
@@ -21531,15 +21698,38 @@
       const bw = innerW / keys.length;
       const yAt = (v) => padT + innerH - ((v - min) / range) * innerH;
       ctx.strokeStyle = '#252a3a'; ctx.beginPath(); ctx.moveTo(padL, yAt(0)); ctx.lineTo(w - padR, yAt(0)); ctx.stroke();
+      const hits = [];
       values.forEach((v, i) => {
         const x = padL + i * bw + bw * 0.1;
         const y = yAt(Math.max(v, 0));
         const barH = Math.abs(yAt(v) - yAt(0));
         ctx.fillStyle = v >= 0 ? '#22dd88' : '#ff3b5c';
         ctx.fillRect(x, v >= 0 ? y : yAt(0), bw * 0.8, barH);
+        // hit region covers the bar's column (full chart height) so the tip
+        // surfaces even if you hover above a tiny bar.
+        hits.push({
+          x, w: bw * 0.8, key: keys[i], v, ...months[keys[i]]
+        });
       });
       ctx.fillStyle = '#71829d'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
       keys.forEach((k, i) => ctx.fillText(k.slice(5), padL + i * bw + bw / 2, h - 6));
+
+      tjBindCanvasHover(canvas,
+        'tj-monthly-tip',
+        (mx, my) => {
+          if (my < padT || my > padT + innerH + 6) return null;
+          return hits.find(hh => mx >= hh.x - 2 && mx <= hh.x + hh.w + 2) || null;
+        },
+        (m) => {
+          const cls = m.pl > 0 ? 'pos' : m.pl < 0 ? 'neg' : '';
+          return `
+            <div><strong>${m.key}</strong></div>
+            <div>P/L: <span class="${cls}">${tjFmtMoneySigned(m.pl)}</span></div>
+            <div>Trades: <strong>${m.count}</strong></div>
+            <div><span class="pos">▲ ${m.wins}</span> · <span class="neg">▼ ${m.losses}</span></div>
+          `;
+        }
+      );
     }
 
     function tjDrawWinLossPie() {
@@ -21548,25 +21738,31 @@
       const { ctx, w, h } = tjPrepCanvas(canvas);
       ctx.clearRect(0, 0, w, h);
       const closed = tjAllTrades().filter(t => t.Status === 'closed');
-      const wins = closed.filter(t => Number(t.RealizedPL) > 0).length;
-      const losses = closed.filter(t => Number(t.RealizedPL) < 0).length;
-      const total = wins + losses;
+      const winTrades = closed.filter(t => Number(t.RealizedPL) > 0);
+      const lossTrades = closed.filter(t => Number(t.RealizedPL) < 0);
+      const wins = winTrades.length, losses = lossTrades.length, total = wins + losses;
       if (!total) {
         ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('No closed trades', w / 2, h / 2);
+        tjBindCanvasHover(canvas, 'tj-pie-tip', () => null, () => '');
         return;
       }
       const cx = w / 2, cy = h / 2, r = Math.min(w, h) / 2 - 12;
       let start = -Math.PI / 2;
+      const winPL = winTrades.reduce((s, t) => s + (Number(t.RealizedPL) || 0), 0);
+      const lossPL = lossTrades.reduce((s, t) => s + (Number(t.RealizedPL) || 0), 0);
       const slices = [
-        { v: wins, color: '#22dd88' },
-        { v: losses, color: '#ff3b5c' }
+        { label: 'Wins',   v: wins,   pl: winPL,  color: '#22dd88', cls: 'pos' },
+        { label: 'Losses', v: losses, pl: lossPL, color: '#ff3b5c', cls: 'neg' }
       ];
+      // Capture each slice's angular extent for hit-testing.
+      const ranges = [];
       slices.forEach(s => {
         const angle = (s.v / total) * Math.PI * 2;
         ctx.beginPath(); ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, r, start, start + angle); ctx.closePath();
         ctx.fillStyle = s.color; ctx.fill();
+        ranges.push({ slice: s, start, end: start + angle });
         start += angle;
       });
       ctx.beginPath(); ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2);
@@ -21575,42 +21771,74 @@
       ctx.fillText(((wins / total) * 100).toFixed(0) + '%', cx, cy + 2);
       ctx.fillStyle = '#71829d'; ctx.font = '9px sans-serif';
       ctx.fillText('WIN RATE', cx, cy + 16);
+
+      // Pie hit-test: convert cursor to polar coords centered on (cx,cy),
+      // accept hover only inside the annulus (between donut hole and outer rim).
+      const innerR = r * 0.55;
+      tjBindCanvasHover(canvas,
+        'tj-pie-tip',
+        (mx, my) => {
+          const dx = mx - cx, dy = my - cy;
+          const dist = Math.hypot(dx, dy);
+          if (dist < innerR || dist > r + 2) return null;
+          // angle: atan2 gives (-π,π], shift so that -π/2 (top) is the start
+          let a = Math.atan2(dy, dx);
+          // normalize so a runs in [-π/2, 3π/2) matching `start = -π/2`
+          if (a < -Math.PI / 2) a += Math.PI * 2;
+          return ranges.find(rg => a >= rg.start && a < rg.end)?.slice || null;
+        },
+        (s) => {
+          const pct = ((s.v / total) * 100).toFixed(1);
+          return `
+            <div><strong>${s.label}</strong></div>
+            <div>Trades: <strong>${s.v}</strong> (${pct}%)</div>
+            <div>P/L: <span class="${s.cls}">${tjFmtMoneySigned(s.pl)}</span></div>
+          `;
+        }
+      );
     }
 
+    // `groups` is { key: { pl, count, wins, losses } } so each row's title
+    // attribute gets a rich breakdown for instant hover info.
     function tjGroupedBar(containerId, groups) {
       const wrap = document.getElementById(containerId);
       if (!wrap) return;
       const entries = Object.entries(groups);
       if (!entries.length) { wrap.innerHTML = '<div class="tj-bar-empty">No data yet</div>'; return; }
-      entries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
-      const max = Math.max(...entries.map(([, v]) => Math.abs(v))) || 1;
-      wrap.innerHTML = entries.slice(0, 12).map(([k, v]) => {
-        const pct = (Math.abs(v) / max) * 100;
-        const cls = v >= 0 ? 'pos' : 'neg';
-        return `<div class="tj-bar-row">
+      entries.sort((a, b) => Math.abs(b[1].pl) - Math.abs(a[1].pl));
+      const max = Math.max(...entries.map(([, g]) => Math.abs(g.pl))) || 1;
+      wrap.innerHTML = entries.slice(0, 12).map(([k, g]) => {
+        const pct = (Math.abs(g.pl) / max) * 100;
+        const cls = g.pl >= 0 ? 'pos' : 'neg';
+        const wr = (g.wins + g.losses) ? Math.round((g.wins / (g.wins + g.losses)) * 100) : 0;
+        const title = `${k}
+P/L: ${tjFmtMoneySigned(g.pl)}
+Trades: ${g.count}
+Wins: ${g.wins}   Losses: ${g.losses}
+Win rate: ${wr}%`;
+        return `<div class="tj-bar-row" title="${title.replace(/"/g, '&quot;')}">
           <div class="tj-bar-label">${k}</div>
           <div class="tj-bar-track"><div class="tj-bar-fill ${cls}" style="width:${pct}%;"></div></div>
-          <div class="tj-bar-value ${cls}">${tjFmtMoneySigned(v)}</div>
+          <div class="tj-bar-value ${cls}">${tjFmtMoneySigned(g.pl)}</div>
         </div>`;
       }).join('');
     }
 
-    function tjRenderByTicker() {
+    function tjAggregateBy(keyFn) {
       const groups = {};
       tjAllTrades().filter(t => t.Status === 'closed').forEach(t => {
-        const k = t.Ticker || '—';
-        groups[k] = (groups[k] || 0) + (Number(t.RealizedPL) || 0);
+        const k = keyFn(t);
+        const pl = Number(t.RealizedPL) || 0;
+        if (!groups[k]) groups[k] = { pl: 0, count: 0, wins: 0, losses: 0 };
+        groups[k].pl += pl;
+        groups[k].count++;
+        if (pl > 0) groups[k].wins++;
+        else if (pl < 0) groups[k].losses++;
       });
-      tjGroupedBar('tj-bytkr', groups);
+      return groups;
     }
-    function tjRenderBySetup() {
-      const groups = {};
-      tjAllTrades().filter(t => t.Status === 'closed').forEach(t => {
-        const k = t.SetupType || 'Unspecified';
-        groups[k] = (groups[k] || 0) + (Number(t.RealizedPL) || 0);
-      });
-      tjGroupedBar('tj-bysetup', groups);
-    }
+    function tjRenderByTicker() { tjGroupedBar('tj-bytkr', tjAggregateBy(t => t.Ticker || '—')); }
+    function tjRenderBySetup()  { tjGroupedBar('tj-bysetup', tjAggregateBy(t => t.SetupType || 'Unspecified')); }
 
     function tjFilteredTrades() {
       const status = document.getElementById('tj-f-status')?.value || 'all';
