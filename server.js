@@ -3297,15 +3297,8 @@ function matchBrokerRows(rows) {
         remainingQty: r.quantity
       });
 
-      // Sign sanity: BTO/Buy amounts should be negative (debit). Warn if not.
-      if (rawAmt != null && rawAmt > 0) {
-        warnings.push({
-          csvRow: r.csvRow,
-          type: 'sign_mismatch',
-          message: `${r.transCode} should be a debit (negative Amount) but Amount is positive (${rawAmt}). Direction taken from Trans Code.`,
-          raw: r.raw
-        });
-      }
+      // Sign of the Amount column doesn't affect P/L (we always use |Amount|
+      // and take direction from Trans Code) so we don't warn on it.
     } else {
       // close
       if (g.currentIdx == null || g.openLots.length === 0) {
@@ -3336,15 +3329,6 @@ function matchBrokerRows(rows) {
         transCode: r.transCode
       };
       trade.closes.push(closeRow);
-
-      if (rawAmt != null && rawAmt < 0) {
-        warnings.push({
-          csvRow: r.csvRow,
-          type: 'sign_mismatch',
-          message: `${r.transCode} should be a credit (positive Amount) but Amount is negative (${rawAmt}). Direction taken from Trans Code.`,
-          raw: r.raw
-        });
-      }
 
       // FIFO match.
       let qtyToClose = r.quantity;
@@ -3617,12 +3601,41 @@ app.post("/api/trade-journal/broker-import", async (req, res) => {
       tradeRows.push(parsed);
     }
 
-    // Chronological sort with CSV row number as tie-breaker.
+    // ── Chronological sort, multi-fill-aware ─────────────────────────
+    //
+    // The broker CSV may be sorted newest-first (Robinhood) or oldest-first.
+    // We detect direction by comparing the first and last *trade* row's
+    // dates, then sort so that:
+    //   1. Earliest date is processed first.
+    //   2. Within a date, OPENS process before CLOSES — otherwise an STC on
+    //      the same day as its BTO fires before any open lot exists and
+    //      produces a bogus `unmatched_close`, leaving the subsequent BTO
+    //      lots looking like a permanent open position.
+    //   3. Within a date and same side, csvRow tiebreaks in real execution
+    //      order: ASC for oldest-first CSVs, DESC for newest-first.
+    //
+    // This is the fix for the multi-fill matching bug — e.g. a single order
+    // executed as 3 separate Buy fills on day 1 and a single Sell of 3 on
+    // day 2 used to lose track of lots because same-day sells got reordered
+    // ahead of same-day buys when the CSV was newest-first.
+    let firstTradeDate = null, lastTradeDate = null;
+    for (const r of tradeRows) {
+      if (!r.activityDate) continue;
+      if (firstTradeDate == null) firstTradeDate = r.activityDate;
+      lastTradeDate = r.activityDate;
+    }
+    // tradeRows here is still in original CSV order, so first/last reflect
+    // the CSV's own direction. Newest-first iff first date > last date.
+    const csvNewestFirst = firstTradeDate && lastTradeDate && firstTradeDate > lastTradeDate;
+
     tradeRows.sort((a, b) => {
       const da = a.activityDate || '';
       const db = b.activityDate || '';
       if (da !== db) return da < db ? -1 : 1;
-      return a.csvRow - b.csvRow;
+      // Same date: opens always first so FIFO has lots to consume.
+      if (a.side !== b.side) return a.side === 'open' ? -1 : 1;
+      // Same date + same side: preserve real execution order.
+      return csvNewestFirst ? (b.csvRow - a.csvRow) : (a.csvRow - b.csvRow);
     });
 
     const matched = matchBrokerRows(tradeRows);
