@@ -3918,6 +3918,101 @@ function brokerLegFieldUpdates(b) {
   return { sets, args };
 }
 
+// POST a new entry (BTO equivalent) onto an existing broker trade. CostBasis
+// is derived from Amount when present, otherwise Price × Qty × multiplier.
+// EntryType is auto: 'Initial' if the trade has no entries yet, else 'AverageIn'.
+// After insert we re-run FIFO matching so the trade's status, totals, and
+// realized P/L stay in sync.
+app.post("/api/trade-journal/broker/:id(\\d+)/entry", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const b = req.body || {};
+    const qty = tjNum(b.quantity);
+    const price = tjNum(b.price);
+    const amount = b.amount === undefined ? null : tjNum(b.amount);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return res.status(400).json({ ok: false, error: "quantity must be > 0." });
+    }
+    const trade = (await turso.execute({
+      sql: `SELECT AssetType FROM broker_log_hist_trades WHERE TradeID = ?`,
+      args: [tradeId]
+    })).rows?.[0];
+    if (!trade) return res.status(404).json({ ok: false, error: "Trade not found." });
+    const mult = trade.AssetType === 'option' ? 100 : 1;
+    const costBasis = amount != null
+      ? Math.abs(amount)
+      : (Number.isFinite(price) ? price * qty * mult : null);
+    const existing = (await turso.execute({
+      sql: `SELECT COUNT(*) AS n FROM broker_log_hist_entries WHERE TradeID = ?`,
+      args: [tradeId]
+    })).rows?.[0]?.n || 0;
+    const entryType = Number(existing) === 0 ? 'Initial' : 'AverageIn';
+    await turso.execute({
+      sql: `INSERT INTO broker_log_hist_entries
+        (TradeID, ActivityDate, Quantity, Price, Amount, CostBasis, EntryType,
+         OriginalCSVRowNumber, OriginalDescription, OriginalTransCode)
+        VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      args: [
+        tradeId,
+        tjStr(b.activityDate) || tjNowParts().date,
+        qty, price, amount, costBasis, entryType,
+        null,
+        tjStr(b.description) || 'manual-add',
+        tjStr(b.transCode) || (trade.AssetType === 'option' ? 'BTO' : 'Buy')
+      ]
+    });
+    await tjBrokerReaggregateTrade(tradeId);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_ENTRY_POST ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to add entry.", details: error.message });
+  }
+});
+
+// POST a new close (STC equivalent) onto an existing broker trade. Proceeds
+// is derived from |Amount| when present, otherwise Price × Qty × multiplier.
+// After insert FIFO matching re-runs against the trade's full leg history.
+app.post("/api/trade-journal/broker/:id(\\d+)/close", async (req, res) => {
+  try {
+    const tradeId = Number(req.params.id);
+    const b = req.body || {};
+    const qty = tjNum(b.quantity);
+    const price = tjNum(b.price);
+    const amount = b.amount === undefined ? null : tjNum(b.amount);
+    if (!Number.isFinite(qty) || qty <= 0) {
+      return res.status(400).json({ ok: false, error: "quantity must be > 0." });
+    }
+    const trade = (await turso.execute({
+      sql: `SELECT AssetType FROM broker_log_hist_trades WHERE TradeID = ?`,
+      args: [tradeId]
+    })).rows?.[0];
+    if (!trade) return res.status(404).json({ ok: false, error: "Trade not found." });
+    const mult = trade.AssetType === 'option' ? 100 : 1;
+    const proceeds = amount != null
+      ? Math.abs(amount)
+      : (Number.isFinite(price) ? price * qty * mult : null);
+    await turso.execute({
+      sql: `INSERT INTO broker_log_hist_closes
+        (TradeID, ActivityDate, Quantity, Price, Amount, Proceeds,
+         OriginalCSVRowNumber, OriginalDescription, OriginalTransCode)
+        VALUES (?,?,?,?,?,?,?,?,?)`,
+      args: [
+        tradeId,
+        tjStr(b.activityDate) || tjNowParts().date,
+        qty, price, amount, proceeds,
+        null,
+        tjStr(b.description) || 'manual-add',
+        tjStr(b.transCode) || (trade.AssetType === 'option' ? 'STC' : 'Sell')
+      ]
+    });
+    await tjBrokerReaggregateTrade(tradeId);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("BROKER_CLOSE_POST ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to add close.", details: error.message });
+  }
+});
+
 app.put("/api/trade-journal/broker/:id(\\d+)/entry/:entryId(\\d+)", async (req, res) => {
   try {
     const tradeId = Number(req.params.id);

@@ -22152,6 +22152,24 @@ Win rate: ${wr}%`;
     function tjOpenEditModal(id) {
       const t = tjTrades.find(x => x.TradeID === id);
       if (!t) return;
+      // Show every recorded leg (initial + averagein + close) so the user can
+      // see what the trade currently consists of, then offer "Add Average In"
+      // and "Add Close" inline forms to manually patch missing legs (e.g. an
+      // import that only matched 2/3 of a multi-fill close).
+      const legRows = (t.entries || []).map(e => {
+        const kindBadge = e.EntryType === 'close'
+          ? `<span class="tj-tag-chip" style="color:var(--red);">CLOSE</span>`
+          : e.EntryType === 'averagein'
+            ? `<span class="tj-tag-chip" style="color:var(--blue);">AVG IN</span>`
+            : `<span class="tj-tag-chip">INITIAL</span>`;
+        return `<tr>
+          <td style="padding:4px 6px;">${e.EntryDate || ''}</td>
+          <td style="padding:4px 6px;">${kindBadge}</td>
+          <td style="padding:4px 6px;">${e.Quantity ?? ''}</td>
+          <td style="padding:4px 6px;">${e.Price ?? ''}</td>
+          <td style="padding:4px 6px; color:var(--text3); font-size:10px;">${e.Notes || ''}</td>
+        </tr>`;
+      }).join('');
       tjOpenModal('Edit Trade · ' + t.Ticker, `
         <form id="tj-edit-form" onsubmit="tjSubmitEdit(event, ${id})">
           <div class="tj-form-row">
@@ -22204,12 +22222,94 @@ Win rate: ${wr}%`;
             <label class="tj-form-label">Screenshot URL</label>
             <input class="tj-form-input" name="screenshotUrl" value="${t.ScreenshotUrl || ''}" placeholder="https://…">
           </div>
+
+          <div class="tj-form-derived" style="margin-top:18px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <strong>Position legs</strong>
+              <div style="display:flex; gap:6px;">
+                <button type="button" class="tj-btn" style="padding:3px 8px; font-size:10px;" onclick="tjManualAddLegToggle('avgin')">＋ Add Average In</button>
+                <button type="button" class="tj-btn" style="padding:3px 8px; font-size:10px;" onclick="tjManualAddLegToggle('close')">＋ Add Close</button>
+              </div>
+            </div>
+            <div style="font-size:10px; color:var(--text3); margin-top:2px;">Add a missed average-in or partial close — totals and realized P/L recompute automatically.</div>
+            <table style="width:100%; margin-top:8px; font-size:11px;">
+              <thead><tr style="color:var(--text3); font-size:9px;">
+                <th style="text-align:left;">Date</th><th style="text-align:left;">Type</th><th style="text-align:left;">Qty</th><th style="text-align:left;">Price</th><th style="text-align:left;">Notes</th>
+              </tr></thead>
+              <tbody>${legRows || '<tr><td colspan="5" style="color:var(--text3);">No legs yet</td></tr>'}</tbody>
+            </table>
+
+            <div id="tj-mn-avgin-add" class="tj-leg-add" style="display:none; margin-top:8px;">
+              <div style="font-size:9px; color:var(--blue); font-weight:700; letter-spacing:.08em; margin-bottom:4px;">＋ AVERAGE IN</div>
+              <div style="display:grid; grid-template-columns: 1.1fr 0.8fr 0.8fr 1.4fr auto auto; gap:6px; align-items:end;">
+                <div><label class="tj-form-label">Date</label><input class="tj-form-input" type="date" id="tj-mn-avgin-date"></div>
+                <div><label class="tj-form-label">Qty</label><input class="tj-form-input" type="number" step="0.0001" id="tj-mn-avgin-qty"></div>
+                <div><label class="tj-form-label">Price</label><input class="tj-form-input" type="number" step="0.0001" id="tj-mn-avgin-price"></div>
+                <div><label class="tj-form-label">Notes</label><input class="tj-form-input" id="tj-mn-avgin-notes" placeholder="optional"></div>
+                <button type="button" class="tj-btn tj-btn-primary" style="padding:6px 10px;" onclick="tjManualAddLegSubmit('avgin', ${id})">Save</button>
+                <button type="button" class="tj-btn tj-btn-ghost" style="padding:6px 10px;" onclick="tjManualAddLegToggle('avgin')">×</button>
+              </div>
+            </div>
+
+            <div id="tj-mn-close-add" class="tj-leg-add" style="display:none; margin-top:8px;">
+              <div style="font-size:9px; color:var(--red); font-weight:700; letter-spacing:.08em; margin-bottom:4px;">＋ PARTIAL OR FULL CLOSE</div>
+              <div style="display:grid; grid-template-columns: 1.1fr 0.8fr 0.8fr 1.4fr auto auto; gap:6px; align-items:end;">
+                <div><label class="tj-form-label">Date</label><input class="tj-form-input" type="date" id="tj-mn-close-date"></div>
+                <div><label class="tj-form-label">Qty</label><input class="tj-form-input" type="number" step="0.0001" id="tj-mn-close-qty" placeholder="${t.quantityOpen || 0} open"></div>
+                <div><label class="tj-form-label">Price</label><input class="tj-form-input" type="number" step="0.0001" id="tj-mn-close-price"></div>
+                <div><label class="tj-form-label">Notes</label><input class="tj-form-input" id="tj-mn-close-notes" placeholder="optional"></div>
+                <button type="button" class="tj-btn tj-btn-primary" style="padding:6px 10px;" onclick="tjManualAddLegSubmit('close', ${id})">Save</button>
+                <button type="button" class="tj-btn tj-btn-ghost" style="padding:6px 10px;" onclick="tjManualAddLegToggle('close')">×</button>
+              </div>
+            </div>
+          </div>
+
           <div class="tj-modal-footer">
             <button type="button" class="tj-btn tj-btn-ghost" onclick="tjCloseModal()">Cancel</button>
             <button type="submit" class="tj-btn tj-btn-primary">Save</button>
           </div>
         </form>
       `);
+    }
+
+    function tjManualAddLegToggle(kind) {
+      const wrap = document.getElementById(`tj-mn-${kind}-add`);
+      if (!wrap) return;
+      const show = wrap.style.display === 'none';
+      wrap.style.display = show ? '' : 'none';
+      if (show) {
+        const dateEl = document.getElementById(`tj-mn-${kind}-date`);
+        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+      }
+    }
+
+    async function tjManualAddLegSubmit(kind, tradeId) {
+      const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+      const qty = Number(v(`tj-mn-${kind}-qty`));
+      const price = Number(v(`tj-mn-${kind}-price`));
+      if (!Number.isFinite(qty) || qty <= 0) { alert('Quantity is required and must be > 0.'); return; }
+      if (!Number.isFinite(price) || price <= 0) { alert('Price is required and must be > 0.'); return; }
+      const body = {
+        date: v(`tj-mn-${kind}-date`) || undefined,
+        quantity: qty,
+        price,
+        notes: v(`tj-mn-${kind}-notes`) || undefined
+      };
+      const path = kind === 'avgin' ? 'average-in' : 'close';
+      try {
+        const r = await fetch(`/api/trade-journal/${tradeId}/${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        tjCloseModal();
+        await tjLoad();
+        tjOpenEditModal(tradeId);
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
     }
 
     async function tjSubmitEdit(ev, id) {
@@ -22444,23 +22544,50 @@ Win rate: ${wr}%`;
         </div>
 
         <div class="tj-form-derived" style="margin-top:18px;">
-          <strong>Entries (open legs)</strong> — editing any field re-runs FIFO matching and recomputes realized P/L.
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <strong>Entries (open legs)</strong>
+            <button class="tj-btn" style="padding:3px 8px; font-size:10px;" onclick="tjBrokerAddLegToggle('entry')">＋ Add Entry</button>
+          </div>
+          <div style="font-size:10px; color:var(--text3); margin-top:2px;">Editing any field re-runs FIFO matching and recomputes realized P/L.</div>
           <table id="tj-be-entries" style="width:100%; margin-top:8px; font-size:11px;">
             <thead><tr style="color:var(--text3); font-size:9px;">
               <th style="text-align:left;">Date</th><th style="text-align:left;">Qty</th><th style="text-align:left;">Price</th><th style="text-align:left;">Amount</th><th style="text-align:left;">Type</th><th></th>
             </tr></thead>
             <tbody>${entryRows || '<tr><td colspan="6" style="color:var(--text3);">No entries</td></tr>'}</tbody>
           </table>
+          <div id="tj-be-entry-add" class="tj-leg-add" style="display:none; margin-top:8px;">
+            <div style="display:grid; grid-template-columns: 1.1fr 0.8fr 0.8fr 1fr auto auto; gap:6px; align-items:end;">
+              <div><label class="tj-form-label">Date</label><input class="tj-form-input" type="date" id="tj-add-entry-date"></div>
+              <div><label class="tj-form-label">Qty</label><input class="tj-form-input" type="number" step="0.0001" id="tj-add-entry-qty"></div>
+              <div><label class="tj-form-label">Price</label><input class="tj-form-input" type="number" step="0.0001" id="tj-add-entry-price"></div>
+              <div><label class="tj-form-label">Amount (optional)</label><input class="tj-form-input" type="number" step="0.01" id="tj-add-entry-amt" placeholder="auto from Price×Qty"></div>
+              <button class="tj-btn tj-btn-primary" style="padding:6px 10px;" onclick="tjBrokerAddLegSubmit('entry', ${t.TradeID})">Save</button>
+              <button class="tj-btn tj-btn-ghost" style="padding:6px 10px;" onclick="tjBrokerAddLegToggle('entry')">×</button>
+            </div>
+          </div>
         </div>
 
         <div class="tj-form-derived">
-          <strong>Closes</strong>
+          <div style="display:flex; align-items:center; justify-content:space-between;">
+            <strong>Closes</strong>
+            <button class="tj-btn" style="padding:3px 8px; font-size:10px;" onclick="tjBrokerAddLegToggle('close')">＋ Add Close</button>
+          </div>
           <table id="tj-be-closes" style="width:100%; margin-top:8px; font-size:11px;">
             <thead><tr style="color:var(--text3); font-size:9px;">
               <th style="text-align:left;">Date</th><th style="text-align:left;">Qty</th><th style="text-align:left;">Price</th><th style="text-align:left;">Amount</th><th style="text-align:left;">Code</th><th></th>
             </tr></thead>
             <tbody>${closeRows || '<tr><td colspan="6" style="color:var(--text3);">No closes</td></tr>'}</tbody>
           </table>
+          <div id="tj-be-close-add" class="tj-leg-add" style="display:none; margin-top:8px;">
+            <div style="display:grid; grid-template-columns: 1.1fr 0.8fr 0.8fr 1fr auto auto; gap:6px; align-items:end;">
+              <div><label class="tj-form-label">Date</label><input class="tj-form-input" type="date" id="tj-add-close-date"></div>
+              <div><label class="tj-form-label">Qty</label><input class="tj-form-input" type="number" step="0.0001" id="tj-add-close-qty"></div>
+              <div><label class="tj-form-label">Price</label><input class="tj-form-input" type="number" step="0.0001" id="tj-add-close-price"></div>
+              <div><label class="tj-form-label">Amount (optional)</label><input class="tj-form-input" type="number" step="0.01" id="tj-add-close-amt" placeholder="auto from Price×Qty"></div>
+              <button class="tj-btn tj-btn-primary" style="padding:6px 10px;" onclick="tjBrokerAddLegSubmit('close', ${t.TradeID})">Save</button>
+              <button class="tj-btn tj-btn-ghost" style="padding:6px 10px;" onclick="tjBrokerAddLegToggle('close')">×</button>
+            </div>
+          </div>
         </div>
 
         <div class="tj-modal-footer">
@@ -22569,6 +22696,51 @@ Win rate: ${wr}%`;
         await tjLoad();
         tjOpenBrokerEditModal(tradeId);
       } catch (e) { alert('Error: ' + e.message); }
+    }
+
+    // Toggle the inline "add entry/close" form inside the broker edit modal.
+    // We pre-fill the date with today so the common case (manually adding a
+    // close that today's CSV was missing) is one fewer field to fill in.
+    function tjBrokerAddLegToggle(kind) {
+      const wrap = document.getElementById(`tj-be-${kind}-add`);
+      if (!wrap) return;
+      const show = wrap.style.display === 'none';
+      wrap.style.display = show ? '' : 'none';
+      if (show) {
+        const dateEl = document.getElementById(`tj-add-${kind}-date`);
+        if (dateEl && !dateEl.value) dateEl.value = new Date().toISOString().slice(0, 10);
+      }
+    }
+
+    async function tjBrokerAddLegSubmit(kind, tradeId) {
+      const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+      const body = {
+        activityDate: v(`tj-add-${kind}-date`),
+        quantity: Number(v(`tj-add-${kind}-qty`)),
+        price: Number(v(`tj-add-${kind}-price`)),
+      };
+      const amt = v(`tj-add-${kind}-amt`);
+      if (amt !== '') body.amount = Number(amt);
+      if (!Number.isFinite(body.quantity) || body.quantity <= 0) {
+        alert('Quantity is required and must be > 0.'); return;
+      }
+      if (!Number.isFinite(body.price) && body.amount == null) {
+        alert('Either Price or Amount is required.'); return;
+      }
+      try {
+        const r = await fetch(`/api/trade-journal/broker/${tradeId}/${kind}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const d = await r.json();
+        if (!d.ok) throw new Error(d.error || 'Failed');
+        tjCloseModal();
+        await tjLoad();
+        tjOpenBrokerEditModal(tradeId);
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
     }
 
     (async function init() {
