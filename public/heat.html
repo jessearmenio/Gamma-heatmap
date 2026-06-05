@@ -8012,6 +8012,25 @@
       border-radius: 8px; padding: 14px;
     }
     .tj-chart-title { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
+    .tj-chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .tj-chart-header .tj-chart-title { margin-bottom: 0; }
+    .tj-mini-toggle { display:inline-flex; border:1px solid var(--border2); border-radius:4px; overflow:hidden; }
+    .tj-mini-toggle button {
+      background: var(--bg3); color: var(--text3); border: none; padding: 3px 9px;
+      font-size: 9px; font-weight: 700; letter-spacing: .06em; cursor: pointer;
+    }
+    .tj-mini-toggle button.active { background: var(--accent); color: var(--text4); }
+    .tj-mini-toggle button:hover:not(.active) { color: var(--text); }
+    .tj-canvas-tip {
+      position: absolute; pointer-events: none; display: none;
+      background: rgba(11,23,48,0.96); border: 1px solid var(--border2);
+      color: var(--text); padding: 6px 8px; border-radius: 5px;
+      font-size: 10px; line-height: 1.5; white-space: nowrap; z-index: 5;
+      box-shadow: 0 4px 12px rgba(0,0,0,.4);
+    }
+    .tj-canvas-tip strong { color: var(--text5); font-weight: 700; }
+    .tj-canvas-tip .pos { color: var(--green); font-weight: 700; }
+    .tj-canvas-tip .neg { color: var(--red); font-weight: 700; }
     .tj-chart-body { position: relative; height: 200px; display:flex; align-items:center; justify-content:center; }
     .tj-chart-body canvas { width: 100% !important; height: 100% !important; }
     .tj-bar-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
@@ -10750,6 +10769,35 @@
             <div class="tj-chart-card">
               <div class="tj-chart-title">Win / Loss</div>
               <div class="tj-chart-body"><canvas id="tj-pie-canvas" width="180" height="180"></canvas></div>
+            </div>
+          </div>
+
+          <div class="tj-charts-row">
+            <div class="tj-chart-card" style="flex:1;">
+              <div class="tj-chart-header">
+                <div class="tj-chart-title">Trades by Day of Week</div>
+                <div class="tj-mini-toggle" id="tj-dow-toggle">
+                  <button class="active" data-mode="total" onclick="tjSetDowMode('total')">Total</button>
+                  <button data-mode="winloss" onclick="tjSetDowMode('winloss')">W/L</button>
+                </div>
+              </div>
+              <div class="tj-chart-body" style="position:relative;">
+                <canvas id="tj-dow-canvas" height="180"></canvas>
+                <div class="tj-canvas-tip" id="tj-dow-tip"></div>
+              </div>
+            </div>
+            <div class="tj-chart-card" style="flex:1;">
+              <div class="tj-chart-header">
+                <div class="tj-chart-title">Trades by Time of Day</div>
+                <div class="tj-mini-toggle" id="tj-hod-toggle">
+                  <button class="active" data-mode="total" onclick="tjSetHodMode('total')">Total</button>
+                  <button data-mode="winloss" onclick="tjSetHodMode('winloss')">W/L</button>
+                </div>
+              </div>
+              <div class="tj-chart-body" style="position:relative;">
+                <canvas id="tj-hod-canvas" height="180"></canvas>
+                <div class="tj-canvas-tip" id="tj-hod-tip"></div>
+              </div>
             </div>
           </div>
 
@@ -21208,6 +21256,204 @@
       tjDrawWinLossPie();
       tjRenderByTicker();
       tjRenderBySetup();
+      tjDrawDow();
+      tjDrawHod();
+    }
+
+    // ── Day-of-week / Time-of-day distribution charts ─────────────────
+    // For each trade we use the *opening* date/time (EntryDate + EntryTime)
+    // so day-of-week answers "when do I take trades" rather than "when do
+    // they close." Time-of-day buckets in 30-minute slots from 00:00–23:30.
+    // Win/Loss state is derived from each trade's realizedPL: only fully-
+    // closed trades contribute to the W/L stack; open trades count toward
+    // Total only (so the Total view answers "how many entries land in this
+    // slot" and the W/L view answers "how many of my realized outcomes
+    // were green vs red, by slot").
+    let tjDowMode = 'total';
+    let tjHodMode = 'total';
+    function tjSetDowMode(m) {
+      tjDowMode = m;
+      document.querySelectorAll('#tj-dow-toggle button').forEach(b =>
+        b.classList.toggle('active', b.dataset.mode === m));
+      tjDrawDow();
+    }
+    function tjSetHodMode(m) {
+      tjHodMode = m;
+      document.querySelectorAll('#tj-hod-toggle button').forEach(b =>
+        b.classList.toggle('active', b.dataset.mode === m));
+      tjDrawHod();
+    }
+
+    // Group trades into N buckets, returning [{label, total, wins, losses}, ...]
+    function tjBucket(trades, getBucketIdx, count, labels) {
+      const out = Array.from({ length: count }, (_, i) => ({
+        label: labels[i], total: 0, wins: 0, losses: 0
+      }));
+      for (const t of trades) {
+        const idx = getBucketIdx(t);
+        if (idx == null || idx < 0 || idx >= count) continue;
+        const bucket = out[idx];
+        bucket.total++;
+        if (t.Status === 'closed') {
+          const pl = Number(t.realizedPL);
+          if (pl > 0) bucket.wins++;
+          else if (pl < 0) bucket.losses++;
+        }
+      }
+      return out;
+    }
+
+    // Generic stacked-bar drawer with mouse hover tooltips.
+    // mode: 'total' draws a single neutral bar per bucket; 'winloss' stacks
+    // green (wins) on top of red (losses) and shows the unrealized/open
+    // portion (total - wins - losses) as a muted block on top.
+    function tjDrawStackedBars(canvasId, tipId, buckets, mode) {
+      const canvas = document.getElementById(canvasId);
+      const tip = document.getElementById(tipId);
+      if (!canvas || !tip) return;
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      const W = canvas.width = Math.floor(rect.width * dpr);
+      const H = canvas.height = Math.floor(rect.height * dpr);
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      const cw = rect.width, ch = rect.height;
+      ctx.clearRect(0, 0, cw, ch);
+
+      const padL = 28, padR = 6, padT = 8, padB = 22;
+      const innerW = cw - padL - padR;
+      const innerH = ch - padT - padB;
+
+      const max = Math.max(1, ...buckets.map(b => b.total));
+      // y ticks: 0, mid, max
+      ctx.fillStyle = 'rgba(113,130,157,0.6)';
+      ctx.font = '9px system-ui';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      [0, Math.ceil(max / 2), max].forEach(v => {
+        const y = padT + innerH - (v / max) * innerH;
+        ctx.fillText(String(v), padL - 4, y);
+        ctx.strokeStyle = 'rgba(30,34,48,.6)';
+        ctx.beginPath();
+        ctx.moveTo(padL, y);
+        ctx.lineTo(cw - padR, y);
+        ctx.stroke();
+      });
+
+      const n = buckets.length;
+      const slot = innerW / n;
+      const barW = Math.max(4, Math.min(28, slot * 0.66));
+      const barHits = []; // for hover
+
+      buckets.forEach((b, i) => {
+        const cx = padL + slot * (i + 0.5);
+        const bx = cx - barW / 2;
+        const fullH = (b.total / max) * innerH;
+        const yTop = padT + innerH - fullH;
+        barHits.push({ x: bx, y: yTop, w: barW, h: fullH + 2, idx: i });
+
+        if (mode === 'winloss') {
+          // Open / undecided portion = total - wins - losses
+          const open = Math.max(0, b.total - b.wins - b.losses);
+          const segs = [
+            { v: b.losses, color: 'rgba(255,59,92,0.92)' },
+            { v: b.wins,   color: 'rgba(34,221,136,0.92)' },
+            { v: open,     color: 'rgba(113,130,157,0.45)' }
+          ];
+          let runningY = padT + innerH;
+          for (const s of segs) {
+            if (s.v <= 0) continue;
+            const segH = (s.v / max) * innerH;
+            ctx.fillStyle = s.color;
+            ctx.fillRect(bx, runningY - segH, barW, segH);
+            runningY -= segH;
+          }
+        } else {
+          ctx.fillStyle = 'rgba(59,140,255,0.85)';
+          ctx.fillRect(bx, yTop, barW, fullH);
+        }
+
+        // x label
+        ctx.fillStyle = 'rgba(113,130,157,0.85)';
+        ctx.font = '9px system-ui';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(b.label, cx, padT + innerH + 4);
+      });
+
+      // Hover handling — attach once, refresh hit map each draw.
+      canvas._tjBarHits = barHits;
+      if (!canvas._tjBound) {
+        canvas._tjBound = true;
+        canvas.addEventListener('mousemove', (ev) => {
+          const r = canvas.getBoundingClientRect();
+          const mx = ev.clientX - r.left, my = ev.clientY - r.top;
+          const hit = (canvas._tjBarHits || []).find(h =>
+            mx >= h.x - 2 && mx <= h.x + h.w + 2 && my >= h.y - 6 && my <= padT + innerH + 6);
+          if (!hit) { tip.style.display = 'none'; return; }
+          const b = (canvas._tjBucketSrc || [])[hit.idx];
+          if (!b) { tip.style.display = 'none'; return; }
+          const open = Math.max(0, b.total - b.wins - b.losses);
+          tip.innerHTML = `
+            <div><strong>${b.label}</strong></div>
+            <div>Total trades: <strong>${b.total}</strong></div>
+            <div><span class="pos">▲ ${b.wins} wins</span> · <span class="neg">▼ ${b.losses} losses</span></div>
+            ${open ? `<div style="color:var(--text3);">Open: ${open}</div>` : ''}
+          `;
+          tip.style.display = 'block';
+          const tx = Math.min(rect.width - 140, Math.max(0, hit.x + hit.w + 4));
+          const ty = Math.max(0, hit.y - 4);
+          tip.style.left = tx + 'px';
+          tip.style.top = ty + 'px';
+        });
+        canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+      }
+      canvas._tjBucketSrc = buckets;
+    }
+
+    function tjDrawDow() {
+      const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const buckets = tjBucket(tjAllTrades(), t => {
+        if (!t.EntryDate) return null;
+        // Treat the date string as a local-time date to avoid TZ surprises
+        // shifting Tuesday-evening entries into Wednesday.
+        const m = String(t.EntryDate).match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if (!m) return null;
+        const d = new Date(+m[1], +m[2] - 1, +m[3]);
+        return d.getDay();
+      }, 7, labels);
+      tjDrawStackedBars('tj-dow-canvas', 'tj-dow-tip', buckets, tjDowMode);
+    }
+
+    function tjDrawHod() {
+      // 24 one-hour buckets, labelled every 3 hours for readability.
+      const labels = Array.from({ length: 24 }, (_, h) => (h % 3 === 0) ? `${h}h` : '');
+      const buckets = tjBucket(tjAllTrades(), t => {
+        if (!t.EntryTime) return null;
+        const m = String(t.EntryTime).match(/^(\d{1,2}):/);
+        if (!m) return null;
+        const h = Number(m[1]);
+        return (h >= 0 && h <= 23) ? h : null;
+      }, 24, labels);
+      // Trim leading/trailing empty buckets so the chart focuses on active hours
+      // — but only when there's data at all. Otherwise show the full day so the
+      // empty state still renders the axis.
+      const anyData = buckets.some(b => b.total > 0);
+      let display = buckets;
+      if (anyData) {
+        let first = buckets.findIndex(b => b.total > 0);
+        let last = buckets.length - 1 - [...buckets].reverse().findIndex(b => b.total > 0);
+        first = Math.max(0, first - 1);
+        last = Math.min(buckets.length - 1, last + 1);
+        display = buckets.slice(first, last + 1).map((b, i) => ({
+          ...b,
+          label: (() => {
+            const h = first + i;
+            return (h % 2 === 0) ? `${h}h` : '';
+          })()
+        }));
+      }
+      tjDrawStackedBars('tj-hod-canvas', 'tj-hod-tip', display, tjHodMode);
     }
 
     function tjPrepCanvas(canvas) {
