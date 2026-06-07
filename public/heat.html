@@ -1564,6 +1564,12 @@
       font-size: 9px;
     }
 
+    .ss-bar.korea {
+      background: #ef5350;
+      color: #2a0000;
+      font-size: 9px;
+    }
+
     #ss-now-line {
       position: absolute;
       top: -1px;
@@ -8508,6 +8514,7 @@
               <div class="ss-row" data-row="1"></div>
               <div class="ss-row" data-row="2"></div>
               <div class="ss-row" data-row="3"></div>
+              <div class="ss-row" data-row="4"></div>
               <div id="ss-now-line"></div>
             </div>
           </div>
@@ -13254,7 +13261,10 @@
       { id: 'cash', label: 'RTH', row: 2, open: 8 * 60 + 30, close: 15 * 60 },       // 8:30am–3pm
       { id: 'post', label: 'POST', row: 2, open: 15 * 60, close: 19 * 60 },           // 3pm–7pm
 
-      { id: 'globex', label: 'GLOBEX', row: 3, open: 17 * 60, close: 24 * 60 + 7 * 60 }   // 5pm–7am
+      { id: 'globex', label: 'GLOBEX', row: 3, open: 17 * 60, close: 24 * 60 + 7 * 60 },  // 5pm–7am
+
+      // Korea Exchange (KRX) — 7pm–1:30am CT. Overlaps Sydney + Tokyo so gets its own row.
+      { id: 'korea',  label: 'KOREA',  row: 4, open: 19 * 60, close: 24 * 60 + 1 * 60 + 30 }
     ];
 
     function ssMinutesNowCT() {
@@ -13288,22 +13298,42 @@
     // Weekend closure windows in "today-CT minutes-from-midnight" coords.
     // Globally, the last market to close on the trading week is the U.S. New York / CME Globex
     // session at ~17:00 CT Friday, and the first to open is CME Globex / FX (Sydney) at 17:00 CT Sunday.
-    // → Treat Fri 17:00 CT through Sun 17:00 CT (48h) as fully closed for every session bar.
+    // → Treat Fri 17:00 CT through Sun 17:00 CT (48h) as fully closed for most session bars.
+    //
+    // Two per-session overrides:
+    //   • POST  – Allowed to continue Fri until 7pm. Does NOT reopen on Sunday
+    //             (the U.S. post-market only runs Mon–Fri); next opening is Mon 3pm CT.
+    //   • Korea – Tied to KRX hours which observe weekends; closed Fri close
+    //             through Mon 7pm CT (KRX opens Mon morning in Seoul).
     function ssWeekendClosedIntervals(sessionId = '') {
       const dow = ssDayOfWeekCT();
       const intervals = [];
 
-      // On Fridays:
-      // - Global sessions should stop before the new 4pm CT cycle starts.
-      // - U.S. post-market should continue until 7pm CT.
-      const fridayCloseMin = sessionId === 'post'
-        ? 19 * 60   // POST continues 3pm–7pm Friday
-        : 16 * 60;  // no new global session bars starting 4pm Friday
+      // Friday-close-minute: when this session's closure window begins on Friday.
+      // - Global sessions stop before the new 4pm CT cycle starts.
+      // - U.S. post-market continues until 7pm CT Friday.
+      // - Korea: Thursday-night-into-Friday's 1:30am bar represents Friday KRX (the
+      //   last weekday session in Seoul). The Friday-evening-CT bar would represent
+      //   Saturday KST = weekend, so we block any Korea bar that *starts* Fri 7pm CT.
+      const fridayCloseMin =
+        sessionId === 'post' ? 19 * 60 :
+        sessionId === 'korea' ? 19 * 60 :  // block Fri-evening bar onward
+        16 * 60;
+
+      // Reopen-offset: how many minutes past midnight-of-Friday until the session
+      // is allowed to render again.
+      //   Default → Sun 5pm CT  = 2·1440 + 17·60  (FX/Globex/Sydney)
+      //   POST    → Mon 3pm CT  = 3·1440 + 15·60  (U.S. post-market is Mon–Fri only)
+      //   Korea   → Sun 7pm CT  = 2·1440 + 19·60  (Sun-evening CT = Mon morning Seoul)
+      const reopenMin =
+        sessionId === 'post'  ? 3 * 1440 + 15 * 60 :
+        sessionId === 'korea' ? 2 * 1440 + 19 * 60 :
+        2 * 1440 + 17 * 60; // Sun 5pm CT
 
       for (const weekOff of [-1, 0, 1]) {
         const daysToFri = (5 - dow) + weekOff * 7;
         const closedStart = daysToFri * 1440 + fridayCloseMin;
-        const closedEnd = daysToFri * 1440 + (2 * 1440) + 17 * 60; // Sunday 5pm CT
+        const closedEnd = daysToFri * 1440 + reopenMin;
         intervals.push([closedStart, closedEnd]);
       }
 
