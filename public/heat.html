@@ -8045,6 +8045,37 @@
     .tj-wn-chip:hover { color: var(--text); }
     .tj-wn-chip.active { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
     .tj-wn-chip strong { font-weight: 800; margin-left: 4px; }
+
+    /* GitHub-style heatmap card (Trade Journal page port from Journal page) */
+    .tj-hm-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; margin-bottom: 14px;
+    }
+    .tj-hm-title-row {
+      display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+      margin-bottom: 12px;
+    }
+    .tj-hm-flip-header {
+      display:grid; grid-template-columns: 28px 1fr 28px;
+      gap:8px; align-items:center; margin-bottom: 12px;
+    }
+    .tj-hm-flip-titles { min-width: 0; }
+    .tj-hm-flip-btn {
+      background: var(--bg3); border: 1px solid var(--border2);
+      color: var(--text2); width: 28px; height: 28px; border-radius: 14px;
+      cursor: pointer; font-size: 11px; line-height: 1;
+      transition: background .12s, color .12s;
+    }
+    .tj-hm-flip-btn:hover { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
+    .tj-hm-pages { position: relative; }
+    .tj-hm-dots {
+      display:flex; justify-content:center; gap:6px; margin-top: 6px;
+    }
+    .tj-hm-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--border2); transition: background .12s;
+    }
+    .tj-hm-dot.active { background: var(--accent); }
     .tj-canvas-tip .pos { color: var(--green); font-weight: 700; }
     .tj-canvas-tip .neg { color: var(--red); font-weight: 700; }
     .tj-chart-body { position: relative; height: 200px; display:flex; align-items:center; justify-content:center; }
@@ -10838,6 +10869,145 @@
             </div>
           </div>
 
+          <!-- GitHub-style heatmaps moved from Journal page.
+               Activity + Performance share one flip card (arrow toggles between
+               them); SPY daily performance is its own card below. -->
+          <div id="tj-heatmap-tooltip" class="jnl-tooltip"></div>
+          <div class="tj-hm-card">
+            <div class="tj-hm-flip-header">
+              <button class="tj-hm-flip-btn" onclick="tjHmFlip(-1)" title="Previous view">◀</button>
+              <div class="tj-hm-flip-titles">
+                <div class="tj-hm-title-row tj-hm-face" data-face="activity">
+                  <div>
+                    <div class="jnl-card-title">Trade activity</div>
+                    <div class="jnl-card-sub" id="tj-hm-act-sub"></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <div class="jnl-card-meta" id="tj-hm-act-meta"></div>
+                    <div class="jnl-toggle" id="tj-hm-metric-toggle">
+                      <button class="active" onclick="tjHmSetMetric('trades',this)">Trades</button>
+                      <button onclick="tjHmSetMetric('contracts',this)">Contracts</button>
+                      <button onclick="tjHmSetMetric('notional',this)">Notional</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="tj-hm-title-row tj-hm-face" data-face="performance" style="display:none;">
+                  <div>
+                    <div class="jnl-card-title">Trade performance</div>
+                    <div class="jnl-card-sub" id="tj-hm-pnl-sub"></div>
+                  </div>
+                  <div class="jnl-card-meta" id="tj-hm-pnl-meta"></div>
+                </div>
+              </div>
+              <button class="tj-hm-flip-btn" onclick="tjHmFlip(1)" title="Next view">▶</button>
+            </div>
+
+            <div class="tj-hm-pages">
+              <!-- Activity page -->
+              <div class="tj-hm-face" data-face="activity">
+                <div class="jnl-heatmap-wrap">
+                  <div id="tj-hm-act-months" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="tj-hm-act-grid" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="tj-hm-act-footer"></div>
+                  <div class="jnl-legend">
+                    Less
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    More
+                  </div>
+                </div>
+              </div>
+              <!-- Performance page -->
+              <div class="tj-hm-face" data-face="performance" style="display:none;">
+                <div class="jnl-heatmap-wrap">
+                  <div id="tj-hm-pnl-months" class="jnl-heatmap-months"></div>
+                  <div class="jnl-heatmap-outer">
+                    <div class="jnl-dow-labels">
+                      <div class="jnl-dow-label"></div>
+                      <div class="jnl-dow-label">Mon</div>
+                      <div class="jnl-dow-label">Tue</div>
+                      <div class="jnl-dow-label">Wed</div>
+                      <div class="jnl-dow-label">Thu</div>
+                      <div class="jnl-dow-label">Fri</div>
+                      <div class="jnl-dow-label"></div>
+                    </div>
+                    <div id="tj-hm-pnl-grid" class="jnl-heatmap"></div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+                  <div class="jnl-card-sub" id="tj-hm-pnl-footer"></div>
+                  <div class="jnl-legend">
+                    Loss
+                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                    Profit
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Dot indicator showing which face is visible -->
+            <div class="tj-hm-dots">
+              <span class="tj-hm-dot active" data-face="activity"></span>
+              <span class="tj-hm-dot" data-face="performance"></span>
+            </div>
+          </div>
+
+          <div class="tj-hm-card">
+            <div class="tj-hm-title-row">
+              <div>
+                <div class="jnl-card-title">SPY daily performance</div>
+                <div class="jnl-card-sub">YTD · intensity = daily % change (open to close)</div>
+              </div>
+              <div class="jnl-card-meta" id="tj-hm-spy-meta"></div>
+            </div>
+            <div class="jnl-heatmap-wrap">
+              <div id="tj-hm-spy-months" class="jnl-heatmap-months"></div>
+              <div class="jnl-heatmap-outer">
+                <div class="jnl-dow-labels">
+                  <div class="jnl-dow-label"></div>
+                  <div class="jnl-dow-label">Mon</div>
+                  <div class="jnl-dow-label">Tue</div>
+                  <div class="jnl-dow-label">Wed</div>
+                  <div class="jnl-dow-label">Thu</div>
+                  <div class="jnl-dow-label">Fri</div>
+                  <div class="jnl-dow-label"></div>
+                </div>
+                <div id="tj-hm-spy-grid" class="jnl-heatmap"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+              <div class="jnl-card-sub" id="tj-hm-spy-footer"></div>
+              <div class="jnl-legend">
+                &minus;2%
+                <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
+                <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
+                <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
+                <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
+                <div class="jnl-legend-cell" style="background:#22dd88;"></div>
+                +2%
+              </div>
+            </div>
+          </div>
+
           <!-- Historical trades section -->
           <div class="tj-history-card">
             <div class="tj-history-header">
@@ -13264,7 +13434,7 @@
       { id: 'globex', label: 'GLOBEX', row: 3, open: 17 * 60, close: 24 * 60 + 7 * 60 },  // 5pm–7am
 
       // Korea Exchange (KRX) — 7pm–1:30am CT. Overlaps Sydney + Tokyo so gets its own row.
-      { id: 'korea',  label: 'KOREA',  row: 4, open: 19 * 60, close: 24 * 60 + 1 * 60 + 30 }
+      { id: 'korea',  label: 'KOREA',  row: 2, open: 19 * 60, close: 24 * 60 + 1 * 60 + 30 }
     ];
 
     function ssMinutesNowCT() {
@@ -21375,6 +21545,294 @@
       tjRenderBySetup();
       tjDrawDow();
       tjDrawHod();
+      tjRenderHeatmaps();
+    }
+
+    // ── GitHub-style heatmaps (activity + performance flip card + SPY) ──
+    // These mirror the Journal page visuals but pull from tjAllTrades() so the
+    // map reflects every manual + broker trade rather than a CSV upload. The
+    // flip card swaps between Trade activity and Trade performance; SPY is
+    // its own card and shares the same /api/spy-daily-history endpoint that
+    // already feeds the Flow page.
+    let tjHmFace = 'activity';            // 'activity' | 'performance'
+    let tjHmMetric = 'trades';            // 'trades' | 'contracts' | 'notional'
+    let tjHmYear = new Date().getFullYear();
+    let tjHmSpyData = null;               // cache: { 'YYYY-MM-DD': pct }
+    let tjHmSpyFetching = false;
+
+    function tjHmFlip(dir) {
+      tjHmFace = tjHmFace === 'activity' ? 'performance' : 'activity';
+      tjHmApplyFace();
+    }
+    function tjHmApplyFace() {
+      document.querySelectorAll('.tj-hm-card .tj-hm-face').forEach(el => {
+        el.style.display = el.dataset.face === tjHmFace ? '' : 'none';
+      });
+      document.querySelectorAll('.tj-hm-dot').forEach(d => {
+        d.classList.toggle('active', d.dataset.face === tjHmFace);
+      });
+    }
+    function tjHmSetMetric(metric, btn) {
+      tjHmMetric = metric;
+      btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tjHmRenderActivity();
+    }
+
+    function tjHmBuildGrid(year) {
+      const jan1 = new Date(year, 0, 1);
+      const start = new Date(year, 0, 1 - jan1.getDay());
+      const dec31 = new Date(year, 11, 31);
+      const end = new Date(year, 11, 31 + (6 - dec31.getDay()));
+      const cells = []; let cur = new Date(start);
+      while (cur <= end) { cells.push(new Date(cur)); cur.setDate(cur.getDate() + 1); }
+      return cells;
+    }
+    function tjHmIso(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function tjHmMonthLabels(cells, el) {
+      el.innerHTML = '';
+      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const COL_W = 14, numCols = Math.ceil(cells.length / 7);
+      el.style.position = 'relative'; el.style.height = '16px';
+      el.style.width = (numCols * COL_W) + 'px';
+      const monthCols = {};
+      for (let col = 0; col < numCols; col++) {
+        const d = cells[col * 7];
+        if (!d) continue;
+        const m = d.getMonth();
+        if (monthCols[m] === undefined) monthCols[m] = col;
+      }
+      for (const [m, col] of Object.entries(monthCols)) {
+        const span = document.createElement('span');
+        span.className = 'jnl-month-label';
+        span.textContent = MONTHS[parseInt(m)];
+        span.style.position = 'absolute';
+        span.style.left = (col * COL_W) + 'px';
+        span.style.top = '0';
+        el.appendChild(span);
+      }
+    }
+    function tjHmShowTip(e) {
+      const tip = document.getElementById('tj-heatmap-tooltip');
+      tip.textContent = e.currentTarget.getAttribute('data-tip');
+      tip.style.display = 'block';
+    }
+    function tjHmMoveTip(e) {
+      const tip = document.getElementById('tj-heatmap-tooltip');
+      tip.style.left = (e.clientX + 12) + 'px';
+      tip.style.top  = (e.clientY - 28) + 'px';
+    }
+    function tjHmHideTip() {
+      const tip = document.getElementById('tj-heatmap-tooltip');
+      if (tip) tip.style.display = 'none';
+    }
+
+    // Activity: per opening-date trade count / contract qty / notional.
+    function tjHmRenderActivity() {
+      const grid = tjHmBuildGrid(tjHmYear);
+      const hm = document.getElementById('tj-hm-act-grid');
+      const mr = document.getElementById('tj-hm-act-months');
+      if (!hm || !mr) return;
+      hm.innerHTML = '';
+
+      const dayMap = {};
+      for (const t of tjAllTrades()) {
+        const d = t.EntryDate;
+        if (!d || !String(d).startsWith(String(tjHmYear))) continue;
+        const key = String(d).slice(0, 10);
+        if (!dayMap[key]) dayMap[key] = { trades: 0, contracts: 0, notional: 0, wins: 0, losses: 0 };
+        const bucket = dayMap[key];
+        bucket.trades++;
+        bucket.contracts += Number(t.quantityTotal) || 0;
+        bucket.notional  += Number(t.totalCapital) || 0;
+        if (t.Status === 'closed') {
+          const pl = Number(t.RealizedPL) || 0;
+          if (pl > 0) bucket.wins++;
+          else if (pl < 0) bucket.losses++;
+        }
+      }
+
+      const vals = Object.values(dayMap).map(v => v[tjHmMetric] || 0);
+      const maxVal = vals.length ? Math.max(...vals) : 1;
+
+      for (const d of grid) {
+        const iso = tjHmIso(d);
+        const data = dayMap[iso];
+        const cell = document.createElement('div');
+        cell.className = 'jnl-cell';
+        if (data) {
+          const v = data[tjHmMetric] || 0;
+          const pct = v / (maxVal || 1);
+          if (pct > 0.75) cell.classList.add('lv4');
+          else if (pct > 0.50) cell.classList.add('lv3');
+          else if (pct > 0.25) cell.classList.add('lv2');
+          else if (pct > 0) cell.classList.add('lv1');
+          const lbl = tjHmMetric === 'trades'
+            ? `${data.trades} trade${data.trades !== 1 ? 's' : ''}`
+            : tjHmMetric === 'contracts'
+              ? `${data.contracts.toLocaleString()} contracts/shares`
+              : `$${data.notional.toLocaleString(undefined, { maximumFractionDigits: 0 })} notional`;
+          const wl = (data.wins || data.losses)
+            ? ` · ${data.wins ? data.wins+'W' : ''}${data.wins && data.losses ? '/' : ''}${data.losses ? data.losses+'L' : ''}`
+            : '';
+          cell.setAttribute('data-tip', `${iso} · ${lbl}${wl}`);
+        } else {
+          cell.setAttribute('data-tip', iso);
+        }
+        cell.addEventListener('mouseenter', tjHmShowTip);
+        cell.addEventListener('mousemove',  tjHmMoveTip);
+        cell.addEventListener('mouseleave', tjHmHideTip);
+        hm.appendChild(cell);
+      }
+      tjHmMonthLabels(grid, mr);
+
+      // Footer + meta
+      const activeDays = Object.keys(dayMap).length;
+      const totalTrades = Object.values(dayMap).reduce((s, v) => s + v.trades, 0);
+      const tickerSet = new Set(tjAllTrades().filter(t => t.Ticker).map(t => t.Ticker));
+      const footer = document.getElementById('tj-hm-act-footer');
+      const meta   = document.getElementById('tj-hm-act-meta');
+      const sub    = document.getElementById('tj-hm-act-sub');
+      if (sub)    sub.textContent    = `${tjHmYear} YTD · ${tjAllTrades().length ? 'manual + broker imports' : 'add or import trades to begin'}`;
+      if (footer) footer.innerHTML   = tjAllTrades().length ? `<strong>${totalTrades}</strong> trades across <strong>${activeDays}</strong> active days` : 'No trades yet';
+      if (meta)   meta.innerHTML     = tickerSet.size ? `<strong>${activeDays}</strong> active days &nbsp;·&nbsp; <strong>${tickerSet.size}</strong> tickers` : '';
+    }
+
+    // Performance: per CloseDate net realized P/L. Red→green intensity by abs $.
+    function tjHmRenderPerformance() {
+      const grid = tjHmBuildGrid(tjHmYear);
+      const hm = document.getElementById('tj-hm-pnl-grid');
+      const mr = document.getElementById('tj-hm-pnl-months');
+      if (!hm || !mr) return;
+      hm.innerHTML = '';
+
+      const pnlMap = {};
+      for (const t of tjAllTrades()) {
+        if (t.Status !== 'closed' || !t.CloseDate) continue;
+        const key = String(t.CloseDate).slice(0, 10);
+        if (!key.startsWith(String(tjHmYear))) continue;
+        pnlMap[key] = (pnlMap[key] || 0) + (Number(t.RealizedPL) || 0);
+      }
+      const absVals = Object.values(pnlMap).map(v => Math.abs(v));
+      const maxAbs = absVals.length ? Math.max(...absVals) : 1;
+
+      let winDays = 0, lossDays = 0, totalPnl = 0, count = 0;
+      for (const d of grid) {
+        const iso = tjHmIso(d);
+        const pnl = pnlMap[iso];
+        const cell = document.createElement('div');
+        cell.className = 'jnl-cell';
+        if (pnl !== undefined && pnl !== 0) {
+          const r = Math.abs(pnl) / maxAbs;
+          if (pnl > 0) {
+            winDays++;
+            cell.classList.add(r > 0.75 ? 'pnl-up4' : r > 0.50 ? 'pnl-up3' : r > 0.25 ? 'pnl-up2' : 'pnl-up1');
+          } else {
+            lossDays++;
+            cell.classList.add(r > 0.75 ? 'pnl-dn4' : r > 0.50 ? 'pnl-dn3' : r > 0.25 ? 'pnl-dn2' : 'pnl-dn1');
+          }
+          totalPnl += pnl; count++;
+          const sign = pnl >= 0 ? '+' : '-';
+          cell.setAttribute('data-tip', `${iso} · ${sign}$${Math.abs(pnl).toLocaleString(undefined, { maximumFractionDigits: 2 })} net P/L`);
+        } else {
+          cell.setAttribute('data-tip', iso);
+        }
+        cell.addEventListener('mouseenter', tjHmShowTip);
+        cell.addEventListener('mousemove',  tjHmMoveTip);
+        cell.addEventListener('mouseleave', tjHmHideTip);
+        hm.appendChild(cell);
+      }
+      tjHmMonthLabels(grid, mr);
+
+      const footer = document.getElementById('tj-hm-pnl-footer');
+      const meta   = document.getElementById('tj-hm-pnl-meta');
+      const sub    = document.getElementById('tj-hm-pnl-sub');
+      if (sub) sub.textContent = `${tjHmYear} YTD · daily net realized P/L`;
+      if (count) {
+        if (footer) footer.textContent = '';
+        const netSign = totalPnl >= 0 ? '+' : '-';
+        const netColor = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+        if (meta) meta.innerHTML =
+          `${count} trading days &nbsp;·&nbsp; <strong>${winDays}</strong> <span style="color:var(--green)">profitable</span> &nbsp;·&nbsp; <strong>${lossDays}</strong> <span style="color:var(--red)">loss</span> &nbsp;·&nbsp; net <strong style="color:${netColor}">${netSign}$${Math.abs(totalPnl).toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>`;
+      } else {
+        if (footer) footer.textContent = 'Close some trades to see performance';
+        if (meta) meta.innerHTML = '';
+      }
+    }
+
+    // SPY: pulls daily history we already store server-side, projects daily %
+    // change (open-to-close). Same color scale as Performance.
+    async function tjHmFetchSpy() {
+      if (tjHmSpyData || tjHmSpyFetching) return;
+      tjHmSpyFetching = true;
+      try {
+        const r = await fetch(`/api/spy-daily-history?limit=5000`);
+        const d = await r.json();
+        const map = {};
+        for (const row of (d.rows || [])) {
+          const date = row.tradeDate || row.trade_date;
+          const pct = row.changePct ?? row.change_pct;
+          if (date && pct != null) map[String(date).slice(0, 10)] = Number(pct);
+        }
+        tjHmSpyData = map;
+      } catch (_) {
+        tjHmSpyData = {};
+      } finally {
+        tjHmSpyFetching = false;
+      }
+    }
+    async function tjHmRenderSpy() {
+      const hm = document.getElementById('tj-hm-spy-grid');
+      const mr = document.getElementById('tj-hm-spy-months');
+      if (!hm || !mr) return;
+      if (!tjHmSpyData) await tjHmFetchSpy();
+      const data = tjHmSpyData || {};
+      const grid = tjHmBuildGrid(tjHmYear);
+      hm.innerHTML = '';
+      let up = 0, dn = 0, totalPct = 0, count = 0;
+      for (const d of grid) {
+        const iso = tjHmIso(d);
+        const pct = data[iso];
+        const cell = document.createElement('div');
+        cell.className = 'jnl-cell';
+        if (pct !== undefined) {
+          const a = Math.abs(pct);
+          if (pct > 0) {
+            up++;
+            cell.classList.add(a > 1.5 ? 'spy-up4' : a > 1.0 ? 'spy-up3' : a > 0.5 ? 'spy-up2' : 'spy-up1');
+          } else if (pct < 0) {
+            dn++;
+            cell.classList.add(a > 1.5 ? 'spy-dn4' : a > 1.0 ? 'spy-dn3' : a > 0.5 ? 'spy-dn2' : 'spy-dn1');
+          }
+          totalPct += pct; count++;
+          cell.setAttribute('data-tip', `${iso} · SPY ${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`);
+        } else {
+          cell.setAttribute('data-tip', iso);
+        }
+        cell.addEventListener('mouseenter', tjHmShowTip);
+        cell.addEventListener('mousemove',  tjHmMoveTip);
+        cell.addEventListener('mouseleave', tjHmHideTip);
+        hm.appendChild(cell);
+      }
+      tjHmMonthLabels(grid, mr);
+      const meta = document.getElementById('tj-hm-spy-meta');
+      if (meta) {
+        if (count) {
+          const avg = (totalPct / count).toFixed(2);
+          meta.innerHTML = `${count} trading days YTD &nbsp;·&nbsp; <strong>${up}</strong> up &nbsp;·&nbsp; <strong>${dn}</strong> <span style="color:var(--red)">down</span> &nbsp;·&nbsp; avg <strong style="color:${parseFloat(avg) >= 0 ? 'var(--green)' : 'var(--red)'}">${parseFloat(avg) >= 0 ? '+' : ''}${avg}%</strong>`;
+        } else {
+          meta.innerHTML = '<span style="color:var(--text3);">No SPY daily-history saved yet</span>';
+        }
+      }
+    }
+
+    function tjRenderHeatmaps() {
+      tjHmApplyFace();
+      tjHmRenderActivity();
+      tjHmRenderPerformance();
+      tjHmRenderSpy();
     }
 
     // ── Day-of-week / Time-of-day distribution charts ─────────────────
