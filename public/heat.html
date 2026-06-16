@@ -16965,11 +16965,11 @@
         document.getElementById('ov-heat-summary').innerHTML = `
           <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:3px 16px;align-items:center;">
             ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
-            ${emRow('1D IV up',   oneDayEm,  true)}
-            ${detailRow('Call Wall GEX', fmtDollar(s.strongestCallWall?.callGex))}
-            ${emRow('1D IV down', oneDayEm,  false)}
-            ${detailRow('Put Wall GEX', fmtDollar(s.strongestPutWall?.putGex))}
             ${emRow('1W IV up',   oneWeekEm, true)}
+            ${detailRow('Call Wall GEX', fmtDollar(s.strongestCallWall?.callGex))}
+            ${emRow('1D IV up',   oneDayEm,  true)}
+            ${detailRow('Put Wall GEX', fmtDollar(s.strongestPutWall?.putGex))}
+            ${emRow('1D IV down', oneDayEm,  false)}
             ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
             ${emRow('1W IV down', oneWeekEm, false)}
           </div>`;
