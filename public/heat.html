@@ -15552,21 +15552,23 @@
         lwcChart.timeScale().fitContent();
       }
       lwcChart._ovDesiredRange = desiredRange;
-      // Fallback: programmatically re-click the active TF button once after
-      // the initial layout cascade is done. Manually clicking the already-
-      // active TF reliably produces the correctly-zoomed view, so we mimic
-      // that. The flag is page-level (window._ovChartAutoClicked) so the
-      // auto-click only runs once per page load — subsequent user TF clicks
-      // or refreshes work normally.
+      // Mimic the manual fix: call ovSetChartTf directly (bypasses the
+      // synthetic-event path that .click() goes through, which can be
+      // swallowed by other listeners). Fire twice with different delays so
+      // whichever one lands in a settled DOM wins. The page-level flag
+      // ensures the auto-trigger only runs once per page load — subsequent
+      // manual TF clicks or page refreshes work normally.
       if (desiredRange && !window._ovChartAutoClicked) {
-        setTimeout(() => {
+        const fireActiveTf = () => {
           if (window._ovChartAutoClicked) return;
           const activeBtn = document.querySelector('#ov-spy-chart-tf .ov-chart-tf-btn.active');
-          if (activeBtn) {
-            window._ovChartAutoClicked = true;
-            activeBtn.click();
-          }
-        }, 1200);
+          if (!activeBtn) return;
+          const tf = activeBtn.dataset.ovctf || '3M';
+          window._ovChartAutoClicked = true;
+          try { ovSetChartTf(tf, activeBtn); } catch (_) {}
+        };
+        setTimeout(fireActiveTf, 600);
+        setTimeout(fireActiveTf, 1500);
       }
 
       // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
