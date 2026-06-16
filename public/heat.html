@@ -16932,46 +16932,71 @@
           ${king ? `<span class="kl-pill king">King: ${king}</span>` : ''}
           ${posGex ? `<span class="kl-pill gex-pos">+GEX: ${posGex}</span>` : ''}
           ${negGex ? `<span class="kl-pill gex-neg">\u2212GEX: ${negGex}</span>` : ''}`;
-        // Expected Move % (1D / 1W) — pulled from server-computed expectedMoves
-        // (ATM straddle, SpotGamma-style). Shown as "±X.XX% / target-price"
-        // so the user gets both the relative band and the absolute level the
-        // chart's EM line is drawn at.
+        // Card shows annualized ATM IV plus the *asymmetric* breakeven target
+        // for each direction. SpotGamma's textbook formula (S × IV × √(t/denom))
+        // produces a single symmetric ±EM; in practice the actual market move
+        // is asymmetric because (a) the ATM strike usually isn't exactly at
+        // spot and (b) put IV typically exceeds call IV (put-skew). So we use:
+        //
+        //   upperTarget = atmStrike + callPx     (real breakeven above)
+        //   lowerTarget = atmStrike − putPx      (real breakeven below)
+        //
+        // Falls back to the symmetric ±em formulation when leg prices aren't
+        // available (e.g. the IV-formula fallback path on the server).
         //
         // Color convention here is INVERTED from the chart lines: in this
         // card, up = green / down = red (standard directional reading), while
         // the chart lines keep up = red / down = green (Heatseeker's
         // directional-risk convention). Both are intentional per user request.
         const spotForEm = Number(heat.underlyingPrice);
-        const oneDayEm  = Number(heat.expectedMoves?.oneDay?.em);
-        const oneWeekEm = Number(heat.expectedMoves?.oneWeek?.em);
-        const fmtTarget = (em, dir) => Number.isFinite(em) && spotForEm > 0
-          ? (spotForEm + dir * em).toFixed(2)
-          : '—';
-        const fmtPct = (em) => Number.isFinite(em) && spotForEm > 0
-          ? ((em / spotForEm) * 100).toFixed(2) + '%'
-          : '—';
-        const emRow = (label, em, isUp) => {
-          const pct    = fmtPct(em);
-          const target = fmtTarget(em, isUp ? 1 : -1);
-          const pctColor = pct === '—'
-            ? 'var(--text3)'
-            : (isUp ? 'var(--green)' : 'var(--red)');
-          const value = pct === '—'
+        const oneDay    = heat.expectedMoves?.oneDay  || {};
+        const oneWeek   = heat.expectedMoves?.oneWeek || {};
+        // Schwab returns IV as a percent (14.32 means 14.32%). If a value
+        // smaller than ~5 sneaks through it's almost certainly already a
+        // decimal, so we re-scale to percent for display consistency.
+        const fmtIv = (iv) => {
+          if (!Number.isFinite(Number(iv))) return '—';
+          const v = Number(iv);
+          const pct = v > 5 ? v : v * 100;
+          return pct.toFixed(2) + '%';
+        };
+        // Compute the actual breakeven target for one side. Prefer the
+        // leg-price path; fall back to symmetric ±em when leg data is missing.
+        const fmtTarget = (leg, isUp) => {
+          const strike = Number(leg.atmStrike);
+          const callPx = Number(leg.callPx);
+          const putPx  = Number(leg.putPx);
+          if (Number.isFinite(strike)
+              && (isUp ? Number.isFinite(callPx) : Number.isFinite(putPx))) {
+            const px = isUp ? callPx : putPx;
+            return (strike + (isUp ? +px : -px)).toFixed(2);
+          }
+          const em = Number(leg.em);
+          if (Number.isFinite(em) && spotForEm > 0) {
+            return (spotForEm + (isUp ? +em : -em)).toFixed(2);
+          }
+          return '—';
+        };
+        const emRow = (label, leg, isUp) => {
+          const ivStr   = fmtIv(leg.iv);
+          const target  = fmtTarget(leg, isUp);
+          const dirColor = isUp ? 'var(--green)' : 'var(--red)';
+          const value = (ivStr === '—' && target === '—')
             ? '—'
-            : `<span style="color:${pctColor};">${isUp ? '+' : '−'}${pct}</span> <span style="color:var(--text3);">/</span> <span style="color:#ffffff;">${target}</span>`;
+            : `<span style="color:${dirColor};">${ivStr}</span> <span style="color:var(--text3);">/</span> <span style="color:#ffffff;">${target}</span>`;
           return `<div style="color:var(--text3);font-size:10px;">${label}</div>
                   <div style="font-weight:700;font-size:11px;white-space:nowrap;">${value}</div>`;
         };
         document.getElementById('ov-heat-summary').innerHTML = `
           <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:3px 16px;align-items:center;">
             ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
-            ${emRow('1W IV up',   oneWeekEm, true)}
+            ${emRow('1W IV up',   oneWeek, true)}
             ${detailRow('Call Wall GEX', fmtDollar(s.strongestCallWall?.callGex))}
-            ${emRow('1D IV up',   oneDayEm,  true)}
+            ${emRow('1D IV up',   oneDay,  true)}
             ${detailRow('Put Wall GEX', fmtDollar(s.strongestPutWall?.putGex))}
-            ${emRow('1D IV down', oneDayEm,  false)}
+            ${emRow('1D IV down', oneDay,  false)}
             ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
-            ${emRow('1W IV down', oneWeekEm, false)}
+            ${emRow('1W IV down', oneWeek, false)}
           </div>`;
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 

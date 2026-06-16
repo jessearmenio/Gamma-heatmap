@@ -1600,27 +1600,50 @@ function buildHeatFromChain(chain, extraRows = []) {
     }
     const callPx = pickMarkPrice(atmCall?.contract);
     const putPx  = pickMarkPrice(atmPut?.contract);
-    // Preferred: straddle price = call + put at ATM strike.
+    // Pull the annualized IV (Schwab returns it as percent — 14.32 means 14.32%).
+    // Average call+put IVs when both available so the displayed IV reflects the
+    // ATM straddle level, not just one side of the smile.
+    const ivCallRaw = Number(atmCall?.contract?.volatility);
+    const ivPutRaw  = Number(atmPut?.contract?.volatility);
+    let ivPct = null;
+    if (Number.isFinite(ivCallRaw) && ivCallRaw > 0 && Number.isFinite(ivPutRaw) && ivPutRaw > 0) {
+      ivPct = (ivCallRaw + ivPutRaw) / 2;
+    } else if (Number.isFinite(ivCallRaw) && ivCallRaw > 0) {
+      ivPct = ivCallRaw;
+    } else if (Number.isFinite(ivPutRaw) && ivPutRaw > 0) {
+      ivPct = ivPutRaw;
+    }
+
+    // Preferred path — ATM straddle. We return the leg prices and ATM strike
+    // separately so the client can compute the *asymmetric* expected-move
+    // targets (put-skew + strike-vs-spot offset mean up-distance ≠ down-distance):
+    //
+    //   upperTarget = atmStrike + callPx     (breakeven through ATM strike, up)
+    //   lowerTarget = atmStrike − putPx      (breakeven through ATM strike, down)
+    //
+    // `em` is kept for chart back-compat (the symmetric ±EM line drawer); the
+    // card UI uses the leg-level fields for accurate up/down levels.
     if (Number.isFinite(callPx) && Number.isFinite(putPx)) {
-      // If call & put live on slightly different ATM strikes (rare), average them.
       return {
         expirationDate: expKey,
         daysToExpiration: dte,
-        em: callPx + putPx,
+        em: callPx + putPx,                 // straddle sum, symmetric proxy
+        iv: ivPct,                          // annualized ATM IV in % (e.g. 14.32)
+        atmStrike: atmCall?.strike ?? atmPut?.strike ?? null,
+        callPx,
+        putPx,
         source: 'straddle'
       };
     }
     // Fallback: EM = S × IV × √(days / denom). Use 252 trading-day denom for
-    // ≥3-day targets, otherwise 365 calendar days.
-    const iv = Number(atmCall?.contract?.volatility ?? atmPut?.contract?.volatility);
-    if (Number.isFinite(iv) && iv > 0) {
-      // Schwab returns volatility as a percent (e.g. 14.32 = 14.32%); convert to decimal.
-      const ivDec = iv > 5 ? iv / 100 : iv;
+    // ≥3-day targets, otherwise 365 calendar days. Symmetric only.
+    if (Number.isFinite(ivPct) && ivPct > 0) {
+      const ivDec = ivPct > 5 ? ivPct / 100 : ivPct;
       const denom = dte >= 3 ? 252 : 365;
       const tradingDaysForWeekly = dte >= 3 ? Math.min(dte, 5) : dte;
       const daysNumerator = dte >= 3 ? tradingDaysForWeekly : dte;
       const em = underlyingPrice * ivDec * Math.sqrt(daysNumerator / denom);
-      return { expirationDate: expKey, daysToExpiration: dte, em, source: 'iv' };
+      return { expirationDate: expKey, daysToExpiration: dte, em, iv: ivPct, source: 'iv' };
     }
     return null;
   }
