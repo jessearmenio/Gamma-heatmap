@@ -15552,15 +15552,29 @@
         lwcChart.timeScale().fitContent();
       }
       lwcChart._ovDesiredRange = desiredRange;
-      // Re-assert after the post-init resize cascade settles. The 260ms
-      // matches `setTimeout(..., 260)` in the page boot path that fires
-      // ovChartResize() right after this function returns.
-      const reapplyZoom = () => {
-        if (!lwcChart || !lwcChart._ovDesiredRange) return;
-        try { lwcChart.timeScale().setVisibleLogicalRange(lwcChart._ovDesiredRange); } catch (_) {}
-      };
-      setTimeout(reapplyZoom, 320);
-      setTimeout(reapplyZoom, 700);
+      // The initial layout cascade (ResizeObserver + multiple rAF passes +
+      // applyOptions width-thrash) can override `setVisibleLogicalRange`
+      // at unpredictable moments during the first ~1 second of life. We
+      // can't predict every override path, so instead we subscribe to the
+      // range-change event and re-pin to the desired range as long as the
+      // override is happening "automatically" (not from a user scroll).
+      // The lock auto-releases after 1500ms so the user's own zoom/scroll
+      // takes over freely after the initial load settles.
+      if (desiredRange) {
+        lwcChart._ovZoomLocked = true;
+        const ts = lwcChart.timeScale();
+        const onRangeChange = (range) => {
+          if (!lwcChart || !lwcChart._ovZoomLocked || !lwcChart._ovDesiredRange) return;
+          const want = lwcChart._ovDesiredRange;
+          // Only correct if LWC actually drifted off the intended range
+          // (within 1-bar tolerance). Avoids fighting our own re-application.
+          if (!range || Math.abs(range.from - want.from) > 1 || Math.abs(range.to - want.to) > 1) {
+            try { ts.setVisibleLogicalRange(want); } catch (_) {}
+          }
+        };
+        ts.subscribeVisibleLogicalRangeChange(onRangeChange);
+        setTimeout(() => { if (lwcChart) lwcChart._ovZoomLocked = false; }, 1500);
+      }
 
       // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
       const redrawGamma = () => requestAnimationFrame(drawGammaBars);
