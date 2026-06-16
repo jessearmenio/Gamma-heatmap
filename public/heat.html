@@ -16932,12 +16932,31 @@
           ${king ? `<span class="kl-pill king">King: ${king}</span>` : ''}
           ${posGex ? `<span class="kl-pill gex-pos">+GEX: ${posGex}</span>` : ''}
           ${negGex ? `<span class="kl-pill gex-neg">\u2212GEX: ${negGex}</span>` : ''}`;
+        // Expected Move % (1D / 1W) — pulled from server-computed expectedMoves
+        // (ATM straddle, SpotGamma-style). EM is expressed as percent of spot so
+        // the user can read directional risk at a glance without doing math
+        // against the price line. Up/down are equal magnitude (1σ band).
+        const spotForEm = Number(heat.underlyingPrice);
+        const oneDayEm  = Number(heat.expectedMoves?.oneDay?.em);
+        const oneWeekEm = Number(heat.expectedMoves?.oneWeek?.em);
+        const emPct = (em) => (spotForEm > 0 && Number.isFinite(em))
+          ? ((em / spotForEm) * 100).toFixed(2) + '%'
+          : '—';
+        const oneDayPct  = emPct(oneDayEm);
+        const oneWeekPct = emPct(oneWeekEm);
+        const emRow = (k, v, isUp) => `
+          <div style="color:var(--text3);font-size:10px;">${k}</div>
+          <div style="color:${v === '—' ? 'var(--text3)' : (isUp ? 'var(--red)' : 'var(--green)')};font-weight:700;font-size:11px;">${v === '—' ? v : (isUp ? '+' : '−') + v}</div>`;
         document.getElementById('ov-heat-summary').innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;">
+          <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:3px 16px;align-items:center;">
             ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
+            ${emRow('1D IV up', oneDayPct, true)}
             ${detailRow('Call Wall GEX', fmtDollar(s.strongestCallWall?.callGex))}
+            ${emRow('1D IV down', oneDayPct, false)}
             ${detailRow('Put Wall GEX', fmtDollar(s.strongestPutWall?.putGex))}
+            ${emRow('1W IV up', oneWeekPct, true)}
             ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
+            ${emRow('1W IV down', oneWeekPct, false)}
           </div>`;
         document.getElementById('ov-gex-summary')?.remove(); // not used in new layout
 
