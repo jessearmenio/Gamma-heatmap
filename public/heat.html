@@ -15714,21 +15714,40 @@
         }
         if (ath) addLine(ath, '#F23644', 'ATH', LightweightCharts.LineStyle.Solid);
 
-        // 1D / 1W Expected Move (SpotGamma-style ATM straddle).
-        // User-spec colors: up = red, down = green (inverted from typical chart
-        // convention to match how directional risk is communicated on Heatseeker).
+        // 1D / 1W Expected Move price lines — asymmetric breakevens.
+        // Targets match the Options Key Strikes card exactly:
+        //   upperTarget = atmStrike + callPx   (real breakeven above)
+        //   lowerTarget = atmStrike − putPx    (real breakeven below)
+        // captures put-skew + strike-vs-spot offset so up- and down-distance
+        // are not equal. Falls back to symmetric ±em when leg data is missing
+        // (server's IV-formula fallback path).
+        //
+        // Color convention: up = red, down = green (inverted from typical
+        // charting convention, matching Heatseeker's directional-risk reading).
         const spot = Number(lastHeatData?.underlyingPrice) || Number(ovState?.snapshot?.scores?.SPY) || null;
         const em = lastHeatData?.expectedMoves || null;
         if (spot && em) {
           const RED = '#ff3b5c', GREEN = '#22dd88';
-          if (em.oneDay && Number.isFinite(em.oneDay.em)) {
-            addLine(spot + em.oneDay.em, RED,   '1D Exp', LightweightCharts.LineStyle.Solid);
-            addLine(spot - em.oneDay.em, GREEN, '1D Exp', LightweightCharts.LineStyle.Solid);
-          }
-          if (em.oneWeek && Number.isFinite(em.oneWeek.em)) {
-            addLine(spot + em.oneWeek.em, RED,   '1W Exp', LightweightCharts.LineStyle.Solid);
-            addLine(spot - em.oneWeek.em, GREEN, '1W Exp', LightweightCharts.LineStyle.Solid);
-          }
+          const breakeven = (leg, isUp) => {
+            if (!leg) return null;
+            const strike = Number(leg.atmStrike);
+            const callPx = Number(leg.callPx);
+            const putPx  = Number(leg.putPx);
+            if (Number.isFinite(strike) && (isUp ? Number.isFinite(callPx) : Number.isFinite(putPx))) {
+              return strike + (isUp ? +callPx : -putPx);
+            }
+            const e = Number(leg.em);
+            if (Number.isFinite(e)) return spot + (isUp ? +e : -e);
+            return null;
+          };
+          const oneDayUp   = breakeven(em.oneDay,  true);
+          const oneDayDown = breakeven(em.oneDay,  false);
+          const oneWeekUp  = breakeven(em.oneWeek, true);
+          const oneWeekDown= breakeven(em.oneWeek, false);
+          if (Number.isFinite(oneDayUp))   addLine(oneDayUp,   RED,   '1D Exp', LightweightCharts.LineStyle.Solid);
+          if (Number.isFinite(oneDayDown)) addLine(oneDayDown, GREEN, '1D Exp', LightweightCharts.LineStyle.Solid);
+          if (Number.isFinite(oneWeekUp))  addLine(oneWeekUp,  RED,   '1W Exp', LightweightCharts.LineStyle.Solid);
+          if (Number.isFinite(oneWeekDown))addLine(oneWeekDown,GREEN, '1W Exp', LightweightCharts.LineStyle.Solid);
         }
 
       } catch (e) { console.warn('drawChartLevels:', e); }
