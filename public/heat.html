@@ -15656,6 +15656,23 @@
         }
         if (ath) addLine(ath, '#F23644', 'ATH', LightweightCharts.LineStyle.Solid);
 
+        // 1D / 1W Expected Move (SpotGamma-style ATM straddle).
+        // User-spec colors: up = red, down = green (inverted from typical chart
+        // convention to match how directional risk is communicated on Heatseeker).
+        const spot = Number(lastHeatData?.underlyingPrice) || Number(ovState?.snapshot?.scores?.SPY) || null;
+        const em = lastHeatData?.expectedMoves || null;
+        if (spot && em) {
+          const RED = '#ff3b5c', GREEN = '#22dd88';
+          if (em.oneDay && Number.isFinite(em.oneDay.em)) {
+            addLine(spot + em.oneDay.em, RED,   '1D Exp', LightweightCharts.LineStyle.Solid);
+            addLine(spot - em.oneDay.em, GREEN, '1D Exp', LightweightCharts.LineStyle.Solid);
+          }
+          if (em.oneWeek && Number.isFinite(em.oneWeek.em)) {
+            addLine(spot + em.oneWeek.em, RED,   '1W Exp', LightweightCharts.LineStyle.Solid);
+            addLine(spot - em.oneWeek.em, GREEN, '1W Exp', LightweightCharts.LineStyle.Solid);
+          }
+        }
+
       } catch (e) { console.warn('drawChartLevels:', e); }
     }
 

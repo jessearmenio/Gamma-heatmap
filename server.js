@@ -1543,6 +1543,95 @@ function buildHeatFromChain(chain, extraRows = []) {
     ? strikes.find((row) => row.strike === kingCell.strike) || null
     : null;
 
+  // ── Expected move (1D / 1W) ─────────────────────────────────────────
+  // Calculated SpotGamma-style by reading the ATM straddle price for the
+  // nearest expiry (1D) and an expiry ~5 trading days out (1W). The straddle
+  // price is the market's pre-priced expected move, so no IV back-out needed.
+  // Falls back to the formula EM = S × IV × √(days/denom) using the ATM
+  // contract's volatility field when straddle prices are missing or stale.
+  //
+  // Output shape: { expectedMoves: { oneDay: {expirationDate, daysToExpiration, em, source}, oneWeek: {...} } }
+  function pickMarkPrice(contract) {
+    if (!contract) return null;
+    const mark = Number(contract.mark);
+    if (Number.isFinite(mark) && mark > 0) return mark;
+    const bid = Number(contract.bid), ask = Number(contract.ask);
+    if (Number.isFinite(bid) && Number.isFinite(ask) && bid > 0 && ask > 0) return (bid + ask) / 2;
+    const last = Number(contract.last);
+    if (Number.isFinite(last) && last > 0) return last;
+    return null;
+  }
+  function findAtmContract(expMap, expKey, spot) {
+    if (!expMap || !expKey || !spot) return null;
+    const strikes = expMap[expKey];
+    if (!strikes) return null;
+    let best = null, bestDist = Infinity;
+    for (const sk of Object.keys(strikes)) {
+      const contracts = strikes[sk];
+      if (!Array.isArray(contracts) || !contracts.length) continue;
+      const strike = Number(contracts[0]?.strikePrice ?? sk);
+      if (!Number.isFinite(strike)) continue;
+      const dist = Math.abs(strike - spot);
+      if (dist < bestDist) { bestDist = dist; best = { contract: contracts[0], strike }; }
+    }
+    return best;
+  }
+  function computeExpectedMove(targetDays) {
+    if (!Number.isFinite(underlyingPrice) || underlyingPrice <= 0) return null;
+    // Sort expirations by daysToExpiration, then pick the one closest to target.
+    const sortedExps = expirations
+      .map(exp => ({ exp, dte: expMeta.get(exp)?.daysToExpiration }))
+      .filter(x => Number.isFinite(x.dte) && x.dte >= 0)
+      .sort((a, b) => Math.abs(a.dte - targetDays) - Math.abs(b.dte - targetDays));
+    if (!sortedExps.length) return null;
+    const { exp: expKey, dte } = sortedExps[0];
+    // Schwab key shape is e.g. "2026-06-17:0" — but we already normalized
+    // to YYYY-MM-DD in expirations. The raw expDateMap may still use the
+    // suffixed form, so try both lookups.
+    const tryKeys = [expKey, ...Object.keys(chain.callExpDateMap || {}).filter(k => k.startsWith(expKey))];
+    let atmCall = null, atmPut = null;
+    for (const k of tryKeys) {
+      atmCall = findAtmContract(chain.callExpDateMap, k, underlyingPrice);
+      if (atmCall) break;
+    }
+    for (const k of tryKeys) {
+      atmPut = findAtmContract(chain.putExpDateMap, k, underlyingPrice);
+      if (atmPut) break;
+    }
+    const callPx = pickMarkPrice(atmCall?.contract);
+    const putPx  = pickMarkPrice(atmPut?.contract);
+    // Preferred: straddle price = call + put at ATM strike.
+    if (Number.isFinite(callPx) && Number.isFinite(putPx)) {
+      // If call & put live on slightly different ATM strikes (rare), average them.
+      return {
+        expirationDate: expKey,
+        daysToExpiration: dte,
+        em: callPx + putPx,
+        source: 'straddle'
+      };
+    }
+    // Fallback: EM = S × IV × √(days / denom). Use 252 trading-day denom for
+    // ≥3-day targets, otherwise 365 calendar days.
+    const iv = Number(atmCall?.contract?.volatility ?? atmPut?.contract?.volatility);
+    if (Number.isFinite(iv) && iv > 0) {
+      // Schwab returns volatility as a percent (e.g. 14.32 = 14.32%); convert to decimal.
+      const ivDec = iv > 5 ? iv / 100 : iv;
+      const denom = dte >= 3 ? 252 : 365;
+      const tradingDaysForWeekly = dte >= 3 ? Math.min(dte, 5) : dte;
+      const daysNumerator = dte >= 3 ? tradingDaysForWeekly : dte;
+      const em = underlyingPrice * ivDec * Math.sqrt(daysNumerator / denom);
+      return { expirationDate: expKey, daysToExpiration: dte, em, source: 'iv' };
+    }
+    return null;
+  }
+  // 1D target = nearest expiration (0DTE if available, else next session).
+  // 1W target = expiration closest to 5 calendar days out (SpotGamma's
+  // 5 trading-day window typically lands on Fri-of-next-week).
+  const expectedMoves = {
+    oneDay: computeExpectedMove(0),
+    oneWeek: computeExpectedMove(5)
+  };
+
   return {
     underlyingPrice,
     contractCount: allRows.length,
@@ -1550,6 +1639,7 @@ function buildHeatFromChain(chain, extraRows = []) {
     expirationMeta: Object.fromEntries(
       expirations.map(exp => [exp, expMeta.get(exp) || { expirationDate: exp, daysToExpiration: null }])
     ),
+    expectedMoves,
     summary: {
       strongestCallWall,
       strongestPutWall,
