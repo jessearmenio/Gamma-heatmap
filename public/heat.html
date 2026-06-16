@@ -15518,28 +15518,45 @@
 
       // ── Initial zoom — show the most recent slice instead of fitContent ──
       // fitContent() squashes all 90 daily bars into the panel for 3M, which
-      // makes the price action read like a postage stamp. Per-TF defaults
-      // (tightened ~3× for better vertical resolution — y-axis auto-scales to
-      // visible-bar high/low, so fewer horizontal bars → narrower visible
-      // price range → bigger candle bodies):
-      //   3M  → last ~10 bars (≈ 2 trading weeks visible, ~80 bars scrollable left)
-      //   6M  → last ~15 bars
-      //   1Y  → last ~22 bars (≈ 1 month visible, full year scrollable)
+      // makes the price action read like a postage stamp. Per-TF defaults:
+      //   3M  → last ~30 bars (≈ 1 trading month visible, ~60 bars scrollable left)
+      //   6M  → last ~45 bars
+      //   1Y  → last ~65 bars (≈ 1 quarter visible)
       //   intraday → keep fitContent (already a tight window)
       // A small right-padding (4 bars) leaves space for axis labels.
+      //
+      // Why we stash & re-apply: ~260ms after init, `ovChartResize()` runs
+      // `applyOptions({ width: 1 })` then re-expands the chart to its real
+      // size. That width-thrash causes Lightweight Charts to recompute the
+      // visible logical range, which would otherwise clobber the zoom set
+      // here. We save the desired range on the chart object and re-assert
+      // it inside the resize handler and on a couple of trailing timeouts
+      // so it survives every layout pass.
       const totalBars = candles.length;
       const tf = ovState?.chartTf || '3M';
-      const DEFAULT_VISIBLE = { '3M': 10, '6M': 15, '1Y': 22 };
+      const DEFAULT_VISIBLE = { '3M': 30, '6M': 45, '1Y': 65 };
       const visibleBars = DEFAULT_VISIBLE[tf];
+      let desiredRange = null;
       if (visibleBars && totalBars > visibleBars) {
         const rightPad = 4;
-        lwcChart.timeScale().setVisibleLogicalRange({
+        desiredRange = {
           from: Math.max(0, totalBars - visibleBars),
           to: totalBars - 1 + rightPad
-        });
+        };
+        lwcChart.timeScale().setVisibleLogicalRange(desiredRange);
       } else {
         lwcChart.timeScale().fitContent();
       }
+      lwcChart._ovDesiredRange = desiredRange;
+      // Re-assert after the post-init resize cascade settles. The 260ms
+      // matches `setTimeout(..., 260)` in the page boot path that fires
+      // ovChartResize() right after this function returns.
+      const reapplyZoom = () => {
+        if (!lwcChart || !lwcChart._ovDesiredRange) return;
+        try { lwcChart.timeScale().setVisibleLogicalRange(lwcChart._ovDesiredRange); } catch (_) {}
+      };
+      setTimeout(reapplyZoom, 320);
+      setTimeout(reapplyZoom, 700);
 
       // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
       const redrawGamma = () => requestAnimationFrame(drawGammaBars);
@@ -15568,6 +15585,12 @@
           if (w > 0) opts.width = w;
           if (h > 0) opts.height = h;
           if (opts.width || opts.height) lwcChart.applyOptions(opts);
+          // Re-assert the initial zoom we set in ovRenderChart — the
+          // applyOptions calls above reset the visible range to LWC's
+          // default behavior, which would otherwise leave us at fitContent.
+          if (lwcChart._ovDesiredRange) {
+            try { lwcChart.timeScale().setVisibleLogicalRange(lwcChart._ovDesiredRange); } catch (_) {}
+          }
           requestAnimationFrame(drawGammaBars);
         });
       };
