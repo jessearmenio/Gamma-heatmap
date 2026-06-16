@@ -15518,15 +15518,18 @@
 
       // ── Initial zoom — show the most recent slice instead of fitContent ──
       // fitContent() squashes all 90 daily bars into the panel for 3M, which
-      // makes the price action read like a postage stamp. Per-TF defaults:
-      //   3M  → last ~30 bars (≈ 1 trading month visible, ~2mo scrollable left)
-      //   6M  → last ~45 bars
-      //   1Y  → last ~65 bars (≈ 1 quarter visible)
+      // makes the price action read like a postage stamp. Per-TF defaults
+      // (tightened ~3× for better vertical resolution — y-axis auto-scales to
+      // visible-bar high/low, so fewer horizontal bars → narrower visible
+      // price range → bigger candle bodies):
+      //   3M  → last ~10 bars (≈ 2 trading weeks visible, ~80 bars scrollable left)
+      //   6M  → last ~15 bars
+      //   1Y  → last ~22 bars (≈ 1 month visible, full year scrollable)
       //   intraday → keep fitContent (already a tight window)
       // A small right-padding (4 bars) leaves space for axis labels.
       const totalBars = candles.length;
       const tf = ovState?.chartTf || '3M';
-      const DEFAULT_VISIBLE = { '3M': 30, '6M': 45, '1Y': 65 };
+      const DEFAULT_VISIBLE = { '3M': 10, '6M': 15, '1Y': 22 };
       const visibleBars = DEFAULT_VISIBLE[tf];
       if (visibleBars && totalBars > visibleBars) {
         const rightPad = 4;
