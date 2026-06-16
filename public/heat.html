@@ -15552,28 +15552,21 @@
         lwcChart.timeScale().fitContent();
       }
       lwcChart._ovDesiredRange = desiredRange;
-      // The initial layout cascade (ResizeObserver + multiple rAF passes +
-      // applyOptions width-thrash) can override `setVisibleLogicalRange`
-      // at unpredictable moments during the first ~1 second of life. We
-      // can't predict every override path, so instead we subscribe to the
-      // range-change event and re-pin to the desired range as long as the
-      // override is happening "automatically" (not from a user scroll).
-      // The lock auto-releases after 1500ms so the user's own zoom/scroll
-      // takes over freely after the initial load settles.
-      if (desiredRange) {
-        lwcChart._ovZoomLocked = true;
-        const ts = lwcChart.timeScale();
-        const onRangeChange = (range) => {
-          if (!lwcChart || !lwcChart._ovZoomLocked || !lwcChart._ovDesiredRange) return;
-          const want = lwcChart._ovDesiredRange;
-          // Only correct if LWC actually drifted off the intended range
-          // (within 1-bar tolerance). Avoids fighting our own re-application.
-          if (!range || Math.abs(range.from - want.from) > 1 || Math.abs(range.to - want.to) > 1) {
-            try { ts.setVisibleLogicalRange(want); } catch (_) {}
+      // Fallback: programmatically re-click the active TF button once after
+      // the initial layout cascade is done. Manually clicking the already-
+      // active TF reliably produces the correctly-zoomed view, so we mimic
+      // that. The flag is page-level (window._ovChartAutoClicked) so the
+      // auto-click only runs once per page load — subsequent user TF clicks
+      // or refreshes work normally.
+      if (desiredRange && !window._ovChartAutoClicked) {
+        setTimeout(() => {
+          if (window._ovChartAutoClicked) return;
+          const activeBtn = document.querySelector('#ov-spy-chart-tf .ov-chart-tf-btn.active');
+          if (activeBtn) {
+            window._ovChartAutoClicked = true;
+            activeBtn.click();
           }
-        };
-        ts.subscribeVisibleLogicalRangeChange(onRangeChange);
-        setTimeout(() => { if (lwcChart) lwcChart._ovZoomLocked = false; }, 1500);
+        }, 1200);
       }
 
       // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
