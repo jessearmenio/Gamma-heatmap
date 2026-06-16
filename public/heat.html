@@ -15532,7 +15532,11 @@
       // here. We save the desired range on the chart object and re-assert
       // it inside the resize handler and on a couple of trailing timeouts
       // so it survives every layout pass.
-      const totalBars = candles.length;
+      // IMPORTANT: use `display` (TF-filtered candles actually rendered on the
+      // chart), NOT `candles` (the raw ~365-bar input). The chart's logical
+      // index range is [0, display.length-1] — using the wrong array put the
+      // zoom window off the end of the chart and collapsed to ~2 bars.
+      const totalBars = display.length;
       const tf = ovState?.chartTf || '3M';
       const DEFAULT_VISIBLE = { '3M': 30, '6M': 45, '1Y': 65 };
       const visibleBars = DEFAULT_VISIBLE[tf];
