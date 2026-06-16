@@ -15516,8 +15516,27 @@
       container.style.position = 'relative';
       container.appendChild(rsiLabel);
 
-      // ── Auto-fit visible range ──
-      lwcChart.timeScale().fitContent();
+      // ── Initial zoom — show the most recent slice instead of fitContent ──
+      // fitContent() squashes all 90 daily bars into the panel for 3M, which
+      // makes the price action read like a postage stamp. Per-TF defaults:
+      //   3M  → last ~30 bars (≈ 1 trading month visible, ~2mo scrollable left)
+      //   6M  → last ~45 bars
+      //   1Y  → last ~65 bars (≈ 1 quarter visible)
+      //   intraday → keep fitContent (already a tight window)
+      // A small right-padding (4 bars) leaves space for axis labels.
+      const totalBars = candles.length;
+      const tf = ovState?.chartTf || '3M';
+      const DEFAULT_VISIBLE = { '3M': 30, '6M': 45, '1Y': 65 };
+      const visibleBars = DEFAULT_VISIBLE[tf];
+      if (visibleBars && totalBars > visibleBars) {
+        const rightPad = 4;
+        lwcChart.timeScale().setVisibleLogicalRange({
+          from: Math.max(0, totalBars - visibleBars),
+          to: totalBars - 1 + rightPad
+        });
+      } else {
+        lwcChart.timeScale().fitContent();
+      }
 
       // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
       const redrawGamma = () => requestAnimationFrame(drawGammaBars);
