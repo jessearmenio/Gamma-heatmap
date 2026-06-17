@@ -1576,13 +1576,28 @@ function buildHeatFromChain(chain, extraRows = []) {
     }
     return best;
   }
-  function computeExpectedMove(targetDays) {
+  function computeExpectedMove(targetDays, minDte = null) {
     if (!Number.isFinite(underlyingPrice) || underlyingPrice <= 0) return null;
     // Sort expirations by daysToExpiration, then pick the one closest to target.
-    const sortedExps = expirations
+    // `minDte` is a hard floor — used for 1D EM to skip same-day 0DTE contracts
+    // whose extrinsic value has decayed to nearly zero late in the trading day
+    // (e.g. an SPY 0DTE ATM call worth $0.10 at 3:50pm doesn't represent the
+    // expected next-24h move; it represents the expected next-10min move).
+    // SpotGamma's published 1D EM uses the next-session contract for exactly
+    // this reason.
+    let pool = expirations
       .map(exp => ({ exp, dte: expMeta.get(exp)?.daysToExpiration }))
-      .filter(x => Number.isFinite(x.dte) && x.dte >= 0)
-      .sort((a, b) => Math.abs(a.dte - targetDays) - Math.abs(b.dte - targetDays));
+      .filter(x => Number.isFinite(x.dte) && x.dte >= 0);
+    if (Number.isFinite(minDte)) {
+      const filtered = pool.filter(x => x.dte >= minDte);
+      if (filtered.length) pool = filtered;
+      // If no expiration satisfies the floor (rare — e.g. very late Friday
+      // when next listed is the following Monday), we fall back to the full
+      // pool rather than returning null, so something still renders.
+    }
+    const sortedExps = pool.sort((a, b) =>
+      Math.abs(a.dte - targetDays) - Math.abs(b.dte - targetDays)
+    );
     if (!sortedExps.length) return null;
     const { exp: expKey, dte } = sortedExps[0];
     // Schwab key shape is e.g. "2026-06-17:0" — but we already normalized
@@ -1651,7 +1666,13 @@ function buildHeatFromChain(chain, extraRows = []) {
   // 1W target = expiration closest to 5 calendar days out (SpotGamma's
   // 5 trading-day window typically lands on Fri-of-next-week).
   const expectedMoves = {
-    oneDay: computeExpectedMove(0),
+    // 1D target = next-session expiration (dte ≥ 1). Picking same-day 0DTE
+    // late in the trading day collapses the straddle to a tiny intraday-time-
+    // value figure that doesn't represent the actual next-24h move. Floor at
+    // 1 day so we use tomorrow's contract — matches how SpotGamma publishes
+    // 1D EM.
+    oneDay: computeExpectedMove(1, 1),
+    // 1W target = 5 trading days; no floor needed since 5 ≫ same-day decay.
     oneWeek: computeExpectedMove(5)
   };
 
