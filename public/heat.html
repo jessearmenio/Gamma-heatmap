@@ -10522,7 +10522,7 @@
             </div>
             <div class="tj-header-actions">
               <input type="file" id="tj-csv-input" accept=".csv,text/csv" style="display:none" onchange="tjHandleCsvUpload(event)">
-              <button class="tj-btn" onclick="document.getElementById('tj-csv-input').click()" title="Import broker activity CSV">⬆ Import Broker CSV</button>
+              <button id="tj-import-csv-btn" class="tj-btn" onclick="document.getElementById('tj-csv-input').click()" title="Import broker activity CSV">⬆ Import Broker CSV</button>
               <button class="tj-btn tj-btn-ghost" onclick="tjShowImportWarnings()" id="tj-warnings-btn" style="display:none;">⚠ <span id="tj-warnings-count">0</span></button>
               <button id="tj-new-trade-btn" class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New Trade</button>
             </div>
@@ -21301,6 +21301,13 @@
     }
 
     async function tjHandleCsvUpload(ev) {
+      // Defensive: the button is disabled when there's no Schwab token, but
+      // if the file dialog gets triggered via keyboard or a race during
+      // logout, bail before doing any work rather than proceeding half-broken.
+      if (typeof isConnected !== 'undefined' && !isConnected) {
+        ev.target.value = '';
+        return;
+      }
       const file = ev.target.files?.[0];
       ev.target.value = '';
       if (!file) return;
@@ -22436,17 +22443,26 @@ Win rate: ${wr}%`;
       tjOpenModal('New Trade', tjRenderNewTradeForm());
     }
 
-    // Reflect Schwab-connection state on the New Trade button. Called from
-    // setConnected() whenever the token status changes (login, callback,
-    // logout, refresh failure) and from tjLoad() when the page is opened.
+    // Reflect Schwab-connection state on auth-gated Trade Journal buttons.
+    // Called from setConnected() whenever the token status changes (login,
+    // callback, logout, refresh failure) and from tjLoad() when the page is
+    // opened.
     function tjUpdateAuthState() {
-      const btn = document.getElementById('tj-new-trade-btn');
-      if (!btn) return;
       const connected = (typeof isConnected !== 'undefined') && isConnected;
-      btn.disabled = !connected;
-      btn.title = connected
-        ? 'Log a new manual trade'
-        : 'Connect Schwab to log new trades';
+      const newBtn = document.getElementById('tj-new-trade-btn');
+      if (newBtn) {
+        newBtn.disabled = !connected;
+        newBtn.title = connected
+          ? 'Log a new manual trade'
+          : 'Connect Schwab to log new trades';
+      }
+      const csvBtn = document.getElementById('tj-import-csv-btn');
+      if (csvBtn) {
+        csvBtn.disabled = !connected;
+        csvBtn.title = connected
+          ? 'Import broker activity CSV'
+          : 'Connect Schwab to import broker CSVs';
+      }
     }
     function tjSwitchNewType(type) {
       tjNewType = type;
