@@ -9308,8 +9308,8 @@
               </div>
             </div>
 
-            <!-- ============ REMINDERS (collapsible, default collapsed) ============ -->
-            <div id="ov-trade-journal-card" class="cl-card cl-collapsible">
+            <!-- ============ REMINDERS (collapsible, default EXPANDED) ============ -->
+            <div id="ov-trade-journal-card" class="cl-card cl-collapsible" data-cl-open="true">
               <div class="cl-header cl-clickable" onclick="clToggleCollapse('reminders')">
                 <div class="cl-header-left">
                   <span class="cl-chevron" data-cl-chevron="reminders">▶</span>
@@ -9318,7 +9318,7 @@
                 <span class="cl-header-sub">Fail-safe, exits, mindset</span>
               </div>
 
-              <div class="cl-collapse-body" id="cl-body-reminders" hidden>
+              <div class="cl-collapse-body" id="cl-body-reminders">
               <div class="cl-reminders">
                 <div class="cl-reminder">
                   <div class="cl-rem-title">🛡️ Fail-Safe Rule</div>
@@ -20816,7 +20816,28 @@
       const next = !open;
       card.dataset.clOpen = next ? 'true' : 'false';
       body.hidden = !next;
+      // Any manual toggle locks the card so subsequent auto-collapse decisions
+      // from clAutoCollapseByActivity stop fighting the user's preference.
+      card.dataset.clUserToggled = 'true';
     };
+
+    // Auto-collapse rule for the Long/Short checklists: when ≥6 of the 12
+    // auto-evaluated items inside the card are checked, default to expanded
+    // for visibility. Below 6, keep collapsed (the existing default).
+    // Skipped entirely if the user has manually toggled this card in the
+    // current session (their choice always wins).
+    function clAutoCollapseByActivity(cardId) {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      if (card.dataset.clUserToggled === 'true') return;
+      const checked = card.querySelectorAll('.cl-obj input[data-cl-item]:checked').length;
+      const shouldOpen = checked >= 6;
+      const isOpen = card.dataset.clOpen === 'true';
+      if (shouldOpen === isOpen) return;       // no change needed
+      card.dataset.clOpen = shouldOpen ? 'true' : 'false';
+      const body = card.querySelector('.cl-collapse-body');
+      if (body) body.hidden = !shouldOpen;
+    }
 
     function clInit() {
       const longCard = document.getElementById('ov-checklist-card');
@@ -21195,17 +21216,23 @@
       });
 
       const verdict = document.getElementById(opts.verdictId);
-      if (!verdict) return;
-      verdict.className = 'cl-auth-verdict';
-      if (activeCount === 3) {
-        verdict.classList.add('go');
-        verdict.textContent = opts.goMsg;
-      } else if (activeCount > 0) {
-        verdict.classList.add('wait');
-        verdict.textContent = `Wait — ${activeCount}/3 triggers active. Need ${3 - activeCount} more for authorization.`;
-      } else {
-        verdict.textContent = opts.noDataMsg;
+      if (verdict) {
+        verdict.className = 'cl-auth-verdict';
+        if (activeCount === 3) {
+          verdict.classList.add('go');
+          verdict.textContent = opts.goMsg;
+        } else if (activeCount > 0) {
+          verdict.classList.add('wait');
+          verdict.textContent = `Wait — ${activeCount}/3 triggers active. Need ${3 - activeCount} more for authorization.`;
+        } else {
+          verdict.textContent = opts.noDataMsg;
+        }
       }
+
+      // Auto-expand the card when its item-count crosses the visibility
+      // threshold (≥6 of 12 items checked). Skipped if the user has manually
+      // toggled the card this session — their click wins.
+      clAutoCollapseByActivity(opts.cardId);
     }
 
     window.clShowEntryForm = function () {
