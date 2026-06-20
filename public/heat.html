@@ -12016,8 +12016,18 @@
       'Manufacturing PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
       'Services PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
       Mopex: { tier: 'med', time: '3:00pm CST', color: 'med' },
-      'VIX Expo': { tier: 'med', time: '8:00am CST', color: 'med' }
+      'VIX Expo': { tier: 'med', time: '8:00am CST', color: 'med' },
+      'Quad Witching': { tier: 'high', time: '3:00pm CST', color: 'high' }
     };
+
+    // Quarterly-close events flagged as Quad Witching per user spec
+    // (calendar uses June 30 / September 30 / December 31 as the quarter-end
+    // expiration cluster, not the traditional third-Friday calendar dates).
+    const QUAD_WITCHING_EVENTS = [
+      { releaseDate: '2026-06-30', labelMonth: 'June' },
+      { releaseDate: '2026-09-30', labelMonth: 'September' },
+      { releaseDate: '2026-12-31', labelMonth: 'December' }
+    ];
 
     const MARKET_CLOSED_HOLIDAYS_2026 = [
       { releaseDate: '2026-05-25', holiday: 'Memorial Day' },
@@ -12200,6 +12210,19 @@
           time: CALENDAR_EVENT_META['VIX Expo'].time,
           tier: CALENDAR_EVENT_META['VIX Expo'].tier,
           color: CALENDAR_EVENT_META['VIX Expo'].color,
+          spanDays
+        });
+      });
+
+      QUAD_WITCHING_EVENTS.forEach(ev => {
+        events.push({
+          type: 'Quad Witching',
+          title: `${ev.labelMonth} Quad Witching`,
+          releaseDate: ev.releaseDate,
+          labelMonth: ev.labelMonth,
+          time: CALENDAR_EVENT_META['Quad Witching'].time,
+          tier: CALENDAR_EVENT_META['Quad Witching'].tier,
+          color: CALENDAR_EVENT_META['Quad Witching'].color,
           spanDays
         });
       });
