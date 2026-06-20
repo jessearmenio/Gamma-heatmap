@@ -7995,6 +7995,14 @@
     .tj-btn:hover { background: var(--bg3); }
     .tj-btn-primary { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
     .tj-btn-primary:hover { background: var(--accent2); }
+    .tj-btn:disabled,
+    .tj-btn[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .tj-btn-primary:disabled,
+    .tj-btn-primary[disabled] { background: var(--bg3); color: var(--text3); border-color: var(--border2); }
     .tj-btn-danger { background: rgba(255,59,92,0.12); color: var(--red); border-color: rgba(255,59,92,0.3); }
     .tj-btn-ghost { background: transparent; border-color: var(--border); color: var(--text3); }
 
@@ -8410,10 +8418,7 @@
         </li>-->
         <li class="nav-section-label">Tools</li>
         <li class="nav-item" data-page="trade-journal-page" onclick="navTo(this)">
-          <span class="nav-icon">📒</span><span class="nav-label">Trade Journal</span>
-        </li>
-        <li class="nav-item" data-page="journal-page" onclick="navTo(this)">
-          <span class="nav-icon">📓</span><span class="nav-label">Journal</span>
+          <span class="nav-icon">📓</span><span class="nav-label">Trade Journal</span>
         </li>
         <li class="nav-item" data-page="calendar-page" onclick="navTo(this)">
           <span class="nav-icon">🗓️</span><span class="nav-label">Calendar</span>
@@ -10507,214 +10512,6 @@
             </div>
           </div>
         </div>
-        <!-- ════════════════════════════════════════════════
-             JOURNAL PAGE
-        ════════════════════════════════════════════════ -->
-        <div id="journal-page" class="page">
-
-          <!-- hidden file input -->
-          <input type="file" id="jnl-file-input" accept=".csv" style="display:none">
-          <div id="jnl-tooltip" class="jnl-tooltip"></div>
-
-          <!-- header row -->
-          <div class="jnl-header">
-            <div class="jnl-header-left">
-              <div class="jnl-trade-count" id="jnl-trade-count">0 <span>trades in <span
-                    id="jnl-year-label">--</span></span></div>
-              <select class="jnl-year-select" id="jnl-year-select" onchange="jnlChangeYear(this.value)">
-                <option>2026</option>
-                <option>2025</option>
-                <option>2024</option>
-              </select>
-            </div>
-            <button class="jnl-upload-btn" onclick="document.getElementById('jnl-file-input').click()">
-              ↑ Upload CSV
-            </button>
-          </div>
-
-          <!-- 75/25 LAYOUT: 3 heatmaps | ticker pie chart -->
-          <div class="jnl-hm-row">
-            <div class="jnl-hm-cards">
-
-              <!-- TRADE ACTIVITY HEATMAP -->
-              <div class="jnl-card" id="jnl-activity-card">
-                <div class="jnl-card-header">
-                  <div>
-                    <div class="jnl-card-title">Trade activity</div>
-                    <div class="jnl-card-sub" id="jnl-activity-sub">Trading Account · upload a CSV to begin</div>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:12px;">
-                    <div class="jnl-card-meta" id="jnl-activity-meta"></div>
-                    <div class="jnl-toggle" id="jnl-metric-toggle">
-                      <button class="active" onclick="jnlSetMetric('trades',this)">Trades</button>
-                      <button onclick="jnlSetMetric('shares',this)">Shares</button>
-                      <button onclick="jnlSetMetric('notional',this)">Notional</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="jnl-heatmap-wrap">
-                  <div id="jnl-months-row" class="jnl-heatmap-months"></div>
-                  <div class="jnl-heatmap-outer">
-                    <div class="jnl-dow-labels">
-                      <div class="jnl-dow-label"></div>
-                      <div class="jnl-dow-label">Mon</div>
-                      <div class="jnl-dow-label">Tue</div>
-                      <div class="jnl-dow-label">Wed</div>
-                      <div class="jnl-dow-label">Thu</div>
-                      <div class="jnl-dow-label">Fri</div>
-                      <div class="jnl-dow-label"></div>
-                    </div>
-                    <div id="jnl-activity-heatmap" class="jnl-heatmap"></div>
-                  </div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-                  <div class="jnl-card-sub" id="jnl-activity-footer">Upload a CSV to see your trade activity</div>
-                  <div class="jnl-legend">
-                    Less
-                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                    <div class="jnl-legend-cell" style="background:#0d3a20;"></div>
-                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                    <div class="jnl-legend-cell" style="background:#22dd88;opacity:0.6;"></div>
-                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                    More
-                  </div>
-                </div>
-              </div>
-
-              <!-- TRADE PERFORMANCE HEATMAP -->
-              <div class="jnl-card">
-                <div class="jnl-card-header">
-                  <div>
-                    <div class="jnl-card-title">Trade performance</div>
-                    <div class="jnl-card-sub" id="jnl-pnl-sub"><span id="jnl-year-label3">--</span> YTD · daily net
-                      P&amp;L</div>
-                  </div>
-                  <div class="jnl-card-meta" id="jnl-pnl-meta"></div>
-                </div>
-                <div class="jnl-heatmap-wrap">
-                  <div id="jnl-pnl-months-row" class="jnl-heatmap-months"></div>
-                  <div class="jnl-heatmap-outer">
-                    <div class="jnl-dow-labels">
-                      <div class="jnl-dow-label"></div>
-                      <div class="jnl-dow-label">Mon</div>
-                      <div class="jnl-dow-label">Tue</div>
-                      <div class="jnl-dow-label">Wed</div>
-                      <div class="jnl-dow-label">Thu</div>
-                      <div class="jnl-dow-label">Fri</div>
-                      <div class="jnl-dow-label"></div>
-                    </div>
-                    <div id="jnl-pnl-heatmap" class="jnl-heatmap"></div>
-                  </div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-                  <div class="jnl-card-sub" id="jnl-pnl-footer">Upload a CSV to see your performance</div>
-                  <div class="jnl-legend">
-                    Loss
-                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
-                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
-                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                    Profit
-                  </div>
-                </div>
-              </div>
-
-              <!-- SPY DAILY PERFORMANCE HEATMAP -->
-              <div class="jnl-card">
-                <div class="jnl-card-header">
-                  <div>
-                    <div class="jnl-card-title">SPY daily performance</div>
-                    <div class="jnl-card-sub" id="jnl-spy-sub"><span id="jnl-year-label2">--</span> YTD · intensity =
-                      daily % change (open to close)</div>
-                  </div>
-                  <div class="jnl-card-meta" id="jnl-spy-meta"></div>
-                </div>
-                <div class="jnl-heatmap-wrap">
-                  <div id="jnl-spy-months-row" class="jnl-heatmap-months"></div>
-                  <div class="jnl-heatmap-outer">
-                    <div class="jnl-dow-labels">
-                      <div class="jnl-dow-label"></div>
-                      <div class="jnl-dow-label">Mon</div>
-                      <div class="jnl-dow-label">Tue</div>
-                      <div class="jnl-dow-label">Wed</div>
-                      <div class="jnl-dow-label">Thu</div>
-                      <div class="jnl-dow-label">Fri</div>
-                      <div class="jnl-dow-label"></div>
-                    </div>
-                    <div id="jnl-spy-heatmap" class="jnl-heatmap"></div>
-                  </div>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
-                  <div class="jnl-card-sub" id="jnl-spy-footer"></div>
-                  <div class="jnl-legend">
-                    &minus;2%
-                    <div class="jnl-legend-cell" style="background:#ff3b5c;"></div>
-                    <div class="jnl-legend-cell" style="background:#7a1a2e;"></div>
-                    <div class="jnl-legend-cell" style="background:#161b27;border:1px solid #1e2535;"></div>
-                    <div class="jnl-legend-cell" style="background:#1a6b35;"></div>
-                    <div class="jnl-legend-cell" style="background:#22dd88;"></div>
-                    +2%
-                  </div>
-                </div>
-              </div>
-
-            </div><!-- /.jnl-hm-cards -->
-
-            <!-- TICKER PIE CHART PANEL -->
-            <div class="jnl-pie-panel">
-              <div class="jnl-pie-title">Ticker mix</div>
-              <div class="jnl-pie-sub" id="jnl-pie-sub">% of trades by ticker</div>
-              <canvas id="jnl-pie-canvas" width="180" height="180"></canvas>
-              <div class="jnl-pie-legend" id="jnl-pie-legend"></div>
-            </div>
-
-          </div><!-- /.jnl-hm-row -->
-
-          <!-- BEHAVIORAL FLAGS -->
-          <div class="jnl-flags" id="jnl-flags"></div>
-
-          <!-- TRADE MATRIX -->
-          <div class="jnl-card" style="padding:0;overflow:hidden;">
-            <div
-              style="padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-              <div class="jnl-card-title">Trade Log</div>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <input id="jnl-search" placeholder="Filter ticker…"
-                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;width:120px;"
-                  oninput="jnlRenderTable()">
-                <select id="jnl-filter-type"
-                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:5px;font-size:11px;font-family:inherit;"
-                  onchange="jnlRenderTable()">
-                  <option value="">All Types</option>
-                  <option value="Buy to Open">Buy to Open</option>
-                  <option value="Sell to Close">Sell to Close</option>
-                </select>
-                <span style="font-size:10px;color:var(--text3);">—</span>
-                <input type="date" id="jnl-date-from"
-                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;"
-                  onchange="jnlRenderTable()" title="From date">
-                <span style="font-size:10px;color:var(--text3);">to</span>
-                <input type="date" id="jnl-date-to"
-                  style="background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 8px;border-radius:5px;font-size:11px;font-family:inherit;color-scheme:dark;"
-                  onchange="jnlRenderTable()" title="To date">
-                <button
-                  onclick="document.getElementById('jnl-date-from').value='';document.getElementById('jnl-date-to').value='';jnlRenderTable();"
-                  style="background:transparent;border:1px solid var(--border2);color:var(--text3);padding:5px 9px;border-radius:5px;font-size:10px;font-family:inherit;cursor:pointer;"
-                  title="Clear date range">&times;</button>
-              </div>
-            </div>
-            <div class="jnl-matrix-summary" id="jnl-matrix-summary" style="display:none;"></div>
-            <div class="jnl-table-wrap" id="jnl-table-wrap">
-              <div class="jnl-empty">
-                <div class="jnl-empty-icon">📂</div>
-                <div class="jnl-empty-title">No trades loaded</div>
-                <div class="jnl-empty-desc">Upload a CSV from your brokerage to view your trade log.</div>
-              </div>
-            </div>
-          </div>
-
-        </div><!-- /journal-page -->
 
         <!-- ── Trade Journal page ───────────────────────────── -->
         <div id="trade-journal-page" class="page" style="display:none;">
@@ -10727,7 +10524,7 @@
               <input type="file" id="tj-csv-input" accept=".csv,text/csv" style="display:none" onchange="tjHandleCsvUpload(event)">
               <button class="tj-btn" onclick="document.getElementById('tj-csv-input').click()" title="Import broker activity CSV">⬆ Import Broker CSV</button>
               <button class="tj-btn tj-btn-ghost" onclick="tjShowImportWarnings()" id="tj-warnings-btn" style="display:none;">⚠ <span id="tj-warnings-count">0</span></button>
-              <button class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New Trade</button>
+              <button id="tj-new-trade-btn" class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New Trade</button>
             </div>
           </div>
 
@@ -11198,7 +10995,6 @@
         case 'darkpool-page': loadDarkPool(); break;
         case 'scanner-page': loadScanner(); break;
         case 'strat-page': if (!stratChain) stratLoadExpirations(); break;
-        case 'journal-page': jnlInit(); break;
         case 'trade-journal-page': tjLoad(); break;
       }
     }
@@ -13069,6 +12865,8 @@
     // ── Connection state ──
     function setConnected(v) {
       isConnected = v;
+      // Trade Journal's + New Trade button greys out when there's no token.
+      if (typeof tjUpdateAuthState === 'function') tjUpdateAuthState();
       const btn = document.getElementById('connect-btn');
       const dot = document.getElementById('status-dot');
       const lbl = document.getElementById('connect-label');
@@ -21477,6 +21275,10 @@
     }
 
     async function tjLoad() {
+      // Sync the "+ New Trade" button's disabled state to the current Schwab
+      // token state every time the page opens or reloads — handles the case
+      // where the page is opened before/after a login/logout event.
+      if (typeof tjUpdateAuthState === 'function') tjUpdateAuthState();
       try {
         const [mRes, bRes] = await Promise.all([
           fetch('/api/trade-journal'),
@@ -22626,8 +22428,25 @@ Win rate: ${wr}%`;
 
     let tjNewType = 'stock';
     function tjOpenNewTradeModal() {
+      // Defensive: the button gating below disables this CTA when there's no
+      // active Schwab token, but if it's invoked anyway (keyboard, dev tools,
+      // race during logout) we still bail rather than open a half-broken form.
+      if (typeof isConnected !== 'undefined' && !isConnected) return;
       tjNewType = 'stock';
       tjOpenModal('New Trade', tjRenderNewTradeForm());
+    }
+
+    // Reflect Schwab-connection state on the New Trade button. Called from
+    // setConnected() whenever the token status changes (login, callback,
+    // logout, refresh failure) and from tjLoad() when the page is opened.
+    function tjUpdateAuthState() {
+      const btn = document.getElementById('tj-new-trade-btn');
+      if (!btn) return;
+      const connected = (typeof isConnected !== 'undefined') && isConnected;
+      btn.disabled = !connected;
+      btn.title = connected
+        ? 'Log a new manual trade'
+        : 'Connect Schwab to log new trades';
     }
     function tjSwitchNewType(type) {
       tjNewType = type;
