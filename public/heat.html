@@ -9308,13 +9308,17 @@
               </div>
             </div>
 
-            <!-- ============ REMINDERS + TRADE ENTRY (always visible) ============ -->
-            <div id="ov-trade-journal-card" class="cl-card">
-              <div class="cl-header">
-                <span class="card-title">📓 Trading Discipline &amp; Trade Journal</span>
-                <span class="cl-header-sub">Reminders + entry log</span>
+            <!-- ============ REMINDERS (collapsible, default collapsed) ============ -->
+            <div id="ov-trade-journal-card" class="cl-card cl-collapsible">
+              <div class="cl-header cl-clickable" onclick="clToggleCollapse('reminders')">
+                <div class="cl-header-left">
+                  <span class="cl-chevron" data-cl-chevron="reminders">▶</span>
+                  <span class="card-title">📓 Trading Discipline Reminders</span>
+                </div>
+                <span class="cl-header-sub">Fail-safe, exits, mindset</span>
               </div>
 
+              <div class="cl-collapse-body" id="cl-body-reminders" hidden>
               <div class="cl-reminders">
                 <div class="cl-reminder">
                   <div class="cl-rem-title">🛡️ Fail-Safe Rule</div>
@@ -9349,67 +9353,8 @@
                   </div>
                 </div>
               </div>
+              </div><!-- /.cl-collapse-body -->
 
-              <div class="cl-divider"></div>
-
-              <div class="cl-trade-entry">
-                <div class="cl-te-header">
-                  <span class="cl-te-title">📝 Trade Entry Journal</span>
-                  <button type="button" class="cl-te-new" onclick="clShowEntryForm()">+ New Entry</button>
-                </div>
-
-                <form id="cl-entry-form" class="cl-te-form" hidden onsubmit="clSaveEntry(event)">
-                  <div class="cl-te-grid">
-                    <label class="cl-te-field">
-                      <span>Date</span>
-                      <input type="date" name="date" required/>
-                    </label>
-                    <label class="cl-te-field">
-                      <span>SPY Level</span>
-                      <input type="number" step="0.01" name="spy_level" placeholder="e.g. 593.45"/>
-                    </label>
-                    <label class="cl-te-field">
-                      <span>VIX Level</span>
-                      <input type="number" step="0.01" name="vix_level" placeholder="e.g. 22.4"/>
-                    </label>
-                    <label class="cl-te-field">
-                      <span>Capital Deployed ($)</span>
-                      <input type="number" step="any" name="capital_deployed" placeholder="e.g. 5000"/>
-                    </label>
-                  </div>
-
-                  <div class="cl-te-grid cl-te-grid-2">
-                    <div class="cl-te-field">
-                      <span>Direction</span>
-                      <div class="cl-dir-toggle" id="cl-dir-toggle">
-                        <button type="button" class="cl-dir-btn selected" data-dir="long">Long</button>
-                        <button type="button" class="cl-dir-btn" data-dir="short">Short</button>
-                      </div>
-                      <input type="hidden" name="direction" value="long"/>
-                    </div>
-                    <label class="cl-te-field cl-te-notes-field">
-                      <span>Notes</span>
-                      <textarea name="notes" rows="2" placeholder="Setup, sizing rationale, exit plan…"></textarea>
-                    </label>
-                  </div>
-
-                  <div class="cl-te-triggers">
-                    <span class="cl-te-trig-label">Triggers Met:</span>
-                    <label class="cl-trig-chip"><input type="checkbox" name="t-price"/><span>Price</span></label>
-                    <label class="cl-trig-chip"><input type="checkbox" name="t-vol"/><span>Volatility</span></label>
-                    <label class="cl-trig-chip"><input type="checkbox" name="t-sent"/><span>Sentiment</span></label>
-                  </div>
-                  <div class="cl-te-actions">
-                    <span class="cl-te-msg" id="cl-te-msg"></span>
-                    <button type="button" class="cl-te-cancel" onclick="clHideEntryForm()">Cancel</button>
-                    <button type="submit" class="cl-te-save">Save Entry</button>
-                  </div>
-                </form>
-
-                <div class="cl-te-list" id="cl-te-list">
-                  <div class="cl-te-empty">No saved trade entries yet. Click <strong>+ New Entry</strong> to log one.</div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -20856,9 +20801,14 @@
     // we don't persist the open state. Within a session the user can expand
     // either card by clicking its header; the next reload re-collapses both.
     window.clToggleCollapse = function (which) {
-      const card = which === 'short'
-        ? document.getElementById('ov-checklist-card-short')
-        : document.getElementById('ov-checklist-card');
+      // Maps the human-readable key in the onclick attribute to the actual
+      // card element id. Add new collapsible cards here.
+      const CARDS = {
+        long:      'ov-checklist-card',
+        short:     'ov-checklist-card-short',
+        reminders: 'ov-trade-journal-card'
+      };
+      const card = document.getElementById(CARDS[which] || which);
       if (!card) return;
       const body = card.querySelector('.cl-collapse-body');
       if (!body) return;
