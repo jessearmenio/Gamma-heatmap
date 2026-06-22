@@ -5957,6 +5957,54 @@
       cursor: pointer;
     }
 
+    .etf-rrg-fs-btn {
+      background: #0d1016;
+      color: var(--text1);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+    .etf-rrg-fs-btn:hover { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
+
+    /* Full-page overlay state for the RRG card. The card stays in normal
+       flow when not active; toggling .rrg-fullscreen lifts it out of the
+       layout, fills the viewport, and pushes the rest of the page behind
+       it. The SVG wrap is re-sized to consume all available vertical room
+       (the chart is square, so height is the bottleneck on wide screens). */
+    #etf-rrg-card.rrg-fullscreen {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      margin: 0;
+      border-radius: 0;
+      background: var(--panel);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #etf-rrg-card.rrg-fullscreen .card-body {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      padding: 14px;
+    }
+    /* Override the constrained 75%/900px width so the chart fills the
+       overlay. min(95vh, 95vw) keeps it square + offers margin. */
+    #etf-rrg-card.rrg-fullscreen #etf-rrg-wrap {
+      width: min(95vh, 95vw);
+      max-width: 95vw;
+      aspect-ratio: 1 / 1;
+    }
+    /* While in fullscreen, prevent the body from scrolling underneath the overlay. */
+    body.rrg-fs-lock { overflow: hidden; }
+
     /* Timeline slider */
     .etf-rrg-timeline {
       padding: 8px 14px 10px;
@@ -10012,6 +10060,7 @@
                     <option value="weekly">Weekly</option>
                   </select>
                 </label>
+                <button id="etf-rrg-fs-btn" class="etf-rrg-fs-btn" type="button" onclick="etfRrgToggleFullscreen()" title="Toggle full-page view (Esc to exit)">⛶ Full screen</button>
               </div>
             </div>
 
@@ -18418,6 +18467,36 @@
       });
 
       svg.innerHTML = parts.join('');
+    }
+
+    // Toggle the RRG card between inline and full-page overlay. The slider,
+    // tail-length selector, basis selector, and the SVG itself all remain in
+    // place — only the card's positioning changes, so all existing scrub /
+    // hover / re-render behavior keeps working. Escape exits the overlay.
+    function etfRrgToggleFullscreen(force) {
+      const card = document.getElementById('etf-rrg-card');
+      if (!card) return;
+      const next = (force !== undefined) ? !!force : !card.classList.contains('rrg-fullscreen');
+      card.classList.toggle('rrg-fullscreen', next);
+      document.body.classList.toggle('rrg-fs-lock', next);
+      const btn = document.getElementById('etf-rrg-fs-btn');
+      if (btn) btn.textContent = next ? '✕ Exit full screen' : '⛶ Full screen';
+      // The SVG sizes itself off measured wrap dimensions; on a layout
+      // change we redraw so the chart fills the new viewport area.
+      if (typeof etfRrgRedraw === 'function') {
+        requestAnimationFrame(etfRrgRedraw);
+      }
+    }
+    // Bound once at module load — exits fullscreen on Escape.
+    if (!window._etfRrgEscBound) {
+      window._etfRrgEscBound = true;
+      document.addEventListener('keydown', (ev) => {
+        if (ev.key !== 'Escape') return;
+        const card = document.getElementById('etf-rrg-card');
+        if (card && card.classList.contains('rrg-fullscreen')) {
+          etfRrgToggleFullscreen(false);
+        }
+      });
     }
 
     function etfRrgRedraw() {
