@@ -8100,6 +8100,42 @@
     .tj-bar-row .tj-bar-value.neg { color: var(--red); }
     .tj-bar-empty { color: var(--text3); font-size: 11px; padding: 10px; text-align: center; }
 
+    .tj-dash-filters {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+    }
+    .tj-dash-filters-inputs {
+      display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+    }
+    .tj-dash-flt-field {
+      display: flex; flex-direction: column; gap: 4px;
+      font-size: 9px; color: var(--text3); letter-spacing: .06em;
+      text-transform: uppercase; font-weight: 600;
+    }
+    .tj-dash-flt-field input {
+      background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
+      font-size: 11px; padding: 6px 9px; border-radius: 4px; min-width: 140px;
+    }
+    .tj-dash-flt-field input[type="date"] { color-scheme: dark; }
+    .tj-dash-flt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 0; }
+    .tj-dash-flt-chips:empty { display: none; }
+    .tj-dash-flt-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--accent); color: var(--text4); border-radius: 14px;
+      padding: 3px 10px; font-size: 10px; font-weight: 700; letter-spacing: .03em;
+    }
+    .tj-dash-flt-chip button {
+      background: rgba(9,17,29,.25); border: none; color: var(--text4);
+      width: 14px; height: 14px; border-radius: 50%; cursor: pointer;
+      font-size: 9px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      padding: 0;
+    }
+    .tj-dash-flt-chip button:hover { background: rgba(9,17,29,.5); }
+    /* Click-to-filter affordances on charts */
+    canvas#tj-dow-canvas, canvas#tj-hod-canvas, canvas#tj-monthly-canvas { cursor: pointer; }
+    .tj-bar-row { cursor: pointer; transition: background .12s; border-radius: 4px; }
+    .tj-bar-row:hover { background: rgba(255,255,255,0.04); }
+
     .tj-history-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
     .tj-history-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap: wrap; }
     .tj-history-title { font-size: 13px; font-weight: 800; letter-spacing:.04em; }
@@ -10526,6 +10562,30 @@
               <button class="tj-btn tj-btn-ghost" onclick="tjShowImportWarnings()" id="tj-warnings-btn" style="display:none;">⚠ <span id="tj-warnings-count">0</span></button>
               <button id="tj-new-trade-btn" class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New Trade</button>
             </div>
+          </div>
+
+          <!-- Dashboard filter bar: manual inputs (ticker + date range) plus
+               click-driven cross-filters from the charts below. Every render
+               function (KPIs, charts, by-ticker, by-setup, history) flows
+               through tjFilteredTrades() so any active filter immediately
+               narrows everything on the page. -->
+          <div class="tj-dash-filters">
+            <div class="tj-dash-filters-inputs">
+              <label class="tj-dash-flt-field">
+                <span>Ticker</span>
+                <input id="tj-dash-flt-ticker" type="text" placeholder="e.g. SPY" oninput="tjSetDashFilter('ticker', this.value)">
+              </label>
+              <label class="tj-dash-flt-field">
+                <span>From</span>
+                <input id="tj-dash-flt-from" type="date" onchange="tjSetDashFilter('dateFrom', this.value)">
+              </label>
+              <label class="tj-dash-flt-field">
+                <span>To</span>
+                <input id="tj-dash-flt-to" type="date" onchange="tjSetDashFilter('dateTo', this.value)">
+              </label>
+              <button class="tj-btn tj-btn-ghost" onclick="tjClearAllDashFilters()" title="Clear every active dashboard filter">Clear all</button>
+            </div>
+            <div class="tj-dash-flt-chips" id="tj-dash-flt-chips"></div>
           </div>
 
           <!-- KPI cards -->
@@ -21272,6 +21332,141 @@
       return [...tjTrades, ...tjBroker.map(tjProjectBroker)];
     }
 
+    // ── Dashboard cross-filtering ──────────────────────────────────────
+    // A single source of truth for what's "visible" across the entire
+    // Trade Journal dashboard. Every renderer (KPIs, charts, by-ticker,
+    // by-setup, history) routes through tjFilteredTrades() so any active
+    // filter immediately narrows everything at once.
+    //
+    // Filter shape:
+    //   ticker     — case-insensitive substring match on Ticker
+    //   dateFrom   — YYYY-MM-DD lower bound on EntryDate (inclusive)
+    //   dateTo     — YYYY-MM-DD upper bound on EntryDate (inclusive)
+    //   dow        — 0..6 (Sun..Sat) of trade's EntryDate
+    //   hour       — 0..23 of EntryTime
+    //   month      — YYYY-MM of CloseDate (Monthly P/L only counts closed trades)
+    //   setup      — exact match on SetupType (case-insensitive)
+    //
+    // Manual fields are set by the input listeners; chart-click filters are
+    // set by the click handlers added to each visualization. All filters
+    // are AND'd. Each is one-shot per dimension; clicking a different month
+    // replaces the existing `month` filter rather than stacking.
+    let tjDashFilters = {
+      ticker:   '',
+      dateFrom: '',
+      dateTo:   '',
+      dow:      null,
+      hour:     null,
+      month:    '',
+      setup:    ''
+    };
+
+    function tjDateOnly(s) {
+      return s ? String(s).slice(0, 10) : '';
+    }
+    function tjDowOf(dateStr) {
+      const m = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (!m) return null;
+      return new Date(+m[1], +m[2] - 1, +m[3]).getDay();
+    }
+    function tjHourOf(timeStr) {
+      const m = String(timeStr || '').match(/^(\d{1,2}):/);
+      return m ? Number(m[1]) : null;
+    }
+    function tjMatchesFilters(t) {
+      const f = tjDashFilters;
+      if (f.ticker) {
+        const needle = f.ticker.trim().toLowerCase();
+        if (needle && !(t.Ticker || '').toLowerCase().includes(needle)) return false;
+      }
+      const d = tjDateOnly(t.EntryDate);
+      if (f.dateFrom && d && d < f.dateFrom) return false;
+      if (f.dateTo   && d && d > f.dateTo)   return false;
+      if (f.dow != null && tjDowOf(t.EntryDate) !== f.dow) return false;
+      if (f.hour != null) {
+        const h = tjHourOf(t.EntryTime);
+        if (h !== f.hour) return false;
+      }
+      if (f.month) {
+        const cd = tjDateOnly(t.CloseDate);
+        if (!cd || !cd.startsWith(f.month)) return false;
+      }
+      if (f.setup) {
+        const want = f.setup.toLowerCase();
+        if ((t.SetupType || 'Unspecified').toLowerCase() !== want) return false;
+      }
+      return true;
+    }
+    function tjFilteredTrades() {
+      return tjAllTrades().filter(tjMatchesFilters);
+    }
+    function tjHasAnyDashFilter() {
+      const f = tjDashFilters;
+      return !!(f.ticker || f.dateFrom || f.dateTo || f.dow != null || f.hour != null || f.month || f.setup);
+    }
+
+    // Filter mutation helpers — used by input listeners and chart-click
+    // handlers. Always re-renders the dashboard so the page reflects state
+    // immediately.
+    function tjSetDashFilter(key, value) {
+      // Coerce to canonical form: empty string for blanks, null for unset
+      // numeric keys (dow/hour). This keeps tjMatchesFilters simple.
+      if (key === 'dow' || key === 'hour') {
+        tjDashFilters[key] = (value === '' || value == null) ? null : Number(value);
+      } else {
+        tjDashFilters[key] = value == null ? '' : String(value);
+      }
+      tjRenderAll();
+    }
+    function tjClearDashFilter(key) {
+      if (key === 'dow' || key === 'hour') tjDashFilters[key] = null;
+      else tjDashFilters[key] = '';
+      // Mirror back to the input element when applicable.
+      const inputId = {
+        ticker:   'tj-dash-flt-ticker',
+        dateFrom: 'tj-dash-flt-from',
+        dateTo:   'tj-dash-flt-to'
+      }[key];
+      if (inputId) {
+        const el = document.getElementById(inputId);
+        if (el) el.value = '';
+      }
+      tjRenderAll();
+    }
+    function tjClearAllDashFilters() {
+      tjDashFilters = { ticker: '', dateFrom: '', dateTo: '', dow: null, hour: null, month: '', setup: '' };
+      ['tj-dash-flt-ticker', 'tj-dash-flt-from', 'tj-dash-flt-to'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      tjRenderAll();
+    }
+
+    // Render the chip row showing every active filter with an ✕ to clear it.
+    const TJ_DOW_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    function tjFormatHour12(h) {
+      const period = h < 12 ? 'a' : 'p';
+      const h12 = h === 0 ? 12 : (h > 12 ? h - 12 : h);
+      return `${h12}${period}`;
+    }
+    function tjRenderFilterChips() {
+      const wrap = document.getElementById('tj-dash-flt-chips');
+      if (!wrap) return;
+      const chips = [];
+      const f = tjDashFilters;
+      const add = (label, key) => chips.push(
+        `<span class="tj-dash-flt-chip">${label}<button onclick="tjClearDashFilter('${key}')" title="Remove this filter">✕</button></span>`
+      );
+      if (f.ticker)                add(`Ticker: ${f.ticker.toUpperCase()}`, 'ticker');
+      if (f.dateFrom)              add(`From: ${f.dateFrom}`,               'dateFrom');
+      if (f.dateTo)                add(`To: ${f.dateTo}`,                   'dateTo');
+      if (f.dow != null)           add(`Day: ${TJ_DOW_NAMES[f.dow]}`,       'dow');
+      if (f.hour != null)          add(`Hour: ${tjFormatHour12(f.hour)}`,   'hour');
+      if (f.month)                 add(`Month: ${f.month}`,                 'month');
+      if (f.setup)                 add(`Setup: ${f.setup}`,                 'setup');
+      wrap.innerHTML = chips.join('');
+    }
+
     function tjFmtMoney(v) {
       const n = Number(v);
       if (!Number.isFinite(n)) return '--';
@@ -21452,13 +21647,14 @@
     }
 
     function tjRenderAll() {
+      tjRenderFilterChips();
       tjRenderKpis();
       tjRenderCharts();
       tjRenderHistory();
     }
 
     function tjRenderKpis() {
-      const all = tjAllTrades();
+      const all = tjFilteredTrades();
       const closed = all.filter(t => t.Status === 'closed');
       const open = all.filter(t => t.Status !== 'closed');
       const wins = closed.filter(t => Number(t.RealizedPL) > 0);
@@ -21602,7 +21798,7 @@
       hm.innerHTML = '';
 
       const dayMap = {};
-      for (const t of tjAllTrades()) {
+      for (const t of tjFilteredTrades()) {
         const d = t.EntryDate;
         if (!d || !String(d).startsWith(String(tjHmYear))) continue;
         const key = String(d).slice(0, 10);
@@ -21655,12 +21851,12 @@
       // Footer + meta
       const activeDays = Object.keys(dayMap).length;
       const totalTrades = Object.values(dayMap).reduce((s, v) => s + v.trades, 0);
-      const tickerSet = new Set(tjAllTrades().filter(t => t.Ticker).map(t => t.Ticker));
+      const tickerSet = new Set(tjFilteredTrades().filter(t => t.Ticker).map(t => t.Ticker));
       const footer = document.getElementById('tj-hm-act-footer');
       const meta   = document.getElementById('tj-hm-act-meta');
       const sub    = document.getElementById('tj-hm-act-sub');
-      if (sub)    sub.textContent    = `${tjHmYear} YTD · ${tjAllTrades().length ? 'manual + broker imports' : 'add or import trades to begin'}`;
-      if (footer) footer.innerHTML   = tjAllTrades().length ? `<strong>${totalTrades}</strong> trades across <strong>${activeDays}</strong> active days` : 'No trades yet';
+      if (sub)    sub.textContent    = `${tjHmYear} YTD · ${tjFilteredTrades().length ? 'manual + broker imports' : 'add or import trades to begin'}`;
+      if (footer) footer.innerHTML   = tjFilteredTrades().length ? `<strong>${totalTrades}</strong> trades across <strong>${activeDays}</strong> active days` : 'No trades yet';
       if (meta)   meta.innerHTML     = tickerSet.size ? `<strong>${activeDays}</strong> active days &nbsp;·&nbsp; <strong>${tickerSet.size}</strong> tickers` : '';
     }
 
@@ -21673,7 +21869,7 @@
       hm.innerHTML = '';
 
       const pnlMap = {};
-      for (const t of tjAllTrades()) {
+      for (const t of tjFilteredTrades()) {
         if (t.Status !== 'closed' || !t.CloseDate) continue;
         const key = String(t.CloseDate).slice(0, 10);
         if (!key.startsWith(String(tjHmYear))) continue;
@@ -21920,7 +22116,7 @@
         ctx.fillText(b.label, cx, padT + innerH + 4);
       });
 
-      // Hover handling — attach once, refresh hit map each draw.
+      // Hover + click handling — attach once, refresh hit map each draw.
       canvas._tjBarHits = barHits;
       if (!canvas._tjBound) {
         canvas._tjBound = true;
@@ -21938,6 +22134,7 @@
             <div>Total trades: <strong>${b.total}</strong></div>
             <div><span class="pos">▲ ${b.wins} wins</span> · <span class="neg">▼ ${b.losses} losses</span></div>
             ${open ? `<div style="color:var(--text3);">Open: ${open}</div>` : ''}
+            <div style="margin-top:4px;color:var(--text3);font-size:9px;">click to filter</div>
           `;
           tip.style.display = 'block';
           const tx = Math.min(rect.width - 140, Math.max(0, hit.x + hit.w + 4));
@@ -21946,13 +22143,28 @@
           tip.style.top = ty + 'px';
         });
         canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+        canvas.addEventListener('click', (ev) => {
+          const r = canvas.getBoundingClientRect();
+          const mx = ev.clientX - r.left, my = ev.clientY - r.top;
+          const hit = (canvas._tjBarHits || []).find(h =>
+            mx >= h.x - 2 && mx <= h.x + h.w + 2 && my >= h.y - 6 && my <= padT + innerH + 6);
+          if (!hit) return;
+          const b = (canvas._tjBucketSrc || [])[hit.idx];
+          // Each bucket can carry a `filterKey` + `filterValue` pair telling
+          // the dashboard cross-filter which dimension to set. Bail silently
+          // if the bucket has no payload (e.g. a chart that opted out of
+          // click-to-filter).
+          if (b && b.filterKey != null && b.filterValue !== undefined) {
+            tjSetDashFilter(b.filterKey, b.filterValue);
+          }
+        });
       }
       canvas._tjBucketSrc = buckets;
     }
 
     function tjDrawDow() {
       const labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const buckets = tjBucket(tjAllTrades(), t => {
+      const buckets = tjBucket(tjFilteredTrades(), t => {
         if (!t.EntryDate) return null;
         // Treat the date string as a local-time date to avoid TZ surprises
         // shifting Tuesday-evening entries into Wednesday.
@@ -21961,6 +22173,8 @@
         const d = new Date(+m[1], +m[2] - 1, +m[3]);
         return d.getDay();
       }, 7, labels);
+      // Tag each bucket so the click handler can dispatch dow filters.
+      buckets.forEach((b, i) => { b.filterKey = 'dow'; b.filterValue = i; });
       tjDrawStackedBars('tj-dow-canvas', 'tj-dow-tip', buckets, tjDowMode);
     }
 
@@ -21974,7 +22188,7 @@
     function tjDrawHod() {
       // 24 one-hour buckets, labelled every 3 hours for readability.
       const labels = Array.from({ length: 24 }, (_, h) => (h % 3 === 0) ? tjHour12Label(h) : '');
-      const buckets = tjBucket(tjAllTrades(), t => {
+      const buckets = tjBucket(tjFilteredTrades(), t => {
         if (!t.EntryTime) return null;
         const m = String(t.EntryTime).match(/^(\d{1,2}):/);
         if (!m) return null;
@@ -21993,15 +22207,24 @@
         last = Math.min(buckets.length - 1, last + 1);
         display = buckets.slice(first, last + 1).map((b, i) => {
           const h = first + i;
-          // Keep the hour stored for the tooltip even when the axis label is blanked.
+          // Keep the hour stored for the tooltip even when the axis label is
+          // blanked. filterKey/filterValue let the click handler dispatch
+          // an `hour` filter using the true 0-23 index, not the slice index.
           return {
             ...b,
             label: (h % 2 === 0) ? tjHour12Label(h) : '',
-            tipLabel: tjHour12Label(h)
+            tipLabel: tjHour12Label(h),
+            filterKey: 'hour',
+            filterValue: h
           };
         });
       } else {
-        display = buckets.map((b, h) => ({ ...b, tipLabel: tjHour12Label(h) }));
+        display = buckets.map((b, h) => ({
+          ...b,
+          tipLabel: tjHour12Label(h),
+          filterKey: 'hour',
+          filterValue: h
+        }));
       }
       tjDrawStackedBars('tj-hod-canvas', 'tj-hod-tip', display, tjHodMode);
     }
@@ -22051,7 +22274,7 @@
       if (!canvas) return;
       const { ctx, w, h } = tjPrepCanvas(canvas);
       ctx.clearRect(0, 0, w, h);
-      const closed = tjAllTrades().filter(t => t.Status === 'closed' && t.CloseDate)
+      const closed = tjFilteredTrades().filter(t => t.Status === 'closed' && t.CloseDate)
         .sort((a, b) => new Date(a.CloseDate) - new Date(b.CloseDate));
       if (!closed.length) {
         ctx.fillStyle = '#71829d'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
@@ -22126,7 +22349,7 @@
       // Per-month aggregates also track trade counts + win/loss split so the
       // tooltip can show what's behind each bar, not just the dollar total.
       const months = {};
-      tjAllTrades().filter(t => t.Status === 'closed' && t.CloseDate).forEach(t => {
+      tjFilteredTrades().filter(t => t.Status === 'closed' && t.CloseDate).forEach(t => {
         const k = String(t.CloseDate).slice(0, 7);
         const pl = Number(t.RealizedPL) || 0;
         if (!months[k]) months[k] = { pl: 0, count: 0, wins: 0, losses: 0 };
@@ -22179,9 +22402,27 @@
             <div>P/L: <span class="${cls}">${tjFmtMoneySigned(m.pl)}</span></div>
             <div>Trades: <strong>${m.count}</strong></div>
             <div><span class="pos">▲ ${m.wins}</span> · <span class="neg">▼ ${m.losses}</span></div>
+            <div style="margin-top:4px;color:var(--text3);font-size:9px;">click to filter</div>
           `;
         }
       );
+
+      // Click → set dashboard `month` filter to the clicked YYYY-MM. Uses the
+      // same hit array as the hover so the click target matches the tooltip's
+      // hit zone exactly. Bound once per canvas instance to avoid stacking.
+      if (!canvas._tjMonthClickBound) {
+        canvas._tjMonthClickBound = true;
+        canvas.addEventListener('click', (ev) => {
+          const r = canvas.getBoundingClientRect();
+          const mx = ev.clientX - r.left, my = ev.clientY - r.top;
+          const region = canvas._tjMonthHits;
+          if (!region) return;
+          if (my < region.padT || my > region.padT + region.innerH + 6) return;
+          const hit = region.hits.find(hh => mx >= hh.x - 2 && mx <= hh.x + hh.w + 2);
+          if (hit) tjSetDashFilter('month', hit.key);
+        });
+      }
+      canvas._tjMonthHits = { hits, padT, innerH };
     }
 
     function tjDrawWinLossPie() {
@@ -22189,7 +22430,7 @@
       if (!canvas) return;
       const { ctx, w, h } = tjPrepCanvas(canvas);
       ctx.clearRect(0, 0, w, h);
-      const closed = tjAllTrades().filter(t => t.Status === 'closed');
+      const closed = tjFilteredTrades().filter(t => t.Status === 'closed');
       const winTrades = closed.filter(t => Number(t.RealizedPL) > 0);
       const lossTrades = closed.filter(t => Number(t.RealizedPL) < 0);
       const wins = winTrades.length, losses = lossTrades.length, total = wins + losses;
@@ -22252,7 +22493,9 @@
 
     // `groups` is { key: { pl, count, wins, losses } } so each row's title
     // attribute gets a rich breakdown for instant hover info.
-    function tjGroupedBar(containerId, groups) {
+    // `filterKey` (e.g. 'ticker' or 'setup') wires each row's click into the
+    // dashboard cross-filter; omit it for non-interactive lists.
+    function tjGroupedBar(containerId, groups, filterKey) {
       const wrap = document.getElementById(containerId);
       if (!wrap) return;
       const entries = Object.entries(groups);
@@ -22263,12 +22506,12 @@
         const pct = (Math.abs(g.pl) / max) * 100;
         const cls = g.pl >= 0 ? 'pos' : 'neg';
         const wr = (g.wins + g.losses) ? Math.round((g.wins / (g.wins + g.losses)) * 100) : 0;
-        const title = `${k}
-P/L: ${tjFmtMoneySigned(g.pl)}
-Trades: ${g.count}
-Wins: ${g.wins}   Losses: ${g.losses}
-Win rate: ${wr}%`;
-        return `<div class="tj-bar-row" title="${title.replace(/"/g, '&quot;')}">
+        const title = `${k}\nP/L: ${tjFmtMoneySigned(g.pl)}\nTrades: ${g.count}\nWins: ${g.wins}   Losses: ${g.losses}\nWin rate: ${wr}%${filterKey ? '\n(click to filter)' : ''}`;
+        const safeKey = String(k).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const onclick = filterKey
+          ? ` onclick="tjSetDashFilter('${filterKey}', '${safeKey}')"`
+          : '';
+        return `<div class="tj-bar-row" title="${title.replace(/"/g, '&quot;')}"${onclick}>
           <div class="tj-bar-label">${k}</div>
           <div class="tj-bar-track"><div class="tj-bar-fill ${cls}" style="width:${pct}%;"></div></div>
           <div class="tj-bar-value ${cls}">${tjFmtMoneySigned(g.pl)}</div>
@@ -22278,7 +22521,7 @@ Win rate: ${wr}%`;
 
     function tjAggregateBy(keyFn) {
       const groups = {};
-      tjAllTrades().filter(t => t.Status === 'closed').forEach(t => {
+      tjFilteredTrades().filter(t => t.Status === 'closed').forEach(t => {
         const k = keyFn(t);
         const pl = Number(t.RealizedPL) || 0;
         if (!groups[k]) groups[k] = { pl: 0, count: 0, wins: 0, losses: 0 };
@@ -22289,17 +22532,21 @@ Win rate: ${wr}%`;
       });
       return groups;
     }
-    function tjRenderByTicker() { tjGroupedBar('tj-bytkr', tjAggregateBy(t => t.Ticker || '—')); }
-    function tjRenderBySetup()  { tjGroupedBar('tj-bysetup', tjAggregateBy(t => t.SetupType || 'Unspecified')); }
+    function tjRenderByTicker() { tjGroupedBar('tj-bytkr', tjAggregateBy(t => t.Ticker || '—'), 'ticker'); }
+    function tjRenderBySetup()  { tjGroupedBar('tj-bysetup', tjAggregateBy(t => t.SetupType || 'Unspecified'), 'setup'); }
 
-    function tjFilteredTrades() {
+    // History-table filter — chains on top of the dashboard's tjFilteredTrades.
+    // History filters (status / type / win-loss / ticker / dates) are AND'd
+    // with whatever dashboard filters are currently active. Renamed from
+    // tjFilteredTrades to avoid collision with the dashboard-level helper.
+    function tjFilteredHistoryRows() {
       const status = document.getElementById('tj-f-status')?.value || 'all';
       const type = document.getElementById('tj-f-type')?.value || 'all';
       const result = document.getElementById('tj-f-result')?.value || 'all';
       const ticker = (document.getElementById('tj-f-ticker')?.value || '').trim().toUpperCase();
       const from = document.getElementById('tj-f-from')?.value || '';
       const to = document.getElementById('tj-f-to')?.value || '';
-      return tjAllTrades().filter(t => {
+      return tjFilteredTrades().filter(t => {
         if (status !== 'all' && (t.Status || 'open') !== status) return false;
         if (type !== 'all' && t.TradeType !== type) return false;
         if (result === 'win' && !(Number(t.RealizedPL) > 0)) return false;
@@ -22315,7 +22562,7 @@ Win rate: ${wr}%`;
       const tbody = document.getElementById('tj-tbody');
       const empty = document.getElementById('tj-empty');
       if (!tbody) return;
-      let rows = tjFilteredTrades();
+      let rows = tjFilteredHistoryRows();
       const { key, dir } = tjSort;
       rows = [...rows].sort((a, b) => {
         const av = a[key] ?? 0, bv = b[key] ?? 0;
