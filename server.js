@@ -1535,12 +1535,40 @@ function buildHeatFromChain(chain, extraRows = []) {
   const strongestNegativeGex =
     [...strikes].sort((a, b) => a.netGex - b.netGex)[0] || null;
 
-  const allCells = matrix.flatMap((row) => row.cells);
-  const kingCell =
-    [...allCells].sort((a, b) => Math.abs(b.netGex) - Math.abs(a.netGex))[0] || null;
+  // King GEX — strike with the largest *absolute gamma* across all
+  // expirations, per SpotGamma's definition. Absolute gamma at a strike
+  // is the SUM of magnitudes from both sides:
+  //
+  //   absGamma(K) = |callGex(K)| + |putGex(K)|
+  //
+  // (Puts are modeled as negative gamma; we add the magnitudes so a strike
+  // where calls and puts offset each other still surfaces if total
+  // positioning is large.) The previous implementation picked the single
+  // strike-×-expiration cell with max |netGex|, which produced the wrong
+  // answer at strikes where call and put gamma cancel — e.g. a strike with
+  // -$42K total but -$5K per-cell would lose to a 367.5 strike with -$39K
+  // total but -$37K concentrated in a single 0DTE cell. Using strike-level
+  // total positioning matches the user-visible "NET GEX" column in the heat
+  // map and is the canonical King definition.
+  const kingStrike =
+    [...strikes].sort((a, b) =>
+      (Math.abs(b.callGex) + Math.abs(b.putGex)) -
+      (Math.abs(a.callGex) + Math.abs(a.putGex))
+    )[0] || null;
 
-  const kingStrike = kingCell
-    ? strikes.find((row) => row.strike === kingCell.strike) || null
+  // kingCell = the single expiration cell *within* the king strike that
+  // carries the most absolute gamma on its own. The ★ marker in the heat
+  // map uses this to highlight which expiration drives the strike most.
+  // Picked by per-cell |callGex|+|putGex| so the same "absolute gamma"
+  // lens is applied at the cell level.
+  const kingRow = kingStrike
+    ? matrix.find((row) => row.strike === kingStrike.strike) || null
+    : null;
+  const kingCell = kingRow
+    ? [...kingRow.cells].sort((a, b) =>
+        (Math.abs(b.callGex) + Math.abs(b.putGex)) -
+        (Math.abs(a.callGex) + Math.abs(a.putGex))
+      )[0] || null
     : null;
 
   // ── Expected move (1D / 1W) ─────────────────────────────────────────
