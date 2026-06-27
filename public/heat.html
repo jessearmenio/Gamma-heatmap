@@ -15125,6 +15125,7 @@
     let lwcCandles = null;  // candlestick series ref (for resize)
     let lwcCandleSeries = null; // ref for price→coordinate lookups
     let ovGammaData = [];   // [{strike, netGex}] for gamma bar overlay
+    let ovKingStrike = null; // server-computed king strike for the gold bar
 
     // EMA helper
     function calcEMA(closes, period) {
@@ -15657,11 +15658,16 @@
       const MAX_BAR = 240;
       const maxAbsGex = Math.max(...ovGammaData.map(d => Math.abs(d.netGex)), 1);
 
-      // Find the king node — strike with the highest absolute GEX
-      let kingStrike = null;
-      let kingAbsGex = 0;
-      for (const { strike, netGex } of ovGammaData) {
-        if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
+      // King strike — prefer the server-computed value (absolute-gamma
+      // definition: |callGex|+|putGex| per strike) so the gold bar matches
+      // the heatmap's ★ and the KING GEX key-levels pill. Fall back to
+      // local |netGex| only when the server didn't supply one (stale cache).
+      let kingStrike = ovKingStrike;
+      if (kingStrike == null) {
+        let kingAbsGex = 0;
+        for (const { strike, netGex } of ovGammaData) {
+          if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
+        }
       }
 
       ovGammaHitBoxes = [];
@@ -15739,6 +15745,7 @@
     let hsLwcChart = null;
     let hsLwcCandleSeries = null;
     let hsGammaData = [];
+    let hsKingStrike = null;
     // Track call/put/king price lines so we can refresh them whenever a new
     // heat snapshot lands, without piling duplicate lines on the chart.
     let hsKeyLevelLines = [];
@@ -16154,18 +16161,22 @@
       const MAX_BAR = 240;
       const maxAbsGex = Math.max(...hsGammaData.map(d => Math.abs(d.netGex)), 1);
 
-      let kingStrike = null;
-      let kingAbsGex = 0;
-      hsGammaHitBoxes = [];
+      // Use the server-computed king strike (absolute-gamma definition:
+      // |callGex|+|putGex| per strike) so the gold bar matches the heatmap
+      // ★ and the KING GEX key-levels pill. Fall back to local |netGex|
+      // pick only if the server didn't provide one (old cached payload).
+      let kingStrike = hsKingStrike;
+      if (kingStrike == null) {
+        let kingAbsGex = 0;
+        for (const { strike, netGex } of hsGammaData) {
+          if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
+        }
+      }
 
       const sortedGammaStrikes = hsGammaData
         .map(d => Number(d.strike))
         .filter(Number.isFinite)
         .sort((a, b) => a - b);
-
-      for (const { strike, netGex } of hsGammaData) {
-        if (Math.abs(netGex) > kingAbsGex) { kingAbsGex = Math.abs(netGex); kingStrike = strike; }
-      }
 
       hsGammaHitBoxes = [];
 
@@ -16374,7 +16385,7 @@
 
     // Build hsGammaData from the latest heat matrix (same logic as ovGammaData build).
     function hsUpdateGammaFromHeat(heat) {
-      if (!heat || !heat.matrix) { hsGammaData = []; return; }
+      if (!heat || !heat.matrix) { hsGammaData = []; hsKingStrike = null; return; }
       // Aggregate every expiration the heat snapshot contains — the same set
       // used by the table below and by the server-computed Call Wall / Put
       // Wall / King pills. Filtering by DTE here used to silently exclude
@@ -16386,6 +16397,12 @@
         if (rowSum !== 0) strikeMap[row.strike] = (strikeMap[row.strike] || 0) + rowSum;
       });
       hsGammaData = Object.entries(strikeMap).map(([s, g]) => ({ strike: Number(s), netGex: g }));
+      // Store the server-computed king strike (absolute-gamma definition:
+      // |callGex|+|putGex| per strike). Using the server's value here means
+      // the gold gamma bar on the chart matches the heatmap's ★ and the
+      // KING GEX key-levels pill, instead of being recomputed locally with
+      // |netGex| (which picks the wrong strike when call/put gamma offset).
+      hsKingStrike = heat.summary?.kingStrike?.strike ?? null;
       requestAnimationFrame(hsDrawGammaBars);
     }
 
@@ -16911,6 +16928,10 @@
             if (rowSum !== 0) strikeMap[row.strike] = (strikeMap[row.strike] || 0) + rowSum;
           });
           ovGammaData = Object.entries(strikeMap).map(([s, g]) => ({ strike: Number(s), netGex: g }));
+          // Server-computed king (absolute-gamma = |callGex|+|putGex| per
+          // strike) drives the gold gamma bar on the overlay so it matches
+          // the heatmap's ★ and the KING GEX key-levels pill.
+          ovKingStrike = heat.summary?.kingStrike?.strike ?? null;
           // Redraw bars if chart is live
           requestAnimationFrame(drawGammaBars);
         }
