@@ -5672,6 +5672,79 @@
       gap: 12px;
     }
 
+    /* New Mag 7 layout (header + aggregate + SPY-spread + perf table) */
+    #mag7-page { padding: 18px 22px; color: var(--text); }
+    .mag7-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 22px; flex-wrap: wrap; margin-bottom: 14px;
+    }
+    .mag7-title { font-size: 18px; font-weight: 800; letter-spacing: .02em; }
+    .mag7-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+    .mag7-aggregate {
+      display: grid; grid-template-columns: repeat(6, minmax(110px, 1fr));
+      gap: 10px; flex: 1 1 600px;
+    }
+    .mag7-agg-item {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+    }
+    .mag7-agg-label {
+      font-size: 9px; font-weight: 700; color: var(--text3);
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .mag7-agg-value { font-size: 16px; font-weight: 800; margin-top: 4px; }
+    .mag7-agg-value.pos { color: var(--green); }
+    .mag7-agg-value.neg { color: var(--red); }
+    .mag7-spy-row {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+    }
+    .mag7-spy-title {
+      font-size: 10px; font-weight: 700; color: var(--text3);
+      letter-spacing: .04em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .mag7-spy-cells {
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+    }
+    .mag7-spy-cell {
+      display: flex; flex-direction: column; gap: 4px;
+      background: var(--bg3); border-radius: 6px; padding: 10px 12px;
+    }
+    .mag7-spy-label {
+      font-size: 10px; color: var(--text3); font-weight: 700; letter-spacing: .06em;
+    }
+    .mag7-spy-spy {
+      font-size: 12px; color: var(--text2); font-weight: 600;
+    }
+    .mag7-spy-spread {
+      font-size: 14px; font-weight: 800;
+    }
+    .mag7-spy-spread.pos { color: var(--green); }
+    .mag7-spy-spread.neg { color: var(--red); }
+    .mag7-table-wrap {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px; overflow-x: auto;
+    }
+    .mag7-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .mag7-table th {
+      text-align: left; padding: 8px 8px; font-weight: 700;
+      color: var(--text3); letter-spacing: .03em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .mag7-table th.num { text-align: right; }
+    .mag7-table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid rgba(30,34,48,.5);
+    }
+    .mag7-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .mag7-table tr:hover td { background: rgba(255,255,255,0.025); }
+    .mag7-table .sym { font-weight: 800; }
+    .mag7-table .name { color: var(--text3); font-size: 11px; }
+    .mag7-table .pos { color: var(--green); font-weight: 700; }
+    .mag7-table .neg { color: var(--red); font-weight: 700; }
+    .mag7-empty { text-align: center; color: var(--text3); padding: 24px; }
+
     .mag7-card {
       background: var(--bg3);
       border: 1px solid var(--border);
@@ -8507,9 +8580,9 @@
         <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
           <span class="nav-icon">🌊</span><span class="nav-label">Dark Pool</span>
         </li>
-        <!--<li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
+        <li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
           <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
-        </li>-->
+        </li>
         <li class="nav-section-label">Tools</li>
         <li class="nav-item" data-page="trade-journal-page" onclick="navTo(this)">
           <span class="nav-icon">📓</span><span class="nav-label">Trade Journal</span>
@@ -10036,9 +10109,51 @@
            7. MAG 7
       ════════════════════════════════════ -->
         <div id="mag7-page" class="page" style="display:none;">
-          <div class="mag7-grid" id="mag7-grid">
-            <div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">Log in to view Magnificent 7
-              data.</div>
+          <div class="mag7-header">
+            <div>
+              <div class="mag7-title">Magnificent 7</div>
+              <div class="mag7-sub">NVDA · AAPL · MSFT · AMZN · GOOGL · META · TSLA — see how mega caps are pulling the market</div>
+            </div>
+            <div class="mag7-aggregate" id="mag7-aggregate">
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Combined Mkt Cap</div><div class="mag7-agg-value" id="mag7-total-cap">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1D</div><div class="mag7-agg-value" id="mag7-avg-1d">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1W</div><div class="mag7-agg-value" id="mag7-avg-1w">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1M</div><div class="mag7-agg-value" id="mag7-avg-1m">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg YTD</div><div class="mag7-agg-value" id="mag7-avg-ytd">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1Y</div><div class="mag7-agg-value" id="mag7-avg-1y">—</div></div>
+            </div>
+          </div>
+
+          <div class="mag7-spy-row" id="mag7-spy-row">
+            <div class="mag7-spy-title">📈 vs SPY — spread = Mag 7 avg minus SPY (positive = mega caps outperforming the index)</div>
+            <div class="mag7-spy-cells">
+              <div class="mag7-spy-cell"><div class="mag7-spy-label">1D</div><div class="mag7-spy-spy" id="mag7-spy-1d">—</div><div class="mag7-spy-spread" id="mag7-spread-1d">—</div></div>
+              <div class="mag7-spy-cell"><div class="mag7-spy-label">1W</div><div class="mag7-spy-spy" id="mag7-spy-1w">—</div><div class="mag7-spy-spread" id="mag7-spread-1w">—</div></div>
+              <div class="mag7-spy-cell"><div class="mag7-spy-label">1M</div><div class="mag7-spy-spy" id="mag7-spy-1m">—</div><div class="mag7-spy-spread" id="mag7-spread-1m">—</div></div>
+              <div class="mag7-spy-cell"><div class="mag7-spy-label">YTD</div><div class="mag7-spy-spy" id="mag7-spy-ytd">—</div><div class="mag7-spy-spread" id="mag7-spread-ytd">—</div></div>
+              <div class="mag7-spy-cell"><div class="mag7-spy-label">1Y</div><div class="mag7-spy-spy" id="mag7-spy-1y">—</div><div class="mag7-spy-spread" id="mag7-spread-1y">—</div></div>
+            </div>
+          </div>
+
+          <div class="mag7-table-wrap">
+            <table class="mag7-table">
+              <thead>
+                <tr>
+                  <th>Symbol</th>
+                  <th>Name</th>
+                  <th class="num">Price</th>
+                  <th class="num">1D</th>
+                  <th class="num">1W</th>
+                  <th class="num">1M</th>
+                  <th class="num">YTD</th>
+                  <th class="num">1Y</th>
+                  <th class="num">Mkt Cap</th>
+                </tr>
+              </thead>
+              <tbody id="mag7-tbody">
+                <tr><td colspan="9" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -18577,17 +18692,23 @@
     }
 
     function etfRrgRedraw() {
-      // Keep the slider range in sync when the tail length changes so the
-      // user can’t scrub past the start of the available history. Slider is
-      // inverted (right = latest), so preserve the user's *offset* (weeks
-      // back from latest) across a max change rather than the raw value.
+      // Keep the slider range in sync when the tail length changes. Slider
+      // is inverted (right = latest), so preserve the user's *offset*
+      // (weeks back from latest) across a max change rather than the raw
+      // value.
+      //
+      // Slider range was previously `maxLen - tailLen`, which collapsed to 0
+      // when total history was shorter than the requested tail (common for
+      // weekly mode with limited history). Now we always allow scrubbing
+      // through every available sample (`maxLen - 1`); if the user scrubs
+      // far enough back that a full tail can't fit, the renderer naturally
+      // clips the tail to whatever's available at that head position.
       const slider = document.getElementById('etf-rrg-timeframe');
       if (slider && etfRrgState.maxLen) {
         const oldMax = Number(slider.max) || 0;
         const oldVal = Number(slider.value) || 0;
         const offset = Math.max(0, oldMax - oldVal);
-        const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 5));
-        const newMax = Math.max(0, etfRrgState.maxLen - tailLen);
+        const newMax = Math.max(0, etfRrgState.maxLen - 1);
         slider.max = String(newMax);
         const newOffset = Math.min(newMax, offset);
         slider.value = String(newMax - newOffset);
@@ -18865,10 +18986,13 @@
         // Configure the timeline slider so the RIGHT end = head at the most
         // recent week and scrubbing left walks backward (one week per tick).
         // (Offset is computed as `slider.max - slider.value` in renderEtfRrg.)
+        // Range covers every available sample (`maxLen - 1`) so the slider is
+        // still scrubbable when total history is shorter than the requested
+        // tail (common for weekly mode with limited backfill). Renderer
+        // clips the tail to whatever fits at the chosen head position.
         const slider = document.getElementById('etf-rrg-timeframe');
         if (slider) {
-          const tailLen = Math.max(1, Number(document.getElementById('etf-rrg-tails')?.value || 5));
-          const newMax = Math.max(0, etfRrgState.maxLen - tailLen);
+          const newMax = Math.max(0, etfRrgState.maxLen - 1);
           slider.max = String(newMax);
           slider.value = String(newMax);
         }
@@ -18926,45 +19050,196 @@
     // ═══════════════════════════════════════════════════════
     //  MAG 7
     // ═══════════════════════════════════════════════════════
-    const MAG7_SYMBOLS = ['META', 'TSLA', 'AAPL', 'GOOGL', 'AMZN', 'NVDA', 'MSFT'];
+    const MAG7_SYMBOLS = ['NVDA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA'];
     const MAG7_NAMES = { META: 'Meta Platforms', TSLA: 'Tesla', AAPL: 'Apple', GOOGL: 'Alphabet', AMZN: 'Amazon', NVDA: 'NVIDIA', MSFT: 'Microsoft' };
 
+    // % change between today's last close and the close `daysBack` trading
+    // days earlier. `null` if there aren't enough candles for the lookback.
+    function mag7PctBack(candles, daysBack) {
+      if (!Array.isArray(candles) || candles.length < daysBack + 1) return null;
+      const today = candles[candles.length - 1];
+      const past  = candles[candles.length - 1 - daysBack];
+      const t = Number(today?.close), p = Number(past?.close);
+      if (!Number.isFinite(t) || !Number.isFinite(p) || p <= 0) return null;
+      return ((t - p) / p) * 100;
+    }
+    // % change from this year's first trading bar to today.
+    function mag7PctYTD(candles) {
+      if (!Array.isArray(candles) || !candles.length) return null;
+      const today = candles[candles.length - 1];
+      if (!today?.datetime || !Number.isFinite(Number(today?.close))) return null;
+      const yr = new Date(today.datetime).getUTCFullYear();
+      const yearStart = candles.find(c => Number.isFinite(Number(c?.close))
+        && new Date(c.datetime).getUTCFullYear() === yr);
+      if (!yearStart || !Number.isFinite(Number(yearStart.close)) || yearStart.close <= 0) return null;
+      return ((today.close - yearStart.close) / yearStart.close) * 100;
+    }
+    function mag7FmtPct(v) {
+      if (v == null || !Number.isFinite(v)) return '—';
+      return (v >= 0 ? '+' : '') + v.toFixed(2) + '%';
+    }
+    function mag7FmtCap(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n) || n <= 0) return '—';
+      if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
+      if (n >= 1e9)  return '$' + (n / 1e9).toFixed(1)  + 'B';
+      if (n >= 1e6)  return '$' + (n / 1e6).toFixed(1)  + 'M';
+      return '$' + n.toFixed(0);
+    }
+    function mag7ClassFor(v) {
+      if (v == null || !Number.isFinite(v) || v === 0) return '';
+      return v > 0 ? 'pos' : 'neg';
+    }
+
     async function loadMag7() {
-      if (!isConnected) return;
+      const tbody = document.getElementById('mag7-tbody');
+      if (!tbody) return;
+      if (!isConnected) {
+        tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Loading…</td></tr>`;
+
       try {
-        const d = await apiGet(`/api/quotes?symbols=${MAG7_SYMBOLS.join(',')}`);
-        if (!d.ok) throw new Error(d.error);
-        const q = d.data;
-        const grid = document.getElementById('mag7-grid');
-        grid.innerHTML = MAG7_SYMBOLS.map(sym => {
-          const item = q[sym];
-          if (!item) return `<div class="mag7-card"><div class="mag7-sym">${sym}</div><div class="mag7-name">${MAG7_NAMES[sym]}</div><div style="color:var(--text3);font-size:10px;">No data</div></div>`;
+        // Quotes for all 8 (Mag 7 + SPY) in one shot — gives us last price,
+        // 1-day % change, market cap, and fundamental fields. Historical
+        // candles fetched per-symbol in parallel so we can compute multi-
+        // timeframe returns (1W/1M/YTD/1Y).
+        const allSymbols = [...MAG7_SYMBOLS, 'SPY'];
+        const [quotesResp, ...histResps] = await Promise.all([
+          apiGet('/api/quotes?symbols=' + allSymbols.join(',')),
+          ...allSymbols.map(sym =>
+            apiGet('/api/pricehistory?symbol=' + encodeURIComponent(sym)
+              + '&periodType=year&period=1&frequencyType=daily&frequency=1')
+              .catch(() => null)
+          )
+        ]);
+        if (!quotesResp?.ok) throw new Error(quotesResp?.error || 'Quote fetch failed');
+
+        // Index history by symbol (preserve allSymbols order for the zip).
+        const histBySymbol = {};
+        allSymbols.forEach((sym, i) => {
+          const candles = histResps[i]?.data?.candles || histResps[i]?.candles || [];
+          histBySymbol[sym] = candles;
+        });
+
+        // Trading-day lookbacks (1D handled by quote netPercentChange so the
+        // intraday value matches the rest of the dashboard; the 5/21/252 day
+        // values are approximations of 1W/1M/1Y in trading days).
+        const TIMEFRAMES = { '1d': null, '1w': 5, '1m': 21, '1y': 252 };
+
+        // Build a per-symbol row of metrics for both display + aggregates.
+        const computeRow = (sym) => {
+          const item = quotesResp.data?.[sym] || {};
           const qt = item.quote || {};
           const fn = item.fundamental || {};
           const ref = item.reference || {};
-          const price = qt.lastPrice ?? qt.closePrice;
-          const pct = qt.netPercentChange ?? 0;
-          const pctClass = chgClass(pct);
-          return `<div class="mag7-card">
-        <div class="mag7-sym">${sym}</div>
-        <div class="mag7-name">${ref.description || MAG7_NAMES[sym]}</div>
-        <div class="mag7-price ${pctClass}">${fmt(price)}</div>
-        <div class="mag7-change ${pctClass}">${chgPrefix(pct)}${fmt(pct)}%  <span style="color:var(--text3);font-weight:400;">${chgPrefix(qt.netChange)}${fmt(qt.netChange)}</span></div>
-        <div class="mag7-stats">
-          ${mag7stat('Volume', fmtK(qt.totalVolume))}
-          ${mag7stat('Bid / Ask', `${fmt(qt.bidPrice)} / ${fmt(qt.askPrice)}`)}
-          ${mag7stat('52W H/L', `${fmt(qt['52WeekHigh'])} / ${fmt(qt['52WeekLow'])}`)}
-          ${mag7stat('P/E', fmt(fn.peRatio, 1))}
-          ${mag7stat('Mkt Cap', fmtK(fn.marketCap))}
-          ${mag7stat('Volatility', fmt(qt.volatility, 4))}
-        </div>
-      </div>`;
+          const candles = histBySymbol[sym] || [];
+          const price = qt.lastPrice ?? qt.mark ?? qt.closePrice ?? null;
+          const oneDay = (qt.netPercentChange != null)
+            ? Number(qt.netPercentChange)
+            : mag7PctBack(candles, 1);
+          return {
+            sym,
+            name: ref.description || MAG7_NAMES[sym] || sym,
+            price,
+            pct: {
+              '1d':  oneDay,
+              '1w':  mag7PctBack(candles, TIMEFRAMES['1w']),
+              '1m':  mag7PctBack(candles, TIMEFRAMES['1m']),
+              'ytd': mag7PctYTD(candles),
+              '1y':  mag7PctBack(candles, TIMEFRAMES['1y'])
+            },
+            marketCap: Number(fn.marketCap) || null
+          };
+        };
+
+        const mag7Rows = MAG7_SYMBOLS.map(computeRow);
+        const spyRow   = computeRow('SPY');
+
+        // Aggregate Mag 7: combined market cap + equal-weighted average %.
+        const totalCap = mag7Rows.reduce((s, r) => s + (r.marketCap || 0), 0);
+        const avgPct = (key) => {
+          const vals = mag7Rows.map(r => r.pct[key]).filter(v => v != null && Number.isFinite(v));
+          if (!vals.length) return null;
+          return vals.reduce((a, b) => a + b, 0) / vals.length;
+        };
+        const aggregates = {
+          '1d':  avgPct('1d'),
+          '1w':  avgPct('1w'),
+          '1m':  avgPct('1m'),
+          'ytd': avgPct('ytd'),
+          '1y':  avgPct('1y')
+        };
+
+        // Wire up the top header KPIs
+        const setVal = (id, value, isPct) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (value == null || !Number.isFinite(value)) {
+            el.textContent = '—';
+            el.classList.remove('pos', 'neg');
+            return;
+          }
+          el.textContent = isPct ? mag7FmtPct(value) : mag7FmtCap(value);
+          el.classList.toggle('pos', isPct && value > 0);
+          el.classList.toggle('neg', isPct && value < 0);
+        };
+        setVal('mag7-total-cap', totalCap || null, false);
+        setVal('mag7-avg-1d',  aggregates['1d'],  true);
+        setVal('mag7-avg-1w',  aggregates['1w'],  true);
+        setVal('mag7-avg-1m',  aggregates['1m'],  true);
+        setVal('mag7-avg-ytd', aggregates['ytd'], true);
+        setVal('mag7-avg-1y',  aggregates['1y'],  true);
+
+        // SPY-spread row — for each timeframe show SPY return and the spread
+        // (Mag 7 avg − SPY) so the user can see when mega caps are pulling the
+        // index up vs. lagging it.
+        ['1d', '1w', '1m', 'ytd', '1y'].forEach(key => {
+          const spy = spyRow.pct[key];
+          const mag = aggregates[key];
+          const spyEl = document.getElementById('mag7-spy-' + key);
+          const spreadEl = document.getElementById('mag7-spread-' + key);
+          if (spyEl) spyEl.textContent = 'SPY ' + (spy == null ? '—' : mag7FmtPct(spy));
+          if (spreadEl) {
+            if (spy == null || mag == null) {
+              spreadEl.textContent = '—';
+              spreadEl.classList.remove('pos', 'neg');
+            } else {
+              const spread = mag - spy;
+              spreadEl.textContent = (spread >= 0 ? '+' : '') + spread.toFixed(2) + 'pp';
+              spreadEl.classList.toggle('pos', spread > 0);
+              spreadEl.classList.toggle('neg', spread < 0);
+            }
+          }
+        });
+
+        // Per-stock matrix table
+        tbody.innerHTML = mag7Rows.map(r => {
+          const cell = (v) => {
+            if (v == null || !Number.isFinite(v)) return `<td class="num">—</td>`;
+            const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+            return `<td class="num ${cls}">${mag7FmtPct(v)}</td>`;
+          };
+          const priceStr = (r.price == null || !Number.isFinite(Number(r.price)))
+            ? '—'
+            : Number(r.price).toFixed(2);
+          return `<tr>
+            <td class="sym">${r.sym}</td>
+            <td class="name">${r.name}</td>
+            <td class="num">${priceStr}</td>
+            ${cell(r.pct['1d'])}
+            ${cell(r.pct['1w'])}
+            ${cell(r.pct['1m'])}
+            ${cell(r.pct['ytd'])}
+            ${cell(r.pct['1y'])}
+            <td class="num">${mag7FmtCap(r.marketCap)}</td>
+          </tr>`;
         }).join('');
       } catch (e) {
-        document.getElementById('mag7-grid').innerHTML = `<div class="text-muted fs10" style="grid-column:1/-1;padding:20px;">${e.message}</div>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
       }
     }
-    function mag7stat(k, v) { return `<div class="mag7-stat-row"><span class="k">${k}</span><span class="v">${v}</span></div>`; }
 
     // ═══════════════════════════════════════════════════════
     //  8. FUTURES
