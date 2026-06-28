@@ -18798,14 +18798,30 @@
 
           let fullSeries = [];
           // Basis is chosen by the Weekly/Daily toggle. Weekly = StockCharts
-          // style (pick once enough weekly history exists); Daily = works with
+          // style when we have a full 30+ week window; Daily = works with
           // limited history using proportionally shorter periods (default).
+          //
+          // For weekly mode with limited history, we scale the EMA periods
+          // to ~1/3 of available weeks so the smoothing stabilizes quickly
+          // enough to produce plottable points + a visible tail. The hard-
+          // coded {10, 30, 10} setup required ~30 weeks before yielding any
+          // useful output — accounts for "head dot but no tail" on accounts
+          // that have only been backfilling weekly data for a few weeks.
           const weekly = rrgWeeklySample(series);
           let basis = null, rOpts = null;
           if (etfRrgMode === 'weekly') {
             if (weekly.length >= 4) {
               basis = weekly;
-              rOpts = rrgOpts; // { fast:10, slow:30, momentumPeriod:10 } weeks
+              if (weekly.length >= 90) {
+                rOpts = rrgOpts; // canonical { fast:10, slow:30, momentumPeriod:10 }
+              } else {
+                // Adaptive: pin slow≈⅓ of available weeks (capped at 30),
+                // fast≈⅓ of slow. Yields enough plottable points for the
+                // 5/10/15/20-week tail picker to actually show a trail.
+                const slow = Math.min(30, Math.max(4, Math.floor(weekly.length / 3)));
+                const fast = Math.max(2, Math.floor(slow / 3));
+                rOpts = { fast, slow, momentumPeriod: fast };
+              }
             }
           } else if (series.length >= 10) {
             basis = series; // daily
