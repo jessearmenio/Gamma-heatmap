@@ -19101,14 +19101,19 @@
       tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Loading…</td></tr>`;
 
       try {
-        // Quotes for all 8 (Mag 7 + SPY) in one shot. `fields=quote,fundamental`
-        // is critical — without it Schwab returns only the price/change block
-        // and the `fundamental.marketCap` field is missing (Mkt Cap column
-        // would show "—"). Historical candles fetched per-symbol in parallel
-        // so we can compute multi-timeframe returns (1W/1M/YTD/1Y).
+        // Three parallel data sources for the page:
+        //   1. Schwab /api/quotes      — live price + 1D % change
+        //   2. Schwab /api/pricehistory — 1Y of daily candles for 1W/1M/YTD/1Y
+        //   3. Alpha Vantage /api/fundamentals — market cap (Schwab doesn't
+        //      reliably populate this field, even with fields=quote,fundamental)
+        //
+        // Alpha Vantage fundamentals are cached server-side for 12h, so this
+        // makes at most 7 outbound AV calls on the first cold load of the day
+        // and 0 on every page-load thereafter.
         const allSymbols = [...MAG7_SYMBOLS, 'SPY'];
-        const [quotesResp, ...histResps] = await Promise.all([
-          apiGet('/api/quotes?symbols=' + allSymbols.join(',') + '&fields=quote,fundamental'),
+        const [quotesResp, fundResp, ...histResps] = await Promise.all([
+          apiGet('/api/quotes?symbols=' + allSymbols.join(',')),
+          apiGet('/api/fundamentals?symbols=' + MAG7_SYMBOLS.join(',')).catch(() => null),
           ...allSymbols.map(sym =>
             apiGet('/api/pricehistory?symbol=' + encodeURIComponent(sym)
               + '&periodType=year&period=1&frequencyType=daily&frequency=1')
@@ -19123,6 +19128,7 @@
           const candles = histResps[i]?.data?.candles || histResps[i]?.candles || [];
           histBySymbol[sym] = candles;
         });
+        const fundBySymbol = fundResp?.data || {};
 
         // Trading-day lookbacks (1D handled by quote netPercentChange so the
         // intraday value matches the rest of the dashboard; the 5/21/252 day
@@ -19130,19 +19136,27 @@
         const TIMEFRAMES = { '1d': null, '1w': 5, '1m': 21, '1y': 252 };
 
         // Build a per-symbol row of metrics for both display + aggregates.
+        // Market cap comes from Alpha Vantage's `MarketCapitalization` field
+        // (string of dollars). Falls back to Schwab's `fundamental.marketCap`
+        // if AV is unavailable / rate-limited.
         const computeRow = (sym) => {
           const item = quotesResp.data?.[sym] || {};
           const qt = item.quote || {};
           const fn = item.fundamental || {};
           const ref = item.reference || {};
+          const av = fundBySymbol[sym] || null;
           const candles = histBySymbol[sym] || [];
           const price = qt.lastPrice ?? qt.mark ?? qt.closePrice ?? null;
           const oneDay = (qt.netPercentChange != null)
             ? Number(qt.netPercentChange)
             : mag7PctBack(candles, 1);
+          const avCap = av && av.MarketCapitalization
+            ? Number(av.MarketCapitalization)
+            : null;
+          const schwabCap = Number(fn.marketCap) || null;
           return {
             sym,
-            name: ref.description || MAG7_NAMES[sym] || sym,
+            name: (av && av.Name) || ref.description || MAG7_NAMES[sym] || sym,
             price,
             pct: {
               '1d':  oneDay,
@@ -19151,7 +19165,7 @@
               'ytd': mag7PctYTD(candles),
               '1y':  mag7PctBack(candles, TIMEFRAMES['1y'])
             },
-            marketCap: Number(fn.marketCap) || null
+            marketCap: (avCap && Number.isFinite(avCap) && avCap > 0) ? avCap : schwabCap
           };
         };
 

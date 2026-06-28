@@ -17,6 +17,7 @@ const SCHWAB_REDIRECT_URI = process.env.SCHWAB_REDIRECT_URI;
 const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const FEAR_GREED_API_KEY = process.env.FEAR_GREED_API_KEY;
 const WORLD_CONFLICT_API_KEY = process.env.WORLD_CONFLICT_API_KEY;
+const ALPHA_ADVANTAGE_API_KEY = process.env.ALPHA_ADVANTAGE_API_KEY;
 const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL;
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN;
 
@@ -2506,6 +2507,110 @@ app.get("/api/cor1m-history", async (_req, res) => {
     res.status(error.response?.status || 500).json({
       ok: false,
       error: "Failed to fetch COR1M history from CBOE.",
+      details: error.message
+    });
+  }
+});
+
+// ─── Fundamentals (Alpha Vantage OVERVIEW) ────────────────────────────────────
+// Schwab's quote endpoint only returns a partial fundamentals block (and
+// `marketCap` is consistently missing). Alpha Vantage's OVERVIEW endpoint
+// covers everything we need: MarketCapitalization, PERatio, EPS, dividend,
+// EBITDA, margins, growth, analyst ratings, sector/industry classification.
+//
+// IMPORTANT — Alpha Vantage has aggressive rate limits:
+//   Free tier:    25 requests / day
+//   Premium tier: 75 requests / min
+// Fundamentals don't change intraday so we cache per-symbol for 12 hours
+// in-memory. Cache miss → one outbound HTTP call per symbol (Alpha Vantage
+// doesn't support batch). Misses run sequentially with a small delay to
+// stay under free-tier per-minute caps.
+const fundamentalsCache = new Map();
+const FUNDAMENTALS_TTL_MS = 12 * 60 * 60 * 1000; // 12h
+
+async function avFetchOverview(symbol) {
+  if (!ALPHA_ADVANTAGE_API_KEY) {
+    throw new Error("ALPHA_ADVANTAGE_API_KEY not configured");
+  }
+  const r = await axios.get("https://www.alphavantage.co/query", {
+    params: {
+      function: "OVERVIEW",
+      symbol,
+      apikey: ALPHA_ADVANTAGE_API_KEY
+    },
+    timeout: 15000
+  });
+  const data = r.data || {};
+  // Alpha Vantage returns {} on unknown symbol, {"Note":...} on per-minute
+  // limit, and {"Information":...} on daily limit. We only cache responses
+  // with a real `Symbol` field so transient empties don't poison the cache.
+  if (data && data.Symbol) return data;
+  if (data && (data.Note || data.Information)) {
+    throw new Error(data.Note || data.Information);
+  }
+  return null;
+}
+
+app.get("/api/fundamentals", async (req, res) => {
+  try {
+    const symbolsParam = String(req.query.symbols || "").trim();
+    if (!symbolsParam) {
+      return res.status(400).json({ ok: false, error: "symbols query param required" });
+    }
+    const symbols = symbolsParam
+      .split(",").map(s => s.trim().toUpperCase()).filter(Boolean);
+    if (!symbols.length) {
+      return res.status(400).json({ ok: false, error: "no valid symbols" });
+    }
+
+    const now = Date.now();
+    const out = {};
+    const toFetch = [];
+    for (const sym of symbols) {
+      const cached = fundamentalsCache.get(sym);
+      if (cached && (now - cached.fetchedAt) < FUNDAMENTALS_TTL_MS) {
+        out[sym] = cached.data;
+      } else {
+        toFetch.push(sym);
+      }
+    }
+
+    // Fetch misses sequentially with a tiny gap — Alpha Vantage's free tier
+    // tolerates a few req/sec but slams the door at the per-minute / per-day
+    // limits. Errors are per-symbol; a rate-limit on one doesn't kill the
+    // whole batch.
+    const warnings = [];
+    for (const sym of toFetch) {
+      try {
+        const data = await avFetchOverview(sym);
+        if (data) {
+          fundamentalsCache.set(sym, { data, fetchedAt: now });
+          out[sym] = data;
+        } else {
+          out[sym] = null;
+          warnings.push({ symbol: sym, error: "no data" });
+        }
+      } catch (e) {
+        out[sym] = null;
+        warnings.push({ symbol: sym, error: e.message });
+      }
+      // 250ms gap between misses keeps us under per-minute caps even on
+      // free-tier accounts when the cache is cold (e.g. server just booted).
+      if (toFetch.length > 1) await new Promise(r => setTimeout(r, 250));
+    }
+
+    res.json({
+      ok: true,
+      data: out,
+      cached: symbols.length - toFetch.length,
+      fetched: toFetch.length - warnings.length,
+      warnings: warnings.length ? warnings : undefined
+    });
+  } catch (error) {
+    console.error("FUNDAMENTALS ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to fetch fundamentals.",
       details: error.message
     });
   }
