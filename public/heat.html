@@ -5745,6 +5745,43 @@
     .mag7-table .neg { color: var(--red); font-weight: 700; }
     .mag7-empty { text-align: center; color: var(--text3); padding: 24px; }
 
+    /* Mag 7 loading overlay — sits on top of the page while the multi-source
+       fetch resolves (Schwab quotes + Schwab pricehistory × 8 + Alpha Vantage
+       fundamentals × 7). Auto-hides once the initial render lands; the
+       background market-cap poller does not re-show it. */
+    .mag7-loading {
+      position: absolute; inset: 0;
+      background: rgba(3, 9, 21, 0.78);
+      backdrop-filter: blur(3px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50;
+    }
+    .mag7-loading-card {
+      background: var(--panel); border: 1px solid var(--border2);
+      border-radius: 10px; padding: 28px 36px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      min-width: 260px;
+    }
+    .mag7-spinner {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.08);
+      border-top-color: var(--accent);
+      animation: mag7-spin 0.9s linear infinite;
+    }
+    @keyframes mag7-spin { to { transform: rotate(360deg); } }
+    .mag7-loading-text {
+      font-size: 13px; font-weight: 800; color: var(--text);
+      letter-spacing: .02em;
+    }
+    .mag7-loading-sub {
+      font-size: 10px; color: var(--text3);
+      letter-spacing: .04em;
+    }
+    /* Make the page a positioning context so the overlay's absolute inset:0
+       only covers the Mag 7 page, not the whole viewport (sidebar stays usable). */
+    #mag7-page { position: relative; }
+
     .mag7-card {
       background: var(--bg3);
       border: 1px solid var(--border);
@@ -10109,6 +10146,13 @@
            7. MAG 7
       ════════════════════════════════════ -->
         <div id="mag7-page" class="page" style="display:none;">
+          <div class="mag7-loading" id="mag7-loading" style="display:none;">
+            <div class="mag7-loading-card">
+              <div class="mag7-spinner"></div>
+              <div class="mag7-loading-text">Loading Mag 7 data…</div>
+              <div class="mag7-loading-sub" id="mag7-loading-sub">Fetching live quotes + 1Y price history + fundamentals</div>
+            </div>
+          </div>
           <div class="mag7-header">
             <div>
               <div class="mag7-title">Magnificent 7</div>
@@ -19091,13 +19135,28 @@
       return v > 0 ? 'pos' : 'neg';
     }
 
+    function mag7ShowLoading(visible, subText) {
+      const ov = document.getElementById('mag7-loading');
+      if (!ov) return;
+      ov.style.display = visible ? 'flex' : 'none';
+      if (visible && subText) {
+        const sub = document.getElementById('mag7-loading-sub');
+        if (sub) sub.textContent = subText;
+      }
+    }
+
     async function loadMag7() {
       const tbody = document.getElementById('mag7-tbody');
       if (!tbody) return;
       if (!isConnected) {
+        mag7ShowLoading(false);
         tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>`;
         return;
       }
+      // Show overlay during the multi-source fetch (Schwab quotes + 8×
+      // pricehistory + Alpha Vantage fundamentals). Background market-cap
+      // poller runs after the overlay is dismissed and updates cells in place.
+      mag7ShowLoading(true, 'Fetching live quotes + 1Y price history + fundamentals');
       tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Loading…</td></tr>`;
 
       try {
@@ -19252,6 +19311,11 @@
           </tr>`;
         }).join('');
 
+        // Initial render done — dismiss the loading overlay. The background
+        // market-cap poller (below) continues filling missing values in
+        // place without re-showing the overlay.
+        mag7ShowLoading(false);
+
         // Safety net — if any market caps came back null after the server's
         // retry pass (e.g. AV cold-start hit the daily quota mid-batch), poll
         // them in the background. Each retry only requests the still-missing
@@ -19259,7 +19323,24 @@
         // 15s/30s/45s between retries and stop after the third pass.
         mag7CapPollState.cancel?.();
         mag7CapPollState.cancel = mag7PollMissingCaps(mag7Rows);
+
+        // Persist today's snapshot to the mag_7 Turso table. Upserted by
+        // (trade_date, symbol) so reloads on the same day overwrite instead
+        // of duplicating. Fire-and-forget — fail silently so a Turso outage
+        // doesn't break the page render.
+        const snapshotRows = mag7Rows.map(r => ({
+          symbol: r.sym,
+          price: r.price,
+          dailyChangePct: r.pct['1d'],
+          marketCap: r.marketCap
+        }));
+        fetch('/api/mag7/snapshot', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows: snapshotRows })
+        }).catch(e => console.warn('Mag 7 snapshot save failed:', e?.message || e));
       } catch (e) {
+        mag7ShowLoading(false);
         tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
       }
     }

@@ -274,11 +274,30 @@ async function initTurso() {
     )
   `);
 
+  // Daily snapshot of every Magnificent 7 stock: closing price, day's %
+  // change, and current market cap. UNIQUE(date, symbol) so the same trade
+  // day overwrites instead of duplicating when the page is reloaded.
+  await turso.execute(`
+    CREATE TABLE IF NOT EXISTS mag_7 (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      trade_date TEXT NOT NULL,
+      symbol TEXT NOT NULL,
+      price REAL,
+      daily_change_pct REAL,
+      market_cap REAL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(trade_date, symbol)
+    )
+  `);
+
   console.log("Turso SPY daily history table ready.");
 
   console.log("Turso ETF history table ready.");
 
   console.log("Turso trade_entry table ready.");
+
+  console.log("Turso mag_7 table ready.");
 }
 
 async function saveEtfSnapshot({ symbol, price, changePct, volume }) {
@@ -4743,6 +4762,82 @@ app.post("/api/etf-history/snapshot", async (req, res) => {
     res.status(500).json({
       ok: false,
       error: "Failed to save ETF history snapshot."
+    });
+  }
+});
+
+// ─── Mag 7 daily snapshot ─────────────────────────────────────────────
+// POST  /api/mag7/snapshot   body: { rows: [{symbol, price, dailyChangePct, marketCap}] }
+// GET   /api/mag7-history    optional ?symbol= filter, returns most recent first
+//
+// Upsert per (trade_date, symbol). Client typically calls the POST once per
+// successful page load — same trade day overwrites instead of duplicating.
+app.post("/api/mag7/snapshot", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.status(503).json({ ok: false, error: "Mag 7 storage not configured." });
+    }
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    if (!rows.length) {
+      return res.status(400).json({ ok: false, error: "No Mag 7 rows provided." });
+    }
+    const tradeDate = getCstDateKey();
+    let saved = 0;
+    for (const r of rows) {
+      const symbol = String(r.symbol || '').toUpperCase().trim();
+      if (!symbol) continue;
+      const price   = Number.isFinite(Number(r.price))           ? Number(r.price)           : null;
+      const pct     = Number.isFinite(Number(r.dailyChangePct))  ? Number(r.dailyChangePct)  : null;
+      const mcap    = Number.isFinite(Number(r.marketCap))       ? Number(r.marketCap)       : null;
+      await turso.execute({
+        sql: `
+          INSERT INTO mag_7 (trade_date, symbol, price, daily_change_pct, market_cap, updated_at)
+          VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+          ON CONFLICT(trade_date, symbol)
+          DO UPDATE SET
+            price = excluded.price,
+            daily_change_pct = excluded.daily_change_pct,
+            market_cap = excluded.market_cap,
+            updated_at = CURRENT_TIMESTAMP
+        `,
+        args: [tradeDate, symbol, price, pct, mcap]
+      });
+      saved++;
+    }
+    res.json({ ok: true, tradeDate, saved });
+  } catch (error) {
+    console.error("MAG7 SNAPSHOT ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to save Mag 7 snapshot.",
+      details: error.message
+    });
+  }
+});
+
+app.get("/api/mag7-history", async (req, res) => {
+  try {
+    if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) {
+      return res.json({ ok: true, rows: [] });
+    }
+    const limit = Math.min(Math.max(Number(req.query.limit) || 365, 1), 5000);
+    const symbol = req.query.symbol ? String(req.query.symbol).toUpperCase().trim() : null;
+    const sql = symbol
+      ? `SELECT trade_date AS tradeDate, symbol, price, daily_change_pct AS dailyChangePct,
+                market_cap AS marketCap
+         FROM mag_7 WHERE symbol = ? ORDER BY trade_date DESC LIMIT ?`
+      : `SELECT trade_date AS tradeDate, symbol, price, daily_change_pct AS dailyChangePct,
+                market_cap AS marketCap
+         FROM mag_7 ORDER BY trade_date DESC, symbol ASC LIMIT ?`;
+    const args = symbol ? [symbol, limit] : [limit];
+    const result = await turso.execute({ sql, args });
+    res.json({ ok: true, count: result.rows?.length || 0, rows: result.rows || [] });
+  } catch (error) {
+    console.error("MAG7 HISTORY READ ERROR:", error.message);
+    res.status(500).json({
+      ok: false,
+      error: "Failed to load Mag 7 history.",
+      details: error.message
     });
   }
 });
