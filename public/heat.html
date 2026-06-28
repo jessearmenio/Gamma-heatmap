@@ -15246,6 +15246,15 @@
           borderColor: 'rgba(255,255,255,0.06)',
           textColor: 'rgba(122,128,153,0.9)',
         },
+        // Independent left scale used by the COR1M overlay so SPY and the
+        // implied-correlation index can share the same chart without one
+        // squashing the other (they live on totally different magnitudes —
+        // SPY ~700, COR1M ~10).
+        leftPriceScale: {
+          visible: true,
+          borderColor: 'rgba(255,255,255,0.06)',
+          textColor: 'rgba(102, 187, 107, 0.85)',
+        },
         timeScale: {
           borderColor: 'rgba(255,255,255,0.06)',
           timeVisible: true,
@@ -15340,6 +15349,56 @@
       makeEMA(ema8vals, '#11C81A', 1);
       makeEMA(ema21vals, '#9C27B0', 1.5);
       makeEMA(ema50vals, '#01BCD4', 1.5);
+
+      // ── COR1M overlay (CBOE 1-Month Implied Correlation Index) ──
+      // Plotted on the independent left price scale so it doesn't compress
+      // the SPY candles (COR1M ~10, SPY ~700). Color #66BB6B per spec.
+      // Data fetched async — line populates after the rest of the chart is
+      // already on screen. Requires Schwab auth (same path as SPY candles).
+      const cor1mSeries = lwcChart.addLineSeries({
+        color: '#66BB6B',
+        lineWidth: 2,
+        priceScaleId: 'left',
+        crosshairMarkerVisible: true,
+        crosshairMarkerRadius: 3,
+        lastValueVisible: true,
+        priceLineVisible: false,
+        title: 'COR1M',
+      });
+      lwcChart.priceScale('left').applyOptions({
+        scaleMargins: { top: 0.04, bottom: 0.30 }, // align with candle pane
+      });
+      // Capture the render token so a TF switch / chart rebuild before the
+      // fetch resolves doesn't bleed COR1M data into the wrong chart.
+      const cor1mToken = ovChartRenderToken;
+      const firstT = display[0]?.datetime;
+      const lastT  = display[display.length - 1]?.datetime;
+      (async () => {
+        try {
+          const url = '/api/pricehistory?symbol=' + encodeURIComponent('$COR1M')
+            + '&periodType=year&period=1&frequencyType=daily&frequency=1';
+          const d = await apiGet(url);
+          if (cor1mToken !== ovChartRenderToken) return;
+          const raw = d?.data?.candles || d?.candles || [];
+          if (!raw.length) return;
+          // Trim to the visible time window so the autoscale on the left axis
+          // matches what's in view, and convert to LWC line format.
+          const data = raw
+            .filter(c => Number.isFinite(c?.close)
+              && (firstT == null || c.datetime >= firstT)
+              && (lastT  == null || c.datetime <= lastT + 86400000))
+            .map(c => ({ time: Math.floor(c.datetime / 1000), value: c.close }))
+            .sort((a, b) => a.time - b.time);
+          if (data.length && lwcChart && cor1mToken === ovChartRenderToken) {
+            cor1mSeries.setData(data);
+          }
+        } catch (e) {
+          // Silent fail — COR1M is a nice-to-have overlay; if Schwab doesn't
+          // recognize $COR1M or the user isn't authed, just leave the line
+          // empty rather than break the chart.
+          console.warn('COR1M fetch:', e?.message || e);
+        }
+      })();
 
       // ── RSI series (separate price scale — overlay at bottom of same chart) ──
       // We use a second price scale 'rsi' pinned to the bottom 28% of the chart
