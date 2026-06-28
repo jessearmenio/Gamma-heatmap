@@ -2356,10 +2356,22 @@ app.get("/api/pricehistory", async (req, res) => {
     );
     const candles = response.data?.candles || [];
 
-    const cleaned = candles.filter(c =>
-      c.open && c.high && c.low && c.close &&
-      c.low > 0 && c.high > 0
-    );
+    // Keep any candle that has at least a valid close. Some Schwab index
+    // symbols ($COR1M, $VIX historical, etc.) return close-only candles
+    // with open/high/low set to 0 or null — the old filter dropped these
+    // entirely, which made line-chart consumers see empty data. Synthesize
+    // missing OHLC from close so OHLC consumers (candlestick charts) get
+    // valid dojis instead of gaps, and line consumers keep their data.
+    const cleaned = candles
+      .map(c => {
+        const close = Number(c.close);
+        if (!Number.isFinite(close) || close <= 0) return null;
+        const open = (Number.isFinite(c.open) && c.open > 0) ? c.open : close;
+        const high = (Number.isFinite(c.high) && c.high > 0) ? c.high : close;
+        const low  = (Number.isFinite(c.low)  && c.low  > 0) ? c.low  : close;
+        return { ...c, open, high, low, close };
+      })
+      .filter(Boolean);
 
     res.json({ ok: true, data: { ...response.data, candles: cleaned } });
   } catch (error) {

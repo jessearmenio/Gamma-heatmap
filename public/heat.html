@@ -15375,30 +15375,40 @@
       const firstT = display[0]?.datetime;
       const lastT  = display[display.length - 1]?.datetime;
       (async () => {
-        try {
-          const url = '/api/pricehistory?symbol=' + encodeURIComponent('$COR1M')
-            + '&periodType=year&period=1&frequencyType=daily&frequency=1';
-          const d = await apiGet(url);
-          if (cor1mToken !== ovChartRenderToken) return;
-          const raw = d?.data?.candles || d?.candles || [];
-          if (!raw.length) return;
-          // Trim to the visible time window so the autoscale on the left axis
-          // matches what's in view, and convert to LWC line format.
-          const data = raw
-            .filter(c => Number.isFinite(c?.close)
-              && (firstT == null || c.datetime >= firstT)
-              && (lastT  == null || c.datetime <= lastT + 86400000))
-            .map(c => ({ time: Math.floor(c.datetime / 1000), value: c.close }))
-            .sort((a, b) => a.time - b.time);
-          if (data.length && lwcChart && cor1mToken === ovChartRenderToken) {
-            cor1mSeries.setData(data);
+        // Try the canonical CBOE-index symbol formats Schwab accepts.
+        // $COR1M is the primary one the user confirmed via /api/quotes;
+        // alternate variants are tried in order if a request returns no
+        // usable candles. Logs every attempt to the console so we can see
+        // which one (if any) actually returned data.
+        const SYMBOL_VARIANTS = ['$COR1M', 'COR1M', '$ICJ', '$RIY', 'ICJ'];
+        for (const sym of SYMBOL_VARIANTS) {
+          try {
+            const url = '/api/pricehistory?symbol=' + encodeURIComponent(sym)
+              + '&periodType=year&period=1&frequencyType=daily&frequency=1';
+            const d = await apiGet(url);
+            if (cor1mToken !== ovChartRenderToken) return;
+            const raw = d?.data?.candles || d?.candles || [];
+            const usable = raw.filter(c => Number.isFinite(Number(c?.close)) && Number(c.close) > 0);
+            console.log(`[COR1M] tried "${sym}" → ${raw.length} candles, ${usable.length} usable`);
+            if (!usable.length) continue;
+            // Trim to visible window so the left autoscale matches the SPY view.
+            const data = usable
+              .filter(c => (firstT == null || c.datetime >= firstT)
+                       && (lastT  == null || c.datetime <= lastT + 86400000))
+              .map(c => ({ time: Math.floor(c.datetime / 1000), value: Number(c.close) }))
+              .sort((a, b) => a.time - b.time);
+            if (data.length && lwcChart && cor1mToken === ovChartRenderToken) {
+              cor1mSeries.setData(data);
+              console.log(`[COR1M] plotted ${data.length} points using symbol "${sym}", range ${data[0].value.toFixed(2)}–${data[data.length-1].value.toFixed(2)}`);
+            }
+            return; // success — stop trying alternates
+          } catch (e) {
+            // 404 / 500 → log and try the next variant. Don't break the
+            // chart on a failed COR1M load; it's an enhancement, not core.
+            console.warn(`[COR1M] symbol "${sym}" failed:`, e?.message || e);
           }
-        } catch (e) {
-          // Silent fail — COR1M is a nice-to-have overlay; if Schwab doesn't
-          // recognize $COR1M or the user isn't authed, just leave the line
-          // empty rather than break the chart.
-          console.warn('COR1M fetch:', e?.message || e);
         }
+        console.warn('[COR1M] none of the symbol variants returned data; line will be empty');
       })();
 
       // ── RSI series (separate price scale — overlay at bottom of same chart) ──
