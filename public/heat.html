@@ -19101,13 +19101,14 @@
       tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Loading…</td></tr>`;
 
       try {
-        // Quotes for all 8 (Mag 7 + SPY) in one shot — gives us last price,
-        // 1-day % change, market cap, and fundamental fields. Historical
-        // candles fetched per-symbol in parallel so we can compute multi-
-        // timeframe returns (1W/1M/YTD/1Y).
+        // Quotes for all 8 (Mag 7 + SPY) in one shot. `fields=quote,fundamental`
+        // is critical — without it Schwab returns only the price/change block
+        // and the `fundamental.marketCap` field is missing (Mkt Cap column
+        // would show "—"). Historical candles fetched per-symbol in parallel
+        // so we can compute multi-timeframe returns (1W/1M/YTD/1Y).
         const allSymbols = [...MAG7_SYMBOLS, 'SPY'];
         const [quotesResp, ...histResps] = await Promise.all([
-          apiGet('/api/quotes?symbols=' + allSymbols.join(',')),
+          apiGet('/api/quotes?symbols=' + allSymbols.join(',') + '&fields=quote,fundamental'),
           ...allSymbols.map(sym =>
             apiGet('/api/pricehistory?symbol=' + encodeURIComponent(sym)
               + '&periodType=year&period=1&frequencyType=daily&frequency=1')

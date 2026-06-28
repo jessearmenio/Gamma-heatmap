@@ -1100,12 +1100,16 @@ app.get("/api/quotes", async (req, res) => {
     const requestedSymbols = req.query.symbols || "SPY,SPX,VIX";
     const symbols = mapQuoteSymbolsParam(requestedSymbols);
 
+    // Schwab returns only the `quote` block by default. Callers that need
+    // market cap, P/E, dividend yield, etc. can opt in via ?fields=quote,fundamental.
+    // We pass the value through verbatim (no validation) so any future
+    // Schwab-supported field combination works without server changes.
+    const params = { symbols };
+    if (req.query.fields) params.fields = String(req.query.fields);
+
     const response = await schwabGet(
       "https://api.schwabapi.com/marketdata/v1/quotes",
-      {
-        params: { symbols },
-        timeout: 30000
-      }
+      { params, timeout: 30000 }
     );
 
     res.json({
