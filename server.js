@@ -2416,37 +2416,59 @@ app.get("/api/cor1m-history", async (_req, res) => {
     });
 
     const text = String(resp.data || "");
-    const lines = text.split(/\r?\n/).filter(Boolean);
-    if (lines.length < 2) {
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (!lines.length) {
       return res.status(502).json({ ok: false, error: "CBOE returned empty CSV." });
     }
 
-    // Header detection — CBOE uses DATE,OPEN,HIGH,LOW,CLOSE but column
-    // order has been known to drift, so map by name not by index.
-    const header = lines[0].split(",").map(s => s.trim().toLowerCase());
-    const idx = {
-      date:  header.findIndex(h => h === "date"),
-      open:  header.findIndex(h => h === "open"),
-      high:  header.findIndex(h => h === "high"),
-      low:   header.findIndex(h => h === "low"),
-      close: header.findIndex(h => h === "close")
+    // Robust date parser — CBOE's CDN ships MM/DD/YYYY but other endpoints
+    // sometimes return YYYY-MM-DD. Accept both. Returns ms epoch or null.
+    const parseDateFlexible = (s) => {
+      if (!s) return null;
+      const str = String(s).trim();
+      // ISO: YYYY-MM-DD[anything]
+      let m = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+      // US: M/D/YYYY or MM/DD/YYYY
+      m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+      if (m) {
+        let yr = +m[3];
+        if (yr < 100) yr += 2000;
+        return Date.UTC(yr, +m[1] - 1, +m[2]);
+      }
+      // Fallback to native parse (in case CBOE adds another format)
+      const n = Date.parse(str);
+      return Number.isFinite(n) ? n : null;
     };
-    if (idx.date < 0 || idx.close < 0) {
-      return res.status(502).json({
-        ok: false, error: "Unexpected CBOE CSV format.", header
-      });
+
+    // Header detection — try to map columns by name first. If the first
+    // line has no recognizable header (i.e. its first cell already looks
+    // like a date), fall back to positional mapping: DATE,OPEN,HIGH,LOW,CLOSE
+    // which is CBOE's canonical column order for index daily prices.
+    const firstCols = lines[0].split(",").map(s => s.trim().toLowerCase());
+    let idx = {
+      date:  firstCols.findIndex(h => h === "date"),
+      open:  firstCols.findIndex(h => h === "open"),
+      high:  firstCols.findIndex(h => h === "high"),
+      low:   firstCols.findIndex(h => h === "low"),
+      close: firstCols.findIndex(h => h === "close")
+    };
+    const hasHeader = idx.date >= 0 && idx.close >= 0;
+    if (!hasHeader) {
+      idx = { date: 0, open: 1, high: 2, low: 3, close: 4 };
     }
 
     const candles = [];
-    for (let i = 1; i < lines.length; i++) {
+    const startIdx = hasHeader ? 1 : 0;
+    let parseErrors = 0;
+    for (let i = startIdx; i < lines.length; i++) {
       const cols = lines[i].split(",");
+      if (cols.length < 2) continue;
       const dateStr = (cols[idx.date] || "").trim();
-      if (!dateStr) continue;
+      const t = parseDateFlexible(dateStr);
+      if (t == null) { parseErrors++; continue; }
       const close = Number(cols[idx.close]);
-      if (!Number.isFinite(close) || close <= 0) continue;
-      // CBOE dates are YYYY-MM-DD (UTC midnight). Convert to ms epoch.
-      const t = Date.parse(dateStr + "T00:00:00Z");
-      if (!Number.isFinite(t)) continue;
+      if (!Number.isFinite(close) || close <= 0) { parseErrors++; continue; }
       const open  = Number(cols[idx.open])  || close;
       const high  = Number(cols[idx.high])  || close;
       const low   = Number(cols[idx.low])   || close;
@@ -2454,9 +2476,21 @@ app.get("/api/cor1m-history", async (_req, res) => {
     }
 
     candles.sort((a, b) => a.datetime - b.datetime);
-    cor1mCache = { rows: candles, fetchedAt: now };
+    // Only cache non-empty parses. Otherwise a transient empty result (bug,
+    // CBOE outage, CSV format drift) would poison the cache for an hour
+    // and prevent self-healing on the next call.
+    if (candles.length > 0) {
+      cor1mCache = { rows: candles, fetchedAt: now };
+    }
 
-    res.json({ ok: true, source: 'live', count: candles.length, candles });
+    res.json({
+      ok: true,
+      source: 'live',
+      count: candles.length,
+      headerDetected: hasHeader,
+      parseErrors,
+      candles
+    });
   } catch (error) {
     console.error("COR1M_HISTORY ERROR:", error.response?.status, error.message);
     // Return stale cache if available so the chart still draws something.
