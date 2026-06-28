@@ -15352,11 +15352,12 @@
 
       // ── COR1M overlay (CBOE 1-Month Implied Correlation Index) ──
       // Plotted on the independent left price scale so it doesn't compress
-      // the SPY candles (COR1M ~10, SPY ~700). Color #66BB6B per spec.
-      // Data fetched async — line populates after the rest of the chart is
-      // already on screen. Requires Schwab auth (same path as SPY candles).
+      // the SPY candles (COR1M ~10, SPY ~700). Color #FFEB3C (bright yellow)
+      // to read clearly against the dark background and stand apart from
+      // the EMA palette. Data fetched async — line populates after the rest
+      // of the chart is already on screen. Requires Schwab auth.
       const cor1mSeries = lwcChart.addLineSeries({
-        color: '#66BB6B',
+        color: '#FFEB3C',
         lineWidth: 2,
         priceScaleId: 'left',
         crosshairMarkerVisible: true,
@@ -15731,6 +15732,14 @@
 
       ovGammaHitBoxes = [];
 
+      // Bars now anchor to the RIGHT side of the candle pane (the LEFT axis
+      // is reserved for the COR1M overlay's price scale). We reserve a
+      // ~60px gutter for the right-side price-axis labels so the bars don't
+      // cover them. `rightEdge` is the x-coordinate where each bar's right
+      // side ends; bars grow leftward from there.
+      const RIGHT_AXIS_PAD = 64;
+      const rightEdge = Math.max(MAX_BAR + 10, W - RIGHT_AXIS_PAD);
+
       for (const { strike, netGex } of ovGammaData) {
         if (netGex === 0) continue;
 
@@ -15753,10 +15762,11 @@
         // King node gets gold; all others get standard +/- GEX color
         const isKing = strike === kingStrike;
         ctx.fillStyle = isKing ? 'rgba(245,166,35,0.85)' : (netGex > 0 ? 'rgba(220,255,30,0.55)' : 'rgba(138,22,192,0.55)');
-        ctx.fillRect(0, y - barH / 2, barW, barH);
+        const barX = rightEdge - barW;
+        ctx.fillRect(barX, y - barH / 2, barW, barH);
 
         // Store hit box for hover
-        ovGammaHitBoxes.push({ x: 0, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex, isKing });
+        ovGammaHitBoxes.push({ x: barX, y: y - barH / 2, w: barW, h: Math.max(barH, 8), strike, netGex, isKing });
       }
 
       // Wire hover events on chart container (canvas is pointer-events:none so LWC drag still works)
@@ -15767,8 +15777,9 @@
           const rect = chartEl.getBoundingClientRect();
           const mx = e.clientX - rect.left;
           const my = e.clientY - rect.top;
-          // Only check if cursor is in the GEX bar zone (left side)
-          if (mx > 260) { if (tip) tip.style.display = 'none'; return; }
+          // Bars now sit on the right side — only check the right ~300px
+          // of the chart container (MAX_BAR + axis pad + breathing room).
+          if (mx < rect.width - 320) { if (tip) tip.style.display = 'none'; return; }
           let hit = null;
           let bestDist = Infinity;
           for (const hb of ovGammaHitBoxes) {
