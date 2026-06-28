@@ -19239,7 +19239,7 @@
           const priceStr = (r.price == null || !Number.isFinite(Number(r.price)))
             ? '—'
             : Number(r.price).toFixed(2);
-          return `<tr>
+          return `<tr data-mag7-sym="${r.sym}">
             <td class="sym">${r.sym}</td>
             <td class="name">${r.name}</td>
             <td class="num">${priceStr}</td>
@@ -19248,12 +19248,78 @@
             ${cell(r.pct['1m'])}
             ${cell(r.pct['ytd'])}
             ${cell(r.pct['1y'])}
-            <td class="num">${mag7FmtCap(r.marketCap)}</td>
+            <td class="num" data-mag7-cap>${mag7FmtCap(r.marketCap)}</td>
           </tr>`;
         }).join('');
+
+        // Safety net — if any market caps came back null after the server's
+        // retry pass (e.g. AV cold-start hit the daily quota mid-batch), poll
+        // them in the background. Each retry only requests the still-missing
+        // symbols so we don't re-hit AV for ones already cached. We back off
+        // 15s/30s/45s between retries and stop after the third pass.
+        mag7CapPollState.cancel?.();
+        mag7CapPollState.cancel = mag7PollMissingCaps(mag7Rows);
       } catch (e) {
         tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
       }
+    }
+
+    // Background poller that fills in market caps the initial fetch missed.
+    // Returns a cancel function — call it before starting a new poll so
+    // overlapping page loads don't fight each other.
+    const mag7CapPollState = { cancel: null };
+    function mag7PollMissingCaps(initialRows) {
+      let cancelled = false;
+      const cancel = () => { cancelled = true; };
+      const delays = [15000, 30000, 45000];
+      let attempt = 0;
+      // Work off a copy so we don't mutate the renderer's state.
+      const rows = initialRows.map(r => ({ ...r }));
+
+      const tryFill = async () => {
+        if (cancelled) return;
+        const missing = rows
+          .filter(r => r.marketCap == null || !Number.isFinite(Number(r.marketCap)))
+          .map(r => r.sym);
+        if (!missing.length) return;
+        if (attempt >= delays.length) return;
+        const wait = delays[attempt++];
+        setTimeout(async () => {
+          if (cancelled) return;
+          try {
+            const d = await apiGet('/api/fundamentals?symbols=' + missing.join(','));
+            if (cancelled) return;
+            const newData = d?.data || {};
+            let anyFilled = false;
+            for (const sym of missing) {
+              const av = newData[sym];
+              const avCap = av && av.MarketCapitalization ? Number(av.MarketCapitalization) : null;
+              if (avCap && Number.isFinite(avCap) && avCap > 0) {
+                const row = rows.find(r => r.sym === sym);
+                if (row) {
+                  row.marketCap = avCap;
+                  // Patch the cell in place without re-rendering the whole table.
+                  const cell = document.querySelector(`tr[data-mag7-sym="${sym}"] td[data-mag7-cap]`);
+                  if (cell) cell.textContent = mag7FmtCap(avCap);
+                  anyFilled = true;
+                }
+              }
+            }
+            if (anyFilled) mag7RefreshAggregateCap(rows);
+          } catch (_) { /* network blip — next attempt will retry */ }
+          tryFill(); // schedule next attempt if anything's still missing
+        }, wait);
+      };
+      tryFill();
+      return cancel;
+    }
+
+    // Re-derives the "Combined Mkt Cap" tile from the current row set.
+    // Called after background poller patches a value in.
+    function mag7RefreshAggregateCap(rows) {
+      const total = rows.reduce((s, r) => s + (Number(r.marketCap) || 0), 0);
+      const el = document.getElementById('mag7-total-cap');
+      if (el) el.textContent = total > 0 ? mag7FmtCap(total) : '—';
     }
 
     // ═══════════════════════════════════════════════════════

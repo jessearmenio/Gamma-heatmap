@@ -2575,11 +2575,14 @@ app.get("/api/fundamentals", async (req, res) => {
       }
     }
 
-    // Fetch misses sequentially with a tiny gap — Alpha Vantage's free tier
-    // tolerates a few req/sec but slams the door at the per-minute / per-day
-    // limits. Errors are per-symbol; a rate-limit on one doesn't kill the
-    // whole batch.
+    // Fetch misses sequentially with a gap, retrying rate-limited symbols
+    // once with a longer wait. Alpha Vantage's free tier is 5 req/min, so a
+    // cold-cache load of 7 Mag 7 symbols would normally rate-limit symbols
+    // 6 and 7 on first pass. The retry pass below sleeps 13s (just past the
+    // per-minute window) and tries them again, so a single page-load
+    // populates everything instead of needing manual refreshes.
     const warnings = [];
+    const pendingRetry = [];
     for (const sym of toFetch) {
       try {
         const data = await avFetchOverview(sym);
@@ -2592,11 +2595,37 @@ app.get("/api/fundamentals", async (req, res) => {
         }
       } catch (e) {
         out[sym] = null;
-        warnings.push({ symbol: sym, error: e.message });
+        // Mark rate-limit / quota errors for retry; pass other errors through.
+        const msg = String(e.message || '').toLowerCase();
+        const rateLimited = msg.includes('rate') || msg.includes('limit')
+          || msg.includes('thank you') || msg.includes('higher api call');
+        if (rateLimited) pendingRetry.push(sym);
+        else warnings.push({ symbol: sym, error: e.message });
       }
-      // 250ms gap between misses keeps us under per-minute caps even on
-      // free-tier accounts when the cache is cold (e.g. server just booted).
-      if (toFetch.length > 1) await new Promise(r => setTimeout(r, 250));
+      // 1.5s gap between misses keeps us comfortably under the free-tier
+      // 5/min cap during the first pass.
+      if (toFetch.length > 1) await new Promise(r => setTimeout(r, 1500));
+    }
+
+    // Retry pass — rate-limited symbols only. Wait past AV's per-minute
+    // window so the next call lands fresh, then try each once more with the
+    // same gap. Anything still failing gets surfaced as a real warning.
+    if (pendingRetry.length) {
+      await new Promise(r => setTimeout(r, 13000));
+      for (const sym of pendingRetry) {
+        try {
+          const data = await avFetchOverview(sym);
+          if (data) {
+            fundamentalsCache.set(sym, { data, fetchedAt: Date.now() });
+            out[sym] = data;
+          } else {
+            warnings.push({ symbol: sym, error: "no data (after retry)" });
+          }
+        } catch (e) {
+          warnings.push({ symbol: sym, error: e.message + " (after retry)" });
+        }
+        if (pendingRetry.length > 1) await new Promise(r => setTimeout(r, 1500));
+      }
     }
 
     res.json({
