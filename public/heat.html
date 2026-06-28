@@ -6002,9 +6002,13 @@
       padding: 14px;
     }
     /* Override the constrained 75%/900px width so the chart fills the
-       overlay. min(95vh, 95vw) keeps it square + offers margin. */
+       overlay. Account for the card header (~60px) + slider strip (~60px)
+       + body padding (28px) sitting above the wrap — subtract ~160px from
+       viewport height before computing the square so the chart can't push
+       up under the slider. min() bounds it by viewport width too so the
+       chart stays square on wide-but-short screens. */
     #etf-rrg-card.rrg-fullscreen #etf-rrg-wrap {
-      width: min(95vh, 95vw);
+      width: min(calc(100vh - 160px), 95vw);
       max-width: 95vw;
       aspect-ratio: 1 / 1;
     }
