@@ -2383,6 +2383,96 @@ app.get("/api/pricehistory", async (req, res) => {
   }
 });
 
+// ─── COR1M (CBOE 1-Month Implied Correlation Index) historical ────────────────
+// Schwab doesn't index CBOE correlation products in its pricehistory feed
+// (verified empirically — every $COR1M / COR1M / $ICJ variant returns 0
+// candles), so we fetch directly from CBOE's public CDN, which publishes
+// daily OHLC for every index they list. CSV format:
+//
+//   DATE,OPEN,HIGH,LOW,CLOSE
+//   2025-01-02,18.42,18.55,18.10,18.30
+//   ...
+//
+// Cached in-memory for 1 hour since COR1M is a daily print (no intraday
+// updates from CBOE's CSV — only a once-per-day end-of-day value).
+let cor1mCache = { rows: null, fetchedAt: 0 };
+const COR1M_CACHE_MS = 60 * 60 * 1000;
+
+app.get("/api/cor1m-history", async (_req, res) => {
+  try {
+    const now = Date.now();
+    if (cor1mCache.rows && (now - cor1mCache.fetchedAt) < COR1M_CACHE_MS) {
+      return res.json({ ok: true, source: 'cache', candles: cor1mCache.rows });
+    }
+
+    // CBOE's daily-prices CDN — public, no auth, no rate-limit issues.
+    const url = "https://cdn.cboe.com/api/global/us_indices/daily_prices/COR1M_History.csv";
+    const resp = await axios.get(url, {
+      timeout: 15000,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; HeatseekerBot/1.0)",
+        "Accept": "text/csv,*/*"
+      }
+    });
+
+    const text = String(resp.data || "");
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) {
+      return res.status(502).json({ ok: false, error: "CBOE returned empty CSV." });
+    }
+
+    // Header detection — CBOE uses DATE,OPEN,HIGH,LOW,CLOSE but column
+    // order has been known to drift, so map by name not by index.
+    const header = lines[0].split(",").map(s => s.trim().toLowerCase());
+    const idx = {
+      date:  header.findIndex(h => h === "date"),
+      open:  header.findIndex(h => h === "open"),
+      high:  header.findIndex(h => h === "high"),
+      low:   header.findIndex(h => h === "low"),
+      close: header.findIndex(h => h === "close")
+    };
+    if (idx.date < 0 || idx.close < 0) {
+      return res.status(502).json({
+        ok: false, error: "Unexpected CBOE CSV format.", header
+      });
+    }
+
+    const candles = [];
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(",");
+      const dateStr = (cols[idx.date] || "").trim();
+      if (!dateStr) continue;
+      const close = Number(cols[idx.close]);
+      if (!Number.isFinite(close) || close <= 0) continue;
+      // CBOE dates are YYYY-MM-DD (UTC midnight). Convert to ms epoch.
+      const t = Date.parse(dateStr + "T00:00:00Z");
+      if (!Number.isFinite(t)) continue;
+      const open  = Number(cols[idx.open])  || close;
+      const high  = Number(cols[idx.high])  || close;
+      const low   = Number(cols[idx.low])   || close;
+      candles.push({ datetime: t, open, high, low, close });
+    }
+
+    candles.sort((a, b) => a.datetime - b.datetime);
+    cor1mCache = { rows: candles, fetchedAt: now };
+
+    res.json({ ok: true, source: 'live', count: candles.length, candles });
+  } catch (error) {
+    console.error("COR1M_HISTORY ERROR:", error.response?.status, error.message);
+    // Return stale cache if available so the chart still draws something.
+    if (cor1mCache.rows && cor1mCache.rows.length) {
+      return res.json({
+        ok: true, source: 'stale', count: cor1mCache.rows.length, candles: cor1mCache.rows
+      });
+    }
+    res.status(error.response?.status || 500).json({
+      ok: false,
+      error: "Failed to fetch COR1M history from CBOE.",
+      details: error.message
+    });
+  }
+});
+
 // ─── Instruments ───────────────────────────────────────────────────────────────
 // GET /api/instruments?symbol=AAPL&projection=fundamental|desc-search|desc-regex|search|symbol-search|symbol-regex
 app.get("/api/instruments", async (req, res) => {

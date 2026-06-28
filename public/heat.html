@@ -15375,40 +15375,37 @@
       const firstT = display[0]?.datetime;
       const lastT  = display[display.length - 1]?.datetime;
       (async () => {
-        // Try the canonical CBOE-index symbol formats Schwab accepts.
-        // $COR1M is the primary one the user confirmed via /api/quotes;
-        // alternate variants are tried in order if a request returns no
-        // usable candles. Logs every attempt to the console so we can see
-        // which one (if any) actually returned data.
-        const SYMBOL_VARIANTS = ['$COR1M', 'COR1M', '$ICJ', '$RIY', 'ICJ'];
-        for (const sym of SYMBOL_VARIANTS) {
-          try {
-            const url = '/api/pricehistory?symbol=' + encodeURIComponent(sym)
-              + '&periodType=year&period=1&frequencyType=daily&frequency=1';
-            const d = await apiGet(url);
-            if (cor1mToken !== ovChartRenderToken) return;
-            const raw = d?.data?.candles || d?.candles || [];
-            const usable = raw.filter(c => Number.isFinite(Number(c?.close)) && Number(c.close) > 0);
-            console.log(`[COR1M] tried "${sym}" → ${raw.length} candles, ${usable.length} usable`);
-            if (!usable.length) continue;
-            // Trim to visible window so the left autoscale matches the SPY view.
-            const data = usable
-              .filter(c => (firstT == null || c.datetime >= firstT)
-                       && (lastT  == null || c.datetime <= lastT + 86400000))
-              .map(c => ({ time: Math.floor(c.datetime / 1000), value: Number(c.close) }))
-              .sort((a, b) => a.time - b.time);
-            if (data.length && lwcChart && cor1mToken === ovChartRenderToken) {
-              cor1mSeries.setData(data);
-              console.log(`[COR1M] plotted ${data.length} points using symbol "${sym}", range ${data[0].value.toFixed(2)}–${data[data.length-1].value.toFixed(2)}`);
-            }
-            return; // success — stop trying alternates
-          } catch (e) {
-            // 404 / 500 → log and try the next variant. Don't break the
-            // chart on a failed COR1M load; it's an enhancement, not core.
-            console.warn(`[COR1M] symbol "${sym}" failed:`, e?.message || e);
+        // Schwab's pricehistory endpoint doesn't index CBOE correlation
+        // products — we pull directly from CBOE's public CDN via our own
+        // /api/cor1m-history proxy (cached server-side for 1h since CBOE
+        // publishes COR1M only once per day at close).
+        try {
+          const d = await apiGet('/api/cor1m-history');
+          if (cor1mToken !== ovChartRenderToken) return;
+          const raw = d?.candles || [];
+          const usable = raw.filter(c => Number.isFinite(Number(c?.close)) && Number(c.close) > 0);
+          console.log(`[COR1M] fetched ${raw.length} candles from /api/cor1m-history, ${usable.length} usable (source: ${d?.source || '?'})`);
+          if (!usable.length) {
+            console.warn('[COR1M] no usable candles returned; line will be empty');
+            return;
           }
+          // Trim to visible window so the left autoscale matches the SPY view.
+          const data = usable
+            .filter(c => (firstT == null || c.datetime >= firstT)
+                     && (lastT  == null || c.datetime <= lastT + 86400000))
+            .map(c => ({ time: Math.floor(c.datetime / 1000), value: Number(c.close) }))
+            .sort((a, b) => a.time - b.time);
+          if (data.length && lwcChart && cor1mToken === ovChartRenderToken) {
+            cor1mSeries.setData(data);
+            console.log(`[COR1M] plotted ${data.length} points, range ${data[0].value.toFixed(2)}–${data[data.length-1].value.toFixed(2)}`);
+          } else {
+            console.warn(`[COR1M] ${usable.length} candles available but 0 inside visible window (${new Date(firstT).toISOString()} → ${new Date(lastT).toISOString()})`);
+          }
+        } catch (e) {
+          // CBOE CSV fetch failed or returned bad data. Chart stays without
+          // the line — not breaking the rest of the page.
+          console.warn('[COR1M] fetch failed:', e?.message || e);
         }
-        console.warn('[COR1M] none of the symbol variants returned data; line will be empty');
       })();
 
       // ── RSI series (separate price scale — overlay at bottom of same chart) ──
