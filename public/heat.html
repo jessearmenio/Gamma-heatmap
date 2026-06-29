@@ -5712,12 +5712,25 @@
     }
     .mag7-spy-label {
       font-size: 10px; color: var(--text3); font-weight: 700; letter-spacing: .06em;
+      margin-bottom: 2px;
     }
-    .mag7-spy-spy {
-      font-size: 12px; color: var(--text2); font-weight: 600;
+    .mag7-spy-line {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 12px;
     }
+    .mag7-spy-tag {
+      color: var(--text3); font-size: 9px; font-weight: 700;
+      letter-spacing: .06em; text-transform: uppercase;
+    }
+    .mag7-spy-val {
+      font-weight: 700; font-variant-numeric: tabular-nums;
+    }
+    .mag7-spy-val.pos { color: var(--green); }
+    .mag7-spy-val.neg { color: var(--red); }
     .mag7-spy-spread {
-      font-size: 14px; font-weight: 800;
+      font-size: 11px; font-weight: 700; margin-top: 4px;
+      padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);
+      letter-spacing: .02em;
     }
     .mag7-spy-spread.pos { color: var(--green); }
     .mag7-spy-spread.neg { color: var(--red); }
@@ -5744,6 +5757,20 @@
     .mag7-table .pos { color: var(--green); font-weight: 700; }
     .mag7-table .neg { color: var(--red); font-weight: 700; }
     .mag7-empty { text-align: center; color: var(--text3); padding: 24px; }
+    /* Weighted-average TOTAL row sits at the bottom of the matrix. Bolder
+       text + an accent-tinted top border + faint backdrop separates it from
+       the per-stock rows so it reads as a summary, not another row. */
+    .mag7-table tr.mag7-total-row td {
+      border-top: 2px solid var(--accent);
+      background: rgba(220, 255, 30, 0.04);
+      font-weight: 800;
+    }
+    .mag7-table tr.mag7-total-row td.name {
+      font-weight: 600;
+      color: var(--text3);
+      font-size: 10px;
+    }
+    .mag7-table tr.mag7-total-row:hover td { background: rgba(220, 255, 30, 0.08); }
 
     /* Mag 7 loading overlay — sits on top of the page while the multi-source
        fetch resolves (Schwab quotes + Schwab pricehistory × 8 + Alpha Vantage
@@ -10169,13 +10196,38 @@
           </div>
 
           <div class="mag7-spy-row" id="mag7-spy-row">
-            <div class="mag7-spy-title">📈 vs SPY — spread = Mag 7 avg minus SPY (positive = mega caps outperforming the index)</div>
+            <div class="mag7-spy-title">📈 SPY vs Mag 7 — spread shows how many percentage points Mag 7 is outperforming (green) or underperforming (red) SPY</div>
             <div class="mag7-spy-cells">
-              <div class="mag7-spy-cell"><div class="mag7-spy-label">1D</div><div class="mag7-spy-spy" id="mag7-spy-1d">—</div><div class="mag7-spy-spread" id="mag7-spread-1d">—</div></div>
-              <div class="mag7-spy-cell"><div class="mag7-spy-label">1W</div><div class="mag7-spy-spy" id="mag7-spy-1w">—</div><div class="mag7-spy-spread" id="mag7-spread-1w">—</div></div>
-              <div class="mag7-spy-cell"><div class="mag7-spy-label">1M</div><div class="mag7-spy-spy" id="mag7-spy-1m">—</div><div class="mag7-spy-spread" id="mag7-spread-1m">—</div></div>
-              <div class="mag7-spy-cell"><div class="mag7-spy-label">YTD</div><div class="mag7-spy-spy" id="mag7-spy-ytd">—</div><div class="mag7-spy-spread" id="mag7-spread-ytd">—</div></div>
-              <div class="mag7-spy-cell"><div class="mag7-spy-label">1Y</div><div class="mag7-spy-spy" id="mag7-spy-1y">—</div><div class="mag7-spy-spread" id="mag7-spread-1y">—</div></div>
+              <div class="mag7-spy-cell">
+                <div class="mag7-spy-label">1D</div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1d">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1d">—</span></div>
+                <div class="mag7-spy-spread" id="mag7-spread-1d">—</div>
+              </div>
+              <div class="mag7-spy-cell">
+                <div class="mag7-spy-label">1W</div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1w">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1w">—</span></div>
+                <div class="mag7-spy-spread" id="mag7-spread-1w">—</div>
+              </div>
+              <div class="mag7-spy-cell">
+                <div class="mag7-spy-label">1M</div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1m">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1m">—</span></div>
+                <div class="mag7-spy-spread" id="mag7-spread-1m">—</div>
+              </div>
+              <div class="mag7-spy-cell">
+                <div class="mag7-spy-label">YTD</div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-ytd">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-ytd">—</span></div>
+                <div class="mag7-spy-spread" id="mag7-spread-ytd">—</div>
+              </div>
+              <div class="mag7-spy-cell">
+                <div class="mag7-spy-label">1Y</div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1y">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1y">—</span></div>
+                <div class="mag7-spy-spread" id="mag7-spread-1y">—</div>
+              </div>
             </div>
           </div>
 
@@ -10186,6 +10238,7 @@
                   <th>Symbol</th>
                   <th>Name</th>
                   <th class="num">Price</th>
+                  <th class="num">$ Change</th>
                   <th class="num">1D</th>
                   <th class="num">1W</th>
                   <th class="num">1M</th>
@@ -10195,7 +10248,7 @@
                 </tr>
               </thead>
               <tbody id="mag7-tbody">
-                <tr><td colspan="9" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>
+                <tr><td colspan="10" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>
               </tbody>
             </table>
           </div>
@@ -19096,6 +19149,31 @@
     // ═══════════════════════════════════════════════════════
     const MAG7_SYMBOLS = ['NVDA', 'AAPL', 'MSFT', 'AMZN', 'GOOGL', 'META', 'TSLA'];
     const MAG7_NAMES = { META: 'Meta Platforms', TSLA: 'Tesla', AAPL: 'Apple', GOOGL: 'Alphabet', AMZN: 'Amazon', NVDA: 'NVIDIA', MSFT: 'Microsoft' };
+    // Mag-7-only weights provided by the user — sum to exactly 100.00%
+    // across just these 7 stocks (NOT each name's broader S&P weight).
+    // Used to compute the weighted-average TOTAL row at the bottom of the
+    // matrix.
+    const MAG7_WEIGHTS = {
+      NVDA:  24.3189,
+      AAPL:  20.7198,
+      GOOGL: 18.6446,
+      MSFT:  13.4241,
+      AMZN:  11.3813,
+      META:   6.0959,
+      TSLA:   5.4154
+    };
+
+    function mag7WeightedAvg(rows, key) {
+      let sumW = 0, sumWV = 0;
+      for (const r of rows) {
+        const w = MAG7_WEIGHTS[r.sym];
+        const v = r.pct?.[key];
+        if (w == null || v == null || !Number.isFinite(v)) continue;
+        sumWV += w * v;
+        sumW  += w;
+      }
+      return sumW > 0 ? sumWV / sumW : null;
+    }
 
     // % change between today's last close and the close `daysBack` trading
     // days earlier. `null` if there aren't enough candles for the lookback.
@@ -19150,14 +19228,14 @@
       if (!tbody) return;
       if (!isConnected) {
         mag7ShowLoading(false);
-        tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>`;
         return;
       }
       // Show overlay during the multi-source fetch (Schwab quotes + 8×
       // pricehistory + Alpha Vantage fundamentals). Background market-cap
       // poller runs after the overlay is dismissed and updates cells in place.
       mag7ShowLoading(true, 'Fetching live quotes + 1Y price history + fundamentals');
-      tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty">Loading…</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="mag7-empty">Loading…</td></tr>`;
 
       try {
         // Three parallel data sources for the page:
@@ -19209,6 +19287,13 @@
           const oneDay = (qt.netPercentChange != null)
             ? Number(qt.netPercentChange)
             : mag7PctBack(candles, 1);
+          // Day's $ change — prefer Schwab's netChange field, fall back to
+          // price × (1D% / 100) if the quote doesn't include it.
+          let dollarChange = qt.netChange != null ? Number(qt.netChange) : null;
+          if ((dollarChange == null || !Number.isFinite(dollarChange))
+              && Number.isFinite(Number(price)) && Number.isFinite(oneDay)) {
+            dollarChange = Number(price) * (oneDay / 100);
+          }
           const avCap = av && av.MarketCapitalization
             ? Number(av.MarketCapitalization)
             : null;
@@ -19217,6 +19302,7 @@
             sym,
             name: (av && av.Name) || ref.description || MAG7_NAMES[sym] || sym,
             price,
+            dollarChange,
             pct: {
               '1d':  oneDay,
               '1w':  mag7PctBack(candles, TIMEFRAMES['1w']),
@@ -19269,32 +19355,55 @@
         // SPY-spread row — for each timeframe show SPY return and the spread
         // (Mag 7 avg − SPY) so the user can see when mega caps are pulling the
         // index up vs. lagging it.
+        // Helper to color-code SPY / Mag 7 return cells based on sign.
+        // Renamed from `setVal` to avoid colliding with the top-header KPI
+        // helper of the same name defined earlier in this scope.
+        const setPctCell = (el, v) => {
+          if (!el) return;
+          if (v == null || !Number.isFinite(v)) {
+            el.textContent = '—';
+            el.classList.remove('pos', 'neg');
+            return;
+          }
+          el.textContent = mag7FmtPct(v);
+          el.classList.toggle('pos', v > 0);
+          el.classList.toggle('neg', v < 0);
+        };
         ['1d', '1w', '1m', 'ytd', '1y'].forEach(key => {
           const spy = spyRow.pct[key];
           const mag = aggregates[key];
-          const spyEl = document.getElementById('mag7-spy-' + key);
+          setPctCell(document.getElementById('mag7-spy-' + key), spy);
+          setPctCell(document.getElementById('mag7-mag-' + key), mag);
           const spreadEl = document.getElementById('mag7-spread-' + key);
-          if (spyEl) spyEl.textContent = 'SPY ' + (spy == null ? '—' : mag7FmtPct(spy));
-          if (spreadEl) {
-            if (spy == null || mag == null) {
-              spreadEl.textContent = '—';
-              spreadEl.classList.remove('pos', 'neg');
-            } else {
-              const spread = mag - spy;
-              spreadEl.textContent = (spread >= 0 ? '+' : '') + spread.toFixed(2) + 'pp';
-              spreadEl.classList.toggle('pos', spread > 0);
-              spreadEl.classList.toggle('neg', spread < 0);
-            }
+          if (!spreadEl) return;
+          if (spy == null || mag == null) {
+            spreadEl.textContent = '—';
+            spreadEl.classList.remove('pos', 'neg');
+            return;
           }
+          // Spread = Mag 7 − SPY. Phrase it explicitly so there's no
+          // mental math: "Mag 7 1.50pp better than SPY" or "0.75pp worse".
+          const spread = mag - spy;
+          const direction = spread >= 0 ? 'better' : 'worse';
+          spreadEl.textContent = `Mag 7 ${Math.abs(spread).toFixed(2)}pp ${direction} than SPY`;
+          spreadEl.classList.toggle('pos', spread > 0);
+          spreadEl.classList.toggle('neg', spread < 0);
         });
 
-        // Per-stock matrix table
-        tbody.innerHTML = mag7Rows.map(r => {
-          const cell = (v) => {
-            if (v == null || !Number.isFinite(v)) return `<td class="num">—</td>`;
-            const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
-            return `<td class="num ${cls}">${mag7FmtPct(v)}</td>`;
-          };
+        // Per-stock matrix table + weighted-average TOTAL row at the bottom.
+        const cellPct = (v) => {
+          if (v == null || !Number.isFinite(v)) return `<td class="num">—</td>`;
+          const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+          return `<td class="num ${cls}">${mag7FmtPct(v)}</td>`;
+        };
+        const cellDollar = (v) => {
+          if (v == null || !Number.isFinite(v)) return `<td class="num">—</td>`;
+          const cls = v > 0 ? 'pos' : v < 0 ? 'neg' : '';
+          const sign = v >= 0 ? '+' : '−';
+          return `<td class="num ${cls}">${sign}$${Math.abs(v).toFixed(2)}</td>`;
+        };
+
+        const stockRows = mag7Rows.map(r => {
           const priceStr = (r.price == null || !Number.isFinite(Number(r.price)))
             ? '—'
             : Number(r.price).toFixed(2);
@@ -19302,14 +19411,35 @@
             <td class="sym">${r.sym}</td>
             <td class="name">${r.name}</td>
             <td class="num">${priceStr}</td>
-            ${cell(r.pct['1d'])}
-            ${cell(r.pct['1w'])}
-            ${cell(r.pct['1m'])}
-            ${cell(r.pct['ytd'])}
-            ${cell(r.pct['1y'])}
+            ${cellDollar(r.dollarChange)}
+            ${cellPct(r.pct['1d'])}
+            ${cellPct(r.pct['1w'])}
+            ${cellPct(r.pct['1m'])}
+            ${cellPct(r.pct['ytd'])}
+            ${cellPct(r.pct['1y'])}
             <td class="num" data-mag7-cap>${mag7FmtCap(r.marketCap)}</td>
           </tr>`;
         }).join('');
+
+        // Weighted-average TOTAL row — uses MAG7_WEIGHTS (user-supplied
+        // intra-basket weights summing to ~100%). Price and $ Change are
+        // not meaningfully aggregatable across symbols at different price
+        // levels, so those cells show "—". Mkt Cap is the sum.
+        const wAvg = (key) => mag7WeightedAvg(mag7Rows, key);
+        const totalMcap = mag7Rows.reduce((s, r) => s + (Number(r.marketCap) || 0), 0);
+        const totalRow = `<tr class="mag7-total-row">
+          <td class="sym">TOTAL</td>
+          <td class="name">Weighted avg (NVDA 24.3189% · AAPL 20.7198% · GOOGL 18.6446% · MSFT 13.4241% · AMZN 11.3813% · META 6.0959% · TSLA 5.4154%)</td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+          ${cellPct(wAvg('1d'))}
+          ${cellPct(wAvg('1w'))}
+          ${cellPct(wAvg('1m'))}
+          ${cellPct(wAvg('ytd'))}
+          ${cellPct(wAvg('1y'))}
+          <td class="num">${totalMcap > 0 ? mag7FmtCap(totalMcap) : '—'}</td>
+        </tr>`;
+        tbody.innerHTML = stockRows + totalRow;
 
         // Initial render done — dismiss the loading overlay. The background
         // market-cap poller (below) continues filling missing values in
@@ -19341,7 +19471,7 @@
         }).catch(e => console.warn('Mag 7 snapshot save failed:', e?.message || e));
       } catch (e) {
         mag7ShowLoading(false);
-        tbody.innerHTML = `<tr><td colspan="9" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
       }
     }
 
