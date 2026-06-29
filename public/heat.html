@@ -12291,7 +12291,7 @@
       PCE: { tier: 'high', time: '7:30am CST', color: 'high' },
       NFP: { tier: 'high', time: '7:30am CST', color: 'high' },
       JOLTS: { tier: 'high', time: '9:00am CST', color: 'high' },
-      'Manufacturing PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
+      'Mfg PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
       'Services PMI': { tier: 'low', time: '9:00am CST', color: 'low' },
       Mopex: { tier: 'med', time: '3:00pm CST', color: 'med' },
       'VIX Expo': { tier: 'med', time: '8:00am CST', color: 'med' },
@@ -12416,13 +12416,13 @@
 
       PMI_MANUFACTURING_EVENTS.forEach(ev => {
         events.push({
-          type: 'Manufacturing PMI',
-          title: `${ev.labelMonth} Manufacturing PMI`,
+          type: 'Mfg PMI',
+          title: `${ev.labelMonth} Mfg PMI`,
           releaseDate: ev.releaseDate,
           labelMonth: ev.labelMonth,
-          time: CALENDAR_EVENT_META['Manufacturing PMI'].time,
-          tier: CALENDAR_EVENT_META['Manufacturing PMI'].tier,
-          color: CALENDAR_EVENT_META['Manufacturing PMI'].color,
+          time: CALENDAR_EVENT_META['Mfg PMI'].time,
+          tier: CALENDAR_EVENT_META['Mfg PMI'].tier,
+          color: CALENDAR_EVENT_META['Mfg PMI'].color,
           spanDays
         });
       });
