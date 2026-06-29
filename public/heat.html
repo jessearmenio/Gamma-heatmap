@@ -5731,9 +5731,12 @@
       font-size: 11px; font-weight: 700; margin-top: 4px;
       padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);
       letter-spacing: .02em;
+      color: var(--text3);
     }
-    .mag7-spy-spread.pos { color: var(--green); }
-    .mag7-spy-spread.neg { color: var(--red); }
+    /* Color only the inner "X.XXpp better/worse" span — surrounding
+       "Mag 7" / "than SPY" stays in the muted text3 color above. */
+    .mag7-spy-spread .pos { color: var(--green); }
+    .mag7-spy-spread .neg { color: var(--red); }
     .mag7-table-wrap {
       background: var(--panel); border: 1px solid var(--border);
       border-radius: 8px; padding: 14px; overflow-x: auto;
@@ -19383,11 +19386,15 @@
           }
           // Spread = Mag 7 − SPY. Phrase it explicitly so there's no
           // mental math: "Mag 7 1.50pp better than SPY" or "0.75pp worse".
+          // Only the "X.XXpp better/worse" portion is colored green/red;
+          // the surrounding "Mag 7 …" and "… than SPY" stay muted text.
           const spread = mag - spy;
           const direction = spread >= 0 ? 'better' : 'worse';
-          spreadEl.textContent = `Mag 7 ${Math.abs(spread).toFixed(2)}pp ${direction} than SPY`;
-          spreadEl.classList.toggle('pos', spread > 0);
-          spreadEl.classList.toggle('neg', spread < 0);
+          const accent = spread > 0 ? 'pos' : spread < 0 ? 'neg' : '';
+          spreadEl.innerHTML = `Mag 7 <span class="${accent}">${Math.abs(spread).toFixed(2)}pp ${direction}</span> than SPY`;
+          // Parent stays in the default muted color; only the inner span
+          // carries the green/red accent, so remove any leftover classes.
+          spreadEl.classList.remove('pos', 'neg');
         });
 
         // Per-stock matrix table + weighted-average TOTAL row at the bottom.
