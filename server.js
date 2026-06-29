@@ -2558,6 +2558,43 @@ const FUNDAMENTALS_TTL_MS = 12 * 60 * 60 * 1000; // 12h
 // cross-restart caching. Strictly Mag 7 — other symbols just use in-memory.
 const MAG7_PERSIST_SYMBOLS = new Set(['NVDA','AAPL','MSFT','AMZN','GOOGL','META','TSLA']);
 
+// The Mag 7 cache is keyed by the most recent *completed* trading day.
+//   Weekend         → previous Friday
+//   Weekday before 3pm CT  → previous trading day (today's close hasn't printed yet)
+//   Weekday at/after 3pm CT → today
+// This guarantees one row per symbol per trading day. Holidays aren't
+// handled (a Memorial-Day load would burn one AV call to write a duplicate
+// Monday row) — extend with a holiday list if that becomes a real cost.
+function isPostMag7Close() {
+  const parts = getCstParts();
+  const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(parts.weekday);
+  if (dow === 0 || dow === 6) return false;     // weekend
+  return parseInt(parts.hour, 10) >= 15;        // 3pm CT or later
+}
+
+function getMag7EffectiveTradeDate() {
+  const todayKey = getCstDateKey();
+  const parts = getCstParts();
+  const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(parts.weekday);
+  const postClose = isPostMag7Close();
+  // Weekday after close → today's row is the right answer.
+  if (dow >= 1 && dow <= 5 && postClose) return todayKey;
+  // Otherwise walk back to the most recent completed trading day:
+  //   Sun  → 2 days back (Fri)
+  //   Sat  → 1 day back  (Fri)
+  //   Mon pre-close → 3 days back (previous Fri)
+  //   Tue-Fri pre-close → 1 day back (previous weekday)
+  let daysBack;
+  if (dow === 0) daysBack = 2;
+  else if (dow === 6) daysBack = 1;
+  else if (dow === 1) daysBack = 3;   // Monday pre-close → previous Friday
+  else daysBack = 1;                  // Tue-Fri pre-close → previous weekday
+  const [y, m, d] = todayKey.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() - daysBack);
+  return dt.toISOString().slice(0, 10);
+}
+
 // Read a fresh fundamentals payload from the mag_7 table if we have a row
 // from today. Returns parsed JSON or null. Silently swallows DB errors so
 // a Turso outage doesn't break the endpoint.
@@ -2639,16 +2676,19 @@ app.get("/api/fundamentals", async (req, res) => {
     }
 
     const now = Date.now();
-    const today = getCstDateKey();
+    // Use the most recent *trading day* as the cache key, not the calendar
+    // day — on weekends this resolves to Friday so we serve the last close
+    // instead of burning an AV call for a value that hasn't changed.
+    const tradeDate = getMag7EffectiveTradeDate();
     const out = {};
     const toFetch = [];
     let dbHits = 0;
 
     // Two-layer cache hierarchy before hitting AV:
     //   1. In-memory map (fastest, 12h TTL, wiped on restart)
-    //   2. Turso `mag_7` row for today's date (persistent, Mag 7 only)
+    //   2. Turso `mag_7` row for the effective trade date (persistent, Mag 7 only)
     // AV only gets called if BOTH miss for a symbol — caps daily AV usage at
-    // 1 call per Mag 7 symbol per day = 7/day vs. the 25/day free-tier limit.
+    // 1 call per Mag 7 symbol per trading day = 7/day vs. the 25/day free-tier limit.
     for (const sym of symbols) {
       const memCached = fundamentalsCache.get(sym);
       if (memCached && (now - memCached.fetchedAt) < FUNDAMENTALS_TTL_MS) {
@@ -2656,7 +2696,7 @@ app.get("/api/fundamentals", async (req, res) => {
         continue;
       }
       if (MAG7_PERSIST_SYMBOLS.has(sym)) {
-        const dbCached = await readMag7FundamentalsCache(sym, today);
+        const dbCached = await readMag7FundamentalsCache(sym, tradeDate);
         if (dbCached) {
           // Promote to in-memory so subsequent same-process calls skip the DB.
           fundamentalsCache.set(sym, { data: dbCached, fetchedAt: now });
@@ -2680,7 +2720,7 @@ app.get("/api/fundamentals", async (req, res) => {
         if (data) {
           fundamentalsCache.set(sym, { data, fetchedAt: now });
           if (MAG7_PERSIST_SYMBOLS.has(sym)) {
-            await writeMag7FundamentalsCache(sym, today, data);
+            await writeMag7FundamentalsCache(sym, tradeDate, data);
           }
           out[sym] = data;
         } else {
@@ -4832,7 +4872,24 @@ app.post("/api/mag7/snapshot", async (req, res) => {
     if (!rows.length) {
       return res.status(400).json({ ok: false, error: "No Mag 7 rows provided." });
     }
-    const tradeDate = getCstDateKey();
+    // Skip writes outside post-close hours. Before 3pm CT on a weekday,
+    // the price/change values the client posts reflect today's *intraday*
+    // movement, not a close — writing them to yesterday's row would corrupt
+    // the prior close, and writing them to today's row would persist a
+    // mid-day value that gets overwritten anyway at close. Cleaner to write
+    // exactly once per trading day, at or after the 3pm CT close.
+    if (!isPostMag7Close()) {
+      return res.json({
+        ok: true,
+        saved: 0,
+        skipped: true,
+        reason: "Snapshot only writes at or after 3pm CT close on trading days."
+      });
+    }
+    // Use the effective trade date — at this point isPostMag7Close has
+    // confirmed we're at/after 3pm CT on a weekday, so this returns today's
+    // calendar date (and the row represents today's close).
+    const tradeDate = getMag7EffectiveTradeDate();
     let saved = 0;
     for (const r of rows) {
       const symbol = String(r.symbol || '').toUpperCase().trim();
