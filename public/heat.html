@@ -5774,6 +5774,17 @@
       font-size: 10px;
     }
     .mag7-table tr.mag7-total-row:hover td { background: rgba(220, 255, 30, 0.08); }
+    /* Weight column — narrow, smaller font, accent color so it reads as
+       metadata rather than competing with the price/% columns. */
+    .mag7-table th.mag7-weight-col,
+    .mag7-table td.mag7-weight-col {
+      width: 56px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .02em;
+    }
 
     /* Mag 7 loading overlay — sits on top of the page while the multi-source
        fetch resolves (Schwab quotes + Schwab pricehistory × 8 + Alpha Vantage
@@ -10238,6 +10249,7 @@
             <table class="mag7-table">
               <thead>
                 <tr>
+                  <th class="num mag7-weight-col">Weight</th>
                   <th>Symbol</th>
                   <th>Name</th>
                   <th class="num">Price</th>
@@ -10251,7 +10263,7 @@
                 </tr>
               </thead>
               <tbody id="mag7-tbody">
-                <tr><td colspan="10" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>
+                <tr><td colspan="11" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>
               </tbody>
             </table>
           </div>
@@ -19231,14 +19243,14 @@
       if (!tbody) return;
       if (!isConnected) {
         mag7ShowLoading(false);
-        tbody.innerHTML = `<tr><td colspan="10" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>`;
         return;
       }
       // Show overlay during the multi-source fetch (Schwab quotes + 8×
       // pricehistory + Alpha Vantage fundamentals). Background market-cap
       // poller runs after the overlay is dismissed and updates cells in place.
       mag7ShowLoading(true, 'Fetching live quotes + 1Y price history + fundamentals');
-      tbody.innerHTML = `<tr><td colspan="10" class="mag7-empty">Loading…</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="mag7-empty">Loading…</td></tr>`;
 
       try {
         // Three parallel data sources for the page:
@@ -19414,7 +19426,10 @@
           const priceStr = (r.price == null || !Number.isFinite(Number(r.price)))
             ? '—'
             : Number(r.price).toFixed(2);
+          const weight = MAG7_WEIGHTS[r.sym];
+          const weightStr = Number.isFinite(weight) ? weight.toFixed(2) + '%' : '—';
           return `<tr data-mag7-sym="${r.sym}">
+            <td class="num mag7-weight-col">${weightStr}</td>
             <td class="sym">${r.sym}</td>
             <td class="name">${r.name}</td>
             <td class="num">${priceStr}</td>
@@ -19434,9 +19449,14 @@
         // levels, so those cells show "—". Mkt Cap is the sum.
         const wAvg = (key) => mag7WeightedAvg(mag7Rows, key);
         const totalMcap = mag7Rows.reduce((s, r) => s + (Number(r.marketCap) || 0), 0);
+        // Total weight = sum of all per-stock weights (should be exactly 100%
+        // with the user-supplied values, but we compute it from MAG7_WEIGHTS
+        // so it stays in sync if weights change later).
+        const weightSum = mag7Rows.reduce((s, r) => s + (MAG7_WEIGHTS[r.sym] || 0), 0);
         const totalRow = `<tr class="mag7-total-row">
+          <td class="num mag7-weight-col">${weightSum.toFixed(2)}%</td>
           <td class="sym">TOTAL</td>
-          <td class="name">Weighted avg (NVDA 24.3189% · AAPL 20.7198% · GOOGL 18.6446% · MSFT 13.4241% · AMZN 11.3813% · META 6.0959% · TSLA 5.4154%)</td>
+          <td class="name">Weighted Average</td>
           <td class="num">—</td>
           <td class="num">—</td>
           ${cellPct(wAvg('1d'))}
@@ -19478,7 +19498,7 @@
         }).catch(e => console.warn('Mag 7 snapshot save failed:', e?.message || e));
       } catch (e) {
         mag7ShowLoading(false);
-        tbody.innerHTML = `<tr><td colspan="10" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="mag7-empty" style="color:var(--red);">Failed to load: ${e.message}</td></tr>`;
       }
     }
 
