@@ -275,8 +275,11 @@ async function initTurso() {
   `);
 
   // Daily snapshot of every Magnificent 7 stock: closing price, day's %
-  // change, and current market cap. UNIQUE(date, symbol) so the same trade
-  // day overwrites instead of duplicating when the page is reloaded.
+  // change, current market cap, plus the full Alpha Vantage OVERVIEW
+  // payload as JSON. The fundamentals_json column doubles as a persistent
+  // cache so we only spend 1 AV call per symbol per day (AV's free tier is
+  // 25 calls/day — 7 symbols × 1 call = comfortably under cap). UNIQUE(date,
+  // symbol) so reloads on the same trade day upsert instead of duplicating.
   await turso.execute(`
     CREATE TABLE IF NOT EXISTS mag_7 (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -285,11 +288,16 @@ async function initTurso() {
       price REAL,
       daily_change_pct REAL,
       market_cap REAL,
+      fundamentals_json TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(trade_date, symbol)
     )
   `);
+  // Safe migration for tables created before fundamentals_json existed.
+  try {
+    await turso.execute(`ALTER TABLE mag_7 ADD COLUMN fundamentals_json TEXT`);
+  } catch (_) { /* column already exists — ignore */ }
 
   console.log("Turso SPY daily history table ready.");
 
@@ -2546,6 +2554,54 @@ app.get("/api/cor1m-history", async (_req, res) => {
 // stay under free-tier per-minute caps.
 const fundamentalsCache = new Map();
 const FUNDAMENTALS_TTL_MS = 12 * 60 * 60 * 1000; // 12h
+// Symbols whose fundamentals we persist in the `mag_7` Turso table for
+// cross-restart caching. Strictly Mag 7 — other symbols just use in-memory.
+const MAG7_PERSIST_SYMBOLS = new Set(['NVDA','AAPL','MSFT','AMZN','GOOGL','META','TSLA']);
+
+// Read a fresh fundamentals payload from the mag_7 table if we have a row
+// from today. Returns parsed JSON or null. Silently swallows DB errors so
+// a Turso outage doesn't break the endpoint.
+async function readMag7FundamentalsCache(symbol, tradeDate) {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return null;
+  try {
+    const r = await turso.execute({
+      sql: `SELECT fundamentals_json FROM mag_7
+            WHERE trade_date = ? AND symbol = ? AND fundamentals_json IS NOT NULL`,
+      args: [tradeDate, symbol]
+    });
+    const raw = r.rows?.[0]?.fundamentals_json;
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (_) { return null; }
+  } catch (_) {
+    return null;
+  }
+}
+
+// Persist a fresh AV OVERVIEW response into the mag_7 row for today. We
+// upsert so it coexists with the price/daily_change_pct snapshot the client
+// posts after the page renders — COALESCE keeps existing non-null values
+// when this call doesn't have them.
+async function writeMag7FundamentalsCache(symbol, tradeDate, av) {
+  if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return;
+  try {
+    const mcap = Number(av?.MarketCapitalization);
+    const mcapVal = Number.isFinite(mcap) && mcap > 0 ? mcap : null;
+    await turso.execute({
+      sql: `
+        INSERT INTO mag_7 (trade_date, symbol, market_cap, fundamentals_json, updated_at)
+        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(trade_date, symbol)
+        DO UPDATE SET
+          market_cap = COALESCE(excluded.market_cap, mag_7.market_cap),
+          fundamentals_json = excluded.fundamentals_json,
+          updated_at = CURRENT_TIMESTAMP
+      `,
+      args: [tradeDate, symbol, mcapVal, JSON.stringify(av)]
+    });
+  } catch (e) {
+    console.warn("MAG7 fundamentals cache write failed:", symbol, e.message);
+  }
+}
 
 async function avFetchOverview(symbol) {
   if (!ALPHA_ADVANTAGE_API_KEY) {
@@ -2583,31 +2639,49 @@ app.get("/api/fundamentals", async (req, res) => {
     }
 
     const now = Date.now();
+    const today = getCstDateKey();
     const out = {};
     const toFetch = [];
+    let dbHits = 0;
+
+    // Two-layer cache hierarchy before hitting AV:
+    //   1. In-memory map (fastest, 12h TTL, wiped on restart)
+    //   2. Turso `mag_7` row for today's date (persistent, Mag 7 only)
+    // AV only gets called if BOTH miss for a symbol — caps daily AV usage at
+    // 1 call per Mag 7 symbol per day = 7/day vs. the 25/day free-tier limit.
     for (const sym of symbols) {
-      const cached = fundamentalsCache.get(sym);
-      if (cached && (now - cached.fetchedAt) < FUNDAMENTALS_TTL_MS) {
-        out[sym] = cached.data;
-      } else {
-        toFetch.push(sym);
+      const memCached = fundamentalsCache.get(sym);
+      if (memCached && (now - memCached.fetchedAt) < FUNDAMENTALS_TTL_MS) {
+        out[sym] = memCached.data;
+        continue;
       }
+      if (MAG7_PERSIST_SYMBOLS.has(sym)) {
+        const dbCached = await readMag7FundamentalsCache(sym, today);
+        if (dbCached) {
+          // Promote to in-memory so subsequent same-process calls skip the DB.
+          fundamentalsCache.set(sym, { data: dbCached, fetchedAt: now });
+          out[sym] = dbCached;
+          dbHits++;
+          continue;
+        }
+      }
+      toFetch.push(sym);
     }
 
-    // Fetch misses sequentially with a short 300ms gap. Server-side retry
-    // for rate-limited symbols was tried previously but pushed the total
-    // response past common hosting-platform HTTP timeouts (Render/Heroku
-    // default ~30s), causing the entire response to be killed and ALL caps
-    // to disappear. Now the server returns quickly with whatever AV gave
-    // back; missing symbols are filled in by the client-side background
-    // poller (`mag7PollMissingCaps`) at 15/30/45s intervals, which only
-    // re-requests still-missing symbols (so cached ones aren't re-fetched).
+    // Fetch misses sequentially with a short 300ms gap. No server-side retry
+    // (a previous attempt pushed the total response past hosting-platform
+    // HTTP timeouts); the client-side poller fills in missing values on
+    // subsequent page loads. Each AV success is written through to both
+    // caches so the next request — even after a restart — skips AV.
     const warnings = [];
     for (const sym of toFetch) {
       try {
         const data = await avFetchOverview(sym);
         if (data) {
           fundamentalsCache.set(sym, { data, fetchedAt: now });
+          if (MAG7_PERSIST_SYMBOLS.has(sym)) {
+            await writeMag7FundamentalsCache(sym, today, data);
+          }
           out[sym] = data;
         } else {
           out[sym] = null;
@@ -2623,7 +2697,11 @@ app.get("/api/fundamentals", async (req, res) => {
     res.json({
       ok: true,
       data: out,
+      // `cached` = served from memory OR Turso (no AV call).
+      // `dbHits`  = subset that came from the Turso mag_7 table specifically.
+      // `fetched` = symbols that actually hit AV this request.
       cached: symbols.length - toFetch.length,
+      dbHits,
       fetched: toFetch.length - warnings.length,
       warnings: warnings.length ? warnings : undefined
     });
