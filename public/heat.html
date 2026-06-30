@@ -19266,9 +19266,12 @@
         const [quotesResp, fundResp, ...histResps] = await Promise.all([
           apiGet('/api/quotes?symbols=' + allSymbols.join(',')),
           apiGet('/api/fundamentals?symbols=' + MAG7_SYMBOLS.join(',')).catch(() => null),
+          // 2 years of dailies — gives the 252-bar 1Y lookback comfortable
+          // headroom (a 1-year request returns ~250 bars which fails the
+          // `length >= daysBack + 1` guard inside mag7PctBack for 1Y).
           ...allSymbols.map(sym =>
             apiGet('/api/pricehistory?symbol=' + encodeURIComponent(sym)
-              + '&periodType=year&period=1&frequencyType=daily&frequency=1')
+              + '&periodType=year&period=2&frequencyType=daily&frequency=1')
               .catch(() => null)
           )
         ]);
