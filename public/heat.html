@@ -15735,13 +15735,12 @@
         lwcChart.timeScale().fitContent();
       }
       // Force tight candle spacing. setVisibleLogicalRange auto-computes
-      // barSpacing = chartWidth / visibleBars, which inflates to ~30-40px
-      // (= a full extra candle width of gap) when only ~30 bars are visible
-      // on a wide chart. Pinning barSpacing to 12 gives ≈ 7px bar + 5px gap
-      // per LWC's bar/gap split. The visible bar count auto-adjusts to whatever
-      // fits at this spacing (typically more than DEFAULT_VISIBLE), which is
-      // fine — the desired range above still anchors the right edge to "now".
-      lwcChart.timeScale().applyOptions({ barSpacing: 12 });
+      // barSpacing = chartWidth / visibleBars, which inflates dramatically
+      // when only ~30 bars are visible on a wide chart. barSpacing: 4 puts
+      // candles essentially touching (LWC's ~0.6 bar/gap split → ~3px bar
+      // + ~1px gap, the tightest readable layout). minBarSpacing pins this
+      // even when the chart re-flows after a resize.
+      lwcChart.timeScale().applyOptions({ barSpacing: 4, minBarSpacing: 1 });
       lwcChart._ovDesiredRange = desiredRange;
       // Mimic the manual fix: call ovSetChartTf directly (bypasses the
       // synthetic-event path that .click() goes through, which can be
