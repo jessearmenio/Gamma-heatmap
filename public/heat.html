@@ -9087,7 +9087,7 @@
                   <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
                 </div>
                 <div class="ov-metric-row">
-                  <span class="ov-metric-label">P/C Ratio <span class="ov-metric-pc-history" id="ovm-pc-history"></span></span>
+                  <span class="ov-metric-label">P/C<span class="ov-metric-pc-history" id="ovm-pc-history"></span></span>
                   <span class="ov-metric-value-group">
                     <span class="ov-metric-pc-change" id="ovm-pc-change"></span>
                     <span class="ov-metric-value" id="ovm-pc">--</span>
@@ -10201,11 +10201,11 @@
             </div>
             <div class="mag7-aggregate" id="mag7-aggregate">
               <div class="mag7-agg-item"><div class="mag7-agg-label">Combined Mkt Cap</div><div class="mag7-agg-value" id="mag7-total-cap">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1D</div><div class="mag7-agg-value" id="mag7-avg-1d">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1W</div><div class="mag7-agg-value" id="mag7-avg-1w">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1M</div><div class="mag7-agg-value" id="mag7-avg-1m">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg YTD</div><div class="mag7-agg-value" id="mag7-avg-ytd">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Avg 1Y</div><div class="mag7-agg-value" id="mag7-avg-1y">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1D</div><div class="mag7-agg-value" id="mag7-avg-1d">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1W</div><div class="mag7-agg-value" id="mag7-avg-1w">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1M</div><div class="mag7-agg-value" id="mag7-avg-1m">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd YTD</div><div class="mag7-agg-value" id="mag7-avg-ytd">—</div></div>
+              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1Y</div><div class="mag7-agg-value" id="mag7-avg-1y">—</div></div>
             </div>
           </div>
 
@@ -15734,6 +15734,14 @@
       } else {
         lwcChart.timeScale().fitContent();
       }
+      // Force tight candle spacing. setVisibleLogicalRange auto-computes
+      // barSpacing = chartWidth / visibleBars, which inflates to ~30-40px
+      // (= a full extra candle width of gap) when only ~30 bars are visible
+      // on a wide chart. Pinning barSpacing to 12 gives ≈ 7px bar + 5px gap
+      // per LWC's bar/gap split. The visible bar count auto-adjusts to whatever
+      // fits at this spacing (typically more than DEFAULT_VISIBLE), which is
+      // fine — the desired range above still anchors the right edge to "now".
+      lwcChart.timeScale().applyOptions({ barSpacing: 12 });
       lwcChart._ovDesiredRange = desiredRange;
       // Mimic the manual fix: call ovSetChartTf directly (bypasses the
       // synthetic-event path that .click() goes through, which can be
@@ -19335,19 +19343,18 @@
         const mag7Rows = MAG7_SYMBOLS.map(computeRow);
         const spyRow   = computeRow('SPY');
 
-        // Aggregate Mag 7: combined market cap + equal-weighted average %.
+        // Aggregate Mag 7: combined market cap + WEIGHTED average %. Uses the
+        // same MAG7_WEIGHTS as the TOTAL row at the bottom of the matrix so
+        // the top KPIs and the table summary reconcile. Equal-weighted means
+        // would double-count smaller names and under-represent NVDA/AAPL,
+        // which doesn't reflect their actual influence on the basket.
         const totalCap = mag7Rows.reduce((s, r) => s + (r.marketCap || 0), 0);
-        const avgPct = (key) => {
-          const vals = mag7Rows.map(r => r.pct[key]).filter(v => v != null && Number.isFinite(v));
-          if (!vals.length) return null;
-          return vals.reduce((a, b) => a + b, 0) / vals.length;
-        };
         const aggregates = {
-          '1d':  avgPct('1d'),
-          '1w':  avgPct('1w'),
-          '1m':  avgPct('1m'),
-          'ytd': avgPct('ytd'),
-          '1y':  avgPct('1y')
+          '1d':  mag7WeightedAvg(mag7Rows, '1d'),
+          '1w':  mag7WeightedAvg(mag7Rows, '1w'),
+          '1m':  mag7WeightedAvg(mag7Rows, '1m'),
+          'ytd': mag7WeightedAvg(mag7Rows, 'ytd'),
+          '1y':  mag7WeightedAvg(mag7Rows, '1y')
         };
 
         // Wire up the top header KPIs
