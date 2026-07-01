@@ -18,6 +18,7 @@ const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 const FEAR_GREED_API_KEY = process.env.FEAR_GREED_API_KEY;
 const WORLD_CONFLICT_API_KEY = process.env.WORLD_CONFLICT_API_KEY;
 const ALPHA_ADVANTAGE_API_KEY = process.env.ALPHA_ADVANTAGE_API_KEY;
+const API_NINJA_KEY = process.env.api_ninja_key;
 const TURSO_DATABASE_URL = process.env.TURSO_DATABASE_URL;
 const TURSO_AUTH_TOKEN = process.env.TURSO_AUTH_TOKEN;
 
@@ -2618,10 +2619,11 @@ async function readMag7FundamentalsCache(symbol, tradeDate) {
 // upsert so it coexists with the price/daily_change_pct snapshot the client
 // posts after the page renders — COALESCE keeps existing non-null values
 // when this call doesn't have them.
-async function writeMag7FundamentalsCache(symbol, tradeDate, av) {
+async function writeMag7FundamentalsCache(symbol, tradeDate, payload) {
   if (!TURSO_DATABASE_URL || !TURSO_AUTH_TOKEN) return;
   try {
-    const mcap = Number(av?.MarketCapitalization);
+    // API Ninjas returns { ticker, name, market_cap, currency, updated }.
+    const mcap = Number(payload?.market_cap);
     const mcapVal = Number.isFinite(mcap) && mcap > 0 ? mcap : null;
     await turso.execute({
       sql: `
@@ -2633,33 +2635,30 @@ async function writeMag7FundamentalsCache(symbol, tradeDate, av) {
           fundamentals_json = excluded.fundamentals_json,
           updated_at = CURRENT_TIMESTAMP
       `,
-      args: [tradeDate, symbol, mcapVal, JSON.stringify(av)]
+      args: [tradeDate, symbol, mcapVal, JSON.stringify(payload)]
     });
   } catch (e) {
     console.warn("MAG7 fundamentals cache write failed:", symbol, e.message);
   }
 }
 
-async function avFetchOverview(symbol) {
-  if (!ALPHA_ADVANTAGE_API_KEY) {
-    throw new Error("ALPHA_ADVANTAGE_API_KEY not configured");
+// Fetch market cap + company name from API Ninjas. Response shape:
+//   { ticker, name, market_cap, currency, updated }
+// Docs: https://api-ninjas.com/api/marketcap. Auth is via X-Api-Key header.
+async function ninjaFetchMarketCap(symbol) {
+  if (!API_NINJA_KEY) {
+    throw new Error("api_ninja_key not configured");
   }
-  const r = await axios.get("https://www.alphavantage.co/query", {
-    params: {
-      function: "OVERVIEW",
-      symbol,
-      apikey: ALPHA_ADVANTAGE_API_KEY
-    },
+  const r = await axios.get("https://api.api-ninjas.com/v1/marketcap", {
+    params: { ticker: symbol },
+    headers: { "X-Api-Key": API_NINJA_KEY },
     timeout: 15000
   });
   const data = r.data || {};
-  // Alpha Vantage returns {} on unknown symbol, {"Note":...} on per-minute
-  // limit, and {"Information":...} on daily limit. We only cache responses
-  // with a real `Symbol` field so transient empties don't poison the cache.
-  if (data && data.Symbol) return data;
-  if (data && (data.Note || data.Information)) {
-    throw new Error(data.Note || data.Information);
-  }
+  // API Ninjas returns {} for unknown tickers and { error: ... } on quota
+  // / auth failures. Only cache successful responses with a real cap value.
+  if (data && Number(data.market_cap) > 0) return data;
+  if (data && data.error) throw new Error(data.error);
   return null;
 }
 
@@ -2708,15 +2707,15 @@ app.get("/api/fundamentals", async (req, res) => {
       toFetch.push(sym);
     }
 
-    // Fetch misses sequentially with a short 300ms gap. No server-side retry
-    // (a previous attempt pushed the total response past hosting-platform
-    // HTTP timeouts); the client-side poller fills in missing values on
-    // subsequent page loads. Each AV success is written through to both
-    // caches so the next request — even after a restart — skips AV.
+    // Fetch misses sequentially with a short 300ms gap. API Ninjas allows
+    // ~50k requests/month on the free tier — no need for the aggressive
+    // retry/spacing logic we had for Alpha Vantage. Each success is written
+    // through to both caches so the next request — even after a restart —
+    // skips the network call.
     const warnings = [];
     for (const sym of toFetch) {
       try {
-        const data = await avFetchOverview(sym);
+        const data = await ninjaFetchMarketCap(sym);
         if (data) {
           fundamentalsCache.set(sym, { data, fetchedAt: now });
           if (MAG7_PERSIST_SYMBOLS.has(sym)) {

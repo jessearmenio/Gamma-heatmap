@@ -15603,7 +15603,13 @@
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 3,
         lastValueVisible: true,
-        priceLineVisible: false,
+        // Horizontal price line across the chart to the LEFT price scale,
+        // mirroring the SPY candle series' price line on the right axis.
+        // Yellow to match the line, dashed to stay subtle behind price action.
+        priceLineVisible: true,
+        priceLineColor: '#FFEB3C',
+        priceLineWidth: 1,
+        priceLineStyle: LightweightCharts.LineStyle.Dashed,
         title: 'COR1M',
       });
       lwcChart.priceScale('left').applyOptions({
@@ -19298,15 +19304,15 @@
         const TIMEFRAMES = { '1d': null, '1w': 5, '1m': 21, '1y': 252 };
 
         // Build a per-symbol row of metrics for both display + aggregates.
-        // Market cap comes from Alpha Vantage's `MarketCapitalization` field
-        // (string of dollars). Falls back to Schwab's `fundamental.marketCap`
-        // if AV is unavailable / rate-limited.
+        // Market cap comes from API Ninjas' `market_cap` field (integer USD).
+        // Falls back to Schwab's `fundamental.marketCap` if API Ninjas is
+        // unavailable / rate-limited.
         const computeRow = (sym) => {
           const item = quotesResp.data?.[sym] || {};
           const qt = item.quote || {};
           const fn = item.fundamental || {};
           const ref = item.reference || {};
-          const av = fundBySymbol[sym] || null;
+          const fund = fundBySymbol[sym] || null;
           const candles = histBySymbol[sym] || [];
           const price = qt.lastPrice ?? qt.mark ?? qt.closePrice ?? null;
           const oneDay = (qt.netPercentChange != null)
@@ -19319,13 +19325,13 @@
               && Number.isFinite(Number(price)) && Number.isFinite(oneDay)) {
             dollarChange = Number(price) * (oneDay / 100);
           }
-          const avCap = av && av.MarketCapitalization
-            ? Number(av.MarketCapitalization)
+          const fundCap = fund && fund.market_cap
+            ? Number(fund.market_cap)
             : null;
           const schwabCap = Number(fn.marketCap) || null;
           return {
             sym,
-            name: (av && av.Name) || ref.description || MAG7_NAMES[sym] || sym,
+            name: (fund && fund.name) || ref.description || MAG7_NAMES[sym] || sym,
             price,
             dollarChange,
             pct: {
@@ -19335,7 +19341,7 @@
               'ytd': mag7PctYTD(candles),
               '1y':  mag7PctBack(candles, TIMEFRAMES['1y'])
             },
-            marketCap: (avCap && Number.isFinite(avCap) && avCap > 0) ? avCap : schwabCap
+            marketCap: (fundCap && Number.isFinite(fundCap) && fundCap > 0) ? fundCap : schwabCap
           };
         };
 
@@ -19539,15 +19545,15 @@
             const newData = d?.data || {};
             let anyFilled = false;
             for (const sym of missing) {
-              const av = newData[sym];
-              const avCap = av && av.MarketCapitalization ? Number(av.MarketCapitalization) : null;
-              if (avCap && Number.isFinite(avCap) && avCap > 0) {
+              const fund = newData[sym];
+              const cap = fund && fund.market_cap ? Number(fund.market_cap) : null;
+              if (cap && Number.isFinite(cap) && cap > 0) {
                 const row = rows.find(r => r.sym === sym);
                 if (row) {
-                  row.marketCap = avCap;
+                  row.marketCap = cap;
                   // Patch the cell in place without re-rendering the whole table.
                   const cell = document.querySelector(`tr[data-mag7-sym="${sym}"] td[data-mag7-cap]`);
-                  if (cell) cell.textContent = mag7FmtCap(avCap);
+                  if (cell) cell.textContent = mag7FmtCap(cap);
                   anyFilled = true;
                 }
               }
