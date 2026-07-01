@@ -2364,6 +2364,189 @@ app.get("/api/movers", async (req, res) => {
   }
 });
 
+// ─── Scanner extras ───────────────────────────────────────────────────────────
+// Two auxiliary lists that render below the Stock Scanner grid:
+//   1. Top 25 by daily volume — pooled from Schwab movers on $SPX, $COMPX,
+//      $DJI (sort=VOLUME); merged, deduped, ranked.
+//   2. Top 10 by net Call OI / top 10 by net Put OI in the next 30 days —
+//      chain-summed across a curated universe of the most options-active
+//      tickers. Chain fetches are expensive so results are cached in memory.
+
+const SCANNER_OI_UNIVERSE = [
+  // Index ETFs first — always the highest OI in the market
+  "SPY", "QQQ", "IWM", "TLT", "GLD", "XLE", "XLF", "XLK", "EEM", "HYG",
+  // Mega-cap single names
+  "AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA", "AMD", "NFLX", "INTC",
+  // Popular options names
+  "JPM", "BAC", "WMT", "DIS", "PLTR", "PYPL", "BA", "F", "XOM", "PFE", "CVX", "GME"
+];
+
+// Cache scanner data since both endpoints are expensive.
+// Volume moves intraday → 60s TTL. OI is fairly stable → 15min TTL.
+let scannerVolCache = { rows: null, fetchedAt: 0 };
+let scannerOiCache  = { call: null, put: null, fetchedAt: 0 };
+const SCANNER_VOL_TTL_MS = 60 * 1000;
+const SCANNER_OI_TTL_MS  = 15 * 60 * 1000;
+
+// GET /api/scanner/top-volume?limit=25
+// Merges movers from $SPX, $COMPX, $DJI (sort=VOLUME), enriches with quote
+// data, dedupes by symbol, sorts by total volume, returns top N.
+app.get("/api/scanner/top-volume", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token." });
+    }
+    const limit = Math.min(Math.max(Number(req.query.limit) || 25, 1), 50);
+    const now = Date.now();
+    if (scannerVolCache.rows && (now - scannerVolCache.fetchedAt) < SCANNER_VOL_TTL_MS) {
+      return res.json({ ok: true, source: 'cache', rows: scannerVolCache.rows.slice(0, limit) });
+    }
+
+    // Pull top movers-by-volume from all three major-index screeners in parallel.
+    const indexes = ["$SPX", "$COMPX", "$DJI"];
+    const results = await Promise.all(indexes.map(idx =>
+      schwabGet(
+        `https://api.schwabapi.com/marketdata/v1/movers/${encodeURIComponent(idx)}`,
+        { params: { sort: "VOLUME", frequency: "0" }, timeout: 15000 }
+      ).catch(e => { console.warn("VOL movers failed for", idx, e.message); return null; })
+    ));
+
+    // Merge + dedupe on symbol.
+    const seen = new Map();
+    for (const r of results) {
+      if (!r?.data) continue;
+      const arr = Array.isArray(r.data) ? r.data : (r.data.screeners || []);
+      for (const m of arr) {
+        if (!m?.symbol) continue;
+        // Keep whichever record already has the highest reported volume.
+        const prev = seen.get(m.symbol);
+        const newVol = Number(m.totalVolume) || 0;
+        const prevVol = Number(prev?.totalVolume) || 0;
+        if (!prev || newVol > prevVol) seen.set(m.symbol, m);
+      }
+    }
+    let rows = Array.from(seen.values());
+
+    // Enrich with live quote fields so volume/price/change are accurate.
+    if (rows.length) {
+      const symbols = rows.map(m => m.symbol).join(",");
+      try {
+        const qRes = await schwabGet(
+          "https://api.schwabapi.com/marketdata/v1/quotes",
+          { params: { symbols, fields: "quote" }, timeout: 15000 }
+        );
+        const qData = qRes.data || {};
+        rows.forEach(m => {
+          const qt = qData[m.symbol]?.quote || {};
+          if (qt.totalVolume != null)      m.totalVolume      = qt.totalVolume;
+          if (qt.lastPrice != null)        m.lastPrice        = qt.lastPrice;
+          if (qt.netPercentChange != null) m.netPercentChange = qt.netPercentChange;
+          if (qt.netChange != null)        m.netChange        = qt.netChange;
+          if (qt.description)              m.description      = qt.description;
+        });
+      } catch (qErr) {
+        console.warn("VOL quotes enrich failed:", qErr.message);
+      }
+    }
+
+    rows.sort((a, b) => (Number(b.totalVolume) || 0) - (Number(a.totalVolume) || 0));
+    scannerVolCache = { rows, fetchedAt: now };
+    res.json({ ok: true, source: 'live', rows: rows.slice(0, limit) });
+  } catch (error) {
+    console.error("SCANNER TOP_VOLUME ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to fetch top volume." });
+  }
+});
+
+// GET /api/scanner/top-net-oi?limit=10
+// Returns two ranked lists — top by net Call OI (call − put) and top by net
+// Put OI (put − call) across all expirations within the next 30 days. Both
+// rankings are computed once and served from the same cache.
+async function scannerFetchNetOi() {
+  const now = Date.now();
+  const fromDate = new Date().toISOString().slice(0, 10);
+  const toEnd = new Date(); toEnd.setDate(toEnd.getDate() + 30);
+  const toDate = toEnd.toISOString().slice(0, 10);
+
+  const sumChainOi = (expMap) => {
+    if (!expMap || typeof expMap !== "object") return 0;
+    let sum = 0;
+    for (const expKey of Object.keys(expMap)) {
+      const strikes = expMap[expKey];
+      if (!strikes) continue;
+      for (const sk of Object.keys(strikes)) {
+        const contracts = strikes[sk];
+        if (!Array.isArray(contracts)) continue;
+        for (const c of contracts) {
+          const oi = Number(c.openInterest);
+          if (Number.isFinite(oi)) sum += oi;
+        }
+      }
+    }
+    return sum;
+  };
+
+  // Fetch chains for the whole universe in parallel batches to avoid
+  // hammering Schwab. Batch size 5 gives ~6 batches of ~1-3s = ~15-20s
+  // cold-cache time; comfortably under HTTP timeouts.
+  const rows = [];
+  const BATCH = 5;
+  for (let i = 0; i < SCANNER_OI_UNIVERSE.length; i += BATCH) {
+    const batch = SCANNER_OI_UNIVERSE.slice(i, i + BATCH);
+    const settled = await Promise.all(batch.map(async sym => {
+      try {
+        const r = await fetchChain(sym, {
+          contractType: "ALL",
+          strikeCount: undefined,
+          range: "ALL",
+          fromDate,
+          toDate
+        });
+        const chain = r.data || {};
+        const callOi = sumChainOi(chain.callExpDateMap);
+        const putOi  = sumChainOi(chain.putExpDateMap);
+        return {
+          symbol: sym,
+          callOi,
+          putOi,
+          netCallOi: callOi - putOi,
+          netPutOi:  putOi - callOi
+        };
+      } catch (e) {
+        return null;
+      }
+    }));
+    for (const row of settled) if (row) rows.push(row);
+  }
+
+  const callRanked = [...rows].sort((a, b) => b.netCallOi - a.netCallOi);
+  const putRanked  = [...rows].sort((a, b) => b.netPutOi  - a.netPutOi);
+  scannerOiCache = { call: callRanked, put: putRanked, fetchedAt: now };
+}
+
+app.get("/api/scanner/top-net-oi", async (req, res) => {
+  try {
+    if (!schwabTokens?.access_token) {
+      return res.status(401).json({ ok: false, error: "No access token." });
+    }
+    const limit = Math.min(Math.max(Number(req.query.limit) || 10, 1), 30);
+    const now = Date.now();
+    if (!scannerOiCache.call || (now - scannerOiCache.fetchedAt) >= SCANNER_OI_TTL_MS) {
+      await scannerFetchNetOi();
+    }
+    res.json({
+      ok: true,
+      source: (now - scannerOiCache.fetchedAt) < SCANNER_OI_TTL_MS ? 'cache' : 'live',
+      call: (scannerOiCache.call || []).slice(0, limit),
+      put:  (scannerOiCache.put  || []).slice(0, limit),
+      universe: SCANNER_OI_UNIVERSE.length
+    });
+  } catch (error) {
+    console.error("SCANNER TOP_NET_OI ERROR:", error.message);
+    res.status(500).json({ ok: false, error: "Failed to fetch net OI rankings." });
+  }
+});
+
 // ─── Price History ─────────────────────────────────────────────────────────────
 // GET /api/pricehistory?symbol=SPY&periodType=day&period=5&frequencyType=minute&frequency=5
 app.get("/api/pricehistory", async (req, res) => {

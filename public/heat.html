@@ -6460,6 +6460,99 @@
     /* ─────────────────────────────────────────────
    STOCK SCANNER
 ───────────────────────────────────────────── */
+    /* Scanner extras — auxiliary panels below the main scan table */
+    .sc-extras-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin: 14px 0 0;
+    }
+    .sc-extras-row-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    @media (max-width: 960px) {
+      .sc-extras-row-2 { grid-template-columns: 1fr; }
+    }
+    .sc-extra-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sc-extra-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .sc-extra-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .03em;
+      color: var(--text);
+    }
+    .sc-extra-source {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: .04em;
+    }
+    .sc-extra-body {
+      overflow-x: auto;
+    }
+    .sc-extra-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .sc-extra-table th {
+      text-align: left;
+      padding: 7px 10px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .03em;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .sc-extra-table th.num { text-align: right; }
+    .sc-extra-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(30,34,48,.5);
+      white-space: nowrap;
+    }
+    .sc-extra-table td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .sc-extra-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .sc-extra-table td.rank {
+      color: var(--text3);
+      font-weight: 700;
+      width: 28px;
+    }
+    .sc-extra-table td.sym {
+      font-weight: 800;
+      color: var(--text);
+    }
+    .sc-extra-table td.name {
+      color: var(--text2);
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sc-extra-table td.pos { color: var(--green); font-weight: 700; }
+    .sc-extra-table td.neg { color: var(--red);   font-weight: 700; }
+    .sc-extra-empty {
+      text-align: center;
+      color: var(--text3);
+      padding: 20px;
+      font-size: 11px;
+    }
+
     .scanner-pg-wrap {
       padding: 0 0 16px;
       display: flex;
@@ -10704,6 +10797,86 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- ── Scanner Extras: top volume + top net OI ─────────────
+                 Three ranked lists below the main scan table. Volume list
+                 shows the 25 highest-volume tickers today; the two OI lists
+                 show net Call OI / net Put OI leaders across the next 30
+                 days of expirations for a curated universe of the most
+                 options-active names. -->
+            <div class="sc-extras-row">
+              <div class="sc-extra-card">
+                <div class="sc-extra-header">
+                  <span class="sc-extra-title">🔥 Top 25 by Volume Today</span>
+                  <span class="sc-extra-source">$SPX + $COMPX + $DJI · live quotes</span>
+                </div>
+                <div class="sc-extra-body">
+                  <table class="sc-extra-table">
+                    <thead>
+                      <tr>
+                        <th class="num">#</th>
+                        <th>Symbol</th>
+                        <th>Name</th>
+                        <th class="num">Price</th>
+                        <th class="num">Chg %</th>
+                        <th class="num">Volume</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sc-vol-tbody">
+                      <tr><td colspan="6" class="sc-extra-empty">Loading top volume…</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="sc-extras-row sc-extras-row-2">
+              <div class="sc-extra-card">
+                <div class="sc-extra-header">
+                  <span class="sc-extra-title">📈 Top 10 Net Call OI · Next 30 Days</span>
+                  <span class="sc-extra-source">calls − puts, summed across all listed expirations ≤ 30d</span>
+                </div>
+                <div class="sc-extra-body">
+                  <table class="sc-extra-table">
+                    <thead>
+                      <tr>
+                        <th class="num">#</th>
+                        <th>Symbol</th>
+                        <th class="num">Call OI</th>
+                        <th class="num">Put OI</th>
+                        <th class="num">Net</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sc-callOi-tbody">
+                      <tr><td colspan="5" class="sc-extra-empty">Loading net Call OI…</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="sc-extra-card">
+                <div class="sc-extra-header">
+                  <span class="sc-extra-title">📉 Top 10 Net Put OI · Next 30 Days</span>
+                  <span class="sc-extra-source">puts − calls, summed across all listed expirations ≤ 30d</span>
+                </div>
+                <div class="sc-extra-body">
+                  <table class="sc-extra-table">
+                    <thead>
+                      <tr>
+                        <th class="num">#</th>
+                        <th>Symbol</th>
+                        <th class="num">Call OI</th>
+                        <th class="num">Put OI</th>
+                        <th class="num">Net</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sc-putOi-tbody">
+                      <tr><td colspan="5" class="sc-extra-empty">Loading net Put OI…</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
           </div>
@@ -20494,6 +20667,106 @@
       }
 
       // ── Main Load ─────────────────────────────────────────
+      // ── Scanner extras (below the main scan grid) ───────────────────
+      // Three ranked lists loaded from server endpoints that pool + cache
+      // Schwab data. Called fire-and-forget from loadScanner so a slow
+      // chain fetch doesn't block the primary scan grid from rendering.
+      function scFmtInt(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return '—';
+        if (Math.abs(n) >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+        if (Math.abs(n) >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+        return n.toFixed(0);
+      }
+      function scFmtSignedInt(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return '—';
+        const sign = n >= 0 ? '+' : '−';
+        return sign + scFmtInt(Math.abs(n));
+      }
+      function scFmtPct(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return '—';
+        return (n >= 0 ? '+' : '') + n.toFixed(2) + '%';
+      }
+      function scPosNegCls(v) {
+        const n = Number(v);
+        if (!Number.isFinite(n) || n === 0) return '';
+        return n > 0 ? 'pos' : 'neg';
+      }
+
+      async function scLoadTopVolume() {
+        const tbody = document.getElementById('sc-vol-tbody');
+        if (!tbody) return;
+        try {
+          const d = await apiGet('/api/scanner/top-volume?limit=25');
+          const rows = (d && d.ok) ? (d.rows || []) : [];
+          if (!rows.length) {
+            tbody.innerHTML = `<tr><td colspan="6" class="sc-extra-empty">No volume data yet.</td></tr>`;
+            return;
+          }
+          tbody.innerHTML = rows.map((r, i) => {
+            const price = Number(r.lastPrice);
+            const pct   = Number(r.netPercentChange);
+            const vol   = Number(r.totalVolume);
+            const pctCls = scPosNegCls(pct);
+            return `<tr>
+              <td class="rank num">${i + 1}</td>
+              <td class="sym">${r.symbol || '—'}</td>
+              <td class="name">${r.description || ''}</td>
+              <td class="num">${Number.isFinite(price) ? '$' + price.toFixed(2) : '—'}</td>
+              <td class="num ${pctCls}">${scFmtPct(pct)}</td>
+              <td class="num">${scFmtInt(vol)}</td>
+            </tr>`;
+          }).join('');
+        } catch (e) {
+          tbody.innerHTML = `<tr><td colspan="6" class="sc-extra-empty">Failed to load: ${e.message}</td></tr>`;
+        }
+      }
+
+      async function scLoadTopNetOi() {
+        const callBody = document.getElementById('sc-callOi-tbody');
+        const putBody  = document.getElementById('sc-putOi-tbody');
+        const renderRow = (r, i, netKey) => {
+          const net    = Number(r[netKey]);
+          const netCls = scPosNegCls(net);
+          return `<tr>
+            <td class="rank num">${i + 1}</td>
+            <td class="sym">${r.symbol}</td>
+            <td class="num">${scFmtInt(r.callOi)}</td>
+            <td class="num">${scFmtInt(r.putOi)}</td>
+            <td class="num ${netCls}">${scFmtSignedInt(net)}</td>
+          </tr>`;
+        };
+        try {
+          const d = await apiGet('/api/scanner/top-net-oi?limit=10');
+          if (!d?.ok) throw new Error(d?.error || 'Fetch failed');
+          const callList = d.call || [];
+          const putList  = d.put  || [];
+          if (callBody) {
+            callBody.innerHTML = callList.length
+              ? callList.map((r, i) => renderRow(r, i, 'netCallOi')).join('')
+              : `<tr><td colspan="5" class="sc-extra-empty">No OI data yet.</td></tr>`;
+          }
+          if (putBody) {
+            putBody.innerHTML = putList.length
+              ? putList.map((r, i) => renderRow(r, i, 'netPutOi')).join('')
+              : `<tr><td colspan="5" class="sc-extra-empty">No OI data yet.</td></tr>`;
+          }
+        } catch (e) {
+          if (callBody) callBody.innerHTML = `<tr><td colspan="5" class="sc-extra-empty">Failed to load: ${e.message}</td></tr>`;
+          if (putBody)  putBody.innerHTML  = `<tr><td colspan="5" class="sc-extra-empty">Failed to load: ${e.message}</td></tr>`;
+        }
+      }
+
+      function scLoadExtras() {
+        // Fire both in parallel — volume finishes in ~1s, OI takes 15-20s on
+        // cold cache but sub-second on warm cache. Neither blocks the other
+        // or the main scan grid.
+        scLoadTopVolume();
+        scLoadTopNetOi();
+      }
+
       window.loadScanner = async function (showSkeletons = true) {
         if (!isConnected) {
           document.getElementById('sc-tbody').innerHTML = `<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--text3);">Log in with Schwab to use the Stock Scanner.</td></tr>`;
@@ -20501,6 +20774,10 @@
         }
 
         scSetupEvents();
+        // Auxiliary panels (top volume + net Call/Put OI) fire in parallel
+        // with the main scan. Failures are non-blocking — worst case the
+        // panels show their empty state without breaking the primary grid.
+        scLoadExtras();
 
         if (showSkeletons) {
           document.getElementById('sc-tbody').innerHTML = Array(8).fill(0).map(() =>
