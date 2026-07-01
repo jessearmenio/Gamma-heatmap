@@ -895,7 +895,9 @@
       box-shadow: inset 0 0 6px rgba(34, 221, 136, 0.06);
     }
 
-    #market-countdown[hidden] { display: none; }
+    #market-countdown[hidden] {
+      display: none;
+    }
 
     /* Pre-market countdown — informative only, matches the Pre-Market pill. */
     #market-countdown.pre {
@@ -917,7 +919,9 @@
       cursor: pointer;
     }
 
-    #market-bell-overlay[hidden] { display: none; }
+    #market-bell-overlay[hidden] {
+      display: none;
+    }
 
     .mbell-backdrop {
       position: absolute;
@@ -936,8 +940,13 @@
       animation: mbell-pop 0.85s cubic-bezier(0.18, 1.25, 0.4, 1) both;
     }
 
-    #market-bell-overlay.closing .mbell-backdrop { animation: mbell-fade 0.5s ease reverse both; }
-    #market-bell-overlay.closing .mbell-stage { animation: mbell-fade 0.5s ease reverse both; }
+    #market-bell-overlay.closing .mbell-backdrop {
+      animation: mbell-fade 0.5s ease reverse both;
+    }
+
+    #market-bell-overlay.closing .mbell-stage {
+      animation: mbell-fade 0.5s ease reverse both;
+    }
 
     .mbell-svg {
       width: 340px;
@@ -947,10 +956,27 @@
     }
 
     /* Mount hardware */
-    .mbell-bracket { fill: #2a2f3a; stroke: rgba(255, 255, 255, 0.16); stroke-width: 1.5; }
-    .mbell-box { fill: url(#mbellBrass); stroke: #6e4c08; stroke-width: 2; }
-    .mbell-box-face { fill: rgba(0, 0, 0, 0.2); }
-    .mbell-bolt { fill: #b9831a; stroke: #6e4c08; stroke-width: 1.5; }
+    .mbell-bracket {
+      fill: #2a2f3a;
+      stroke: rgba(255, 255, 255, 0.16);
+      stroke-width: 1.5;
+    }
+
+    .mbell-box {
+      fill: url(#mbellBrass);
+      stroke: #6e4c08;
+      stroke-width: 2;
+    }
+
+    .mbell-box-face {
+      fill: rgba(0, 0, 0, 0.2);
+    }
+
+    .mbell-bolt {
+      fill: #b9831a;
+      stroke: #6e4c08;
+      stroke-width: 1.5;
+    }
 
     /* The bell — a round brass dome, fixed/wall-mounted; it only micro-
        vibrates as the striker bangs it (it does not swing). */
@@ -959,11 +985,34 @@
       transform-origin: 140px 160px;
       animation: mbell-shake 0.26s ease-in-out infinite;
     }
-    .mbell-dome { fill: url(#mbellDome); stroke: #7a5408; stroke-width: 2.5; }
-    .mbell-dome-rim { fill: none; stroke: rgba(255, 247, 214, 0.5); stroke-width: 2; }
-    .mbell-knob-base { fill: url(#mbellBrass); stroke: #6e4c08; stroke-width: 1.5; }
-    .mbell-knob { fill: url(#mbellDome); stroke: #6e4c08; stroke-width: 1.5; }
-    .mbell-gleam { fill: #fff7e0; }
+
+    .mbell-dome {
+      fill: url(#mbellDome);
+      stroke: #7a5408;
+      stroke-width: 2.5;
+    }
+
+    .mbell-dome-rim {
+      fill: none;
+      stroke: rgba(255, 247, 214, 0.5);
+      stroke-width: 2;
+    }
+
+    .mbell-knob-base {
+      fill: url(#mbellBrass);
+      stroke: #6e4c08;
+      stroke-width: 1.5;
+    }
+
+    .mbell-knob {
+      fill: url(#mbellDome);
+      stroke: #6e4c08;
+      stroke-width: 1.5;
+    }
+
+    .mbell-gleam {
+      fill: #fff7e0;
+    }
 
     /* Striker mechanism at the top — the arm rocks fast to bang the dome. */
     .mbell-striker {
@@ -971,15 +1020,31 @@
       transform-origin: 140px 30px;
       animation: mbell-strike 0.26s ease-in-out infinite;
     }
-    .mbell-striker-arm { stroke: #9095a2; stroke-width: 6; stroke-linecap: round; }
-    .mbell-hammer { fill: #e2e5eb; stroke: #8b8f9b; stroke-width: 1.5; }
-    .mbell-striker-pivot { fill: #cfd2db; stroke: #6b7080; stroke-width: 1.5; }
+
+    .mbell-striker-arm {
+      stroke: #9095a2;
+      stroke-width: 6;
+      stroke-linecap: round;
+    }
+
+    .mbell-hammer {
+      fill: #e2e5eb;
+      stroke: #8b8f9b;
+      stroke-width: 1.5;
+    }
+
+    .mbell-striker-pivot {
+      fill: #cfd2db;
+      stroke: #6b7080;
+      stroke-width: 1.5;
+    }
 
     /* Sound waves */
     .mbell-waves {
       transform-box: view-box;
       transform-origin: 140px 150px;
     }
+
     .mbell-wave {
       fill: none;
       stroke: #ffd45e;
@@ -988,7 +1053,12 @@
       opacity: 0;
       animation: mbell-wave 0.52s ease-out infinite;
     }
-    .mbell-wave.w2, .mbell-wave.w4 { animation-delay: 0.16s; stroke-width: 3.5; }
+
+    .mbell-wave.w2,
+    .mbell-wave.w4 {
+      animation-delay: 0.16s;
+      stroke-width: 3.5;
+    }
 
     .mbell-label {
       font-size: clamp(26px, 6vw, 40px);
@@ -998,6 +1068,7 @@
       line-height: 1;
       text-align: center;
     }
+
     .mbell-sub {
       font-size: 12px;
       font-weight: 600;
@@ -1005,45 +1076,109 @@
       text-transform: uppercase;
       color: var(--text2);
     }
+
     #market-bell-overlay.open .mbell-label {
       color: var(--green);
       text-shadow: 0 0 26px rgba(34, 221, 136, 0.65);
     }
+
     #market-bell-overlay.close .mbell-label {
       color: var(--red);
       text-shadow: 0 0 26px rgba(255, 59, 92, 0.65);
     }
 
     @keyframes mbell-fade {
-      from { opacity: 0; }
-      to { opacity: 1; }
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
+
     @keyframes mbell-pop {
-      0% { transform: scale(0.25) rotate(-340deg); opacity: 0; }
-      60% { opacity: 1; }
-      100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      0% {
+        transform: scale(0.25) rotate(-340deg);
+        opacity: 0;
+      }
+
+      60% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+      }
     }
+
     @keyframes mbell-strike {
-      0% { transform: rotate(-24deg); }
-      52% { transform: rotate(12deg); }
-      66% { transform: rotate(15deg); }   /* contact with the dome */
-      100% { transform: rotate(-24deg); }
+      0% {
+        transform: rotate(-24deg);
+      }
+
+      52% {
+        transform: rotate(12deg);
+      }
+
+      66% {
+        transform: rotate(15deg);
+      }
+
+      /* contact with the dome */
+      100% {
+        transform: rotate(-24deg);
+      }
     }
+
     @keyframes mbell-shake {
-      0%, 58%, 100% { transform: translate(0, 0) scale(1); }
-      70% { transform: translate(1.4px, 0.6px) scale(1.014); }
-      82% { transform: translate(-0.8px, -0.2px) scale(1.005); }
+
+      0%,
+      58%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      70% {
+        transform: translate(1.4px, 0.6px) scale(1.014);
+      }
+
+      82% {
+        transform: translate(-0.8px, -0.2px) scale(1.005);
+      }
     }
+
     @keyframes mbell-wave {
-      0% { opacity: 0; transform: scale(0.7); }
-      28% { opacity: 0.95; }
-      100% { opacity: 0; transform: scale(1.18); }
+      0% {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+
+      28% {
+        opacity: 0.95;
+      }
+
+      100% {
+        opacity: 0;
+        transform: scale(1.18);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .mbell-stage { animation-duration: 0.3s; }
-      .mbell-striker, .mbell-bell-shake, .mbell-wave { animation: none; }
-      .mbell-striker { transform: rotate(10deg); }
+      .mbell-stage {
+        animation-duration: 0.3s;
+      }
+
+      .mbell-striker,
+      .mbell-bell-shake,
+      .mbell-wave {
+        animation: none;
+      }
+
+      .mbell-striker {
+        transform: rotate(10deg);
+      }
     }
 
     /* Final-hour treatment — slight warm shift to flag the close approaching. */
@@ -1066,10 +1201,13 @@
     }
 
     @keyframes market-countdown-critical {
-      0%, 100% {
+
+      0%,
+      100% {
         box-shadow: inset 0 0 6px rgba(255, 59, 92, 0.18), 0 0 6px rgba(255, 59, 92, 0.15);
         border-color: rgba(255, 59, 92, 0.45);
       }
+
       50% {
         box-shadow: inset 0 0 10px rgba(255, 59, 92, 0.30), 0 0 14px rgba(255, 59, 92, 0.45);
         border-color: rgba(255, 59, 92, 0.85);
@@ -2093,7 +2231,9 @@
       flex-shrink: 0;
     }
 
-    #sm-controls { margin-bottom: 12px; }
+    #sm-controls {
+      margin-bottom: 12px;
+    }
 
     .symbol-pill {
       padding: 5px 12px;
@@ -3392,8 +3532,14 @@
       font-weight: 600;
       white-space: nowrap;
     }
-    .ov-metric-pc-change.pos { color: var(--green, #22c55e); }
-    .ov-metric-pc-change.neg { color: var(--red, #ef4444); }
+
+    .ov-metric-pc-change.pos {
+      color: var(--green, #22c55e);
+    }
+
+    .ov-metric-pc-change.neg {
+      color: var(--red, #ef4444);
+    }
 
     .ov-metric-value {
       font-size: 10px;
@@ -3998,7 +4144,12 @@
     }
 
     /* ── Overview: Trade Authorization Checklist ── */
-    .ov-row-checklist { margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px; }
+    .ov-row-checklist {
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
     .cl-card {
       background: linear-gradient(180deg, rgba(9, 17, 29, 0.98), rgba(5, 10, 18, 0.98));
@@ -4009,8 +4160,13 @@
     }
 
     /* Subtle visual differentiation for the SHORT card (top accent border). */
-    #ov-checklist-card-short { border-top: 2px solid rgba(255, 59, 92, 0.35); }
-    #ov-checklist-card        { border-top: 2px solid rgba(34, 221, 136, 0.35); }
+    #ov-checklist-card-short {
+      border-top: 2px solid rgba(255, 59, 92, 0.35);
+    }
+
+    #ov-checklist-card {
+      border-top: 2px solid rgba(34, 221, 136, 0.35);
+    }
 
     .cl-card .cl-header {
       padding: 10px 14px;
@@ -4022,11 +4178,28 @@
       gap: 12px;
       flex-wrap: wrap;
     }
-    .cl-card .card-title { color: var(--text3); font-size: 13px; }
+
+    .cl-card .card-title {
+      color: var(--text3);
+      font-size: 13px;
+    }
+
     /* Collapsible header + chevron */
-    .cl-clickable { cursor: pointer; user-select: none; }
-    .cl-clickable:hover .card-title { color: var(--text); }
-    .cl-header-left { display: flex; align-items: center; gap: 10px; }
+    .cl-clickable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .cl-clickable:hover .card-title {
+      color: var(--text);
+    }
+
+    .cl-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .cl-chevron {
       display: inline-block;
       width: 14px;
@@ -4035,7 +4208,11 @@
       transition: transform 0.18s ease;
       transform: rotate(0deg);
     }
-    .cl-collapsible[data-cl-open="true"] .cl-chevron { transform: rotate(90deg); color: var(--text); }
+
+    .cl-collapsible[data-cl-open="true"] .cl-chevron {
+      transform: rotate(90deg);
+      color: var(--text);
+    }
 
     /* Direction toggle on the trade-entry form (segmented) */
     .cl-dir-toggle {
@@ -4046,6 +4223,7 @@
       overflow: hidden;
       align-self: flex-start;
     }
+
     .cl-dir-btn {
       padding: 6px 16px;
       background: transparent;
@@ -4059,11 +4237,24 @@
       font-family: inherit;
       transition: background 0.12s, color 0.12s;
     }
-    .cl-dir-btn.selected[data-dir="long"]  { background: rgba(34, 221, 136, 0.16); color: var(--green); }
-    .cl-dir-btn.selected[data-dir="short"] { background: rgba(255, 59, 92, 0.16);   color: var(--red);   }
+
+    .cl-dir-btn.selected[data-dir="long"] {
+      background: rgba(34, 221, 136, 0.16);
+      color: var(--green);
+    }
+
+    .cl-dir-btn.selected[data-dir="short"] {
+      background: rgba(255, 59, 92, 0.16);
+      color: var(--red);
+    }
 
     /* Notes textarea + 2-column row in the trade-entry grid */
-    .cl-te-grid.cl-te-grid-2 { grid-template-columns: auto 1fr; gap: 14px; margin-top: 10px; }
+    .cl-te-grid.cl-te-grid-2 {
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
     .cl-te-notes-field textarea {
       background: var(--bg3);
       color: var(--text);
@@ -4075,15 +4266,34 @@
       resize: vertical;
       min-height: 36px;
     }
-    .cl-te-notes-field textarea:focus { border-color: var(--accent); outline: none; }
+
+    .cl-te-notes-field textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
 
     /* Trade-entry list row updated to include direction + notes columns */
     .cl-te-row .te-dir {
-      font-size: 9px; padding: 2px 7px; border-radius: 8px; letter-spacing: 0.06em;
-      text-transform: uppercase; font-weight: 800;
+      font-size: 9px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 800;
     }
-    .cl-te-row .te-dir.long  { background: rgba(34, 221, 136, 0.16); color: var(--green); border: 1px solid rgba(34, 221, 136, 0.3); }
-    .cl-te-row .te-dir.short { background: rgba(255, 59, 92, 0.16);   color: var(--red);   border: 1px solid rgba(255, 59, 92, 0.3); }
+
+    .cl-te-row .te-dir.long {
+      background: rgba(34, 221, 136, 0.16);
+      color: var(--green);
+      border: 1px solid rgba(34, 221, 136, 0.3);
+    }
+
+    .cl-te-row .te-dir.short {
+      background: rgba(255, 59, 92, 0.16);
+      color: var(--red);
+      border: 1px solid rgba(255, 59, 92, 0.3);
+    }
+
     .cl-te-row .te-notes {
       font-size: 10px;
       color: var(--text3);
@@ -4091,7 +4301,13 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .cl-header-sub { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .cl-header-sub {
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
 
     /* Three objective columns */
     .cl-objectives {
@@ -4100,8 +4316,11 @@
       gap: 12px;
       padding: 14px;
     }
+
     @media (max-width: 1100px) {
-      .cl-objectives { grid-template-columns: 1fr; }
+      .cl-objectives {
+        grid-template-columns: 1fr;
+      }
     }
 
     .cl-obj {
@@ -4114,25 +4333,53 @@
       gap: 10px;
       transition: border-color 0.15s, box-shadow 0.15s;
     }
+
     .cl-obj[data-status="active"] {
       border-color: rgba(34, 221, 136, 0.5);
       box-shadow: 0 0 0 1px rgba(34, 221, 136, 0.18), inset 0 0 12px rgba(34, 221, 136, 0.05);
     }
 
-    .cl-obj-head { display: flex; align-items: center; gap: 10px; }
+    .cl-obj-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .cl-obj-num {
-      width: 24px; height: 24px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: rgba(220, 255, 30, 0.12);
       color: var(--accent);
-      font-size: 12px; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       flex-shrink: 0;
     }
-    .cl-obj-title { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text); }
-    .cl-obj-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 1px; }
 
-    .cl-obj-items { display: flex; flex-direction: column; gap: 5px; }
+    .cl-obj-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .cl-obj-sub {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    .cl-obj-items {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
 
     /* Pill-style check items */
     .cl-item {
@@ -4148,10 +4395,16 @@
       color: var(--text2);
       transition: background 0.12s, border-color 0.12s, color 0.12s;
     }
-    .cl-item:hover { background: rgba(255, 255, 255, 0.04); border-color: var(--border); }
+
+    .cl-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--border);
+    }
+
     .cl-item input[type="checkbox"] {
       appearance: none;
-      width: 14px; height: 14px;
+      width: 14px;
+      height: 14px;
       border-radius: 3px;
       border: 1.5px solid var(--border);
       background: var(--bg3);
@@ -4160,37 +4413,91 @@
       position: relative;
       transition: background 0.12s, border-color 0.12s;
     }
+
     .cl-item input[type="checkbox"]:checked {
       background: var(--accent);
       border-color: var(--accent);
     }
+
     .cl-item input[type="checkbox"]:checked::after {
       content: '';
       position: absolute;
-      top: 1px; left: 4px;
-      width: 4px; height: 8px;
+      top: 1px;
+      left: 4px;
+      width: 4px;
+      height: 8px;
       border: solid #07111d;
       border-width: 0 2px 2px 0;
       transform: rotate(45deg);
     }
-    .cl-item:has(input:checked) { color: var(--text); border-color: rgba(220, 255, 30, 0.25); background: rgba(220, 255, 30, 0.04); }
-    .cl-item.small { font-size: 10px; padding: 5px 8px; }
+
+    .cl-item:has(input:checked) {
+      color: var(--text);
+      border-color: rgba(220, 255, 30, 0.25);
+      background: rgba(220, 255, 30, 0.04);
+    }
+
+    .cl-item.small {
+      font-size: 10px;
+      padding: 5px 8px;
+    }
 
     /* Auto-evaluated items are read-only — driven by clEvaluate from live data. */
-    .cl-item-readonly { cursor: default; }
-    .cl-item-readonly:hover { background: var(--bg3); border-color: var(--border2); }
-    .cl-item-readonly input[type="checkbox"] { cursor: default; opacity: 0.95; }
-    .cl-item-readonly:has(input:checked) { background: rgba(220, 255, 30, 0.05); border-color: rgba(220, 255, 30, 0.22); }
+    .cl-item-readonly {
+      cursor: default;
+    }
+
+    .cl-item-readonly:hover {
+      background: var(--bg3);
+      border-color: var(--border2);
+    }
+
+    .cl-item-readonly input[type="checkbox"] {
+      cursor: default;
+      opacity: 0.95;
+    }
+
+    .cl-item-readonly:has(input:checked) {
+      background: rgba(220, 255, 30, 0.05);
+      border-color: rgba(220, 255, 30, 0.22);
+    }
 
     /* Status toggle is now a read-only display reflecting the auto status. */
-    .cl-status-readonly .cl-status-btn { cursor: default; }
-    .cl-status-readonly .cl-status-btn:hover { color: var(--text3); background: transparent; }
-    .cl-status-readonly .cl-status-btn.selected[data-status="active"]:hover { color: var(--green); background: rgba(34, 221, 136, 0.16); }
-    .cl-status-readonly .cl-status-btn.selected[data-status="inactive"]:hover { color: var(--red); background: rgba(255, 59, 92, 0.14); }
+    .cl-status-readonly .cl-status-btn {
+      cursor: default;
+    }
+
+    .cl-status-readonly .cl-status-btn:hover {
+      color: var(--text3);
+      background: transparent;
+    }
+
+    .cl-status-readonly .cl-status-btn.selected[data-status="active"]:hover {
+      color: var(--green);
+      background: rgba(34, 221, 136, 0.16);
+    }
+
+    .cl-status-readonly .cl-status-btn.selected[data-status="inactive"]:hover {
+      color: var(--red);
+      background: rgba(255, 59, 92, 0.14);
+    }
 
     /* Status toggle (segmented) */
-    .cl-obj-status { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 4px; }
-    .cl-status-label { font-size: 9px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+    .cl-obj-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 4px;
+    }
+
+    .cl-status-label {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .cl-status-toggle {
       display: inline-flex;
       background: var(--bg3);
@@ -4199,6 +4506,7 @@
       overflow: hidden;
       flex: 1;
     }
+
     .cl-status-btn {
       flex: 1;
       padding: 5px 10px;
@@ -4212,9 +4520,20 @@
       font-family: inherit;
       transition: background 0.12s, color 0.12s;
     }
-    .cl-status-btn:hover { color: var(--text2); }
-    .cl-status-btn.selected[data-status="active"] { background: rgba(34, 221, 136, 0.16); color: var(--green); }
-    .cl-status-btn.selected[data-status="inactive"] { background: rgba(255, 59, 92, 0.14); color: var(--red); }
+
+    .cl-status-btn:hover {
+      color: var(--text2);
+    }
+
+    .cl-status-btn.selected[data-status="active"] {
+      background: rgba(34, 221, 136, 0.16);
+      color: var(--green);
+    }
+
+    .cl-status-btn.selected[data-status="inactive"] {
+      background: rgba(255, 59, 92, 0.14);
+      color: var(--red);
+    }
 
     .cl-divider {
       height: 1px;
@@ -4230,8 +4549,21 @@
       gap: 14px;
       flex-wrap: wrap;
     }
-    .cl-auth-title { font-size: 11px; font-weight: 800; letter-spacing: 0.10em; text-transform: uppercase; color: var(--text2); }
-    .cl-auth-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .cl-auth-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--text2);
+    }
+
+    .cl-auth-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
     .cl-auth-pill {
       display: inline-flex;
       align-items: center;
@@ -4246,23 +4578,50 @@
       color: var(--text3);
       transition: all 0.15s;
     }
+
     .cl-auth-pill .cl-auth-dot {
-      width: 8px; height: 8px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--text3);
       transition: background 0.15s, box-shadow 0.15s;
     }
+
     .cl-auth-pill.on {
       color: var(--green);
       background: rgba(34, 221, 136, 0.12);
       border-color: rgba(34, 221, 136, 0.4);
     }
-    .cl-auth-pill.on .cl-auth-dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
 
-    .cl-auth-verdict { margin-left: auto; font-size: 11px; color: var(--text3); font-style: italic; }
-    .cl-auth-verdict.go { color: var(--green); font-weight: 700; font-style: normal; }
-    .cl-auth-verdict.wait { color: var(--orange); font-weight: 700; font-style: normal; }
-    .cl-auth-verdict.standdown { color: var(--red); font-weight: 700; font-style: normal; }
+    .cl-auth-pill.on .cl-auth-dot {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    .cl-auth-verdict {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text3);
+      font-style: italic;
+    }
+
+    .cl-auth-verdict.go {
+      color: var(--green);
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    .cl-auth-verdict.wait {
+      color: var(--orange);
+      font-weight: 700;
+      font-style: normal;
+    }
+
+    .cl-auth-verdict.standdown {
+      color: var(--red);
+      font-weight: 700;
+      font-style: normal;
+    }
 
     /* Reminders */
     .cl-reminders {
@@ -4271,9 +4630,13 @@
       gap: 12px;
       padding: 14px;
     }
+
     @media (max-width: 1100px) {
-      .cl-reminders { grid-template-columns: 1fr; }
+      .cl-reminders {
+        grid-template-columns: 1fr;
+      }
     }
+
     .cl-reminder {
       background: rgba(255, 255, 255, 0.015);
       border: 1px solid var(--border2);
@@ -4283,14 +4646,47 @@
       flex-direction: column;
       gap: 6px;
     }
-    .cl-rem-title { font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: var(--text); }
-    .cl-rem-sub { font-size: 9px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; }
-    .cl-rem-items { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+
+    .cl-rem-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+
+    .cl-rem-sub {
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .cl-rem-items {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 2px;
+    }
 
     /* Trade entry */
-    .cl-trade-entry { padding: 14px; }
-    .cl-te-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-    .cl-te-title { font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: var(--text); }
+    .cl-trade-entry {
+      padding: 14px;
+    }
+
+    .cl-te-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .cl-te-title {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+
     .cl-te-new {
       background: linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);
       color: #09111d;
@@ -4302,6 +4698,7 @@
       cursor: pointer;
       font-family: inherit;
     }
+
     .cl-te-form {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--border2);
@@ -4309,13 +4706,29 @@
       padding: 12px;
       margin-bottom: 10px;
     }
+
     .cl-te-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 10px;
     }
-    @media (max-width: 900px) { .cl-te-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    .cl-te-field { display: flex; flex-direction: column; gap: 4px; font-size: 10px; color: var(--text3); letter-spacing: 0.04em; text-transform: uppercase; }
+
+    @media (max-width: 900px) {
+      .cl-te-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .cl-te-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .cl-te-field input {
       background: var(--bg3);
       color: var(--text);
@@ -4325,53 +4738,134 @@
       font-size: 12px;
       font-family: inherit;
     }
-    .cl-te-field input:focus { border-color: var(--accent); outline: none; }
-    .cl-te-triggers { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
-    .cl-te-trig-label { font-size: 10px; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .cl-te-field input:focus {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .cl-te-triggers {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .cl-te-trig-label {
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
     .cl-trig-chip {
-      display: inline-flex; align-items: center; gap: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
       padding: 4px 10px;
       background: var(--bg3);
       border: 1px solid var(--border2);
       border-radius: 14px;
-      font-size: 11px; color: var(--text2);
+      font-size: 11px;
+      color: var(--text2);
       cursor: pointer;
     }
+
     .cl-trig-chip input[type="checkbox"] {
       appearance: none;
-      width: 12px; height: 12px;
+      width: 12px;
+      height: 12px;
       border-radius: 3px;
       border: 1.5px solid var(--border);
       background: var(--bg3);
-      cursor: pointer; position: relative;
+      cursor: pointer;
+      position: relative;
     }
-    .cl-trig-chip input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
-    .cl-trig-chip input[type="checkbox"]:checked::after {
-      content: ''; position: absolute; top: 1px; left: 3px;
-      width: 3px; height: 6px;
-      border: solid #07111d; border-width: 0 2px 2px 0; transform: rotate(45deg);
-    }
-    .cl-trig-chip:has(input:checked) { color: var(--text); border-color: rgba(220, 255, 30, 0.3); background: rgba(220, 255, 30, 0.06); }
 
-    .cl-te-actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
-    .cl-te-msg { font-size: 11px; color: var(--text3); flex: 1; }
-    .cl-te-msg.ok { color: var(--green); }
-    .cl-te-msg.err { color: var(--red); }
-    .cl-te-cancel {
-      background: var(--bg3); color: var(--text3);
-      border: 1px solid var(--border2);
-      border-radius: 5px; padding: 6px 12px;
-      font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit;
+    .cl-trig-chip input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
     }
+
+    .cl-trig-chip input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 3px;
+      width: 3px;
+      height: 6px;
+      border: solid #07111d;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .cl-trig-chip:has(input:checked) {
+      color: var(--text);
+      border-color: rgba(220, 255, 30, 0.3);
+      background: rgba(220, 255, 30, 0.06);
+    }
+
+    .cl-te-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .cl-te-msg {
+      font-size: 11px;
+      color: var(--text3);
+      flex: 1;
+    }
+
+    .cl-te-msg.ok {
+      color: var(--green);
+    }
+
+    .cl-te-msg.err {
+      color: var(--red);
+    }
+
+    .cl-te-cancel {
+      background: var(--bg3);
+      color: var(--text3);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
     .cl-te-save {
       background: linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);
-      color: #09111d; border: none;
-      border-radius: 5px; padding: 6px 14px;
-      font-size: 11px; font-weight: 800; cursor: pointer; font-family: inherit;
+      color: #09111d;
+      border: none;
+      border-radius: 5px;
+      padding: 6px 14px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
     }
 
-    .cl-te-list { display: flex; flex-direction: column; gap: 6px; }
-    .cl-te-empty { font-size: 10px; color: var(--text3); padding: 12px; text-align: center; background: rgba(255, 255, 255, 0.02); border-radius: 6px; }
+    .cl-te-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cl-te-empty {
+      font-size: 10px;
+      color: var(--text3);
+      padding: 12px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px;
+    }
+
     .cl-te-row {
       display: grid;
       grid-template-columns: 90px 60px 80px 80px 120px 110px 1fr 70px;
@@ -4384,17 +4878,34 @@
       font-size: 11px;
       color: var(--text2);
     }
-    .cl-te-row .te-date { color: var(--text); font-weight: 700; }
-    .cl-te-row .te-trigs { display: flex; gap: 4px; flex-wrap: wrap; }
+
+    .cl-te-row .te-date {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .cl-te-row .te-trigs {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
     .cl-te-row .te-trig-tag {
-      font-size: 9px; padding: 2px 6px; border-radius: 8px;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 8px;
       background: rgba(220, 255, 30, 0.12);
       color: var(--accent);
       border: 1px solid rgba(220, 255, 30, 0.2);
-      letter-spacing: 0.05em; text-transform: uppercase; font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-weight: 700;
     }
+
     @media (max-width: 800px) {
-      .cl-te-row { grid-template-columns: 1fr; }
+      .cl-te-row {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* ── Overview: Terminal Analysis ── */
@@ -5673,93 +6184,223 @@
     }
 
     /* New Mag 7 layout (header + aggregate + SPY-spread + perf table) */
-    #mag7-page { padding: 18px 22px; color: var(--text); }
+    #mag7-page {
+      padding: 18px 22px;
+      color: var(--text);
+    }
+
     .mag7-header {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      gap: 22px; flex-wrap: wrap; margin-bottom: 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
     }
-    .mag7-title { font-size: 18px; font-weight: 800; letter-spacing: .02em; }
-    .mag7-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+    .mag7-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
+    .mag7-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
     .mag7-aggregate {
-      display: grid; grid-template-columns: repeat(6, minmax(110px, 1fr));
-      gap: 10px; flex: 1 1 600px;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(110px, 1fr));
+      gap: 10px;
+      flex: 1 1 600px;
     }
+
     .mag7-agg-item {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 12px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
     }
+
     .mag7-agg-label {
-      font-size: 9px; font-weight: 700; color: var(--text3);
-      letter-spacing: .08em; text-transform: uppercase;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
-    .mag7-agg-value { font-size: 16px; font-weight: 800; margin-top: 4px; }
-    .mag7-agg-value.pos { color: var(--green); }
-    .mag7-agg-value.neg { color: var(--red); }
+
+    .mag7-agg-value {
+      font-size: 16px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .mag7-agg-value.pos {
+      color: var(--green);
+    }
+
+    .mag7-agg-value.neg {
+      color: var(--red);
+    }
+
     .mag7-spy-row {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
     }
+
     .mag7-spy-title {
-      font-size: 10px; font-weight: 700; color: var(--text3);
-      letter-spacing: .04em; text-transform: uppercase; margin-bottom: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
     }
+
     .mag7-spy-cells {
-      display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
     }
+
     .mag7-spy-cell {
-      display: flex; flex-direction: column; gap: 4px;
-      background: var(--bg3); border-radius: 6px; padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: var(--bg3);
+      border-radius: 6px;
+      padding: 10px 12px;
     }
+
     .mag7-spy-label {
-      font-size: 10px; color: var(--text3); font-weight: 700; letter-spacing: .06em;
+      font-size: 10px;
+      color: var(--text3);
+      font-weight: 700;
+      letter-spacing: .06em;
       margin-bottom: 2px;
     }
+
     .mag7-spy-line {
-      display: flex; justify-content: space-between; align-items: baseline;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
       font-size: 12px;
     }
+
     .mag7-spy-tag {
-      color: var(--text3); font-size: 9px; font-weight: 700;
-      letter-spacing: .06em; text-transform: uppercase;
+      color: var(--text3);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
     }
+
     .mag7-spy-val {
-      font-weight: 700; font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
     }
-    .mag7-spy-val.pos { color: var(--green); }
-    .mag7-spy-val.neg { color: var(--red); }
+
+    .mag7-spy-val.pos {
+      color: var(--green);
+    }
+
+    .mag7-spy-val.neg {
+      color: var(--red);
+    }
+
     .mag7-spy-spread {
-      font-size: 11px; font-weight: 700; margin-top: 4px;
-      padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
       letter-spacing: .02em;
       color: var(--text3);
     }
+
     /* Color only the inner "X.XXpp better/worse" span — surrounding
        "Mag 7" / "than SPY" stays in the muted text3 color above. */
-    .mag7-spy-spread .pos { color: var(--green); }
-    .mag7-spy-spread .neg { color: var(--red); }
-    .mag7-table-wrap {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 14px; overflow-x: auto;
+    .mag7-spy-spread .pos {
+      color: var(--green);
     }
-    .mag7-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+    .mag7-spy-spread .neg {
+      color: var(--red);
+    }
+
+    .mag7-table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+
+    .mag7-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
     .mag7-table th {
-      text-align: left; padding: 8px 8px; font-weight: 700;
-      color: var(--text3); letter-spacing: .03em;
+      text-align: left;
+      padding: 8px 8px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .03em;
       border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
-    .mag7-table th.num { text-align: right; }
+
+    .mag7-table th.num {
+      text-align: right;
+    }
+
     .mag7-table td {
       padding: 9px 8px;
-      border-bottom: 1px solid rgba(30,34,48,.5);
+      border-bottom: 1px solid rgba(30, 34, 48, .5);
     }
-    .mag7-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-    .mag7-table tr:hover td { background: rgba(255,255,255,0.025); }
-    .mag7-table .sym { font-weight: 800; }
-    .mag7-table .name { color: var(--text3); font-size: 11px; }
-    .mag7-table .pos { color: var(--green); font-weight: 700; }
-    .mag7-table .neg { color: var(--red); font-weight: 700; }
-    .mag7-empty { text-align: center; color: var(--text3); padding: 24px; }
+
+    .mag7-table td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mag7-table tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .mag7-table .sym {
+      font-weight: 800;
+    }
+
+    .mag7-table .name {
+      color: var(--text3);
+      font-size: 11px;
+    }
+
+    .mag7-table .pos {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .mag7-table .neg {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .mag7-empty {
+      text-align: center;
+      color: var(--text3);
+      padding: 24px;
+    }
+
     /* Weighted-average TOTAL row sits at the bottom of the matrix. Bolder
        text + an accent-tinted top border + faint backdrop separates it from
        the per-stock rows so it reads as a summary, not another row. */
@@ -5768,12 +6409,17 @@
       background: rgba(220, 255, 30, 0.04);
       font-weight: 800;
     }
+
     .mag7-table tr.mag7-total-row td.name {
       font-weight: 600;
       color: var(--text3);
       font-size: 10px;
     }
-    .mag7-table tr.mag7-total-row:hover td { background: rgba(220, 255, 30, 0.08); }
+
+    .mag7-table tr.mag7-total-row:hover td {
+      background: rgba(220, 255, 30, 0.08);
+    }
+
     /* Weight column — narrow, smaller font, accent color so it reads as
        metadata rather than competing with the price/% columns. */
     .mag7-table th.mag7-weight-col,
@@ -5791,37 +6437,62 @@
        fundamentals × 7). Auto-hides once the initial render lands; the
        background market-cap poller does not re-show it. */
     .mag7-loading {
-      position: absolute; inset: 0;
+      position: absolute;
+      inset: 0;
       background: rgba(3, 9, 21, 0.78);
       backdrop-filter: blur(3px);
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       z-index: 50;
     }
+
     .mag7-loading-card {
-      background: var(--panel); border: 1px solid var(--border2);
-      border-radius: 10px; padding: 28px 36px;
-      display: flex; flex-direction: column; align-items: center;
-      gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      background: var(--panel);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 28px 36px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
       min-width: 260px;
     }
+
     .mag7-spinner {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.08);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid rgba(255, 255, 255, 0.08);
       border-top-color: var(--accent);
       animation: mag7-spin 0.9s linear infinite;
     }
-    @keyframes mag7-spin { to { transform: rotate(360deg); } }
+
+    @keyframes mag7-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
     .mag7-loading-text {
-      font-size: 13px; font-weight: 800; color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text);
       letter-spacing: .02em;
     }
+
     .mag7-loading-sub {
-      font-size: 10px; color: var(--text3);
+      font-size: 10px;
+      color: var(--text3);
       letter-spacing: .04em;
     }
+
     /* Make the page a positioning context so the overlay's absolute inset:0
        only covers the Mag 7 page, not the whole viewport (sidebar stays usable). */
-    #mag7-page { position: relative; }
+    #mag7-page {
+      position: relative;
+    }
 
     .mag7-card {
       background: var(--bg3);
@@ -6126,7 +6797,12 @@
       letter-spacing: 0.02em;
       transition: background .12s, color .12s, border-color .12s;
     }
-    .etf-rrg-fs-btn:hover { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
+
+    .etf-rrg-fs-btn:hover {
+      background: var(--accent);
+      color: var(--text4);
+      border-color: var(--accent2);
+    }
 
     /* Full-page overlay state for the RRG card. The card stays in normal
        flow when not active; toggling .rrg-fullscreen lifts it out of the
@@ -6144,6 +6820,7 @@
       flex-direction: column;
       overflow: hidden;
     }
+
     #etf-rrg-card.rrg-fullscreen .card-body {
       flex: 1;
       display: flex;
@@ -6152,6 +6829,7 @@
       min-height: 0;
       padding: 14px;
     }
+
     /* Override the constrained 75%/900px width so the chart fills the
        overlay. Account for the card header (~60px) + slider strip (~60px)
        + body padding (28px) sitting above the wrap — subtract ~160px from
@@ -6163,8 +6841,11 @@
       max-width: 95vw;
       aspect-ratio: 1 / 1;
     }
+
     /* While in fullscreen, prevent the body from scrolling underneath the overlay. */
-    body.rrg-fs-lock { overflow: hidden; }
+    body.rrg-fs-lock {
+      overflow: hidden;
+    }
 
     /* Timeline slider */
     .etf-rrg-timeline {
@@ -6467,12 +7148,17 @@
       gap: 14px;
       margin: 14px 0 0;
     }
+
     .sc-extras-row-2 {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
     @media (max-width: 960px) {
-      .sc-extras-row-2 { grid-template-columns: 1fr; }
+      .sc-extras-row-2 {
+        grid-template-columns: 1fr;
+      }
     }
+
     .sc-extra-card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -6481,6 +7167,7 @@
       display: flex;
       flex-direction: column;
     }
+
     .sc-extra-header {
       display: flex;
       justify-content: space-between;
@@ -6490,25 +7177,30 @@
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
     }
+
     .sc-extra-title {
       font-size: 12px;
       font-weight: 800;
       letter-spacing: .03em;
       color: var(--text);
     }
+
     .sc-extra-source {
       font-size: 9px;
       color: var(--text3);
       letter-spacing: .04em;
     }
+
     .sc-extra-body {
       overflow-x: auto;
     }
+
     .sc-extra-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 11px;
     }
+
     .sc-extra-table th {
       text-align: left;
       padding: 7px 10px;
@@ -6518,34 +7210,54 @@
       border-bottom: 1px solid var(--border);
       white-space: nowrap;
     }
-    .sc-extra-table th.num { text-align: right; }
+
+    .sc-extra-table th.num {
+      text-align: right;
+    }
+
     .sc-extra-table td {
       padding: 7px 10px;
-      border-bottom: 1px solid rgba(30,34,48,.5);
+      border-bottom: 1px solid rgba(30, 34, 48, .5);
       white-space: nowrap;
     }
+
     .sc-extra-table td.num {
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
-    .sc-extra-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .sc-extra-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
     .sc-extra-table td.rank {
       color: var(--text3);
       font-weight: 700;
       width: 28px;
     }
+
     .sc-extra-table td.sym {
       font-weight: 800;
       color: var(--text);
     }
+
     .sc-extra-table td.name {
       color: var(--text2);
       max-width: 240px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .sc-extra-table td.pos { color: var(--green); font-weight: 700; }
-    .sc-extra-table td.neg { color: var(--red);   font-weight: 700; }
+
+    .sc-extra-table td.pos {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .sc-extra-table td.neg {
+      color: var(--red);
+      font-weight: 700;
+    }
+
     .sc-extra-empty {
       text-align: center;
       color: var(--text3);
@@ -8284,259 +8996,856 @@
     }
 
     /* ── Trade Journal page ─────────────────────────────────── */
-    #trade-journal-page { padding: 18px 22px; color: var(--text); }
-    .tj-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; gap:18px; }
-    .tj-title { font-size:18px; font-weight:800; letter-spacing:.02em; }
-    .tj-sub { font-size:11px; color:var(--text3); margin-top:4px; }
-    .tj-header-actions { display:flex; gap:8px; }
-    .tj-btn {
-      background: var(--panel); color: var(--text); border: 1px solid var(--border2);
-      padding: 7px 14px; border-radius: 6px; font-size: 11px; font-weight: 700;
-      letter-spacing: .03em; cursor: pointer; transition: background .15s;
+    #trade-journal-page {
+      padding: 18px 22px;
+      color: var(--text);
     }
-    .tj-btn:hover { background: var(--bg3); }
-    .tj-btn-primary { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
-    .tj-btn-primary:hover { background: var(--accent2); }
+
+    .tj-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 18px;
+    }
+
+    .tj-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: .02em;
+    }
+
+    .tj-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 4px;
+    }
+
+    .tj-header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tj-btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .03em;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .tj-btn:hover {
+      background: var(--bg3);
+    }
+
+    .tj-btn-primary {
+      background: var(--accent);
+      color: var(--text4);
+      border-color: var(--accent2);
+    }
+
+    .tj-btn-primary:hover {
+      background: var(--accent2);
+    }
+
     .tj-btn:disabled,
     .tj-btn[disabled] {
       opacity: 0.4;
       cursor: not-allowed;
       pointer-events: none;
     }
+
     .tj-btn-primary:disabled,
-    .tj-btn-primary[disabled] { background: var(--bg3); color: var(--text3); border-color: var(--border2); }
-    .tj-btn-danger { background: rgba(255,59,92,0.12); color: var(--red); border-color: rgba(255,59,92,0.3); }
-    .tj-btn-ghost { background: transparent; border-color: var(--border); color: var(--text3); }
+    .tj-btn-primary[disabled] {
+      background: var(--bg3);
+      color: var(--text3);
+      border-color: var(--border2);
+    }
+
+    .tj-btn-danger {
+      background: rgba(255, 59, 92, 0.12);
+      color: var(--red);
+      border-color: rgba(255, 59, 92, 0.3);
+    }
+
+    .tj-btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text3);
+    }
 
     .tj-kpis {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px; margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
     }
+
     .tj-kpi {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 12px 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 14px;
     }
-    .tj-kpi-label { font-size: 9px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; }
-    .tj-kpi-value { font-size: 18px; font-weight: 800; margin-top: 6px; color: var(--text); }
-    .tj-kpi-value.pos { color: var(--green); }
-    .tj-kpi-value.neg { color: var(--red); }
 
-    .tj-charts-row { display:flex; gap:12px; margin-bottom:14px; flex-wrap: wrap; }
+    .tj-kpi-label {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .tj-kpi-value {
+      font-size: 18px;
+      font-weight: 800;
+      margin-top: 6px;
+      color: var(--text);
+    }
+
+    .tj-kpi-value.pos {
+      color: var(--green);
+    }
+
+    .tj-kpi-value.neg {
+      color: var(--red);
+    }
+
+    .tj-charts-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
     .tj-chart-card {
-      flex: 1; min-width: 260px;
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 14px;
+      flex: 1;
+      min-width: 260px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
     }
-    .tj-chart-title { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 10px; }
-    .tj-chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-    .tj-chart-header .tj-chart-title { margin-bottom: 0; }
-    .tj-mini-toggle { display:inline-flex; border:1px solid var(--border2); border-radius:4px; overflow:hidden; }
-    .tj-mini-toggle button {
-      background: var(--bg3); color: var(--text3); border: none; padding: 3px 9px;
-      font-size: 9px; font-weight: 700; letter-spacing: .06em; cursor: pointer;
-    }
-    .tj-mini-toggle button.active { background: var(--accent); color: var(--text4); }
-    .tj-mini-toggle button:hover:not(.active) { color: var(--text); }
-    .tj-canvas-tip {
-      position: absolute; pointer-events: none; display: none;
-      background: rgba(11,23,48,0.96); border: 1px solid var(--border2);
-      color: var(--text); padding: 6px 8px; border-radius: 5px;
-      font-size: 10px; line-height: 1.5; white-space: nowrap; z-index: 5;
-      box-shadow: 0 4px 12px rgba(0,0,0,.4);
-    }
-    .tj-canvas-tip strong { color: var(--text5); font-weight: 700; }
 
-    .tj-wn-summary { display:flex; flex-wrap:wrap; gap:6px; }
-    .tj-wn-chip {
-      background: var(--bg3); border: 1px solid var(--border2); color: var(--text3);
-      padding: 4px 10px; border-radius: 14px; font-size: 10px; font-weight: 600;
-      letter-spacing: .03em; cursor: pointer; transition: background .12s, color .12s;
+    .tj-chart-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
     }
-    .tj-wn-chip:hover { color: var(--text); }
-    .tj-wn-chip.active { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
-    .tj-wn-chip strong { font-weight: 800; margin-left: 4px; }
+
+    .tj-chart-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .tj-chart-header .tj-chart-title {
+      margin-bottom: 0;
+    }
+
+    .tj-mini-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .tj-mini-toggle button {
+      background: var(--bg3);
+      color: var(--text3);
+      border: none;
+      padding: 3px 9px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      cursor: pointer;
+    }
+
+    .tj-mini-toggle button.active {
+      background: var(--accent);
+      color: var(--text4);
+    }
+
+    .tj-mini-toggle button:hover:not(.active) {
+      color: var(--text);
+    }
+
+    .tj-canvas-tip {
+      position: absolute;
+      pointer-events: none;
+      display: none;
+      background: rgba(11, 23, 48, 0.96);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 6px 8px;
+      border-radius: 5px;
+      font-size: 10px;
+      line-height: 1.5;
+      white-space: nowrap;
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, .4);
+    }
+
+    .tj-canvas-tip strong {
+      color: var(--text5);
+      font-weight: 700;
+    }
+
+    .tj-wn-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tj-wn-chip {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text3);
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .03em;
+      cursor: pointer;
+      transition: background .12s, color .12s;
+    }
+
+    .tj-wn-chip:hover {
+      color: var(--text);
+    }
+
+    .tj-wn-chip.active {
+      background: var(--accent);
+      color: var(--text4);
+      border-color: var(--accent2);
+    }
+
+    .tj-wn-chip strong {
+      font-weight: 800;
+      margin-left: 4px;
+    }
 
     /* GitHub-style heatmap card (Trade Journal page port from Journal page) */
     .tj-hm-card {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 16px; margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 14px;
     }
+
     .tj-hm-title-row {
-      display:flex; justify-content:space-between; align-items:flex-start; gap:12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
       margin-bottom: 12px;
     }
+
     .tj-hm-flip-header {
-      display:grid; grid-template-columns: 28px 1fr 28px;
-      gap:8px; align-items:center; margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 28px 1fr 28px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
     }
-    .tj-hm-flip-titles { min-width: 0; }
+
+    .tj-hm-flip-titles {
+      min-width: 0;
+    }
+
     .tj-hm-flip-btn {
-      background: var(--bg3); border: 1px solid var(--border2);
-      color: var(--text2); width: 28px; height: 28px; border-radius: 14px;
-      cursor: pointer; font-size: 11px; line-height: 1;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-size: 11px;
+      line-height: 1;
       transition: background .12s, color .12s;
     }
-    .tj-hm-flip-btn:hover { background: var(--accent); color: var(--text4); border-color: var(--accent2); }
-    .tj-hm-pages { position: relative; }
+
+    .tj-hm-flip-btn:hover {
+      background: var(--accent);
+      color: var(--text4);
+      border-color: var(--accent2);
+    }
+
+    .tj-hm-pages {
+      position: relative;
+    }
+
     .tj-hm-dots {
-      display:flex; justify-content:center; gap:6px; margin-top: 6px;
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 6px;
     }
+
     .tj-hm-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--border2); transition: background .12s;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--border2);
+      transition: background .12s;
     }
-    .tj-hm-dot.active { background: var(--accent); }
-    .tj-canvas-tip .pos { color: var(--green); font-weight: 700; }
-    .tj-canvas-tip .neg { color: var(--red); font-weight: 700; }
-    .tj-chart-body { position: relative; height: 200px; display:flex; align-items:center; justify-content:center; }
-    .tj-chart-body canvas { width: 100% !important; height: 100% !important; }
-    .tj-bar-list { display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto; }
-    .tj-bar-row { display: grid; grid-template-columns: 80px 1fr 80px; gap: 8px; align-items: center; font-size: 11px; }
-    .tj-bar-row .tj-bar-label { color: var(--text); font-weight: 600; }
-    .tj-bar-row .tj-bar-track { background: var(--bg3); border-radius: 4px; overflow: hidden; height: 10px; position: relative; }
-    .tj-bar-row .tj-bar-fill { height: 100%; }
-    .tj-bar-row .tj-bar-fill.pos { background: var(--green); }
-    .tj-bar-row .tj-bar-fill.neg { background: var(--red); }
-    .tj-bar-row .tj-bar-value { text-align: right; font-weight: 700; }
-    .tj-bar-row .tj-bar-value.pos { color: var(--green); }
-    .tj-bar-row .tj-bar-value.neg { color: var(--red); }
-    .tj-bar-empty { color: var(--text3); font-size: 11px; padding: 10px; text-align: center; }
+
+    .tj-hm-dot.active {
+      background: var(--accent);
+    }
+
+    .tj-canvas-tip .pos {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .tj-canvas-tip .neg {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .tj-chart-body {
+      position: relative;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tj-chart-body canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .tj-bar-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .tj-bar-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 80px;
+      gap: 8px;
+      align-items: center;
+      font-size: 11px;
+    }
+
+    .tj-bar-row .tj-bar-label {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .tj-bar-row .tj-bar-track {
+      background: var(--bg3);
+      border-radius: 4px;
+      overflow: hidden;
+      height: 10px;
+      position: relative;
+    }
+
+    .tj-bar-row .tj-bar-fill {
+      height: 100%;
+    }
+
+    .tj-bar-row .tj-bar-fill.pos {
+      background: var(--green);
+    }
+
+    .tj-bar-row .tj-bar-fill.neg {
+      background: var(--red);
+    }
+
+    .tj-bar-row .tj-bar-value {
+      text-align: right;
+      font-weight: 700;
+    }
+
+    .tj-bar-row .tj-bar-value.pos {
+      color: var(--green);
+    }
+
+    .tj-bar-row .tj-bar-value.neg {
+      color: var(--red);
+    }
+
+    .tj-bar-empty {
+      color: var(--text3);
+      font-size: 11px;
+      padding: 10px;
+      text-align: center;
+    }
 
     .tj-dash-filters {
-      background: var(--panel); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 14px; margin-bottom: 14px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
     }
+
     .tj-dash-filters-inputs {
-      display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
     }
+
     .tj-dash-flt-field {
-      display: flex; flex-direction: column; gap: 4px;
-      font-size: 9px; color: var(--text3); letter-spacing: .06em;
-      text-transform: uppercase; font-weight: 600;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 9px;
+      color: var(--text3);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      font-weight: 600;
     }
+
     .tj-dash-flt-field input {
-      background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
-      font-size: 11px; padding: 6px 9px; border-radius: 4px; min-width: 140px;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 11px;
+      padding: 6px 9px;
+      border-radius: 4px;
+      min-width: 140px;
     }
-    .tj-dash-flt-field input[type="date"] { color-scheme: dark; }
-    .tj-dash-flt-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 0; }
-    .tj-dash-flt-chips:empty { display: none; }
+
+    .tj-dash-flt-field input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .tj-dash-flt-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+      min-height: 0;
+    }
+
+    .tj-dash-flt-chips:empty {
+      display: none;
+    }
+
     .tj-dash-flt-chip {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: var(--accent); color: var(--text4); border-radius: 14px;
-      padding: 3px 10px; font-size: 10px; font-weight: 700; letter-spacing: .03em;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: var(--text4);
+      border-radius: 14px;
+      padding: 3px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .03em;
     }
+
     .tj-dash-flt-chip button {
-      background: rgba(9,17,29,.25); border: none; color: var(--text4);
-      width: 14px; height: 14px; border-radius: 50%; cursor: pointer;
-      font-size: 9px; line-height: 1; display: flex; align-items: center; justify-content: center;
+      background: rgba(9, 17, 29, .25);
+      border: none;
+      color: var(--text4);
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 9px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 0;
     }
-    .tj-dash-flt-chip button:hover { background: rgba(9,17,29,.5); }
+
+    .tj-dash-flt-chip button:hover {
+      background: rgba(9, 17, 29, .5);
+    }
+
     /* Click-to-filter affordances on charts */
-    canvas#tj-dow-canvas, canvas#tj-hod-canvas, canvas#tj-monthly-canvas { cursor: pointer; }
-    .tj-bar-row { cursor: pointer; transition: background .12s; border-radius: 4px; }
-    .tj-bar-row:hover { background: rgba(255,255,255,0.04); }
-
-    .tj-history-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-    .tj-history-header { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; flex-wrap: wrap; }
-    .tj-history-title { font-size: 13px; font-weight: 800; letter-spacing:.04em; }
-    .tj-filters { display:flex; gap:6px; flex-wrap: wrap; }
-    .tj-filters select, .tj-filters input {
-      background: var(--bg3); border: 1px solid var(--border2); color: var(--text);
-      font-size: 11px; padding: 5px 8px; border-radius: 4px; min-width: 90px;
+    canvas#tj-dow-canvas,
+    canvas#tj-hod-canvas,
+    canvas#tj-monthly-canvas {
+      cursor: pointer;
     }
-    .tj-history-table-wrap { overflow-x: auto; }
-    .tj-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+
+    .tj-bar-row {
+      cursor: pointer;
+      transition: background .12s;
+      border-radius: 4px;
+    }
+
+    .tj-bar-row:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tj-history-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .tj-history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tj-history-title {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+    }
+
+    .tj-filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tj-filters select,
+    .tj-filters input {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-size: 11px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      min-width: 90px;
+    }
+
+    .tj-history-table-wrap {
+      overflow-x: auto;
+    }
+
+    .tj-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+
     .tj-table th {
-      text-align: left; padding: 8px 6px; font-weight: 700; color: var(--text3);
-      border-bottom: 1px solid var(--border); cursor: pointer; user-select: none;
-      white-space: nowrap; letter-spacing: .03em;
+      text-align: left;
+      padding: 8px 6px;
+      font-weight: 700;
+      color: var(--text3);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      letter-spacing: .03em;
     }
-    .tj-table th:hover { color: var(--text); }
-    .tj-table td { padding: 8px 6px; border-bottom: 1px solid rgba(30,34,48,.5); vertical-align: top; }
-    .tj-table tr.tj-row:hover td { background: rgba(255,255,255,0.02); }
-    .tj-table tr.tj-row.open td { border-left: 2px solid var(--blue); }
-    .tj-table tr.tj-row.closed.win td { border-left: 2px solid var(--green); }
-    .tj-table tr.tj-row.closed.loss td { border-left: 2px solid var(--red); }
-    .tj-table .tj-pl-pos { color: var(--green); font-weight: 700; }
-    .tj-table .tj-pl-neg { color: var(--red); font-weight: 700; }
-    .tj-status-badge {
-      display: inline-block; padding: 2px 7px; border-radius: 4px;
-      font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-    }
-    .tj-status-badge.open { background: rgba(59,140,255,.18); color: var(--blue); }
-    .tj-status-badge.closed { background: rgba(113,130,157,.15); color: var(--text2); }
-    .tj-type-badge {
-      display:inline-block; padding: 2px 6px; border-radius: 3px; font-size: 9px;
-      font-weight: 700; letter-spacing: .06em; background: var(--bg3); color: var(--text2);
-    }
-    .tj-type-badge.option.call { color: var(--green); }
-    .tj-type-badge.option.put { color: var(--red); }
-    .tj-tag-chip {
-      display: inline-block; padding: 1px 5px; margin: 1px 2px 1px 0;
-      background: var(--bg3); color: var(--text2); border-radius: 3px; font-size: 9px;
-    }
-    .tj-row-actions { display: flex; gap: 4px; }
-    .tj-row-actions button {
-      background: var(--bg3); border: 1px solid var(--border2); color: var(--text2);
-      padding: 3px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;
-    }
-    .tj-row-actions button:hover { color: var(--text); }
-    .tj-detail-row td { padding: 12px 14px !important; background: var(--bg2); }
-    .tj-detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-    .tj-detail-grid > div { font-size: 11px; }
-    .tj-detail-grid .lbl { font-size: 9px; color: var(--text3); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 3px; }
-    .tj-detail-entries { margin-top: 10px; }
-    .tj-detail-entries table { width: 100%; font-size: 10px; }
-    .tj-detail-entries td, .tj-detail-entries th { padding: 4px 6px; border-bottom: 1px solid rgba(30,34,48,.5); text-align: left; }
 
-    .tj-empty { color: var(--text3); font-size: 12px; padding: 30px 0; text-align: center; }
+    .tj-table th:hover {
+      color: var(--text);
+    }
+
+    .tj-table td {
+      padding: 8px 6px;
+      border-bottom: 1px solid rgba(30, 34, 48, .5);
+      vertical-align: top;
+    }
+
+    .tj-table tr.tj-row:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tj-table tr.tj-row.open td {
+      border-left: 2px solid var(--blue);
+    }
+
+    .tj-table tr.tj-row.closed.win td {
+      border-left: 2px solid var(--green);
+    }
+
+    .tj-table tr.tj-row.closed.loss td {
+      border-left: 2px solid var(--red);
+    }
+
+    .tj-table .tj-pl-pos {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .tj-table .tj-pl-neg {
+      color: var(--red);
+      font-weight: 700;
+    }
+
+    .tj-status-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .tj-status-badge.open {
+      background: rgba(59, 140, 255, .18);
+      color: var(--blue);
+    }
+
+    .tj-status-badge.closed {
+      background: rgba(113, 130, 157, .15);
+      color: var(--text2);
+    }
+
+    .tj-type-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: .06em;
+      background: var(--bg3);
+      color: var(--text2);
+    }
+
+    .tj-type-badge.option.call {
+      color: var(--green);
+    }
+
+    .tj-type-badge.option.put {
+      color: var(--red);
+    }
+
+    .tj-tag-chip {
+      display: inline-block;
+      padding: 1px 5px;
+      margin: 1px 2px 1px 0;
+      background: var(--bg3);
+      color: var(--text2);
+      border-radius: 3px;
+      font-size: 9px;
+    }
+
+    .tj-row-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tj-row-actions button {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      padding: 3px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 10px;
+    }
+
+    .tj-row-actions button:hover {
+      color: var(--text);
+    }
+
+    .tj-detail-row td {
+      padding: 12px 14px !important;
+      background: var(--bg2);
+    }
+
+    .tj-detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .tj-detail-grid>div {
+      font-size: 11px;
+    }
+
+    .tj-detail-grid .lbl {
+      font-size: 9px;
+      color: var(--text3);
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .tj-detail-entries {
+      margin-top: 10px;
+    }
+
+    .tj-detail-entries table {
+      width: 100%;
+      font-size: 10px;
+    }
+
+    .tj-detail-entries td,
+    .tj-detail-entries th {
+      padding: 4px 6px;
+      border-bottom: 1px solid rgba(30, 34, 48, .5);
+      text-align: left;
+    }
+
+    .tj-empty {
+      color: var(--text3);
+      font-size: 12px;
+      padding: 30px 0;
+      text-align: center;
+    }
 
     /* Trade Journal Modal */
     .tj-modal-backdrop {
-      display: none; position: fixed; inset: 0; z-index: 9999;
-      background: rgba(3,9,21,.75); backdrop-filter: blur(4px);
-      align-items: flex-start; justify-content: center; padding: 60px 20px;
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(3, 9, 21, .75);
+      backdrop-filter: blur(4px);
+      align-items: flex-start;
+      justify-content: center;
+      padding: 60px 20px;
       overflow-y: auto;
     }
-    .tj-modal-backdrop.open { display: flex; }
+
+    .tj-modal-backdrop.open {
+      display: flex;
+    }
+
     .tj-modal {
-      background: var(--panel); border: 1px solid var(--border2); border-radius: 10px;
-      width: 100%; max-width: 640px; box-shadow: 0 20px 60px rgba(0,0,0,.5);
-      max-height: calc(100vh - 120px); display: flex; flex-direction: column;
+      background: var(--panel);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      width: 100%;
+      max-width: 640px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+      max-height: calc(100vh - 120px);
+      display: flex;
+      flex-direction: column;
     }
+
     .tj-modal-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 18px; border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
     }
-    .tj-modal-title { font-size: 14px; font-weight: 800; letter-spacing: .03em; }
+
+    .tj-modal-title {
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: .03em;
+    }
+
     .tj-modal-close {
-      background: none; border: none; color: var(--text2); font-size: 22px;
-      cursor: pointer; line-height: 1;
+      background: none;
+      border: none;
+      color: var(--text2);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
     }
-    .tj-modal-body { padding: 18px; overflow-y: auto; }
-    .tj-form-group { margin-bottom: 12px; }
-    .tj-form-label { display: block; font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 4px; }
-    .tj-form-input, .tj-form-select, .tj-form-textarea {
-      width: 100%; background: var(--bg3); border: 1px solid var(--border2);
-      color: var(--text); padding: 8px 10px; border-radius: 5px; font-size: 12px;
+
+    .tj-modal-body {
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .tj-form-group {
+      margin-bottom: 12px;
+    }
+
+    .tj-form-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .tj-form-input,
+    .tj-form-select,
+    .tj-form-textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 5px;
+      font-size: 12px;
       font-family: inherit;
     }
-    .tj-form-textarea { min-height: 70px; resize: vertical; }
-    .tj-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .tj-form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+    .tj-form-textarea {
+      min-height: 70px;
+      resize: vertical;
+    }
+
+    .tj-form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .tj-form-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
     .tj-form-derived {
-      background: var(--bg2); border: 1px dashed var(--border2); border-radius: 5px;
-      padding: 10px; font-size: 11px; color: var(--text2); margin: 8px 0;
+      background: var(--bg2);
+      border: 1px dashed var(--border2);
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 11px;
+      color: var(--text2);
+      margin: 8px 0;
     }
-    .tj-type-toggle { display: flex; gap: 0; margin-bottom: 18px; border: 1px solid var(--border2); border-radius: 6px; overflow: hidden; }
+
+    .tj-type-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 18px;
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
     .tj-type-toggle button {
-      flex: 1; background: var(--bg3); border: none; color: var(--text2);
-      padding: 10px; font-weight: 700; font-size: 12px; cursor: pointer;
+      flex: 1;
+      background: var(--bg3);
+      border: none;
+      color: var(--text2);
+      padding: 10px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
     }
-    .tj-type-toggle button.active { background: var(--accent); color: var(--text4); }
-    .tj-modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+    .tj-type-toggle button.active {
+      background: var(--accent);
+      color: var(--text4);
+    }
+
+    .tj-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 14px;
+    }
 
     .jnl-empty {
       text-align: center;
@@ -8739,6 +10048,9 @@
           <span class="nav-icon">🔥</span><span class="nav-label">Stock Scanner</span>
         </li>
         <li class="nav-section-label">Insights</li>
+        <li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
+          <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
+        </li>
         <li class="nav-item" data-page="etfs-page" onclick="navTo(this)">
           <span class="nav-icon">🔄</span><span class="nav-label">Sector RRG</span>
         </li>
@@ -8750,9 +10062,6 @@
         </li>
         <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
           <span class="nav-icon">🌊</span><span class="nav-label">Dark Pool</span>
-        </li>
-        <li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
-          <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
         </li>
         <li class="nav-section-label">Tools</li>
         <li class="nav-item" data-page="trade-journal-page" onclick="navTo(this)">
@@ -9480,10 +10789,14 @@
                       </div>
                     </div>
                     <div class="cl-obj-items">
-                      <label class="cl-item"><input type="checkbox" data-cl-item="price-1"/><span>SPY down −8% to −15% from recent high</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="price-2"/><span>Two consecutive weekly red candles</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="price-3"/><span>Break below 50-day MA with volume</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="price-4"/><span>Daily SPY candle &gt; −2%</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="price-1" /><span>SPY down −8% to −15%
+                          from recent high</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="price-2" /><span>Two consecutive
+                          weekly red candles</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="price-3" /><span>Break below 50-day MA
+                          with volume</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="price-4" /><span>Daily SPY candle &gt;
+                          −2%</span></label>
                     </div>
                     <div class="cl-obj-status">
                       <span class="cl-status-label">Status</span>
@@ -9503,10 +10816,14 @@
                       </div>
                     </div>
                     <div class="cl-obj-items">
-                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-1"/><span>VIX above 22</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-2"/><span>VIX spike +20% in one session</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-3"/><span>SPY daily range exceeds 2%</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-4"/><span>IV rank elevated vs 30-day avg</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-1" /><span>VIX above
+                          22</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-2" /><span>VIX spike +20% in one
+                          session</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-3" /><span>SPY daily range exceeds
+                          2%</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="vol-4" /><span>IV rank elevated vs
+                          30-day avg</span></label>
                     </div>
                     <div class="cl-obj-status">
                       <span class="cl-status-label">Status</span>
@@ -9526,10 +10843,14 @@
                       </div>
                     </div>
                     <div class="cl-obj-items">
-                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-1"/><span>Put/Call ratio greater than 1.10</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-2"/><span>Our Score = Extreme Fear</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-3"/><span>Media dominated by crash/recession headlines</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-4"/><span>Retail flow heavily skewed to puts</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-1" /><span>Put/Call ratio greater
+                          than 1.10</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-2" /><span>Our Score = Extreme
+                          Fear</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-3" /><span>Media dominated by
+                          crash/recession headlines</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="sent-4" /><span>Retail flow heavily
+                          skewed to puts</span></label>
                     </div>
                     <div class="cl-obj-status">
                       <span class="cl-status-label">Status</span>
@@ -9547,10 +10868,13 @@
                   <div class="cl-auth-title">🔓 Authorization Check</div>
                   <div class="cl-auth-pills">
                     <span class="cl-auth-pill" data-cl-auth="price"><span class="cl-auth-dot"></span>Price</span>
-                    <span class="cl-auth-pill" data-cl-auth="volatility"><span class="cl-auth-dot"></span>Volatility</span>
-                    <span class="cl-auth-pill" data-cl-auth="sentiment"><span class="cl-auth-dot"></span>Sentiment</span>
+                    <span class="cl-auth-pill" data-cl-auth="volatility"><span
+                        class="cl-auth-dot"></span>Volatility</span>
+                    <span class="cl-auth-pill" data-cl-auth="sentiment"><span
+                        class="cl-auth-dot"></span>Sentiment</span>
                   </div>
-                  <div class="cl-auth-verdict" id="cl-auth-verdict">Awaiting market stress · objectives auto-evaluate from live data.</div>
+                  <div class="cl-auth-verdict" id="cl-auth-verdict">Awaiting market stress · objectives auto-evaluate
+                    from live data.</div>
                 </div>
               </div>
             </div>
@@ -9576,10 +10900,14 @@
                       </div>
                     </div>
                     <div class="cl-obj-items">
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-1"/><span>SPY up +8% to +15% from recent low</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-2"/><span>Two consecutive weekly green candles</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-3"/><span>Stretched &gt;3% above 50-day MA with volume</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-4"/><span>Daily SPY candle &gt; +2%</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-1" /><span>SPY up +8% to +15%
+                          from recent low</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-2" /><span>Two consecutive
+                          weekly green candles</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-3" /><span>Stretched &gt;3%
+                          above 50-day MA with volume</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-price-4" /><span>Daily SPY candle
+                          &gt; +2%</span></label>
                     </div>
                     <div class="cl-obj-status">
                       <span class="cl-status-label">Status</span>
@@ -9599,10 +10927,14 @@
                       </div>
                     </div>
                     <div class="cl-obj-items">
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-1"/><span>VIX below 14</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-2"/><span>VIX collapse −20% in one session</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-3"/><span>SPY daily range below 0.5%</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-4"/><span>IV rank compressed vs 30-day avg</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-1" /><span>VIX below
+                          14</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-2" /><span>VIX collapse −20% in
+                          one session</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-3" /><span>SPY daily range below
+                          0.5%</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-vol-4" /><span>IV rank compressed vs
+                          30-day avg</span></label>
                     </div>
                     <div class="cl-obj-status">
                       <span class="cl-status-label">Status</span>
@@ -9622,10 +10954,14 @@
                       </div>
                     </div>
                     <div class="cl-obj-items">
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-1"/><span>Put/Call ratio less than 0.80</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-2"/><span>Our Score = Extreme Greed</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-3"/><span>Media dominated by rally / all-time-high headlines</span></label>
-                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-4"/><span>Retail flow heavily skewed to calls</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-1" /><span>Put/Call ratio less
+                          than 0.80</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-2" /><span>Our Score = Extreme
+                          Greed</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-3" /><span>Media dominated by
+                          rally / all-time-high headlines</span></label>
+                      <label class="cl-item"><input type="checkbox" data-cl-item="s-sent-4" /><span>Retail flow heavily
+                          skewed to calls</span></label>
                     </div>
                     <div class="cl-obj-status">
                       <span class="cl-status-label">Status</span>
@@ -9643,10 +10979,13 @@
                   <div class="cl-auth-title">🔓 Authorization Check</div>
                   <div class="cl-auth-pills">
                     <span class="cl-auth-pill" data-cl-auth="s-price"><span class="cl-auth-dot"></span>Price</span>
-                    <span class="cl-auth-pill" data-cl-auth="s-volatility"><span class="cl-auth-dot"></span>Volatility</span>
-                    <span class="cl-auth-pill" data-cl-auth="s-sentiment"><span class="cl-auth-dot"></span>Sentiment</span>
+                    <span class="cl-auth-pill" data-cl-auth="s-volatility"><span
+                        class="cl-auth-dot"></span>Volatility</span>
+                    <span class="cl-auth-pill" data-cl-auth="s-sentiment"><span
+                        class="cl-auth-dot"></span>Sentiment</span>
                   </div>
-                  <div class="cl-auth-verdict" id="cl-auth-verdict-short">Awaiting market euphoria · objectives auto-evaluate from live data.</div>
+                  <div class="cl-auth-verdict" id="cl-auth-verdict-short">Awaiting market euphoria · objectives
+                    auto-evaluate from live data.</div>
                 </div>
               </div>
             </div>
@@ -9662,40 +11001,52 @@
               </div>
 
               <div class="cl-collapse-body" id="cl-body-reminders">
-              <div class="cl-reminders">
-                <div class="cl-reminder">
-                  <div class="cl-rem-title">🛡️ Fail-Safe Rule</div>
-                  <div class="cl-rem-sub">If a move runs against you (long: SPY −5% / short: SPY +5%):</div>
-                  <div class="cl-rem-items">
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-1"/><span>Deploy next tranche (or cover partial)</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-2"/><span>Improve cost basis</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-3"/><span>Increase convex exposure / hedge</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="fs-4"/><span>Do NOT panic close</span></label>
+                <div class="cl-reminders">
+                  <div class="cl-reminder">
+                    <div class="cl-rem-title">🛡️ Fail-Safe Rule</div>
+                    <div class="cl-rem-sub">If a move runs against you (long: SPY −5% / short: SPY +5%):</div>
+                    <div class="cl-rem-items">
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="fs-1" /><span>Deploy next
+                          tranche (or cover partial)</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="fs-2" /><span>Improve cost
+                          basis</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="fs-3" /><span>Increase convex
+                          exposure / hedge</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="fs-4" /><span>Do NOT panic
+                          close</span></label>
+                    </div>
                   </div>
-                </div>
 
-                <div class="cl-reminder">
-                  <div class="cl-rem-title">🎯 Exit Management</div>
-                  <div class="cl-rem-sub">Manage winners with discipline:</div>
-                  <div class="cl-rem-items">
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-1"/><span>Trim 25–40% of contracts after 300%+ gains</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-2"/><span>Hold core positions once |delta| &gt; 0.75</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-3"/><span>Let deep ITM positions mature to intrinsic phase</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ex-4"/><span>Roll profits forward to next LEAP cycle</span></label>
+                  <div class="cl-reminder">
+                    <div class="cl-rem-title">🎯 Exit Management</div>
+                    <div class="cl-rem-sub">Manage winners with discipline:</div>
+                    <div class="cl-rem-items">
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ex-1" /><span>Trim 25–40% of
+                          contracts after 300%+ gains</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ex-2" /><span>Hold core
+                          positions once |delta| &gt; 0.75</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ex-3" /><span>Let deep ITM
+                          positions mature to intrinsic phase</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ex-4" /><span>Roll profits
+                          forward to next LEAP cycle</span></label>
+                    </div>
                   </div>
-                </div>
 
-                <div class="cl-reminder">
-                  <div class="cl-rem-title">🧠 Mindset Rule</div>
-                  <div class="cl-rem-sub">Stay disciplined in both directions:</div>
-                  <div class="cl-rem-items">
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-1"/><span>Buy fear · sell strength — not the inverse</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-2"/><span>Deploy with discipline — not emotion</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-3"/><span>Let time and delta do the work</span></label>
-                    <label class="cl-item small"><input type="checkbox" data-cl-item="ms-4"/><span>Capital preservation first, leverage second</span></label>
+                  <div class="cl-reminder">
+                    <div class="cl-rem-title">🧠 Mindset Rule</div>
+                    <div class="cl-rem-sub">Stay disciplined in both directions:</div>
+                    <div class="cl-rem-items">
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ms-1" /><span>Buy fear · sell
+                          strength — not the inverse</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ms-2" /><span>Deploy with
+                          discipline — not emotion</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ms-3" /><span>Let time and delta
+                          do the work</span></label>
+                      <label class="cl-item small"><input type="checkbox" data-cl-item="ms-4" /><span>Capital
+                          preservation first, leverage second</span></label>
+                    </div>
                   </div>
                 </div>
-              </div>
               </div><!-- /.cl-collapse-body -->
 
             </div>
@@ -10185,7 +11536,8 @@
               LOAD
             </button>
             <div style="width:1px;height:22px;background:var(--border2);"></div>
-            <span style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Strikes:</span>
+            <span
+              style="font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;">Strikes:</span>
             <input id="sm-strike-count" type="number" value="50" min="5" max="100" step="5" onchange="reloadSmHeat()">
             <button
               style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
@@ -10207,7 +11559,8 @@
             </div>
           </div>
           <div class="card mb12">
-            <div class="card-header"><span class="card-title" id="sm-oi-title">Open Interest by Strike (SPY)</span></div>
+            <div class="card-header"><span class="card-title" id="sm-oi-title">Open Interest by Strike (SPY)</span>
+            </div>
             <div class="card-body" id="sm-oi-chart">
               <canvas id="oi-chart" width="100%" height="180" style="width:100%;height:180px;"></canvas>
             </div>
@@ -10284,55 +11637,86 @@
             <div class="mag7-loading-card">
               <div class="mag7-spinner"></div>
               <div class="mag7-loading-text">Loading Mag 7 data…</div>
-              <div class="mag7-loading-sub" id="mag7-loading-sub">Fetching live quotes + 1Y price history + fundamentals</div>
+              <div class="mag7-loading-sub" id="mag7-loading-sub">Fetching live quotes + 1Y price history + fundamentals
+              </div>
             </div>
           </div>
           <div class="mag7-header">
             <div>
               <div class="mag7-title">Magnificent 7</div>
-              <div class="mag7-sub">NVDA · AAPL · MSFT · AMZN · GOOGL · META · TSLA — see how mega caps are pulling the market</div>
+              <div class="mag7-sub">NVDA · AAPL · MSFT · AMZN · GOOGL · META · TSLA — see how mega caps are pulling the
+                market</div>
             </div>
             <div class="mag7-aggregate" id="mag7-aggregate">
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Combined Mkt Cap</div><div class="mag7-agg-value" id="mag7-total-cap">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1D</div><div class="mag7-agg-value" id="mag7-avg-1d">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1W</div><div class="mag7-agg-value" id="mag7-avg-1w">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1M</div><div class="mag7-agg-value" id="mag7-avg-1m">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd YTD</div><div class="mag7-agg-value" id="mag7-avg-ytd">—</div></div>
-              <div class="mag7-agg-item"><div class="mag7-agg-label">Wtd 1Y</div><div class="mag7-agg-value" id="mag7-avg-1y">—</div></div>
+              <div class="mag7-agg-item">
+                <div class="mag7-agg-label">Combined Mkt Cap</div>
+                <div class="mag7-agg-value" id="mag7-total-cap">—</div>
+              </div>
+              <div class="mag7-agg-item">
+                <div class="mag7-agg-label">Wtd 1D</div>
+                <div class="mag7-agg-value" id="mag7-avg-1d">—</div>
+              </div>
+              <div class="mag7-agg-item">
+                <div class="mag7-agg-label">Wtd 1W</div>
+                <div class="mag7-agg-value" id="mag7-avg-1w">—</div>
+              </div>
+              <div class="mag7-agg-item">
+                <div class="mag7-agg-label">Wtd 1M</div>
+                <div class="mag7-agg-value" id="mag7-avg-1m">—</div>
+              </div>
+              <div class="mag7-agg-item">
+                <div class="mag7-agg-label">Wtd YTD</div>
+                <div class="mag7-agg-value" id="mag7-avg-ytd">—</div>
+              </div>
+              <div class="mag7-agg-item">
+                <div class="mag7-agg-label">Wtd 1Y</div>
+                <div class="mag7-agg-value" id="mag7-avg-1y">—</div>
+              </div>
             </div>
           </div>
 
           <div class="mag7-spy-row" id="mag7-spy-row">
-            <div class="mag7-spy-title">📈 SPY vs Mag 7 — spread shows how many percentage points Mag 7 is outperforming (green) or underperforming (red) SPY</div>
+            <div class="mag7-spy-title">📈 SPY vs Mag 7 — spread shows how many percentage points Mag 7 is outperforming
+              (green) or underperforming (red) SPY</div>
             <div class="mag7-spy-cells">
               <div class="mag7-spy-cell">
                 <div class="mag7-spy-label">1D</div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1d">—</span></div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1d">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val"
+                    id="mag7-spy-1d">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val"
+                    id="mag7-mag-1d">—</span></div>
                 <div class="mag7-spy-spread" id="mag7-spread-1d">—</div>
               </div>
               <div class="mag7-spy-cell">
                 <div class="mag7-spy-label">1W</div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1w">—</span></div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1w">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val"
+                    id="mag7-spy-1w">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val"
+                    id="mag7-mag-1w">—</span></div>
                 <div class="mag7-spy-spread" id="mag7-spread-1w">—</div>
               </div>
               <div class="mag7-spy-cell">
                 <div class="mag7-spy-label">1M</div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1m">—</span></div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1m">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val"
+                    id="mag7-spy-1m">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val"
+                    id="mag7-mag-1m">—</span></div>
                 <div class="mag7-spy-spread" id="mag7-spread-1m">—</div>
               </div>
               <div class="mag7-spy-cell">
                 <div class="mag7-spy-label">YTD</div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-ytd">—</span></div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-ytd">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val"
+                    id="mag7-spy-ytd">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val"
+                    id="mag7-mag-ytd">—</span></div>
                 <div class="mag7-spy-spread" id="mag7-spread-ytd">—</div>
               </div>
               <div class="mag7-spy-cell">
                 <div class="mag7-spy-label">1Y</div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val" id="mag7-spy-1y">—</span></div>
-                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val" id="mag7-mag-1y">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">SPY</span><span class="mag7-spy-val"
+                    id="mag7-spy-1y">—</span></div>
+                <div class="mag7-spy-line"><span class="mag7-spy-tag">Mag 7</span><span class="mag7-spy-val"
+                    id="mag7-mag-1y">—</span></div>
                 <div class="mag7-spy-spread" id="mag7-spread-1y">—</div>
               </div>
             </div>
@@ -10356,7 +11740,9 @@
                 </tr>
               </thead>
               <tbody id="mag7-tbody">
-                <tr><td colspan="11" class="mag7-empty">Log in to view Magnificent 7 data.</td></tr>
+                <tr>
+                  <td colspan="11" class="mag7-empty">Log in to view Magnificent 7 data.</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -10390,7 +11776,8 @@
                     <option value="weekly">Weekly</option>
                   </select>
                 </label>
-                <button id="etf-rrg-fs-btn" class="etf-rrg-fs-btn" type="button" onclick="etfRrgToggleFullscreen()" title="Toggle full-page view (Esc to exit)">⛶ Full screen</button>
+                <button id="etf-rrg-fs-btn" class="etf-rrg-fs-btn" type="button" onclick="etfRrgToggleFullscreen()"
+                  title="Toggle full-page view (Esc to exit)">⛶ Full screen</button>
               </div>
             </div>
 
@@ -10824,7 +12211,9 @@
                       </tr>
                     </thead>
                     <tbody id="sc-vol-tbody">
-                      <tr><td colspan="6" class="sc-extra-empty">Loading top volume…</td></tr>
+                      <tr>
+                        <td colspan="6" class="sc-extra-empty">Loading top volume…</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -10849,7 +12238,9 @@
                       </tr>
                     </thead>
                     <tbody id="sc-callOi-tbody">
-                      <tr><td colspan="5" class="sc-extra-empty">Loading net Call OI…</td></tr>
+                      <tr>
+                        <td colspan="5" class="sc-extra-empty">Loading net Call OI…</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -10872,7 +12263,9 @@
                       </tr>
                     </thead>
                     <tbody id="sc-putOi-tbody">
-                      <tr><td colspan="5" class="sc-extra-empty">Loading net Put OI…</td></tr>
+                      <tr>
+                        <td colspan="5" class="sc-extra-empty">Loading net Put OI…</td>
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -11016,10 +12409,14 @@
               <div class="tj-sub" id="tj-sub">Track every entry, average-in, and exit — across stocks and options.</div>
             </div>
             <div class="tj-header-actions">
-              <input type="file" id="tj-csv-input" accept=".csv,text/csv" style="display:none" onchange="tjHandleCsvUpload(event)">
-              <button id="tj-import-csv-btn" class="tj-btn" onclick="document.getElementById('tj-csv-input').click()" title="Import broker activity CSV">⬆ Import Broker CSV</button>
-              <button class="tj-btn tj-btn-ghost" onclick="tjShowImportWarnings()" id="tj-warnings-btn" style="display:none;">⚠ <span id="tj-warnings-count">0</span></button>
-              <button id="tj-new-trade-btn" class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New Trade</button>
+              <input type="file" id="tj-csv-input" accept=".csv,text/csv" style="display:none"
+                onchange="tjHandleCsvUpload(event)">
+              <button id="tj-import-csv-btn" class="tj-btn" onclick="document.getElementById('tj-csv-input').click()"
+                title="Import broker activity CSV">⬆ Import Broker CSV</button>
+              <button class="tj-btn tj-btn-ghost" onclick="tjShowImportWarnings()" id="tj-warnings-btn"
+                style="display:none;">⚠ <span id="tj-warnings-count">0</span></button>
+              <button id="tj-new-trade-btn" class="tj-btn tj-btn-primary" onclick="tjOpenNewTradeModal()">＋ New
+                Trade</button>
             </div>
           </div>
 
@@ -11032,7 +12429,8 @@
             <div class="tj-dash-filters-inputs">
               <label class="tj-dash-flt-field">
                 <span>Ticker</span>
-                <input id="tj-dash-flt-ticker" type="text" placeholder="e.g. SPY" oninput="tjSetDashFilter('ticker', this.value)">
+                <input id="tj-dash-flt-ticker" type="text" placeholder="e.g. SPY"
+                  oninput="tjSetDashFilter('ticker', this.value)">
               </label>
               <label class="tj-dash-flt-field">
                 <span>From</span>
@@ -11042,26 +12440,66 @@
                 <span>To</span>
                 <input id="tj-dash-flt-to" type="date" onchange="tjSetDashFilter('dateTo', this.value)">
               </label>
-              <button class="tj-btn tj-btn-ghost" onclick="tjClearAllDashFilters()" title="Clear every active dashboard filter">Clear all</button>
+              <button class="tj-btn tj-btn-ghost" onclick="tjClearAllDashFilters()"
+                title="Clear every active dashboard filter">Clear all</button>
             </div>
             <div class="tj-dash-flt-chips" id="tj-dash-flt-chips"></div>
           </div>
 
           <!-- KPI cards -->
           <div class="tj-kpis">
-            <div class="tj-kpi"><div class="tj-kpi-label">Today P/L</div><div class="tj-kpi-value" id="tj-kpi-today">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Week P/L</div><div class="tj-kpi-value" id="tj-kpi-week">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Month P/L</div><div class="tj-kpi-value" id="tj-kpi-month">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">All-Time P/L</div><div class="tj-kpi-value" id="tj-kpi-all">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Win Rate</div><div class="tj-kpi-value" id="tj-kpi-winrate">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Avg Winner</div><div class="tj-kpi-value pos" id="tj-kpi-avgwin">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Avg Loser</div><div class="tj-kpi-value neg" id="tj-kpi-avgloss">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Profit Factor</div><div class="tj-kpi-value" id="tj-kpi-pf">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Total Trades</div><div class="tj-kpi-value" id="tj-kpi-total">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Open</div><div class="tj-kpi-value" id="tj-kpi-open">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Closed</div><div class="tj-kpi-value" id="tj-kpi-closed">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Best Trade</div><div class="tj-kpi-value pos" id="tj-kpi-best">--</div></div>
-            <div class="tj-kpi"><div class="tj-kpi-label">Worst Trade</div><div class="tj-kpi-value neg" id="tj-kpi-worst">--</div></div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Today P/L</div>
+              <div class="tj-kpi-value" id="tj-kpi-today">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Week P/L</div>
+              <div class="tj-kpi-value" id="tj-kpi-week">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Month P/L</div>
+              <div class="tj-kpi-value" id="tj-kpi-month">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">All-Time P/L</div>
+              <div class="tj-kpi-value" id="tj-kpi-all">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Win Rate</div>
+              <div class="tj-kpi-value" id="tj-kpi-winrate">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Avg Winner</div>
+              <div class="tj-kpi-value pos" id="tj-kpi-avgwin">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Avg Loser</div>
+              <div class="tj-kpi-value neg" id="tj-kpi-avgloss">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Profit Factor</div>
+              <div class="tj-kpi-value" id="tj-kpi-pf">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Total Trades</div>
+              <div class="tj-kpi-value" id="tj-kpi-total">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Open</div>
+              <div class="tj-kpi-value" id="tj-kpi-open">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Closed</div>
+              <div class="tj-kpi-value" id="tj-kpi-closed">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Best Trade</div>
+              <div class="tj-kpi-value pos" id="tj-kpi-best">--</div>
+            </div>
+            <div class="tj-kpi">
+              <div class="tj-kpi-label">Worst Trade</div>
+              <div class="tj-kpi-value neg" id="tj-kpi-worst">--</div>
+            </div>
           </div>
 
           <!-- Charts row -->
@@ -13718,7 +15156,7 @@
       { id: 'globex', label: 'GLOBEX', row: 3, open: 17 * 60, close: 24 * 60 + 7 * 60 },  // 5pm–7am
 
       // Korea Exchange (KRX) — 7pm–1:30am CT. Overlaps Sydney + Tokyo so gets its own row.
-      { id: 'korea',  label: 'KOREA',  row: 2, open: 19 * 60, close: 24 * 60 + 1 * 60 + 30 }
+      { id: 'korea', label: 'KOREA', row: 2, open: 19 * 60, close: 24 * 60 + 1 * 60 + 30 }
     ];
 
     function ssMinutesNowCT() {
@@ -13771,8 +15209,8 @@
       //   Saturday KST = weekend, so we block any Korea bar that *starts* Fri 7pm CT.
       const fridayCloseMin =
         sessionId === 'post' ? 19 * 60 :
-        sessionId === 'korea' ? 19 * 60 :  // block Fri-evening bar onward
-        16 * 60;
+          sessionId === 'korea' ? 19 * 60 :  // block Fri-evening bar onward
+            16 * 60;
 
       // Reopen-offset: how many minutes past midnight-of-Friday until the session
       // is allowed to render again.
@@ -13780,9 +15218,9 @@
       //   POST    → Mon 3pm CT  = 3·1440 + 15·60  (U.S. post-market is Mon–Fri only)
       //   Korea   → Sun 7pm CT  = 2·1440 + 19·60  (Sun-evening CT = Mon morning Seoul)
       const reopenMin =
-        sessionId === 'post'  ? 3 * 1440 + 15 * 60 :
-        sessionId === 'korea' ? 2 * 1440 + 19 * 60 :
-        2 * 1440 + 17 * 60; // Sun 5pm CT
+        sessionId === 'post' ? 3 * 1440 + 15 * 60 :
+          sessionId === 'korea' ? 2 * 1440 + 19 * 60 :
+            2 * 1440 + 17 * 60; // Sun 5pm CT
 
       for (const weekOff of [-1, 0, 1]) {
         const daysToFri = (5 - dow) + weekOff * 7;
@@ -15792,7 +17230,7 @@
       // fetch resolves doesn't bleed COR1M data into the wrong chart.
       const cor1mToken = ovChartRenderToken;
       const firstT = display[0]?.datetime;
-      const lastT  = display[display.length - 1]?.datetime;
+      const lastT = display[display.length - 1]?.datetime;
       (async () => {
         // Schwab's pricehistory endpoint doesn't index CBOE correlation
         // products — we pull directly from CBOE's public CDN via our own
@@ -15811,12 +17249,12 @@
           // Trim to visible window so the left autoscale matches the SPY view.
           const data = usable
             .filter(c => (firstT == null || c.datetime >= firstT)
-                     && (lastT  == null || c.datetime <= lastT + 86400000))
+              && (lastT == null || c.datetime <= lastT + 86400000))
             .map(c => ({ time: Math.floor(c.datetime / 1000), value: Number(c.close) }))
             .sort((a, b) => a.time - b.time);
           if (data.length && lwcChart && cor1mToken === ovChartRenderToken) {
             cor1mSeries.setData(data);
-            console.log(`[COR1M] plotted ${data.length} points, range ${data[0].value.toFixed(2)}–${data[data.length-1].value.toFixed(2)}`);
+            console.log(`[COR1M] plotted ${data.length} points, range ${data[0].value.toFixed(2)}–${data[data.length - 1].value.toFixed(2)}`);
           } else {
             console.warn(`[COR1M] ${usable.length} candles available but 0 inside visible window (${new Date(firstT).toISOString()} → ${new Date(lastT).toISOString()})`);
           }
@@ -15934,7 +17372,7 @@
           if (!activeBtn) return;
           const tf = activeBtn.dataset.ovctf || '3M';
           window._ovChartAutoClicked = true;
-          try { ovSetChartTf(tf, activeBtn); } catch (_) {}
+          try { ovSetChartTf(tf, activeBtn); } catch (_) { }
         };
         setTimeout(fireActiveTf, 600);
         setTimeout(fireActiveTf, 1500);
@@ -15971,7 +17409,7 @@
           // applyOptions calls above reset the visible range to LWC's
           // default behavior, which would otherwise leave us at fitContent.
           if (lwcChart._ovDesiredRange) {
-            try { lwcChart.timeScale().setVisibleLogicalRange(lwcChart._ovDesiredRange); } catch (_) {}
+            try { lwcChart.timeScale().setVisibleLogicalRange(lwcChart._ovDesiredRange); } catch (_) { }
           }
           requestAnimationFrame(drawGammaBars);
         });
@@ -17330,14 +18768,14 @@
         // the chart lines keep up = red / down = green (Heatseeker's
         // directional-risk convention). Both are intentional per user request.
         const spotForEm = Number(heat.underlyingPrice);
-        const oneDay    = heat.expectedMoves?.oneDay  || {};
-        const oneWeek   = heat.expectedMoves?.oneWeek || {};
+        const oneDay = heat.expectedMoves?.oneDay || {};
+        const oneWeek = heat.expectedMoves?.oneWeek || {};
         const computeTarget = (leg, isUp) => {
           const strike = Number(leg.atmStrike);
           const callPx = Number(leg.callPx);
-          const putPx  = Number(leg.putPx);
+          const putPx = Number(leg.putPx);
           if (Number.isFinite(strike)
-              && (isUp ? Number.isFinite(callPx) : Number.isFinite(putPx))) {
+            && (isUp ? Number.isFinite(callPx) : Number.isFinite(putPx))) {
             return strike + (isUp ? +callPx : -putPx);
           }
           const em = Number(leg.em);
@@ -17358,11 +18796,11 @@
             return `<div style="color:var(--text3);font-size:10px;">${label}</div>
                     <div style="color:var(--text3);font-weight:700;font-size:11px;">—</div>`;
           }
-          const movePct  = ((target / spotForEm) - 1) * 100;
-          const sign     = movePct >= 0 ? '+' : '−';
-          const pctStr   = sign + Math.abs(movePct).toFixed(2) + '%';
+          const movePct = ((target / spotForEm) - 1) * 100;
+          const sign = movePct >= 0 ? '+' : '−';
+          const pctStr = sign + Math.abs(movePct).toFixed(2) + '%';
           const dirColor = isUp ? 'var(--green)' : 'var(--red)';
-          const tip      = fmtIvTooltip(leg.iv);
+          const tip = fmtIvTooltip(leg.iv);
           return `<div style="color:var(--text3);font-size:10px;" title="${tip}">${label}</div>
                   <div style="font-weight:700;font-size:11px;white-space:nowrap;" title="${tip}">
                     <span style="color:${dirColor};">${pctStr}</span>
@@ -17373,11 +18811,11 @@
         document.getElementById('ov-heat-summary').innerHTML = `
           <div style="display:grid;grid-template-columns:1fr auto 1fr auto;gap:3px 16px;align-items:center;">
             ${detailRow('Contracts Analyzed', (heat.contractCount || 0).toLocaleString())}
-            ${emRow('1W IV up',   oneWeek, true)}
+            ${emRow('1W IV up', oneWeek, true)}
             ${detailRow('Call Wall GEX', fmtDollar(s.strongestCallWall?.callGex))}
-            ${emRow('1D IV up',   oneDay,  true)}
+            ${emRow('1D IV up', oneDay, true)}
             ${detailRow('Put Wall GEX', fmtDollar(s.strongestPutWall?.putGex))}
-            ${emRow('1D IV down', oneDay,  false)}
+            ${emRow('1D IV down', oneDay, false)}
             ${detailRow('King GEX', fmtDollar(s.kingStrike?.netGex))}
             ${emRow('1W IV down', oneWeek, false)}
           </div>`;
@@ -19355,13 +20793,13 @@
     // Used to compute the weighted-average TOTAL row at the bottom of the
     // matrix.
     const MAG7_WEIGHTS = {
-      NVDA:  24.3189,
-      AAPL:  20.7198,
+      NVDA: 24.3189,
+      AAPL: 20.7198,
       GOOGL: 18.6446,
-      MSFT:  13.4241,
-      AMZN:  11.3813,
-      META:   6.0959,
-      TSLA:   5.4154
+      MSFT: 13.4241,
+      AMZN: 11.3813,
+      META: 6.0959,
+      TSLA: 5.4154
     };
 
     function mag7WeightedAvg(rows, key) {
@@ -19371,7 +20809,7 @@
         const v = r.pct?.[key];
         if (w == null || v == null || !Number.isFinite(v)) continue;
         sumWV += w * v;
-        sumW  += w;
+        sumW += w;
       }
       return sumW > 0 ? sumWV / sumW : null;
     }
@@ -19381,7 +20819,7 @@
     function mag7PctBack(candles, daysBack) {
       if (!Array.isArray(candles) || candles.length < daysBack + 1) return null;
       const today = candles[candles.length - 1];
-      const past  = candles[candles.length - 1 - daysBack];
+      const past = candles[candles.length - 1 - daysBack];
       const t = Number(today?.close), p = Number(past?.close);
       if (!Number.isFinite(t) || !Number.isFinite(p) || p <= 0) return null;
       return ((t - p) / p) * 100;
@@ -19405,8 +20843,8 @@
       const n = Number(v);
       if (!Number.isFinite(n) || n <= 0) return '—';
       if (n >= 1e12) return '$' + (n / 1e12).toFixed(2) + 'T';
-      if (n >= 1e9)  return '$' + (n / 1e9).toFixed(1)  + 'B';
-      if (n >= 1e6)  return '$' + (n / 1e6).toFixed(1)  + 'M';
+      if (n >= 1e9) return '$' + (n / 1e9).toFixed(1) + 'B';
+      if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
       return '$' + n.toFixed(0);
     }
     function mag7ClassFor(v) {
@@ -19495,7 +20933,7 @@
           // price × (1D% / 100) if the quote doesn't include it.
           let dollarChange = qt.netChange != null ? Number(qt.netChange) : null;
           if ((dollarChange == null || !Number.isFinite(dollarChange))
-              && Number.isFinite(Number(price)) && Number.isFinite(oneDay)) {
+            && Number.isFinite(Number(price)) && Number.isFinite(oneDay)) {
             dollarChange = Number(price) * (oneDay / 100);
           }
           const fundCap = fund && fund.market_cap
@@ -19508,18 +20946,18 @@
             price,
             dollarChange,
             pct: {
-              '1d':  oneDay,
-              '1w':  mag7PctBack(candles, TIMEFRAMES['1w']),
-              '1m':  mag7PctBack(candles, TIMEFRAMES['1m']),
+              '1d': oneDay,
+              '1w': mag7PctBack(candles, TIMEFRAMES['1w']),
+              '1m': mag7PctBack(candles, TIMEFRAMES['1m']),
               'ytd': mag7PctYTD(candles),
-              '1y':  mag7PctBack(candles, TIMEFRAMES['1y'])
+              '1y': mag7PctBack(candles, TIMEFRAMES['1y'])
             },
             marketCap: (fundCap && Number.isFinite(fundCap) && fundCap > 0) ? fundCap : schwabCap
           };
         };
 
         const mag7Rows = MAG7_SYMBOLS.map(computeRow);
-        const spyRow   = computeRow('SPY');
+        const spyRow = computeRow('SPY');
 
         // Aggregate Mag 7: combined market cap + WEIGHTED average %. Uses the
         // same MAG7_WEIGHTS as the TOTAL row at the bottom of the matrix so
@@ -19528,11 +20966,11 @@
         // which doesn't reflect their actual influence on the basket.
         const totalCap = mag7Rows.reduce((s, r) => s + (r.marketCap || 0), 0);
         const aggregates = {
-          '1d':  mag7WeightedAvg(mag7Rows, '1d'),
-          '1w':  mag7WeightedAvg(mag7Rows, '1w'),
-          '1m':  mag7WeightedAvg(mag7Rows, '1m'),
+          '1d': mag7WeightedAvg(mag7Rows, '1d'),
+          '1w': mag7WeightedAvg(mag7Rows, '1w'),
+          '1m': mag7WeightedAvg(mag7Rows, '1m'),
           'ytd': mag7WeightedAvg(mag7Rows, 'ytd'),
-          '1y':  mag7WeightedAvg(mag7Rows, '1y')
+          '1y': mag7WeightedAvg(mag7Rows, '1y')
         };
 
         // Wire up the top header KPIs
@@ -19549,11 +20987,11 @@
           el.classList.toggle('neg', isPct && value < 0);
         };
         setVal('mag7-total-cap', totalCap || null, false);
-        setVal('mag7-avg-1d',  aggregates['1d'],  true);
-        setVal('mag7-avg-1w',  aggregates['1w'],  true);
-        setVal('mag7-avg-1m',  aggregates['1m'],  true);
+        setVal('mag7-avg-1d', aggregates['1d'], true);
+        setVal('mag7-avg-1w', aggregates['1w'], true);
+        setVal('mag7-avg-1m', aggregates['1m'], true);
         setVal('mag7-avg-ytd', aggregates['ytd'], true);
-        setVal('mag7-avg-1y',  aggregates['1y'],  true);
+        setVal('mag7-avg-1y', aggregates['1y'], true);
 
         // SPY-spread row — for each timeframe show SPY return and the spread
         // (Mag 7 avg − SPY) so the user can see when mega caps are pulling the
@@ -20707,8 +22145,8 @@
           }
           tbody.innerHTML = rows.map((r, i) => {
             const price = Number(r.lastPrice);
-            const pct   = Number(r.netPercentChange);
-            const vol   = Number(r.totalVolume);
+            const pct = Number(r.netPercentChange);
+            const vol = Number(r.totalVolume);
             const pctCls = scPosNegCls(pct);
             return `<tr>
               <td class="rank num">${i + 1}</td>
@@ -20726,9 +22164,9 @@
 
       async function scLoadTopNetOi() {
         const callBody = document.getElementById('sc-callOi-tbody');
-        const putBody  = document.getElementById('sc-putOi-tbody');
+        const putBody = document.getElementById('sc-putOi-tbody');
         const renderRow = (r, i, netKey) => {
-          const net    = Number(r[netKey]);
+          const net = Number(r[netKey]);
           const netCls = scPosNegCls(net);
           return `<tr>
             <td class="rank num">${i + 1}</td>
@@ -20742,7 +22180,7 @@
           const d = await apiGet('/api/scanner/top-net-oi?limit=10');
           if (!d?.ok) throw new Error(d?.error || 'Fetch failed');
           const callList = d.call || [];
-          const putList  = d.put  || [];
+          const putList = d.put || [];
           if (callBody) {
             callBody.innerHTML = callList.length
               ? callList.map((r, i) => renderRow(r, i, 'netCallOi')).join('')
@@ -20755,7 +22193,7 @@
           }
         } catch (e) {
           if (callBody) callBody.innerHTML = `<tr><td colspan="5" class="sc-extra-empty">Failed to load: ${e.message}</td></tr>`;
-          if (putBody)  putBody.innerHTML  = `<tr><td colspan="5" class="sc-extra-empty">Failed to load: ${e.message}</td></tr>`;
+          if (putBody) putBody.innerHTML = `<tr><td colspan="5" class="sc-extra-empty">Failed to load: ${e.message}</td></tr>`;
         }
       }
 
@@ -20899,10 +22337,10 @@
         // the same language as the Market Overview F&G row.
         const label = cnnFearGreedLabel(score);
         const color = score >= 75 ? 'var(--green)' :
-                      score >= 56 ? 'var(--green)' :
-                      score >= 45 ? 'var(--text2)' :
-                      score >= 25 ? 'var(--red)' :
-                                    'var(--red)';
+          score >= 56 ? 'var(--green)' :
+            score >= 45 ? 'var(--text2)' :
+              score >= 25 ? 'var(--red)' :
+                'var(--red)';
 
         document.getElementById('sent-score-body').innerHTML = `
       <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
@@ -21733,7 +23171,7 @@
       catch (_) { return { items: {}, status: {} }; }
     }
     function clWriteState(s) {
-      try { localStorage.setItem(CL_LS_KEY, JSON.stringify(s)); } catch (_) {}
+      try { localStorage.setItem(CL_LS_KEY, JSON.stringify(s)); } catch (_) { }
     }
 
     // Per spec, both checklist cards START COLLAPSED on every page load —
@@ -21743,8 +23181,8 @@
       // Maps the human-readable key in the onclick attribute to the actual
       // card element id. Add new collapsible cards here.
       const CARDS = {
-        long:      'ov-checklist-card',
-        short:     'ov-checklist-card-short',
+        long: 'ov-checklist-card',
+        short: 'ov-checklist-card-short',
         reminders: 'ov-trade-journal-card'
       };
       const card = document.getElementById(CARDS[which] || which);
@@ -21877,8 +23315,10 @@
         const key = monday.toISOString().slice(0, 10);
         const cur = byWeek.get(key);
         if (!cur) {
-          byWeek.set(key, { firstT: Number(c.datetime), lastT: Number(c.datetime),
-            open: Number(c.open), close: Number(c.close), high: Number(c.high), low: Number(c.low) });
+          byWeek.set(key, {
+            firstT: Number(c.datetime), lastT: Number(c.datetime),
+            open: Number(c.open), close: Number(c.close), high: Number(c.high), low: Number(c.low)
+          });
         } else {
           cur.high = Math.max(cur.high, Number(c.high));
           cur.low = Math.min(cur.low, Number(c.low));
@@ -21901,9 +23341,9 @@
         noDataMsg: 'Awaiting market stress · objectives auto-evaluate from live data.',
         goMsg: '✓ GO LONG — all three triggers active. Authorized to deploy.',
         objs: {
-          price:      ['price-1', 'price-2', 'price-3', 'price-4'],
-          volatility: ['vol-1',   'vol-2',   'vol-3',   'vol-4'],
-          sentiment:  ['sent-1',  'sent-2',  'sent-3',  'sent-4']
+          price: ['price-1', 'price-2', 'price-3', 'price-4'],
+          volatility: ['vol-1', 'vol-2', 'vol-3', 'vol-4'],
+          sentiment: ['sent-1', 'sent-2', 'sent-3', 'sent-4']
         }
       };
       if (!scores) { clRenderEvaluation({}, longOpts); return; }
@@ -22015,9 +23455,9 @@
         noDataMsg: 'Awaiting market euphoria · objectives auto-evaluate from live data.',
         goMsg: '✓ GO SHORT — all three triggers active. Authorized to fade.',
         objs: {
-          's-price':      ['s-price-1', 's-price-2', 's-price-3', 's-price-4'],
-          's-volatility': ['s-vol-1',   's-vol-2',   's-vol-3',   's-vol-4'],
-          's-sentiment':  ['s-sent-1',  's-sent-2',  's-sent-3',  's-sent-4']
+          's-price': ['s-price-1', 's-price-2', 's-price-3', 's-price-4'],
+          's-volatility': ['s-vol-1', 's-vol-2', 's-vol-3', 's-vol-4'],
+          's-sentiment': ['s-sent-1', 's-sent-2', 's-sent-3', 's-sent-4']
         }
       };
       if (!scores) { clRenderEvaluation({}, shortOpts); return; }
@@ -22102,14 +23542,14 @@
         's-price-2': twoGreenWeeks,
         's-price-3': stretchedAbove,
         's-price-4': bigUpDay,
-        's-vol-1':   vixUnder14,
-        's-vol-2':   vixCollapse,
-        's-vol-3':   tightRange,
-        's-vol-4':   ivCompressed,
-        's-sent-1':  pcrUnder80,
-        's-sent-2':  greedExtreme,
-        's-sent-3':  mediaEuphoriaHeadlines,
-        's-sent-4':  retailCalls
+        's-vol-1': vixUnder14,
+        's-vol-2': vixCollapse,
+        's-vol-3': tightRange,
+        's-vol-4': ivCompressed,
+        's-sent-1': pcrUnder80,
+        's-sent-2': greedExtreme,
+        's-sent-3': mediaEuphoriaHeadlines,
+        's-sent-4': retailCalls
       }, shortOpts);
     }
 
@@ -22120,9 +23560,9 @@
         noDataMsg: 'Awaiting market stress · objectives auto-evaluate from live data.',
         goMsg: '✓ GO — all three triggers active. Authorized to deploy.',
         objs: {
-          price:      ['price-1', 'price-2', 'price-3', 'price-4'],
-          volatility: ['vol-1',   'vol-2',   'vol-3',   'vol-4'],
-          sentiment:  ['sent-1',  'sent-2',  'sent-3',  'sent-4']
+          price: ['price-1', 'price-2', 'price-3', 'price-4'],
+          volatility: ['vol-1', 'vol-2', 'vol-3', 'vol-4'],
+          sentiment: ['sent-1', 'sent-2', 'sent-3', 'sent-4']
         }
       };
       const card = document.getElementById(opts.cardId);
@@ -22224,7 +23664,7 @@
       if (!card) return;
       const map = direction === 'short'
         ? { 't-price': 's-price', 't-vol': 's-volatility', 't-sent': 's-sentiment' }
-        : { 't-price': 'price',   't-vol': 'volatility',   't-sent': 'sentiment'   };
+        : { 't-price': 'price', 't-vol': 'volatility', 't-sent': 'sentiment' };
       Object.entries(map).forEach(([inputName, objKey]) => {
         const inp = form.querySelector(`input[name="${inputName}"]`);
         const objCard = card.querySelector(`.cl-obj[data-cl-obj="${objKey}"]`);
@@ -22410,13 +23850,13 @@
     // are AND'd. Each is one-shot per dimension; clicking a different month
     // replaces the existing `month` filter rather than stacking.
     let tjDashFilters = {
-      ticker:   '',
+      ticker: '',
       dateFrom: '',
-      dateTo:   '',
-      dow:      null,
-      hour:     null,
-      month:    '',
-      setup:    ''
+      dateTo: '',
+      dow: null,
+      hour: null,
+      month: '',
+      setup: ''
     };
 
     function tjDateOnly(s) {
@@ -22439,7 +23879,7 @@
       }
       const d = tjDateOnly(t.EntryDate);
       if (f.dateFrom && d && d < f.dateFrom) return false;
-      if (f.dateTo   && d && d > f.dateTo)   return false;
+      if (f.dateTo && d && d > f.dateTo) return false;
       if (f.dow != null && tjDowOf(t.EntryDate) !== f.dow) return false;
       if (f.hour != null) {
         const h = tjHourOf(t.EntryTime);
@@ -22481,9 +23921,9 @@
       else tjDashFilters[key] = '';
       // Mirror back to the input element when applicable.
       const inputId = {
-        ticker:   'tj-dash-flt-ticker',
+        ticker: 'tj-dash-flt-ticker',
         dateFrom: 'tj-dash-flt-from',
-        dateTo:   'tj-dash-flt-to'
+        dateTo: 'tj-dash-flt-to'
       }[key];
       if (inputId) {
         const el = document.getElementById(inputId);
@@ -22515,13 +23955,13 @@
       const add = (label, key) => chips.push(
         `<span class="tj-dash-flt-chip">${label}<button onclick="tjClearDashFilter('${key}')" title="Remove this filter">✕</button></span>`
       );
-      if (f.ticker)                add(`Ticker: ${f.ticker.toUpperCase()}`, 'ticker');
-      if (f.dateFrom)              add(`From: ${f.dateFrom}`,               'dateFrom');
-      if (f.dateTo)                add(`To: ${f.dateTo}`,                   'dateTo');
-      if (f.dow != null)           add(`Day: ${TJ_DOW_NAMES[f.dow]}`,       'dow');
-      if (f.hour != null)          add(`Hour: ${tjFormatHour12(f.hour)}`,   'hour');
-      if (f.month)                 add(`Month: ${f.month}`,                 'month');
-      if (f.setup)                 add(`Setup: ${f.setup}`,                 'setup');
+      if (f.ticker) add(`Ticker: ${f.ticker.toUpperCase()}`, 'ticker');
+      if (f.dateFrom) add(`From: ${f.dateFrom}`, 'dateFrom');
+      if (f.dateTo) add(`To: ${f.dateTo}`, 'dateTo');
+      if (f.dow != null) add(`Day: ${TJ_DOW_NAMES[f.dow]}`, 'dow');
+      if (f.hour != null) add(`Hour: ${tjFormatHour12(f.hour)}`, 'hour');
+      if (f.month) add(`Month: ${f.month}`, 'month');
+      if (f.setup) add(`Setup: ${f.setup}`, 'setup');
       wrap.innerHTML = chips.join('');
     }
 
@@ -22735,7 +24175,7 @@
         const el = document.getElementById(id);
         if (!el) return;
         el.textContent = val;
-        el.classList.remove('pos','neg');
+        el.classList.remove('pos', 'neg');
         if (cls) el.classList.add(cls);
       };
       setKpi('tj-kpi-today', tjFmtMoneySigned(today), tjPlClass(today));
@@ -22807,11 +24247,11 @@
       return cells;
     }
     function tjHmIso(d) {
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
     function tjHmMonthLabels(cells, el) {
       el.innerHTML = '';
-      const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       const COL_W = 14, numCols = Math.ceil(cells.length / 7);
       el.style.position = 'relative'; el.style.height = '16px';
       el.style.width = (numCols * COL_W) + 'px';
@@ -22840,7 +24280,7 @@
     function tjHmMoveTip(e) {
       const tip = document.getElementById('tj-heatmap-tooltip');
       tip.style.left = (e.clientX + 12) + 'px';
-      tip.style.top  = (e.clientY - 28) + 'px';
+      tip.style.top = (e.clientY - 28) + 'px';
     }
     function tjHmHideTip() {
       const tip = document.getElementById('tj-heatmap-tooltip');
@@ -22864,7 +24304,7 @@
         const bucket = dayMap[key];
         bucket.trades++;
         bucket.contracts += Number(t.quantityTotal) || 0;
-        bucket.notional  += Number(t.totalCapital) || 0;
+        bucket.notional += Number(t.totalCapital) || 0;
         if (t.Status === 'closed') {
           const pl = Number(t.RealizedPL) || 0;
           if (pl > 0) bucket.wins++;
@@ -22893,14 +24333,14 @@
               ? `${data.contracts.toLocaleString()} contracts/shares`
               : `$${data.notional.toLocaleString(undefined, { maximumFractionDigits: 0 })} notional`;
           const wl = (data.wins || data.losses)
-            ? ` · ${data.wins ? data.wins+'W' : ''}${data.wins && data.losses ? '/' : ''}${data.losses ? data.losses+'L' : ''}`
+            ? ` · ${data.wins ? data.wins + 'W' : ''}${data.wins && data.losses ? '/' : ''}${data.losses ? data.losses + 'L' : ''}`
             : '';
           cell.setAttribute('data-tip', `${iso} · ${lbl}${wl}`);
         } else {
           cell.setAttribute('data-tip', iso);
         }
         cell.addEventListener('mouseenter', tjHmShowTip);
-        cell.addEventListener('mousemove',  tjHmMoveTip);
+        cell.addEventListener('mousemove', tjHmMoveTip);
         cell.addEventListener('mouseleave', tjHmHideTip);
         hm.appendChild(cell);
       }
@@ -22911,11 +24351,11 @@
       const totalTrades = Object.values(dayMap).reduce((s, v) => s + v.trades, 0);
       const tickerSet = new Set(tjFilteredTrades().filter(t => t.Ticker).map(t => t.Ticker));
       const footer = document.getElementById('tj-hm-act-footer');
-      const meta   = document.getElementById('tj-hm-act-meta');
-      const sub    = document.getElementById('tj-hm-act-sub');
-      if (sub)    sub.textContent    = `${tjHmYear} YTD · ${tjFilteredTrades().length ? 'manual + broker imports' : 'add or import trades to begin'}`;
-      if (footer) footer.innerHTML   = tjFilteredTrades().length ? `<strong>${totalTrades}</strong> trades across <strong>${activeDays}</strong> active days` : 'No trades yet';
-      if (meta)   meta.innerHTML     = tickerSet.size ? `<strong>${activeDays}</strong> active days &nbsp;·&nbsp; <strong>${tickerSet.size}</strong> tickers` : '';
+      const meta = document.getElementById('tj-hm-act-meta');
+      const sub = document.getElementById('tj-hm-act-sub');
+      if (sub) sub.textContent = `${tjHmYear} YTD · ${tjFilteredTrades().length ? 'manual + broker imports' : 'add or import trades to begin'}`;
+      if (footer) footer.innerHTML = tjFilteredTrades().length ? `<strong>${totalTrades}</strong> trades across <strong>${activeDays}</strong> active days` : 'No trades yet';
+      if (meta) meta.innerHTML = tickerSet.size ? `<strong>${activeDays}</strong> active days &nbsp;·&nbsp; <strong>${tickerSet.size}</strong> tickers` : '';
     }
 
     // Performance: per CloseDate net realized P/L. Red→green intensity by abs $.
@@ -22958,15 +24398,15 @@
           cell.setAttribute('data-tip', iso);
         }
         cell.addEventListener('mouseenter', tjHmShowTip);
-        cell.addEventListener('mousemove',  tjHmMoveTip);
+        cell.addEventListener('mousemove', tjHmMoveTip);
         cell.addEventListener('mouseleave', tjHmHideTip);
         hm.appendChild(cell);
       }
       tjHmMonthLabels(grid, mr);
 
       const footer = document.getElementById('tj-hm-pnl-footer');
-      const meta   = document.getElementById('tj-hm-pnl-meta');
-      const sub    = document.getElementById('tj-hm-pnl-sub');
+      const meta = document.getElementById('tj-hm-pnl-meta');
+      const sub = document.getElementById('tj-hm-pnl-sub');
       if (sub) sub.textContent = `${tjHmYear} YTD · daily net realized P/L`;
       if (count) {
         if (footer) footer.textContent = '';
@@ -23030,7 +24470,7 @@
           cell.setAttribute('data-tip', iso);
         }
         cell.addEventListener('mouseenter', tjHmShowTip);
-        cell.addEventListener('mousemove',  tjHmMoveTip);
+        cell.addEventListener('mousemove', tjHmMoveTip);
         cell.addEventListener('mouseleave', tjHmHideTip);
         hm.appendChild(cell);
       }
@@ -23150,8 +24590,8 @@
           const open = Math.max(0, b.total - b.wins - b.losses);
           const segs = [
             { v: b.losses, color: 'rgba(255,59,92,0.92)' },
-            { v: b.wins,   color: 'rgba(34,221,136,0.92)' },
-            { v: open,     color: 'rgba(113,130,157,0.45)' }
+            { v: b.wins, color: 'rgba(34,221,136,0.92)' },
+            { v: open, color: 'rgba(113,130,157,0.45)' }
           ];
           let runningY = padT + innerH;
           for (const s of segs) {
@@ -23353,7 +24793,7 @@
       const xAt = (i) => padL + (pts.length > 1 ? (i * innerW / (pts.length - 1)) : innerW / 2);
       const yAt = (v) => padT + innerH - ((v - min) / range) * innerH;
       // baseline (0)
-      ctx.strokeStyle = '#252a3a'; ctx.lineWidth = 1; ctx.setLineDash([2,3]);
+      ctx.strokeStyle = '#252a3a'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
       ctx.beginPath(); ctx.moveTo(padL, yAt(0)); ctx.lineTo(w - padR, yAt(0)); ctx.stroke();
       ctx.setLineDash([]);
       // y-axis labels
@@ -23503,7 +24943,7 @@
       const winPL = winTrades.reduce((s, t) => s + (Number(t.RealizedPL) || 0), 0);
       const lossPL = lossTrades.reduce((s, t) => s + (Number(t.RealizedPL) || 0), 0);
       const slices = [
-        { label: 'Wins',   v: wins,   pl: winPL,  color: '#22dd88', cls: 'pos' },
+        { label: 'Wins', v: wins, pl: winPL, color: '#22dd88', cls: 'pos' },
         { label: 'Losses', v: losses, pl: lossPL, color: '#ff3b5c', cls: 'neg' }
       ];
       // Capture each slice's angular extent for hit-testing.
@@ -23591,7 +25031,7 @@
       return groups;
     }
     function tjRenderByTicker() { tjGroupedBar('tj-bytkr', tjAggregateBy(t => t.Ticker || '—'), 'ticker'); }
-    function tjRenderBySetup()  { tjGroupedBar('tj-bysetup', tjAggregateBy(t => t.SetupType || 'Unspecified'), 'setup'); }
+    function tjRenderBySetup() { tjGroupedBar('tj-bysetup', tjAggregateBy(t => t.SetupType || 'Unspecified'), 'setup'); }
 
     // History-table filter — chains on top of the dashboard's tjFilteredTrades.
     // History filters (status / type / win-loss / ticker / dates) are AND'd
@@ -23660,14 +25100,14 @@
           <td><span class="tj-status-badge ${statusCls}">${statusLbl}</span></td>
           <td class="${tjPlClass(pl) === 'pos' ? 'tj-pl-pos' : tjPlClass(pl) === 'neg' ? 'tj-pl-neg' : ''}">${isClosed || pl ? tjFmtMoneySigned(pl) : '--'}</td>
           <td class="${tjPlClass(plPct) === 'pos' ? 'tj-pl-pos' : tjPlClass(plPct) === 'neg' ? 'tj-pl-neg' : ''}">${isClosed || pl ? tjFmtPct(plPct) : '--'}</td>
-          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(t.Thesis || '').replace(/"/g,'&quot;')}">${t.Thesis || ''}</td>
+          <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(t.Thesis || '').replace(/"/g, '&quot;')}">${t.Thesis || ''}</td>
           <td>${tags}</td>
           <td onclick="event.stopPropagation()">
             <div class="tj-row-actions">
               ${isBroker
-                ? `<button onclick="tjOpenBrokerEditModal(${t._broker.TradeID})" title="Edit broker trade">✏️</button>
+            ? `<button onclick="tjOpenBrokerEditModal(${t._broker.TradeID})" title="Edit broker trade">✏️</button>
                    <button onclick="tjDeleteBrokerTrade(${t._broker.TradeID})" title="Delete broker trade">🗑</button>`
-                : `<button onclick="tjOpenEditModal(${t.TradeID})" title="Edit">✏️</button>
+            : `<button onclick="tjOpenEditModal(${t.TradeID})" title="Edit">✏️</button>
                    ${t.Status !== 'closed' ? `<button onclick="tjOpenAverageInModal(${t.TradeID})" title="Average in">➕</button>` : ''}
                    ${t.Status !== 'closed' ? `<button onclick="tjOpenCloseModal(${t.TradeID})" title="Close trade">🔒</button>` : ''}
                    <button onclick="tjDeleteTrade(${t.TradeID})" title="Delete">🗑</button>`}
@@ -23712,11 +25152,11 @@
           <div><div class="lbl">Emotion</div>${t.Emotion || '—'}</div>
           <div><div class="lbl">Days held</div>${t.CloseDate && t.EntryDate ? Math.round((new Date(t.CloseDate) - new Date(t.EntryDate)) / 86400000) : '—'}</div>
           <div><div class="lbl">Risk/Reward</div>${(() => {
-            const tg = Number(t.TargetPrice), sl = Number(t.StopLoss), ep = Number((t.entries || [])[0]?.Price);
-            if (!Number.isFinite(tg) || !Number.isFinite(sl) || !Number.isFinite(ep) || sl === ep) return '—';
-            const r = Math.abs(tg - ep) / Math.abs(ep - sl);
-            return r.toFixed(2) + ':1';
-          })()}</div>
+          const tg = Number(t.TargetPrice), sl = Number(t.StopLoss), ep = Number((t.entries || [])[0]?.Price);
+          if (!Number.isFinite(tg) || !Number.isFinite(sl) || !Number.isFinite(ep) || sl === ep) return '—';
+          const r = Math.abs(tg - ep) / Math.abs(ep - sl);
+          return r.toFixed(2) + ':1';
+        })()}</div>
           <div><div class="lbl">Total capital</div>${tjFmtMoney(t.totalCapital)}</div>
         </div>
         <div style="margin-top:10px;font-size:11px;"><strong>Thesis:</strong> ${t.Thesis || '—'}</div>
@@ -23735,15 +25175,15 @@
               <thead><tr><th>Matched Qty</th><th>Allocated Cost</th><th>Allocated Proceeds</th><th>P/L $</th><th>P/L %</th></tr></thead>
               <tbody>
                 ${(broker.matches || []).map(m => {
-                  const pl = Number(m.RealizedPL); const cls = pl > 0 ? 'tj-pl-pos' : pl < 0 ? 'tj-pl-neg' : '';
-                  return `<tr>
+          const pl = Number(m.RealizedPL); const cls = pl > 0 ? 'tj-pl-pos' : pl < 0 ? 'tj-pl-neg' : '';
+          return `<tr>
                     <td>${m.MatchedQuantity}</td>
                     <td>$${Number(m.AllocatedEntryCost).toFixed(2)}</td>
                     <td>$${Number(m.AllocatedCloseProceeds).toFixed(2)}</td>
                     <td class="${cls}">${tjFmtMoneySigned(pl)}</td>
                     <td class="${cls}">${m.RealizedPLPercent != null ? tjFmtPct(m.RealizedPLPercent) : '—'}</td>
                   </tr>`;
-                }).join('') || '<tr><td colspan="5" style="color:var(--text3);">No matches</td></tr>'}
+        }).join('') || '<tr><td colspan="5" style="color:var(--text3);">No matches</td></tr>'}
               </tbody>
             </table>
           </div>` : ''}
@@ -23963,7 +25403,7 @@
             <div class="tj-form-group">
               <label class="tj-form-label">Grade</label>
               <select class="tj-form-select" name="grade">
-                ${['','A','B','C','D','F'].map(g => `<option value="${g}" ${g === t.Grade ? 'selected' : ''}>${g || '—'}</option>`).join('')}
+                ${['', 'A', 'B', 'C', 'D', 'F'].map(g => `<option value="${g}" ${g === t.Grade ? 'selected' : ''}>${g || '—'}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -23979,14 +25419,14 @@
           </div>
           <div class="tj-form-group">
             <label class="tj-form-label">Tags</label>
-            <input class="tj-form-input" name="tags" value="${(t.Tags || '').replace(/"/g,'&quot;')}">
+            <input class="tj-form-input" name="tags" value="${(t.Tags || '').replace(/"/g, '&quot;')}">
           </div>
           <div class="tj-form-group">
             <label class="tj-form-label">Emotional State</label>
             <select class="tj-form-select" name="emotion">
-              ${['','Calm','Confident','FOMO','Fear','Greed','Frustrated','Bored','Patient'].map(e =>
-                `<option value="${e}" ${e === t.Emotion ? 'selected' : ''}>${e || '—'}</option>`
-              ).join('')}
+              ${['', 'Calm', 'Confident', 'FOMO', 'Fear', 'Greed', 'Frustrated', 'Bored', 'Patient'].map(e =>
+        `<option value="${e}" ${e === t.Emotion ? 'selected' : ''}>${e || '—'}</option>`
+      ).join('')}
             </select>
           </div>
           <div class="tj-form-group">
@@ -24130,11 +25570,11 @@
           <div class="tj-form-row">
             <div class="tj-form-group">
               <label class="tj-form-label">Date</label>
-              <input class="tj-form-input" type="date" name="date" value="${now.toISOString().slice(0,10)}">
+              <input class="tj-form-input" type="date" name="date" value="${now.toISOString().slice(0, 10)}">
             </div>
             <div class="tj-form-group">
               <label class="tj-form-label">Time</label>
-              <input class="tj-form-input" type="time" name="time" step="1" value="${now.toTimeString().slice(0,8)}">
+              <input class="tj-form-input" type="time" name="time" step="1" value="${now.toTimeString().slice(0, 8)}">
             </div>
           </div>
           <div class="tj-form-group">
@@ -24172,7 +25612,7 @@
       const remaining = Number(t.quantityOpen) || 0;
       tjOpenModal('Close · ' + t.Ticker, `
         <div class="tj-form-derived" style="margin-bottom:14px;">
-          Remaining open: <strong>${remaining}</strong> ${t.TradeType === 'option' ? 'contracts' : 'shares'} @ avg cost <strong>$${(Number(t.avgCostBasis)||0).toFixed(2)}</strong>
+          Remaining open: <strong>${remaining}</strong> ${t.TradeType === 'option' ? 'contracts' : 'shares'} @ avg cost <strong>$${(Number(t.avgCostBasis) || 0).toFixed(2)}</strong>
         </div>
         <form id="tj-close-form" onsubmit="tjSubmitClose(event, ${id})">
           <div class="tj-form-row">
@@ -24188,11 +25628,11 @@
           <div class="tj-form-row">
             <div class="tj-form-group">
               <label class="tj-form-label">Close Date</label>
-              <input class="tj-form-input" type="date" name="date" value="${now.toISOString().slice(0,10)}">
+              <input class="tj-form-input" type="date" name="date" value="${now.toISOString().slice(0, 10)}">
             </div>
             <div class="tj-form-group">
               <label class="tj-form-label">Close Time</label>
-              <input class="tj-form-input" type="time" name="time" step="1" value="${now.toTimeString().slice(0,8)}">
+              <input class="tj-form-input" type="time" name="time" step="1" value="${now.toTimeString().slice(0, 8)}">
             </div>
           </div>
           <div class="tj-form-group">
@@ -24251,7 +25691,7 @@
               <label class="tj-form-label">Option Type</label>
               <select class="tj-form-select" id="tj-be-optType">
                 <option value="call" ${t.OptionType === 'call' ? 'selected' : ''}>Call</option>
-                <option value="put"  ${t.OptionType === 'put'  ? 'selected' : ''}>Put</option>
+                <option value="put"  ${t.OptionType === 'put' ? 'selected' : ''}>Put</option>
               </select>
             </div>
             <div class="tj-form-group">
@@ -24298,7 +25738,7 @@
           <div class="tj-form-group">
             <label class="tj-form-label">Asset Type</label>
             <select class="tj-form-select" id="tj-be-assetType">
-              <option value="stock"  ${t.AssetType === 'stock'  ? 'selected' : ''}>Stock</option>
+              <option value="stock"  ${t.AssetType === 'stock' ? 'selected' : ''}>Stock</option>
               <option value="option" ${t.AssetType === 'option' ? 'selected' : ''}>Option</option>
             </select>
           </div>
@@ -24311,7 +25751,7 @@
         <div class="tj-form-row-3">
           <div class="tj-form-group"><label class="tj-form-label">Grade</label>
             <select class="tj-form-select" id="tj-be-grade">
-              ${['','A','B','C','D','F'].map(g => `<option value="${g}" ${t.Grade === g ? 'selected' : ''}>${g || '—'}</option>`).join('')}
+              ${['', 'A', 'B', 'C', 'D', 'F'].map(g => `<option value="${g}" ${t.Grade === g ? 'selected' : ''}>${g || '—'}</option>`).join('')}
             </select>
           </div>
           <div class="tj-form-group"><label class="tj-form-label">Emotion</label><input class="tj-form-input" id="tj-be-emotion" value="${(t.Emotion || '').replace(/"/g, '&quot;')}"></div>
@@ -24887,8 +26327,7 @@
             transform="rotate(-32 104 116)" />
           <ellipse class="mbell-gleam" cx="170" cy="210" rx="46" ry="13" opacity="0.2"
             transform="rotate(-20 170 210)" />
-          <ellipse class="mbell-gleam" cx="92" cy="190" rx="9" ry="30" opacity="0.26"
-            transform="rotate(-16 92 190)" />
+          <ellipse class="mbell-gleam" cx="92" cy="190" rx="9" ry="30" opacity="0.26" transform="rotate(-16 92 190)" />
 
           <!-- center finial knob -->
           <ellipse class="mbell-knob-base" cx="140" cy="160" rx="22" ry="20" />

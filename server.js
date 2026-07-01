@@ -2381,6 +2381,43 @@ const SCANNER_OI_UNIVERSE = [
   "JPM", "BAC", "WMT", "DIS", "PLTR", "PYPL", "BA", "F", "XOM", "PFE", "CVX", "GME"
 ];
 
+// Top 300 S&P 500 names by index weight (Slickcharts, mirrors the client-side
+// SP500_SCAN_SYMBOLS used by the Options Flow page). Used as the anomaly
+// scanner's input universe so every meaningful large-cap is evaluated, not
+// just Schwab's short "movers" list.
+const SP500_SCAN_SYMBOLS = [
+  "NVDA", "AAPL", "MSFT", "AMZN", "GOOGL", "GOOG", "AVGO", "META", "TSLA", "BRK.B",
+  "WMT", "LLY", "JPM", "XOM", "JNJ", "V", "COST", "MA", "ORCL", "MU",
+  "NFLX", "CVX", "ABBV", "BAC", "PLTR", "AMD", "CAT", "PG", "HD", "KO",
+  "CSCO", "GE", "MRK", "AMAT", "LRCX", "MS", "RTX", "GS", "UNH", "WFC",
+  "PM", "INTC", "GEV", "LIN", "IBM", "TMUS", "MCD", "PEP", "VZ", "AXP",
+  "C", "KLAC", "T", "NEE", "AMGN", "TMO", "ABT", "TJX", "TXN", "GILD",
+  "CRM", "DIS", "ISRG", "BA", "PFE", "SCHW", "APH", "COP", "ANET", "ADI",
+  "DE", "BLK", "UBER", "HON", "UNP", "LMT", "ETN", "WELL", "QCOM", "DHR",
+  "BKNG", "LOW", "APP", "PANW", "CB", "SPGI", "BMY", "SYK", "PLD", "NEM",
+  "GLW", "ACN", "INTU", "PH", "COF", "VRTX", "PGR", "MDT", "MO", "DELL",
+  "SO", "NOW", "CME", "MCK", "HCA", "SBUX", "SNDK", "DUK", "WDC", "CEG",
+  "CMCSA", "VRT", "CRWD", "NOC", "EQIX", "ADBE", "HWM", "GD", "STX", "TT",
+  "WM", "CVS", "BSX", "ICE", "BX", "FCX", "WMB", "MAR", "FDX", "PWR",
+  "UPS", "BK", "MRSH", "JCI", "PNC", "REGN", "USB", "KKR", "ADP", "SHW",
+  "AMT", "MCO", "CDNS", "CSX", "ORLY", "ECL", "RCL", "MMM", "SNPS", "CMI",
+  "ABNB", "EOG", "ITW", "SLB", "EMR", "MDLZ", "KMI", "MSI", "VLO", "AEP",
+  "HLT", "ROST", "CRH", "CI", "MNST", "PSX", "MPC", "CL", "AON", "CTAS",
+  "WBD", "RSG", "GM", "TDG", "NKE", "LHX", "DASH", "ELV", "NSC", "APD",
+  "APO", "SRE", "HOOD", "TRV", "DLR", "PCAR", "COR", "TEL", "OXY", "SPG",
+  "FTNT", "BKR", "CIEN", "TFC", "O", "AFL", "AZO", "CTVA", "AJG", "MPWR",
+  "LITE", "OKE", "D", "TGT", "FAST", "FANG", "ALL", "TRGP", "GWW", "VST",
+  "ETR", "EA", "FIX", "EXC", "ADSK", "AME", "CAH", "KEYS", "ZTS", "NXPI",
+  "TER", "XEL", "PSA", "NDAQ", "CARR", "EW", "F", "COHR", "MET", "URI",
+  "COIN", "GRMN", "IDXX", "FOXA", "MSCI", "MCHP", "VRSK", "FTV", "DD", "DTE",
+  "YUM", "CMG", "LULU", "ROK", "EXR", "CCI", "A", "KMB", "STT", "SCCO",
+  "TRP", "ENPH", "DLTR", "CNC", "HUM", "RJF", "DOV", "GIS", "STZ", "PEG",
+  "EBAY", "TSCO", "AVB", "IR", "ED", "GEHC", "MTB", "CHTR", "KDP", "FIS",
+  "RMD", "EXE", "DOW", "EFX", "CSGP", "CCL", "FICO", "WTW", "DAL", "VLTO",
+  "IRM", "K", "WAB", "MTD", "CINF", "OTIS", "TROW", "WBA", "KVUE", "DG",
+  "NUE", "LDOS", "GPN", "ROL", "IT", "EQR", "PRU", "ON", "WST", "RF"
+];
+
 // Cache scanner data since both endpoints are expensive.
 // Volume moves intraday → 60s TTL. OI is fairly stable → 15min TTL.
 let scannerVolCache = { rows: null, fetchedAt: 0 };
@@ -3112,53 +3149,46 @@ app.get("/api/scanner", async (req, res) => {
     const base = "https://api.schwabapi.com/marketdata/v1";
     const minVolRatio = parseFloat(req.query.minVolRatio) || 1.5;
 
-    // Step 1: Fetch top movers from all three major indices (by volume and pct change)
-    const [volMovers, pcUpMovers, pcDnMovers] = await Promise.all([
-      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, {
-        params: { sort: "VOLUME", frequency: "0" }, timeout
-      }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
-      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, {
-        params: { sort: "PERCENT_CHANGE_UP", frequency: "0" }, timeout
-      }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
-      schwabGet(`${base}/movers/${encodeURIComponent("$SPX")}`, {
-        params: { sort: "PERCENT_CHANGE_DOWN", frequency: "0" }, timeout
-      }).then(r => Array.isArray(r.data) ? r.data : (r.data?.screeners || [])).catch(() => []),
-    ]);
+    // Step 1: Universe = top-300 S&P 500 by index weight (mirrors the Options
+    // Flow page). Guarantees every meaningful large-cap is evaluated, not just
+    // whatever happens to be in Schwab's short movers list today.
+    const symbols = SP500_SCAN_SYMBOLS.slice();
 
-    // Deduplicate and collect unique symbols
-    const seenSymbols = new Set();
-    const allMovers = [];
-    for (const m of [...volMovers, ...pcUpMovers, ...pcDnMovers]) {
-      if (m.symbol && !seenSymbols.has(m.symbol)) {
-        seenSymbols.add(m.symbol);
-        allMovers.push(m);
-      }
+    // Step 2: Batch quotes in chunks of 150 (Schwab tolerates the query string
+    // length; splitting is safer than one 300-symbol call).
+    const quotesData = {};
+    const QUOTE_BATCH = 150;
+    const quoteBatches = [];
+    for (let i = 0; i < symbols.length; i += QUOTE_BATCH) {
+      quoteBatches.push(symbols.slice(i, i + QUOTE_BATCH));
     }
-
-    if (!allMovers.length) {
-      return res.json({ ok: true, anomalies: [], breadth: { advances: 0, declines: 0, unchanged: 0 } });
-    }
-
-    const symbols = allMovers.map(m => m.symbol).filter(Boolean);
-
-    // Step 2: Batch quotes for all symbols (price, volume, hi/lo, 52w range, etc.)
-    const quotesRes = await schwabGet(`${base}/quotes`, {
-      params: { symbols: symbols.join(","), fields: "quote,fundamental" },
-      timeout: 45000
-    }).catch(() => ({ data: {} }));
-    const quotesData = quotesRes.data || {};
-
-    // Step 3: Fetch 20-day price history for avg volume in parallel (cap at 40 symbols to avoid timeout)
-    const histSymbols = symbols.slice(0, 40);
-    const histResults = await Promise.all(
-      histSymbols.map(sym =>
-        schwabGet(`${base}/pricehistory`, {
-          params: { symbol: sym, periodType: "month", period: "1", frequencyType: "daily", frequency: "1" },
-          timeout: 20000
-        }).then(r => ({ sym, candles: r.data?.candles || [] }))
-          .catch(() => ({ sym, candles: [] }))
+    const quoteResponses = await Promise.all(
+      quoteBatches.map(batch =>
+        schwabGet(`${base}/quotes`, {
+          params: { symbols: batch.join(","), fields: "quote,fundamental" },
+          timeout: 45000
+        }).then(r => r.data || {}).catch(() => ({}))
       )
     );
+    for (const chunk of quoteResponses) Object.assign(quotesData, chunk);
+
+    // Step 3: Fetch 20-day price history for every symbol with a concurrency
+    // pool so we don't hammer Schwab or exhaust local sockets.
+    const histResults = [];
+    const HIST_CONCURRENCY = 16;
+    for (let i = 0; i < symbols.length; i += HIST_CONCURRENCY) {
+      const chunk = symbols.slice(i, i + HIST_CONCURRENCY);
+      const chunkRes = await Promise.all(
+        chunk.map(sym =>
+          schwabGet(`${base}/pricehistory`, {
+            params: { symbol: sym, periodType: "month", period: "1", frequencyType: "daily", frequency: "1" },
+            timeout: 20000
+          }).then(r => ({ sym, candles: r.data?.candles || [] }))
+            .catch(() => ({ sym, candles: [] }))
+        )
+      );
+      histResults.push(...chunkRes);
+    }
 
     // Build avgVolume map from 20-day history
     const avgVolMap = {};
@@ -3194,15 +3224,15 @@ app.get("/api/scanner", async (req, res) => {
     const anomalies = [];
     let advances = 0, declines = 0, unchanged = 0;
 
-    for (const mover of allMovers) {
-      const sym = mover.symbol;
+    for (const sym of symbols) {
       const qWrapper = quotesData[sym];
+      if (!qWrapper) continue;
       const qt = qWrapper?.quote || {};
       const fund = qWrapper?.fundamental || {};
 
-      const price = qt.lastPrice ?? qt.mark ?? mover.lastPrice ?? mover.last ?? 0;
-      const changePct = qt.netPercentChange ?? mover.percentChange ?? mover.netPercentChange ?? 0;
-      const volume = qt.totalVolume ?? mover.totalVolume ?? 0;
+      const price = qt.lastPrice ?? qt.mark ?? 0;
+      const changePct = qt.netPercentChange ?? 0;
+      const volume = qt.totalVolume ?? 0;
       const dayHigh = qt.highPrice ?? 0;
       const dayLow = qt.lowPrice ?? 0;
       const week52High = qt["52WeekHigh"] ?? qt.fiftyTwoWeekHigh ?? fund["52WeekHigh"] ?? 0;
