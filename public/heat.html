@@ -10061,7 +10061,7 @@
           <span class="nav-icon">🧠</span><span class="nav-label">Smart Money</span>
         </li>
         <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
-          <span class="nav-icon">🌊</span><span class="nav-label">Dark Pool</span>
+          <span class="nav-icon">🔊</span><span class="nav-label">Volume</span>
         </li>
         <li class="nav-section-label">Tools</li>
         <li class="nav-item" data-page="trade-journal-page" onclick="navTo(this)">
@@ -11603,17 +11603,87 @@
            6. DARK POOL
       ════════════════════════════════════ -->
         <div id="darkpool-page" class="page" style="display:none;">
-          <div class="card mb12">
-            <div class="card-header">
-              <span class="card-title">Dark Pool Alerts</span>
-              <span style="font-size:9px;color:var(--text3)">Large block trades detected via OI changes</span>
-            </div>
-            <div class="card-body" id="dp-alerts-body">
-              <div class="text-muted fs10">Dark pool activity is inferred from unusual Open Interest shifts. Log in to
-                activate.</div>
+          <div class="sc-extras-row">
+            <div class="sc-extra-card">
+              <div class="sc-extra-header">
+                <span class="sc-extra-title">🔥 Top 25 by Volume Today</span>
+                <span class="sc-extra-source">$SPX + $COMPX + $DJI · live quotes</span>
+              </div>
+              <div class="sc-extra-body">
+                <table class="sc-extra-table">
+                  <thead>
+                    <tr>
+                      <th class="num">#</th>
+                      <th>Symbol</th>
+                      <th>Name</th>
+                      <th class="num">Price</th>
+                      <th class="num">Chg %</th>
+                      <th class="num">Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sc-vol-tbody">
+                    <tr>
+                      <td colspan="6" class="sc-extra-empty">Loading top volume…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-          <div class="grid-2">
+
+          <div class="sc-extras-row sc-extras-row-2">
+            <div class="sc-extra-card">
+              <div class="sc-extra-header">
+                <span class="sc-extra-title">📈 Top 10 Net Call OI · Next 30 Days</span>
+                <span class="sc-extra-source">calls − puts, summed across all listed expirations ≤ 30d</span>
+              </div>
+              <div class="sc-extra-body">
+                <table class="sc-extra-table">
+                  <thead>
+                    <tr>
+                      <th class="num">#</th>
+                      <th>Symbol</th>
+                      <th class="num">Call OI</th>
+                      <th class="num">Put OI</th>
+                      <th class="num">Net</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sc-callOi-tbody">
+                    <tr>
+                      <td colspan="5" class="sc-extra-empty">Loading net Call OI…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="sc-extra-card">
+              <div class="sc-extra-header">
+                <span class="sc-extra-title">📉 Top 10 Net Put OI · Next 30 Days</span>
+                <span class="sc-extra-source">puts − calls, summed across all listed expirations ≤ 30d</span>
+              </div>
+              <div class="sc-extra-body">
+                <table class="sc-extra-table">
+                  <thead>
+                    <tr>
+                      <th class="num">#</th>
+                      <th>Symbol</th>
+                      <th class="num">Call OI</th>
+                      <th class="num">Put OI</th>
+                      <th class="num">Net</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sc-putOi-tbody">
+                    <tr>
+                      <td colspan="5" class="sc-extra-empty">Loading net Put OI…</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top:14px;">
             <div class="card">
               <div class="card-header"><span class="card-title">Top OI Gainers</span></div>
               <div class="card-body" id="dp-oi-gainers">
@@ -11928,6 +11998,8 @@
                   <button class="sc-scan-toggle" data-scan="vol-spike">Volume Spike</button>
                   <button class="sc-scan-toggle" data-scan="price-spike">Price Spike</button>
                   <button class="sc-scan-toggle" data-scan="breakout">Breakout</button>
+                  <button class="sc-scan-toggle" data-scan="rel-strength">Rel Strength</button>
+                  <button class="sc-scan-toggle" data-scan="extreme"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);vertical-align:middle;margin-right:5px;box-shadow:0 0 6px rgba(255,59,92,0.8);"></span>Extreme</button>
                 </div>
               </div>
               <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker:">
@@ -12184,92 +12256,6 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
-
-            <!-- ── Scanner Extras: top volume + top net OI ─────────────
-                 Three ranked lists below the main scan table. Volume list
-                 shows the 25 highest-volume tickers today; the two OI lists
-                 show net Call OI / net Put OI leaders across the next 30
-                 days of expirations for a curated universe of the most
-                 options-active names. -->
-            <div class="sc-extras-row">
-              <div class="sc-extra-card">
-                <div class="sc-extra-header">
-                  <span class="sc-extra-title">🔥 Top 25 by Volume Today</span>
-                  <span class="sc-extra-source">$SPX + $COMPX + $DJI · live quotes</span>
-                </div>
-                <div class="sc-extra-body">
-                  <table class="sc-extra-table">
-                    <thead>
-                      <tr>
-                        <th class="num">#</th>
-                        <th>Symbol</th>
-                        <th>Name</th>
-                        <th class="num">Price</th>
-                        <th class="num">Chg %</th>
-                        <th class="num">Volume</th>
-                      </tr>
-                    </thead>
-                    <tbody id="sc-vol-tbody">
-                      <tr>
-                        <td colspan="6" class="sc-extra-empty">Loading top volume…</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div class="sc-extras-row sc-extras-row-2">
-              <div class="sc-extra-card">
-                <div class="sc-extra-header">
-                  <span class="sc-extra-title">📈 Top 10 Net Call OI · Next 30 Days</span>
-                  <span class="sc-extra-source">calls − puts, summed across all listed expirations ≤ 30d</span>
-                </div>
-                <div class="sc-extra-body">
-                  <table class="sc-extra-table">
-                    <thead>
-                      <tr>
-                        <th class="num">#</th>
-                        <th>Symbol</th>
-                        <th class="num">Call OI</th>
-                        <th class="num">Put OI</th>
-                        <th class="num">Net</th>
-                      </tr>
-                    </thead>
-                    <tbody id="sc-callOi-tbody">
-                      <tr>
-                        <td colspan="5" class="sc-extra-empty">Loading net Call OI…</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div class="sc-extra-card">
-                <div class="sc-extra-header">
-                  <span class="sc-extra-title">📉 Top 10 Net Put OI · Next 30 Days</span>
-                  <span class="sc-extra-source">puts − calls, summed across all listed expirations ≤ 30d</span>
-                </div>
-                <div class="sc-extra-body">
-                  <table class="sc-extra-table">
-                    <thead>
-                      <tr>
-                        <th class="num">#</th>
-                        <th>Symbol</th>
-                        <th class="num">Call OI</th>
-                        <th class="num">Put OI</th>
-                        <th class="num">Net</th>
-                      </tr>
-                    </thead>
-                    <tbody id="sc-putOi-tbody">
-                      <tr>
-                        <td colspan="5" class="sc-extra-empty">Loading net Put OI…</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
             </div>
 
           </div>
@@ -21563,8 +21549,17 @@
           if (scSectorFilter !== 'ALL' && a.sector !== scSectorFilter) return false;
           // Signal type
           if (scScanType !== 'all') {
-            const needed = { 'vol-spike': 'VOL SPIKE', 'price-spike': 'PRICE SPIKE', 'breakout': 'BREAKOUT' }[scScanType];
-            if (needed && !a.signals.includes(needed)) return false;
+            if (scScanType === 'extreme') {
+              if (!a.isExtreme) return false;
+            } else {
+              const needed = {
+                'vol-spike': 'VOL SPIKE',
+                'price-spike': 'PRICE SPIKE',
+                'breakout': 'BREAKOUT',
+                'rel-strength': 'REL STRENGTH'
+              }[scScanType];
+              if (needed && !a.signals.includes(needed)) return false;
+            }
           }
           // Vol ratio filter
           //removed
@@ -22212,10 +22207,6 @@
         }
 
         scSetupEvents();
-        // Auxiliary panels (top volume + net Call/Put OI) fire in parallel
-        // with the main scan. Failures are non-blocking — worst case the
-        // panels show their empty state without breaking the primary grid.
-        scLoadExtras();
 
         if (showSkeletons) {
           document.getElementById('sc-tbody').innerHTML = Array(8).fill(0).map(() =>
@@ -22672,31 +22663,12 @@
     //  DARK POOL
     // ═══════════════════════════════════════════════════════
     async function loadDarkPool() {
-      if (!isConnected || !lastHeatData) {
-        document.getElementById('dp-alerts-body').innerHTML = `<div class="text-muted fs10">Dark pool signals inferred from Open Interest. Load Heat Seeker for SPY first.</div>`;
-        return;
-      }
+      // Fire the top-volume + net-OI panels on every visit. Cheap on warm
+      // cache; the panels handle their own empty/loading states.
+      if (typeof scLoadExtras === 'function') scLoadExtras();
+
+      if (!isConnected || !lastHeatData) return;
       const strikes = lastHeatData.strikes || [];
-      // Flag strikes where OI is unusually large
-      const totalOI = strikes.reduce((a, s) => a + s.callOpenInterest + s.putOpenInterest, 0);
-      const avgOI = totalOI / (strikes.length || 1);
-
-      const alerts = strikes
-        .filter(s => (s.callOpenInterest + s.putOpenInterest) > avgOI * 2.5)
-        .sort((a, b) => (b.callOpenInterest + b.putOpenInterest) - (a.callOpenInterest + a.putOpenInterest))
-        .slice(0, 10);
-
-      document.getElementById('dp-alerts-body').innerHTML = alerts.length ? alerts.map(s => {
-        const totalSt = s.callOpenInterest + s.putOpenInterest;
-        const side = s.callOpenInterest > s.putOpenInterest ? 'buy' : 'sell';
-        return `<div class="dp-alert">
-      <span class="dp-sym">SPY</span>
-      <span style="font-size:10px;color:var(--text2);">Strike ${s.strike}</span>
-      <span class="dp-size">${fmtK(totalSt)} OI</span>
-      <span class="dp-price" style="font-size:10px;">C: ${fmtK(s.callOpenInterest)} / P: ${fmtK(s.putOpenInterest)}</span>
-      <span class="dp-side ${side}" style="margin-left:auto;">${side.toUpperCase()}-SIDE</span>
-    </div>`;
-      }).join('') : `<div class="text-muted fs10">No unusual OI blocks detected.</div>`;
 
       // OI gainers
       const topStrike = [...strikes].sort((a, b) => (b.callOpenInterest + b.putOpenInterest) - (a.callOpenInterest + a.putOpenInterest)).slice(0, 5);
