@@ -6051,6 +6051,21 @@
       z-index: 10;
     }
 
+    #strat-crosshair {
+      position: absolute;
+      pointer-events: none;
+      display: none;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(220, 255, 30, 0.55) 0 4px,
+        transparent 4px 8px
+      );
+      z-index: 9;
+    }
+
     /* Chain panel + legs panel toggle */
     #strat-side {
       display: flex;
@@ -6297,6 +6312,103 @@
       font-size: 11px;
       text-align: center;
       padding: 20px 12px;
+    }
+
+    /* Date slider — controls the DTE used for BSM repricing */
+    #strat-date-slider-row {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+    }
+
+    .strat-date-labels {
+      display: grid;
+      grid-template-columns: 1fr 3fr 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .strat-date-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .strat-date-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .strat-date-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .strat-date-sub {
+      font-size: 9px;
+      color: var(--text3);
+      font-style: italic;
+    }
+
+    .strat-date-input {
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      outline: none;
+      background: linear-gradient(to right, var(--blue), var(--accent));
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .strat-date-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(220, 255, 30, 0.65);
+      cursor: pointer;
+    }
+
+    .strat-date-input::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(220, 255, 30, 0.65);
+      border: none;
+      cursor: pointer;
+    }
+
+    .strat-date-input:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .strat-date-reset {
+      background: transparent;
+      color: var(--text3);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 9px;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .strat-date-reset:hover {
+      color: var(--text);
+      border-color: var(--accent);
     }
 
     /* ─────────────────────────────────────────────
@@ -11640,9 +11752,29 @@
             <div id="strat-chart-col">
               <div id="strat-chart-wrap">
                 <canvas id="strat-chart"></canvas>
+                <div id="strat-crosshair"></div>
                 <div id="strat-cursor"></div>
               </div>
-              <div style="font-size:10px;color:var(--text3);text-align:center;">
+
+              <!-- DATE SLIDER: default = expiration; drag left to reprice with Black-Scholes -->
+              <div id="strat-date-slider-row">
+                <div class="strat-date-labels">
+                  <div class="strat-date-block">
+                    <div class="strat-date-lbl">Selected Date</div>
+                    <div class="strat-date-val" id="strat-date-sel">—</div>
+                    <div class="strat-date-sub" id="strat-date-fromnow">—</div>
+                  </div>
+                  <input type="range" id="strat-date-slider" class="strat-date-input"
+                    min="0" max="0" step="1" value="0" oninput="stratOnDateSlider(this.value)">
+                  <div class="strat-date-block" style="text-align:right;">
+                    <div class="strat-date-lbl">Days Until Expiration</div>
+                    <div class="strat-date-val" id="strat-date-dte">—</div>
+                    <button class="strat-date-reset" id="strat-date-reset" onclick="stratResetDate()">reset</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="font-size:10px;color:var(--text3);text-align:center;" id="strat-chart-hint">
                 Hover the chart to see P/L at any price. Payoff shown at expiration.
               </div>
             </div>
@@ -22872,6 +23004,36 @@
     let stratLegs = [];          // user-added legs
     let stratLegSeq = 0;
     let stratSideTab = 'chain';  // 'chain' | 'legs'
+    let stratExpiryDate = null;  // Date object for the selected expiry
+    let stratMaxDTE = 0;         // total days from today to expiry (int)
+    let stratDaysFromNow = 0;    // slider position (0 = today, stratMaxDTE = expiry)
+    const STRAT_RFR = 0.045;     // risk-free rate for BSM (approx 3M T-bill)
+
+    // ── Black-Scholes helpers ────────────────────────────────
+    // Abramowitz & Stegun approximation of the standard normal CDF via erf.
+    function stratErf(x) {
+      const sign = x < 0 ? -1 : 1;
+      const ax = Math.abs(x);
+      const t = 1 / (1 + 0.3275911 * ax);
+      const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-ax * ax);
+      return sign * y;
+    }
+    const stratN = x => 0.5 * (1 + stratErf(x / Math.SQRT2));
+
+    // Price an option leg via BSM. Returns intrinsic if t≈0 or IV missing.
+    function stratBSPrice(type, S, K, tYears, iv) {
+      if (!(tYears > 0) || !(iv > 0) || !(S > 0) || !(K > 0)) {
+        return type === 'call' ? Math.max(0, S - K) : Math.max(0, K - S);
+      }
+      const sigma = iv;
+      const sqrtT = Math.sqrt(tYears);
+      const d1 = (Math.log(S / K) + (STRAT_RFR + 0.5 * sigma * sigma) * tYears) / (sigma * sqrtT);
+      const d2 = d1 - sigma * sqrtT;
+      const df = Math.exp(-STRAT_RFR * tYears);
+      return type === 'call'
+        ? S * stratN(d1) - K * df * stratN(d2)
+        : K * df * stratN(-d2) - S * stratN(-d1);
+    }
 
     // Pick the first contract for a given (type, strike) from the loaded chain,
     // filtered to the currently selected expiration.
@@ -22977,15 +23139,22 @@
       };
     }
 
-    // P/L at expiration for a single price point.
-    function stratPLAt(price, legs) {
+    // P/L at a given price. When daysUntilExpiry > 0 each leg is repriced with
+    // Black-Scholes (using the leg's IV from the chain) instead of intrinsic.
+    function stratPLAt(price, legs, daysUntilExpiry) {
+      const t = Math.max(0, daysUntilExpiry) / 365;
       let pl = 0;
       for (const leg of legs) {
-        const intrinsic = leg.type === 'call'
-          ? Math.max(0, price - leg.strike)
-          : Math.max(0, leg.strike - price);
+        let value;
+        if (t <= 0) {
+          value = leg.type === 'call' ? Math.max(0, price - leg.strike) : Math.max(0, leg.strike - price);
+        } else {
+          // IV comes from the chain as a percent (e.g. 32.4). Convert to decimal.
+          const ivFrac = (leg.iv != null && leg.iv > 0) ? leg.iv / 100 : null;
+          value = stratBSPrice(leg.type, price, leg.strike, t, ivFrac);
+        }
         const sign = leg.side === 'BUY' ? 1 : -1;
-        pl += sign * (intrinsic - leg.mark) * 100 * leg.qty;
+        pl += sign * (value - leg.mark) * 100 * leg.qty;
       }
       return pl;
     }
@@ -23003,7 +23172,7 @@
       return { lo: Math.max(0.01, lo), hi };
     }
 
-    function stratComputeStats(legs) {
+    function stratComputeStats(legs, daysUntilExpiry) {
       const netCost = legs.reduce((s, l) => {
         const sign = l.side === 'BUY' ? 1 : -1;
         return s + sign * l.mark * 100 * l.qty;
@@ -23018,7 +23187,7 @@
       const N = 400;
       const step = (hi - lo) / (N - 1);
       const prices = Array.from({ length: N }, (_, i) => lo + i * step);
-      const pls = prices.map(p => stratPLAt(p, legs));
+      const pls = prices.map(p => stratPLAt(p, legs, daysUntilExpiry));
 
       // Endpoints beyond the widest strike behave linearly — check the sign of
       // the slope at each tail to detect unbounded upside/downside risk.
@@ -23098,7 +23267,8 @@
         return;
       }
 
-      const stats = stratComputeStats(enriched);
+      const daysUntilExpiry = Math.max(0, stratMaxDTE - stratDaysFromNow);
+      const stats = stratComputeStats(enriched, daysUntilExpiry);
 
       // Net cost: positive = debit (money out), negative = credit (money in).
       const netLbl = stats.netCost >= 0
@@ -23202,16 +23372,18 @@
         const call = stratLookupContract('call', strike);
         const put = stratLookupContract('put', strike);
         const atmCls = strike === atm ? 'atm-row' : '';
+        // Whole call-side row adds a CALL leg; whole put-side adds a PUT.
+        // The strike cell itself is inert (visually separates the two sides).
         return `<tr class="${atmCls}">
-          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})">${fmt(call?.bid)}</td>
-          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})">${fmt(call?.ask)}</td>
-          <td>${fmtIV(call?.volatility)}</td>
-          <td>${fmtOI(call?.openInterest)}</td>
+          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.bid)}</td>
+          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.ask)}</td>
+          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtIV(call?.volatility)}</td>
+          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtOI(call?.openInterest)}</td>
           <td class="strike-cell">${strike.toFixed(strike >= 100 ? 0 : 2)}</td>
-          <td>${fmtOI(put?.openInterest)}</td>
-          <td>${fmtIV(put?.volatility)}</td>
-          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})">${fmt(put?.bid)}</td>
-          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})">${fmt(put?.ask)}</td>
+          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtOI(put?.openInterest)}</td>
+          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtIV(put?.volatility)}</td>
+          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.bid)}</td>
+          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.ask)}</td>
         </tr>`;
       }).join('');
     }
@@ -23363,6 +23535,8 @@
         canvas.addEventListener('mouseleave', () => {
           const cur = document.getElementById('strat-cursor');
           if (cur) cur.style.display = 'none';
+          const cross = document.getElementById('strat-crosshair');
+          if (cross) cross.style.display = 'none';
           stratRedrawOverlay();
         });
       }
@@ -23382,20 +23556,95 @@
       const { prices, pls, N, PAD_L, cW } = canvas._pl;
       const idx = Math.round(((mx - PAD_L) / cW) * (N - 1));
       const cur = document.getElementById('strat-cursor');
-      if (idx < 0 || idx >= N) { cur.style.display = 'none'; return; }
+      const cross = document.getElementById('strat-crosshair');
+      if (idx < 0 || idx >= N) {
+        cur.style.display = 'none';
+        if (cross) cross.style.display = 'none';
+        return;
+      }
       const price = prices[idx];
       const profit = pls[idx];
-      const wrapRect = document.getElementById('strat-chart-wrap').getBoundingClientRect();
+      const wrap = document.getElementById('strat-chart-wrap');
+      const wrapRect = wrap.getBoundingClientRect();
+      // Crosshair: snap to the sampled X so it aligns with the tooltip's data point.
+      if (cross) {
+        const canvasLeftInWrap = canvas.getBoundingClientRect().left - wrapRect.left;
+        cross.style.display = 'block';
+        cross.style.left = (canvasLeftInWrap + canvas._pl.toX(idx)) + 'px';
+      }
       cur.style.display = 'block';
       cur.style.left = Math.min(wrapRect.width - 140, mx + 14) + 'px';
       cur.style.top = Math.max(4, my - 46) + 'px';
       const pct = ((price - stratSpot) / stratSpot * 100);
+      const dte = Math.max(0, stratMaxDTE - stratDaysFromNow);
+      const plLbl = dte <= 0 ? 'P/L at expiry' : `P/L at T-minus ${dte}d`;
       cur.innerHTML =
         `<div style="font-size:10px;color:var(--text3)">Price</div>` +
         `<div style="font-weight:800;color:var(--text);margin-bottom:4px">$${price.toFixed(2)} ` +
         `<span style="color:${pct >= 0 ? 'var(--green)' : 'var(--red)'};font-size:10px">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span></div>` +
-        `<div style="font-size:10px;color:var(--text3)">P/L at expiry</div>` +
+        `<div style="font-size:10px;color:var(--text3)">${plLbl}</div>` +
         `<div style="font-weight:800;color:${profit >= 0 ? 'var(--green)' : 'var(--red)'}">${profit >= 0 ? '+' : ''}${stratFmtMoney(Math.abs(profit) * (profit < 0 ? -1 : 1))}</div>`;
+    }
+
+    // ── Date slider handlers ─────────────────────────────────
+    function stratOnDateSlider(v) {
+      stratDaysFromNow = parseInt(v) || 0;
+      stratUpdateDateLabels();
+      stratRecalc();
+    }
+
+    function stratResetDate() {
+      stratDaysFromNow = stratMaxDTE;
+      const el = document.getElementById('strat-date-slider');
+      if (el) el.value = String(stratMaxDTE);
+      stratUpdateDateLabels();
+      stratRecalc();
+    }
+
+    function stratUpdateDateLabels() {
+      const dte = Math.max(0, stratMaxDTE - stratDaysFromNow);
+      const dteEl = document.getElementById('strat-date-dte');
+      const selEl = document.getElementById('strat-date-sel');
+      const subEl = document.getElementById('strat-date-fromnow');
+      const hintEl = document.getElementById('strat-chart-hint');
+      if (dteEl) dteEl.textContent = dte + ' day' + (dte === 1 ? '' : 's');
+      if (selEl) {
+        const target = new Date();
+        target.setDate(target.getDate() + stratDaysFromNow);
+        selEl.textContent = target.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+      }
+      if (subEl) subEl.textContent = '+ ' + stratDaysFromNow + ' day' + (stratDaysFromNow === 1 ? '' : 's') + ' from now';
+      if (hintEl) {
+        hintEl.textContent = dte <= 0
+          ? 'Hover the chart to see P/L at any price. Payoff shown at expiration.'
+          : `Hover the chart to see P/L at any price. Repriced with Black-Scholes at ${dte} day${dte === 1 ? '' : 's'} to expiry.`;
+      }
+    }
+
+    // Called after a chain loads to (re)seed the slider bounds.
+    function stratSeedDateSlider() {
+      // Prefer parsing DTE from the selected expiry option text: "2026-08-21 (52d)"
+      const sel = document.getElementById('strat-expiry');
+      let dte = 0;
+      const opt = sel?.selectedOptions?.[0];
+      if (opt) {
+        const m = /\((\d+)d\)/.exec(opt.textContent || '');
+        if (m) dte = parseInt(m[1]);
+        stratExpiryDate = new Date(opt.value + 'T16:00:00');
+      }
+      if (!dte && stratExpiryDate) {
+        dte = Math.max(0, Math.round((stratExpiryDate - new Date()) / 86400000));
+      }
+      stratMaxDTE = dte;
+      stratDaysFromNow = dte;    // default = expiration
+      const slider = document.getElementById('strat-date-slider');
+      if (slider) {
+        slider.min = '0';
+        slider.max = String(Math.max(0, dte));
+        slider.value = String(dte);
+        slider.disabled = dte <= 0;
+      }
+      stratUpdateDateLabels();
     }
 
     function stratSymbolChange() {
@@ -23442,6 +23691,9 @@
         addStrikes(stratChain.callExpDateMap);
         addStrikes(stratChain.putExpDateMap);
         stratStrikes = [...strikeSet].sort((a, b) => a - b);
+
+        // Seed the DTE slider to the new expiry (defaults to expiration).
+        stratSeedDateSlider();
 
         // If any existing legs reference strikes no longer in the chain, keep
         // them — stratLookupContract will still nearest-match.
