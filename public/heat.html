@@ -10173,8 +10173,11 @@
         <li class="nav-item" data-page="mag7-page" onclick="navTo(this)">
           <span class="nav-icon">📊</span><span class="nav-label">Mag 7</span>
         </li>
-                <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
+        <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
           <span class="nav-icon">🔥</span><span class="nav-label">Stock Scanner</span>
+        </li>
+        <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
+          <span class="nav-icon">🔊</span><span class="nav-label">Volume</span>
         </li>
         <li class="nav-item" data-page="etfs-page" onclick="navTo(this)">
           <span class="nav-icon">🔄</span><span class="nav-label">Sector RRG</span>
@@ -10185,8 +10188,8 @@
         <li class="nav-item" data-page="smart-page" onclick="navTo(this)">
           <span class="nav-icon">🧠</span><span class="nav-label">Smart Money</span>
         </li>-->
-        <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
-          <span class="nav-icon">🔊</span><span class="nav-label">Volume</span>
+        <li class="nav-item" data-page="strat-page" onclick="navTo(this)">
+          <span class="nav-icon">⚖️</span><span class="nav-label">Strategy Tester</span>
         </li>
         <li class="nav-section-label">Tools</li>
         <li class="nav-item" data-page="trade-journal-page" onclick="navTo(this)">
@@ -10200,9 +10203,6 @@
         </li>
         <li class="nav-item" data-page="fx-page" onclick="navTo(this)">
           <span class="nav-icon">💵</span><span class="nav-label">FX Markets</span>
-        </li>
-        <li class="nav-item" data-page="strat-page" onclick="navTo(this)">
-          <span class="nav-icon">⚖️</span><span class="nav-label">Strategy Tester</span>
         </li>
         <!--<li class="nav-item" data-page="treasury-page" onclick="navTo(this)">
           <span class="nav-icon">🏦</span><span class="nav-label">Treasury &amp; Risk</span>
@@ -11649,7 +11649,8 @@
 
             <div id="strat-side">
               <div class="strat-side-tabs">
-                <button class="strat-side-tab active" data-side-tab="chain" onclick="stratSetSideTab('chain')">Chain</button>
+                <button class="strat-side-tab active" data-side-tab="chain"
+                  onclick="stratSetSideTab('chain')">Chain</button>
                 <button class="strat-side-tab" data-side-tab="legs" onclick="stratSetSideTab('legs')">
                   Legs <span id="strat-leg-count" style="color:var(--text3);">(0)</span>
                 </button>
@@ -11670,12 +11671,16 @@
                     </tr>
                   </thead>
                   <tbody id="strat-chain-tbody">
-                    <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Load a chain to begin.</td></tr>
+                    <tr>
+                      <td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Load a chain to begin.
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
               <div class="strat-side-body hidden" id="strat-legs-body">
-                <div class="strat-empty-legs" id="strat-empty-legs">Click a Call or Put row in the Chain to add legs.</div>
+                <div class="strat-empty-legs" id="strat-empty-legs">Click a Call or Put row in the Chain to add legs.
+                </div>
                 <div id="strat-legs-list"></div>
               </div>
             </div>
@@ -12166,7 +12171,8 @@
                   <button class="sc-scan-toggle" data-scan="price-spike">Price Spike</button>
                   <button class="sc-scan-toggle" data-scan="breakout">Breakout</button>
                   <button class="sc-scan-toggle" data-scan="rel-strength">Rel Strength</button>
-                  <button class="sc-scan-toggle" data-scan="extreme"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);vertical-align:middle;margin-right:5px;box-shadow:0 0 6px rgba(255,59,92,0.8);"></span>Extreme</button>
+                  <button class="sc-scan-toggle" data-scan="extreme"><span
+                      style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--red);vertical-align:middle;margin-right:5px;box-shadow:0 0 6px rgba(255,59,92,0.8);"></span>Extreme</button>
                 </div>
               </div>
               <input type="text" class="sc-filter-input" id="sc-search" placeholder="Search ticker:">
