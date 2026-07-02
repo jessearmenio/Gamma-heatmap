@@ -6058,11 +6058,9 @@
       top: 0;
       bottom: 0;
       width: 1px;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(220, 255, 30, 0.55) 0 4px,
-        transparent 4px 8px
-      );
+      background: repeating-linear-gradient(to bottom,
+          rgba(220, 255, 30, 0.55) 0 4px,
+          transparent 4px 8px);
       z-index: 9;
     }
 
@@ -10288,11 +10286,11 @@
         <li class="nav-item" data-page="darkpool-page" onclick="navTo(this)">
           <span class="nav-icon">🔊</span><span class="nav-label">Volume</span>
         </li>
-        <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
-          <span class="nav-icon">🔥</span><span class="nav-label">Stock Scanner</span>
-        </li>
         <li class="nav-item" data-page="etfs-page" onclick="navTo(this)">
           <span class="nav-icon">🔄</span><span class="nav-label">Sector RRG</span>
+        </li>
+        <li class="nav-item" data-page="scanner-page" onclick="navTo(this)">
+          <span class="nav-icon">🔥</span><span class="nav-label">Stock Scanner</span>
         </li>
         <li class="nav-item" data-page="strat-page" onclick="navTo(this)">
           <span class="nav-icon">⚖️</span><span class="nav-label">Strategy Tester</span>
@@ -11765,8 +11763,8 @@
                     <div class="strat-date-val" id="strat-date-sel">—</div>
                     <div class="strat-date-sub" id="strat-date-fromnow">—</div>
                   </div>
-                  <input type="range" id="strat-date-slider" class="strat-date-input"
-                    min="0" max="0" step="1" value="0" oninput="stratOnDateSlider(this.value)">
+                  <input type="range" id="strat-date-slider" class="strat-date-input" min="0" max="0" step="1" value="0"
+                    oninput="stratOnDateSlider(this.value)">
                   <div class="strat-date-block" style="text-align:right;">
                     <div class="strat-date-lbl">Days Until Expiration</div>
                     <div class="strat-date-val" id="strat-date-dte">—</div>
