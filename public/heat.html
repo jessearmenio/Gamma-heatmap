@@ -6326,6 +6326,53 @@
       text-align: center;
     }
 
+    /* Editable premium / cost-basis field on each leg card */
+    .strat-leg-mark-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 1px;
+    }
+
+    .strat-leg-mark-dollar {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+
+    .strat-leg-mark-input {
+      width: 58px;
+      background: var(--bg);
+      color: var(--text2);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 2px 4px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: left;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .strat-leg-mark-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    /* Custom cost basis set by the user — accent it so it's obvious */
+    .strat-leg-mark-input.custom {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(220, 255, 30, 0.06);
+    }
+
+    /* Hide number-spinner arrows for a cleaner look */
+    .strat-leg-mark-input::-webkit-outer-spin-button,
+    .strat-leg-mark-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
     .strat-empty-legs {
       color: var(--text3);
       font-size: 11px;
@@ -23149,11 +23196,16 @@
     }
 
     // Enrich a leg with mid price + greeks pulled fresh from the chain.
+    // markOverride (user-set cost basis) takes precedence over the live mid.
     function stratEnrichLeg(leg) {
       const c = stratLookupContract(leg.type, leg.strike);
+      const liveMark = stratMid(c);
       return {
         ...leg,
-        mark: stratMid(c),
+        mark: (leg.markOverride != null) ? leg.markOverride : liveMark,
+        liveMark,
+        marketMark: liveMark,
+        isCustomMark: leg.markOverride != null,
         bid: c?.bid ?? 0,
         ask: c?.ask ?? 0,
         iv: c?.volatility ?? null,
@@ -23164,6 +23216,19 @@
         oi: c?.openInterest ?? 0,
         contract: c
       };
+    }
+
+    function stratSetMark(id, val) {
+      const leg = stratLegs.find(l => l.id === id);
+      if (!leg) return;
+      const trimmed = String(val).trim();
+      if (trimmed === '') {
+        leg.markOverride = null;         // blank = revert to live market mid
+      } else {
+        const n = parseFloat(trimmed);
+        leg.markOverride = (isFinite(n) && n >= 0) ? n : null;
+      }
+      stratRecalc();
     }
 
     // P/L at a given price. When daysUntilExpiry > 0 each leg is repriced with
@@ -23209,49 +23274,62 @@
       const totalVega = legs.reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.vega * l.qty, 0);
       const totalGamma = legs.reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.gamma * l.qty, 0);
 
-      // Sample P/L along price range for min/max/breakevens.
+      // ── Unbounded-risk detection from the legs themselves (NOT curve slope) ──
+      // As price → ∞ only calls matter; as price → 0 only puts matter. Net
+      // contracts (BUY +qty / SELL −qty) give each tail's terminal slope.
+      const netCall = legs.filter(l => l.type === 'call')
+        .reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.qty, 0);
+      const netPut = legs.filter(l => l.type === 'put')
+        .reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.qty, 0);
+      const unboundedProfitUp = netCall > 0;       // net long calls → unlimited upside
+      const unboundedLossUp = netCall < 0;         // net short calls → unlimited loss up
+      const shortPutRisk = netPut < 0;             // net short puts → large loss toward $0
+
+      // ── Max profit / loss AT EXPIRATION (risk metrics, slider-independent) ──
+      // Expiration payoff is piecewise-linear; extrema live at $0, each strike,
+      // or the unbounded tails. Evaluate every breakpoint at intrinsic value.
+      const strikeList = [...new Set(legs.map(l => l.strike))].sort((a, b) => a - b);
+      const topStrike = strikeList.length ? strikeList[strikeList.length - 1] : (stratSpot || 100);
+      const evalPts = [0, ...strikeList, topStrike * 2 + 10];
+      const expiryPL = evalPts.map(p => stratPLAt(p, legs, 0));
+      let maxProfit = Math.max(...expiryPL);
+      let maxLoss = Math.min(...expiryPL);
+
+      // ── Breakevens at expiration: fine grid over the relevant strike band ──
+      const beLo = Math.max(0, (strikeList[0] ?? stratSpot) * 0.5);
+      const beHi = topStrike * 1.5 + 10;
+      const M = 600;
+      const beStep = (beHi - beLo) / (M - 1);
+      const bes = [];
+      let prevP = beLo, prevPL = stratPLAt(beLo, legs, 0);
+      for (let i = 1; i < M; i++) {
+        const p = beLo + i * beStep;
+        const cur = stratPLAt(p, legs, 0);
+        if ((prevPL < 0 && cur >= 0) || (prevPL >= 0 && cur < 0)) {
+          const f = -prevPL / (cur - prevPL);
+          bes.push(prevP + f * (p - prevP));
+        }
+        prevP = p; prevPL = cur;
+      }
+
+      // ── Chart curve at the slider's date (BSM if before expiry) ──
       const { lo, hi } = stratPriceRange();
       const N = 400;
       const step = (hi - lo) / (N - 1);
       const prices = Array.from({ length: N }, (_, i) => lo + i * step);
       const pls = prices.map(p => stratPLAt(p, legs, daysUntilExpiry));
 
-      // Endpoints beyond the widest strike behave linearly — check the sign of
-      // the slope at each tail to detect unbounded upside/downside risk.
-      const leftSlope = (pls[1] - pls[0]) / step;
-      const rightSlope = (pls[N - 1] - pls[N - 2]) / step;
-      const unboundedUp = rightSlope > 0.01;
-      const unboundedDn = leftSlope < -0.01;
-
-      const maxProfit = Math.max(...pls);
-      const maxLoss = Math.min(...pls);
-
-      // Breakevens: zero-crossings between consecutive samples.
-      const bes = [];
-      for (let i = 1; i < N; i++) {
-        if ((pls[i - 1] < 0 && pls[i] >= 0) || (pls[i - 1] >= 0 && pls[i] < 0)) {
-          const f = -pls[i - 1] / (pls[i] - pls[i - 1]);
-          bes.push(prices[i - 1] + f * step);
-        }
-      }
-
       return {
         netCost, totalDelta, totalTheta, totalVega, totalGamma,
-        maxProfit, maxLoss, unboundedUp, unboundedDn, bes,
-        prices, pls
+        maxProfit, maxLoss, unboundedProfitUp, unboundedLossUp, shortPutRisk,
+        netCall, netPut, bes, prices, pls
       };
     }
 
-    // Not-symmetric heuristic: unequal net call vs put contracts.
     function stratWarnings(legs, stats) {
       const warns = [];
-      if (stats.unboundedUp) warns.push('Uncapped loss above the highest strike (naked short call exposure).');
-      else if (stats.unboundedDn) warns.push('Uncapped loss below the lowest strike (naked short put exposure).');
-      const calls = legs.filter(l => l.type === 'call').reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.qty, 0);
-      const puts = legs.filter(l => l.type === 'put').reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.qty, 0);
-      if (legs.length >= 2 && calls !== -puts && calls !== puts && Math.abs(Math.abs(calls) - Math.abs(puts)) >= 1) {
-        warns.push('Position not symmetric — call and put leg counts differ.');
-      }
+      if (stats.unboundedLossUp) warns.push('Uncapped loss above the highest strike (naked short call exposure).');
+      if (stats.shortPutRisk) warns.push('Large loss below the lowest strike (short put exposure, max at $0).');
       return warns;
     }
 
@@ -23311,11 +23389,11 @@
       setVal('ss-net', netLbl, stats.netCost >= 0 ? 'red' : 'green');
 
       setVal('ss-maxprofit',
-        stats.unboundedUp ? 'unlimited' : stratFmtMoney(stats.maxProfit),
-        stats.unboundedUp ? 'unlimited-profit' : 'green');
+        stats.unboundedProfitUp ? 'unlimited' : stratFmtMoney(stats.maxProfit),
+        stats.unboundedProfitUp ? 'unlimited-profit' : 'green');
       setVal('ss-maxloss',
-        stats.unboundedDn ? 'unlimited' : stratFmtMoney(stats.maxLoss),
-        stats.unboundedDn ? 'unlimited-loss' : 'red');
+        stats.unboundedLossUp ? 'unlimited' : stratFmtMoney(stats.maxLoss),
+        stats.unboundedLossUp ? 'unlimited-loss' : 'red');
       setVal('ss-be', stats.bes.length ? stats.bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—');
       setVal('ss-delta', stats.totalDelta.toFixed(2));
       setVal('ss-theta', stats.totalTheta.toFixed(2));
@@ -23363,8 +23441,15 @@
           </div>
           <div class="strat-leg-row2">
             <div class="strat-leg-metric">
-              <span class="strat-leg-metric-lbl">Mark</span>
-              <span class="strat-leg-metric-val">$${enr.mark.toFixed(2)}</span>
+              <span class="strat-leg-metric-lbl">Mark / Cost${enr.isCustomMark ? ' •' : ''}</span>
+              <span class="strat-leg-mark-wrap">
+                <span class="strat-leg-mark-dollar">$</span>
+                <input type="number" class="strat-leg-mark-input${enr.isCustomMark ? ' custom' : ''}"
+                  step="0.01" min="0" value="${enr.mark.toFixed(2)}"
+                  title="${enr.isCustomMark ? 'Custom cost basis — clear to use live mid $' + enr.marketMark.toFixed(2) : 'Live market mid — edit to set your cost basis'}"
+                  onchange="stratSetMark(${leg.id}, this.value)"
+                  onclick="this.select()">
+              </span>
             </div>
             <div class="strat-leg-metric">
               <span class="strat-leg-metric-lbl">Delta</span>
@@ -23772,9 +23857,24 @@
         // If any existing legs reference strikes no longer in the chain, keep
         // them — stratLookupContract will still nearest-match.
         stratRecalc();
+
+        // Center the chain table on the ATM strike (like the Heat Seeker GEX
+        // view) so spot is in the middle instead of scrolled to the top.
+        requestAnimationFrame(stratCenterChainOnSpot);
       } catch (e) {
         console.error('stratLoadChain:', e);
       }
+    }
+
+    // Scroll the chain scroll-container so the ATM row sits mid-viewport.
+    function stratCenterChainOnSpot() {
+      const body = document.getElementById('strat-chain-body');
+      const atm = body?.querySelector('tr.atm-row');
+      if (!body || !atm) return;
+      const bodyRect = body.getBoundingClientRect();
+      const atmRect = atm.getBoundingClientRect();
+      const delta = (atmRect.top - bodyRect.top) - (body.clientHeight / 2) + (atmRect.height / 2);
+      body.scrollTop = Math.max(0, body.scrollTop + delta);
     }
 
     // Legacy entry point wired to nav.
