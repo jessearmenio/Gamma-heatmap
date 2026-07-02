@@ -5987,12 +5987,12 @@
       font-weight: 800;
       line-height: 1.1;
       color: var(--text);
-      white-space: nowrap;
+      white-space: wrap;
     }
 
     /* Underlying price at which the extreme is realized */
     .strat-stat-at {
-      font-size: 9px;
+      font-size: 11px;
       font-weight: 600;
       color: var(--text3);
       margin-top: 3px;
@@ -23393,13 +23393,11 @@
       return sign + '$' + abs.toFixed(0);
     }
 
-    // Exact dollar amount with cents + thousands separators (no k/M rounding).
+    // Exact dollar amount with thousands separators (no cents, no k/M rounding).
     function stratFmtMoneyExact(v) {
       if (!isFinite(v)) return '—';
       const sign = v < 0 ? '-' : '';
-      return sign + '$' + Math.abs(v).toLocaleString('en-US', {
-        minimumFractionDigits: 2, maximumFractionDigits: 2
-      });
+      return sign + '$' + Math.round(Math.abs(v)).toLocaleString('en-US');
     }
 
     function stratRecalc() {
@@ -23585,23 +23583,46 @@
       }).join('');
     }
 
+    // Cache of the last drawn bundle so the ResizeObserver can re-render at the
+    // new width without recomputing the whole strategy.
+    let stratLastChartBundle = null;
+
+    function stratInitChartResize() {
+      const wrap = document.getElementById('strat-chart-wrap');
+      if (!wrap || wrap._stratResizeBound || !window.ResizeObserver) return;
+      wrap._stratResizeBound = true;
+      let raf = null;
+      const ro = new ResizeObserver(() => {
+        if (raf) cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => drawStratChart(stratLastChartBundle));
+      });
+      ro.observe(wrap);
+    }
+
     function drawStratChart(bundle) {
       const canvas = document.getElementById('strat-chart');
       if (!canvas) return;
+      stratLastChartBundle = bundle;
+      stratInitChartResize();
+
       const wrap = document.getElementById('strat-chart-wrap');
-      const W = wrap.offsetWidth || 600;
-      const H = wrap.offsetHeight || 340;
+      // Measure the canvas's own CSS box (driven by width/height:100% of the
+      // card's content area) so the backing store always matches and never
+      // spills outside the card, regardless of page width.
+      const rect = canvas.getBoundingClientRect();
+      const W = Math.max(1, Math.round(rect.width));
+      const H = Math.max(1, Math.round(rect.height));
       const dpr = window.devicePixelRatio || 1;
       canvas.width = W * dpr;
       canvas.height = H * dpr;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
       const ctx = canvas.getContext('2d');
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, W, H);
 
-      const PAD_L = 60, PAD_R = 20, PAD_T = 20, PAD_B = 34;
+      // Tighten axis gutters on narrow layouts so the plot keeps its area.
+      const narrow = W < 460;
+      const PAD_L = narrow ? 46 : 60, PAD_R = narrow ? 12 : 20, PAD_T = 20, PAD_B = 34;
       const cW = W - PAD_L - PAD_R, cH = H - PAD_T - PAD_B;
 
       // Baseline grid + zero line, drawn even when there are no legs so the
@@ -23716,12 +23737,19 @@
       ctx.fillText('$0', PAD_L - 6, zeroY + 4);
       ctx.fillText(stratFmtMoney(minPL), PAD_L - 6, H - PAD_B);
 
-      // X-axis labels (5 evenly spaced prices)
-      ctx.textAlign = 'center';
-      for (let i = 0; i <= 4; i++) {
-        const idx = Math.round((i / 4) * (N - 1));
-        ctx.fillText('$' + prices[idx].toFixed(prices[idx] >= 100 ? 0 : 2), toX(idx), H - PAD_B + 24);
+      // X-axis price labels — count adapts to width so they never squish or
+      // overlap. Budget ~72px per label; end labels align inward to stay inside.
+      ctx.fillStyle = 'rgba(150,160,180,0.7)';
+      ctx.font = '9px monospace';
+      const labelCount = Math.max(2, Math.min(5, Math.floor(cW / 72)));
+      for (let i = 0; i < labelCount; i++) {
+        const frac = i / (labelCount - 1);
+        const idx = Math.round(frac * (N - 1));
+        ctx.textAlign = i === 0 ? 'left' : (i === labelCount - 1 ? 'right' : 'center');
+        const p = prices[idx];
+        ctx.fillText('$' + p.toFixed(p >= 100 ? 0 : 2), toX(idx), H - PAD_B + 24);
       }
+      ctx.textAlign = 'start';
 
       // Cache for hover handler
       canvas._pl = { prices, pls, N, PAD_L, PAD_R, PAD_T, PAD_B, cW, cH, W, H, toX, toY, zeroY };
