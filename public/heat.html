@@ -6170,20 +6170,19 @@
       background: rgba(180, 35, 240, 0.1);
     }
 
-    /* Persistent "selected" accent when a strike is in the position */
+    /* Persistent "selected" accent when a strike is in the position.
+       Color reflects the SIDE, not the option type:
+         BUY  → light-green background + dark-green underline
+         SELL → light-red background   + red underline */
     .strat-chain-table td.chain-clickable.selected {
-      background: rgba(220, 255, 30, 0.22);
       color: var(--text);
       font-weight: 700;
-      box-shadow: inset 0 -2px 0 var(--accent);
-    }
-
-    .strat-chain-table td.chain-clickable.put.selected {
-      background: rgba(180, 35, 240, 0.22);
-      box-shadow: inset 0 -2px 0 #B423F0;
+      background: rgba(38, 217, 127, 0.16);
+      box-shadow: inset 0 -2px 0 #0f8a44;
     }
 
     .strat-chain-table td.chain-clickable.selected.side-sell {
+      background: rgba(255, 59, 92, 0.16);
       box-shadow: inset 0 -2px 0 var(--red);
     }
 
