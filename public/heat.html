@@ -23088,10 +23088,11 @@
       if (!contract) return;
       const actualStrike = parseFloat(contract.strikePrice ?? strike);
       const legSide = side === 'SELL' ? 'SELL' : 'BUY';
-      // Dedupe on (type + strike + side): repeat clicks on the same corner bump
-      // qty, but clicking Bid vs Ask on the same strike opens two separate legs.
+      // Toggle on (type + strike + side): clicking the same corner again removes
+      // the leg. Bid vs Ask on the same strike are separate legs. Adjust ratio
+      // on the Legs tab, not by re-clicking the chain.
       const existing = stratLegs.find(l => l.type === type && l.strike === actualStrike && l.side === legSide);
-      if (existing) { existing.qty += 1; stratRecalc(); return; }
+      if (existing) { stratLegs = stratLegs.filter(l => l !== existing); stratRecalc(); return; }
       stratLegs.push({
         id: ++stratLegSeq,
         type,
@@ -23254,6 +23255,13 @@
       return warns;
     }
 
+    // Show a strike at its true precision: 337.5 → "337.5", 400 → "400",
+    // 337.25 → "337.25". Never rounds away fractional strikes.
+    function stratFmtStrike(v) {
+      if (v == null || !isFinite(v)) return '—';
+      return parseFloat(v.toFixed(2)).toString();
+    }
+
     function stratFmtMoney(v) {
       if (!isFinite(v)) return '—';
       const abs = Math.abs(v);
@@ -23344,7 +23352,7 @@
         return `<div class="strat-leg-card ${sideClass}">
           <div class="strat-leg-row1">
             <span class="strat-leg-type-badge ${leg.type}">${leg.type === 'call' ? 'CALL' : 'PUT'}</span>
-            <span class="strat-leg-title">$${leg.strike.toFixed(2)}</span>
+            <span class="strat-leg-title">$${stratFmtStrike(leg.strike)}</span>
             <div class="strat-side-toggle">
               <button class="${leg.side === 'BUY' ? 'active buy' : ''}" onclick="stratSetSide(${leg.id}, 'BUY')">B</button>
               <button class="${leg.side === 'SELL' ? 'active sell' : ''}" onclick="stratSetSide(${leg.id}, 'SELL')">S</button>
@@ -23421,7 +23429,7 @@
           <td>${fmtCnt(call?.totalVolume)}</td>
           <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike}, 'SELL')" title="Sell to open CALL @ ${strike}">${fmt(call?.bid)}</td>
           <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike}, 'BUY')" title="Buy to open CALL @ ${strike}">${fmt(call?.ask)}</td>
-          <td class="strike-cell">${strike.toFixed(strike >= 100 ? 0 : 2)}</td>
+          <td class="strike-cell">${stratFmtStrike(strike)}</td>
           <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike}, 'SELL')" title="Sell to open PUT @ ${strike}">${fmt(put?.bid)}</td>
           <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike}, 'BUY')" title="Buy to open PUT @ ${strike}">${fmt(put?.ask)}</td>
           <td>${fmtCnt(put?.totalVolume)}</td>
@@ -23550,7 +23558,7 @@
         ctx.fillStyle = 'rgba(150,160,180,0.85)';
         ctx.font = '9px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('$' + strike.toFixed(strike >= 100 ? 0 : 2), x, H - PAD_B + 14);
+        ctx.fillText('$' + stratFmtStrike(strike), x, H - PAD_B + 14);
       });
 
       // Y-axis labels
@@ -23669,7 +23677,8 @@
         const target = new Date(Date.now() + stratSlotsFrom * 30 * 60 * 1000);
         selEl.textContent = target.toLocaleString('en-US', {
           month: 'short', day: 'numeric', year: '2-digit',
-          hour: 'numeric', minute: '2-digit'
+          hour: 'numeric', minute: '2-digit',
+          timeZone: 'America/Chicago', timeZoneName: 'short'
         });
       }
       if (subEl) subEl.textContent = '+ ' + stratFmtDTE(stratSlotsFrom) + ' from now';
