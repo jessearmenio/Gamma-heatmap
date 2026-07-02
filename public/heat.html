@@ -5990,6 +5990,16 @@
       white-space: nowrap;
     }
 
+    /* Underlying price at which the extreme is realized */
+    .strat-stat-at {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--text3);
+      margin-top: 3px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
     .strat-stat-val.green {
       color: var(--green);
     }
@@ -11786,13 +11796,15 @@
             <div class="strat-stat">
               <div class="strat-stat-lbl">Max Profit</div>
               <div class="strat-stat-val green" id="ss-maxprofit">—</div>
+              <div class="strat-stat-at" id="ss-maxprofit-at"></div>
             </div>
             <div class="strat-stat">
               <div class="strat-stat-lbl">Max Loss</div>
               <div class="strat-stat-val red" id="ss-maxloss">—</div>
+              <div class="strat-stat-at" id="ss-maxloss-at"></div>
             </div>
             <div class="strat-stat">
-              <div class="strat-stat-lbl">Breakevens</div>
+              <div class="strat-stat-lbl">Breakeven</div>
               <div class="strat-stat-val" id="ss-be">—</div>
             </div>
             <div class="strat-stat">
@@ -23293,6 +23305,8 @@
       const expiryPL = evalPts.map(p => stratPLAt(p, legs, 0));
       let maxProfit = Math.max(...expiryPL);
       let maxLoss = Math.min(...expiryPL);
+      const maxProfitAt = stratExtremeLocation(evalPts, expiryPL, maxProfit, strikeList);
+      const maxLossAt = stratExtremeLocation(evalPts, expiryPL, maxLoss, strikeList);
 
       // ── Breakevens at expiration: fine grid over the relevant strike band ──
       const beLo = Math.max(0, (strikeList[0] ?? stratSpot) * 0.5);
@@ -23320,9 +23334,40 @@
 
       return {
         netCost, totalDelta, totalTheta, totalVega, totalGamma,
-        maxProfit, maxLoss, unboundedProfitUp, unboundedLossUp, shortPutRisk,
+        maxProfit, maxLoss, maxProfitAt, maxLossAt,
+        unboundedProfitUp, unboundedLossUp, shortPutRisk,
         netCall, netPut, bes, prices, pls
       };
+    }
+
+    // Classify the underlying price at which an expiration extreme is realized.
+    // Returns "240+" (that strike and above), "237.5" (that strike and below or
+    // a single point), or "0" (peak at zero). Empty string if indeterminate.
+    function stratExtremeLocation(evalPts, expiryPL, target, strikeList) {
+      if (!strikeList.length) return '';
+      const eps = Math.max(0.5, Math.abs(target) * 1e-6);
+      const N = evalPts.length;
+      const farUpIdx = N - 1;          // synthetic +∞ point
+      const hiStrike = strikeList[strikeList.length - 1];
+      const loStrike = strikeList[0];
+      const near = (a, b) => Math.abs(a - b) < eps;
+      // Up plateau: flat at target above the highest strike → "hiStrike+".
+      if (near(expiryPL[farUpIdx], target) && near(expiryPL[N - 2], target)) {
+        return stratFmtStrike(hiStrike) + '+';
+      }
+      // Down flat region: flat at target at & below the lowest strike → "loStrike".
+      if (near(expiryPL[0], target) && near(expiryPL[1], target)) {
+        return stratFmtStrike(loStrike);
+      }
+      // Peak/trough exactly at $0 (e.g. long-put max profit).
+      if (near(expiryPL[0], target)) return '0';
+      // Interior strike breakpoint (single point, e.g. butterfly apex).
+      for (let i = 1; i <= N - 2; i++) {
+        if (near(expiryPL[i], target)) return stratFmtStrike(evalPts[i]);
+      }
+      // Fallback: unbounded-ish up tail.
+      if (near(expiryPL[farUpIdx], target)) return stratFmtStrike(hiStrike) + '+';
+      return '';
     }
 
     function stratWarnings(legs, stats) {
@@ -23348,6 +23393,15 @@
       return sign + '$' + abs.toFixed(0);
     }
 
+    // Exact dollar amount with cents + thousands separators (no k/M rounding).
+    function stratFmtMoneyExact(v) {
+      if (!isFinite(v)) return '—';
+      const sign = v < 0 ? '-' : '';
+      return sign + '$' + Math.abs(v).toLocaleString('en-US', {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+      });
+    }
+
     function stratRecalc() {
       stratRenderChain();
       stratRenderLegs();
@@ -23364,10 +23418,17 @@
         if (cls) el.classList.add(cls);
       };
 
+      const setAt = (id, txt) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = txt || '';
+      };
+
       if (!hasLegs) {
         setVal('ss-net', '—');
         setVal('ss-maxprofit', '—');
         setVal('ss-maxloss', '—');
+        setAt('ss-maxprofit-at', '');
+        setAt('ss-maxloss-at', '');
         setVal('ss-be', '—');
         setVal('ss-delta', '—');
         setVal('ss-theta', '—');
@@ -23388,11 +23449,13 @@
       setVal('ss-net', netLbl, stats.netCost >= 0 ? 'red' : 'green');
 
       setVal('ss-maxprofit',
-        stats.unboundedProfitUp ? 'unlimited' : stratFmtMoney(stats.maxProfit),
+        stats.unboundedProfitUp ? 'unlimited' : stratFmtMoneyExact(stats.maxProfit),
         stats.unboundedProfitUp ? 'unlimited-profit' : 'green');
+      setAt('ss-maxprofit-at', stats.unboundedProfitUp ? '' : (stats.maxProfitAt ? '@ ' + stats.maxProfitAt : ''));
       setVal('ss-maxloss',
-        stats.unboundedLossUp ? 'unlimited' : stratFmtMoney(stats.maxLoss),
+        stats.unboundedLossUp ? 'unlimited' : stratFmtMoneyExact(stats.maxLoss),
         stats.unboundedLossUp ? 'unlimited-loss' : 'red');
+      setAt('ss-maxloss-at', stats.unboundedLossUp ? '' : (stats.maxLossAt ? '@ ' + stats.maxLossAt : ''));
       setVal('ss-be', stats.bes.length ? stats.bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—');
       setVal('ss-delta', stats.totalDelta.toFixed(2));
       setVal('ss-theta', stats.totalTheta.toFixed(2));
