@@ -10884,10 +10884,10 @@
                   <span class="ov-metric-value" id="ovm-vix-term">--</span>
                   <span class="ov-metric-tag neutral" id="ovt-vix-term">--</span>
                 </div>
-                <div class="ov-metric-row">
-                  <span class="ov-metric-label">VIX Pctile 1Y</span>
-                  <span class="ov-metric-value" id="ovm-vix-pct">--</span>
-                  <span class="ov-metric-tag neutral" id="ovt-vix-pct">--</span>
+                <div class="ov-metric-row" id="ovrow-cor1m-risk">
+                  <span class="ov-metric-label">COR1M Risk</span>
+                  <span class="ov-metric-value" id="ovm-cor1m-risk">--</span>
+                  <span class="ov-metric-tag neutral" id="ovt-cor1m-risk">--</span>
                 </div>
                 <div class="ov-metric-row">
                   <span class="ov-metric-label">P/C<span class="ov-metric-pc-history" id="ovm-pc-history"></span></span>
@@ -16007,6 +16007,9 @@
       const price = q.lastPrice ?? q.mark ?? q.closePrice;
       if (price == null || !isFinite(price)) { valEl.textContent = '—'; if (chgEl) chgEl.textContent = ''; return; }
       valEl.textContent = Number(price).toFixed(2);
+      // Store the live level and re-weight it into the trade score / risk row.
+      ovLatestCor1m = Number(price);
+      ovRefreshCor1mRisk();
       if (chgEl) {
         const dol = q.netChange;
         const pct = q.netPercentChange;
@@ -16105,6 +16108,32 @@
       swing: { volatility: 20, trend: 25, breadth: 20, momentum: 20, macro: 15 },
       position: { volatility: 15, trend: 30, breadth: 25, momentum: 10, macro: 20 }
     };
+
+    // Latest realtime COR1M level (CBOE 1-Month Implied Correlation), fed by the
+    // COR1M poller / ticker batch. Used both for the header price and — heavily
+    // weighted — inside the volatility sub-score of the trade rating.
+    let ovLatestCor1m = null;
+
+    // Fraction of the volatility sub-score that COR1M contributes when a live
+    // reading is available (the rest is the VIX-based score). Heavily weighted.
+    const OV_COR1M_VOL_WEIGHT = 0.6;
+
+    // Map a COR1M level to a risk read. `score` is 0–100 "conditions for longs"
+    // (higher = better / lower correlation risk) so it blends into volScore.
+    // Bands mirror the SPY-vs-COR1M playbook.
+    function ovCor1mRisk(level) {
+      const v = Number(level);
+      if (!Number.isFinite(v) || v <= 0) return null;
+      const band = (label, read, tone, score) => ({ level: v, label, read, tone, score });
+      if (v < 6)    return band('Complacency',    'Extreme complacency / dispersion — downside reversal risk rises if COR1M curls up.', 'caution', 70);
+      if (v < 9)    return band('Warning Line',   'First warning — a reclaim above here means correlation is waking up.',                'caution', 62);
+      if (v < 13.5) return band('Risk Pivot',     'Normal risk-on/off pivot — above here, dips in SPY get more fragile.',                'neutral', 54);
+      if (v < 18.5) return band('Stress',         'Confirmed stress zone — SPY often struggles unless COR1M rejects back down.',         'danger',  42);
+      if (v < 27.5) return band('Risk-Off',       'Risk-off pressure — watch panic continuation, but start watching for a reversal.',    'danger',  32);
+      if (v < 36)   return band('Reversal Watch', 'Major reversal-watch zone — SPY weakness historically matures here.',                 'danger',  24);
+      if (v < 44)   return band('Reversal Risk',  'High-probability upside reversal risk for SPY if COR1M spikes then rolls over.',      'danger',  19);
+      return          band('Panic',          'Extreme panic — not short territory; squeeze / bottom risk becomes serious.',         'danger',  14);
+    }
 
     const FOMC_DATES = [
       "2026-04-29", "2026-06-17", "2026-07-29",
@@ -16509,6 +16538,17 @@
       if (vixPct > 70) volScore -= Math.min(20, (vixPct - 70) * 0.4);
       volScore = ovClamp(volScore);
 
+      // Keep the VIX-only base so the COR1M poller can re-blend live without a
+      // full recompute, then heavily weight the COR1M risk read into volScore.
+      const volScoreVix = volScore;
+      const cor1m = ovLatestCor1m;
+      const cor1mRisk = ovCor1mRisk(cor1m);
+      if (cor1mRisk) {
+        volScore = ovClamp(Math.round(
+          volScoreVix * (1 - OV_COR1M_VOL_WEIGHT) + cor1mRisk.score * OV_COR1M_VOL_WEIGHT
+        ));
+      }
+
       // Trend
       function scoreVsMA(price, ma, full, near) {
         const d = ovPctDiff(price, ma);
@@ -16673,6 +16713,7 @@
 
       return {
         volScore, trendScore, breadthScore, momentumScore, macroScore,
+        volScoreVix, cor1m, cor1mRisk,
         VIX, SPY, QQQ, TNX, UUP, TLT,
         spy20, spy50, spy200, qqq20, qqq50, qqq200,
         regime, vixSlope, vixPct, vixTermRatio, sma2050Diff, trendDir20d,
@@ -16987,12 +17028,44 @@
       const termTone = sc.vixTermRatio && sc.vixTermRatio > 1.1 ? 'danger' : sc.vixTermRatio && sc.vixTermRatio < 0.9 ? 'positive' : 'neutral';
       const termTag = sc.vixTermRatio && sc.vixTermRatio > 1.1 ? 'Contango' : sc.vixTermRatio && sc.vixTermRatio < 0.9 ? 'Backwardation' : 'Normal';
       ovSetMetric('ovm-vix-term', 'ovt-vix-term', sc.vixTermRatio != null ? sc.vixTermRatio.toFixed(2) : '--', termTag, termTone);
-      // VIX percentile
-      const pctTone = sc.vixPct > 70 ? 'danger' : sc.vixPct > 50 ? 'caution' : 'positive';
-      const pctTag = sc.vixPct > 70 ? 'High Pctile' : sc.vixPct > 50 ? 'Mid' : 'Low Pctile';
-      ovSetMetric('ovm-vix-pct', 'ovt-vix-pct', sc.vixPct != null ? Math.round(sc.vixPct) + '%' : '--', pctTag, pctTone);
+      // COR1M Risk — CBOE 1-Month implied correlation, heavily weighted into vol.
+      ovRenderCor1mRiskRow(sc.cor1mRisk, sc.cor1m);
       // Real P/C Ratio — pulled from lastHeatData (same source as Sentiment page)
       updateOvmPc();
+    }
+
+    // Render the COR1M Risk metric row from a classifier result. Shows the live
+    // level, the band tag, and the playbook read as a hover tooltip.
+    function ovRenderCor1mRiskRow(risk, level) {
+      const lvl = Number.isFinite(Number(level)) ? Number(level) : ovLatestCor1m;
+      const r = risk || ovCor1mRisk(lvl);
+      const valTxt = Number.isFinite(Number(lvl)) ? Number(lvl).toFixed(2) : '--';
+      ovSetMetric('ovm-cor1m-risk', 'ovt-cor1m-risk', valTxt, r ? r.label : '--', r ? r.tone : 'neutral');
+      const row = document.getElementById('ovrow-cor1m-risk');
+      if (row) row.title = r ? `COR1M ${valTxt} — ${r.read}` : 'COR1M: waiting for a live reading…';
+    }
+
+    // Called by the COR1M poller: refresh the metric row AND live-reblend the
+    // volatility score + composite trade rating so the headline number tracks
+    // COR1M in real time (heavily weighted) between full recomputes.
+    function ovRefreshCor1mRisk() {
+      const sc = ovState?.snapshot?.scores;
+      const risk = ovCor1mRisk(ovLatestCor1m);
+      // Always update the visible metric row (even before the first snapshot).
+      ovRenderCor1mRiskRow(risk, ovLatestCor1m);
+      if (!sc || sc.volScoreVix == null) return;
+      sc.cor1m = ovLatestCor1m;
+      sc.cor1mRisk = risk;
+      sc.volScore = risk
+        ? ovClamp(Math.round(sc.volScoreVix * (1 - OV_COR1M_VOL_WEIGHT) + risk.score * OV_COR1M_VOL_WEIGHT))
+        : sc.volScoreVix;
+      try {
+        ovSetScore('ovpanel-vol-score', 'ovpanel-vol-bar', sc.volScore);
+        ovSetWeightBar('ovscore-vol', 'ovbar-vol', sc.volScore);
+        const composite = ovCompositeScore(sc);
+        ovRenderRing(composite, sc);
+        ovRenderExecution(composite, sc);
+      } catch (e) { /* non-fatal: keep last rendered rating */ }
     }
 
     function ovRenderTrend(sc) {
@@ -17853,47 +17926,12 @@
       // chart), NOT `candles` (the raw ~365-bar input). The chart's logical
       // index range is [0, display.length-1] — using the wrong array put the
       // zoom window off the end of the chart and collapsed to ~2 bars.
-      const totalBars = display.length;
-      const tf = ovState?.chartTf || '3M';
-      const DEFAULT_VISIBLE = { '3M': 30, '6M': 45, '1Y': 65 };
-      const visibleBars = DEFAULT_VISIBLE[tf];
-      let desiredRange = null;
-      if (visibleBars && totalBars > visibleBars) {
-        const rightPad = 4;
-        desiredRange = {
-          from: Math.max(0, totalBars - visibleBars),
-          to: totalBars - 1 + rightPad
-        };
-        lwcChart.timeScale().setVisibleLogicalRange(desiredRange);
-      } else {
-        lwcChart.timeScale().fitContent();
-      }
-      // Force tight candle spacing. setVisibleLogicalRange auto-computes
-      // barSpacing = chartWidth / visibleBars, which inflates dramatically
-      // when only ~30 bars are visible on a wide chart. barSpacing: 4 puts
-      // candles essentially touching (LWC's ~0.6 bar/gap split → ~3px bar
-      // + ~1px gap, the tightest readable layout). minBarSpacing pins this
-      // even when the chart re-flows after a resize.
-      lwcChart.timeScale().applyOptions({ barSpacing: 4, minBarSpacing: 1 });
-      lwcChart._ovDesiredRange = desiredRange;
-      // Mimic the manual fix: call ovSetChartTf directly (bypasses the
-      // synthetic-event path that .click() goes through, which can be
-      // swallowed by other listeners). Fire twice with different delays so
-      // whichever one lands in a settled DOM wins. The page-level flag
-      // ensures the auto-trigger only runs once per page load — subsequent
-      // manual TF clicks or page refreshes work normally.
-      if (desiredRange && !window._ovChartAutoClicked) {
-        const fireActiveTf = () => {
-          if (window._ovChartAutoClicked) return;
-          const activeBtn = document.querySelector('#ov-spy-chart-tf .ov-chart-tf-btn.active');
-          if (!activeBtn) return;
-          const tf = activeBtn.dataset.ovctf || '3M';
-          window._ovChartAutoClicked = true;
-          try { ovSetChartTf(tf, activeBtn); } catch (_) { }
-        };
-        setTimeout(fireActiveTf, 600);
-        setTimeout(fireActiveTf, 1500);
-      }
+      // Match the Heat Seeker chart exactly: fit ALL bars to the panel width so
+      // candles pack tight with no gaps. (The old fixed 30-bar zoom window
+      // stretched a handful of bars across the full width, which is what left
+      // the visible gaps between candles.)
+      lwcChart.timeScale().fitContent();
+      lwcChart._ovDesiredRange = null;
 
       // ── Gamma bar overlay: redraw on scroll/zoom/crosshair events ──
       const redrawGamma = () => requestAnimationFrame(drawGammaBars);
@@ -17922,12 +17960,9 @@
           if (w > 0) opts.width = w;
           if (h > 0) opts.height = h;
           if (opts.width || opts.height) lwcChart.applyOptions(opts);
-          // Re-assert the initial zoom we set in ovRenderChart — the
-          // applyOptions calls above reset the visible range to LWC's
-          // default behavior, which would otherwise leave us at fitContent.
-          if (lwcChart._ovDesiredRange) {
-            try { lwcChart.timeScale().setVisibleLogicalRange(lwcChart._ovDesiredRange); } catch (_) { }
-          }
+          // Keep all bars fitted to the new width (matches the Heat Seeker
+          // chart) so the width-thrash above doesn't reintroduce candle gaps.
+          try { lwcChart.timeScale().fitContent(); } catch (_) { }
           requestAnimationFrame(drawGammaBars);
         });
       };
