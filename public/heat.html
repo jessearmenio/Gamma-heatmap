@@ -5889,19 +5889,21 @@
     }
 
     /* ─────────────────────────────────────────────
-   STRATEGY TESTER
+   STRATEGY TESTER — options profit calculator style
 ───────────────────────────────────────────── */
     #strat-page {
       overflow-y: auto;
+      padding: 0;
     }
 
     #strat-controls {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
       flex-wrap: wrap;
-      padding: 12px 14px;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border);
+      background: var(--panel);
     }
 
     .strat-input-group {
@@ -5912,20 +5914,21 @@
 
     .strat-label {
       font-size: 10px;
-      color: var(--text2);
+      color: var(--text3);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
+      font-weight: 700;
     }
 
     .strat-input {
       background: var(--bg3);
       color: var(--text);
       border: 1px solid var(--border2);
-      border-radius: 4px;
-      padding: 5px 8px;
-      width: 80px;
+      border-radius: 5px;
+      padding: 6px 9px;
       font-family: inherit;
-      font-size: 11px;
+      font-size: 12px;
+      font-weight: 600;
     }
 
     .strat-input:focus {
@@ -5933,245 +5936,367 @@
       border-color: var(--accent);
     }
 
-    /* Builder layout */
-    #strat-builder {
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 0;
-      min-height: 440px;
-    }
-
-    #strat-left {
-      padding: 16px 14px;
-      border-right: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    #strat-right {
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* Leg rows */
-    .leg-row {
-      background: var(--bg3);
-      border: 1px solid var(--border2);
-      border-radius: 7px;
-      padding: 10px 12px;
+    /* Warning banner */
+    .strat-warn {
       display: flex;
       align-items: center;
       gap: 8px;
-    }
-
-    .leg-badge {
-      font-size: 9px;
-      font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 4px;
-      letter-spacing: 0.06em;
-      flex-shrink: 0;
-      min-width: 36px;
-      text-align: center;
-    }
-
-    .leg-badge.buy {
-      background: rgba(34, 221, 136, 0.2);
-      color: var(--green);
-      border: 1px solid rgba(34, 221, 136, 0.35);
-    }
-
-    .leg-badge.sell {
-      background: rgba(255, 59, 92, 0.15);
+      padding: 8px 16px;
+      background: rgba(255, 59, 92, 0.08);
+      border-bottom: 1px solid rgba(255, 59, 92, 0.25);
       color: var(--red);
-      border: 1px solid rgba(255, 59, 92, 0.3);
-    }
-
-    .leg-name {
-      font-size: 12px;
-      font-weight: 700;
-      flex: 1;
-    }
-
-    .leg-price {
-      font-size: 13px;
-      font-weight: 800;
-      min-width: 55px;
-      text-align: right;
-    }
-
-    /* Slider rows */
-    .slider-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 6px 0;
-    }
-
-    .slider-label {
-      font-size: 10px;
-      font-weight: 700;
-      min-width: 130px;
-      flex-shrink: 0;
-    }
-
-    .slider-val {
       font-size: 11px;
-      font-weight: 800;
-      min-width: 55px;
-      text-align: right;
-      color: var(--accent);
+      font-weight: 600;
     }
 
-    input[type="range"].strat-slider {
-      flex: 1;
-      -webkit-appearance: none;
-      appearance: none;
-      height: 4px;
-      border-radius: 2px;
-      outline: none;
-      cursor: pointer;
+    .strat-warn.hidden {
+      display: none;
     }
 
-    input[type="range"].strat-slider.call-slider {
-      background: linear-gradient(to right, var(--accent), var(--bg3));
-    }
-
-    input[type="range"].strat-slider.call-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 6px rgba(220, 255, 30, 0.6);
-      cursor: pointer;
-    }
-
-    input[type="range"].strat-slider.put-slider {
-      background: linear-gradient(to right, #B423F0, var(--bg3));
-    }
-
-    input[type="range"].strat-slider.put-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: #B423F0;
-      box-shadow: 0 0 6px rgba(180, 35, 240, 0.6);
-      cursor: pointer;
-    }
-
-    input[type="range"].strat-slider.neutral-slider {
-      background: linear-gradient(to right, var(--blue), var(--bg3));
-    }
-
-    input[type="range"].strat-slider.neutral-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--blue);
-      box-shadow: 0 0 6px rgba(59, 140, 255, 0.5);
-      cursor: pointer;
-    }
-
-    /* Stats tiles in builder */
-    #strat-stats-grid {
+    /* Stats strip */
+    #strat-stats-strip {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-top: 4px;
+      grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+      gap: 0;
+      padding: 10px 16px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
     }
 
-    .strat-stat-tile {
-      background: var(--bg);
-      border: 1px solid var(--border2);
-      border-radius: 6px;
-      padding: 10px 12px;
+    .strat-stat {
+      padding: 4px 12px;
+      border-right: 1px solid var(--border);
     }
 
-    .strat-stat-tile .ss-label {
-      font-size: 9px;
-      font-weight: 700;
-      color: var(--text3);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 3px;
+    .strat-stat:last-child {
+      border-right: none;
     }
 
-    .strat-stat-tile .ss-val {
-      font-size: 18px;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .strat-stat-tile .ss-sub {
-      font-size: 9px;
-      color: var(--text3);
-      margin-top: 2px;
-    }
-
-    /* alias classes for strat stat tiles */
     .strat-stat-lbl {
       font-size: 9px;
       font-weight: 700;
       color: var(--text3);
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.06em;
       margin-bottom: 4px;
+      white-space: nowrap;
     }
 
     .strat-stat-val {
-      font-size: 17px;
-      font-weight: 900;
+      font-size: 15px;
+      font-weight: 800;
       line-height: 1.1;
+      color: var(--text);
+      white-space: nowrap;
     }
 
-    .strat-stat-val.accent {
-      color: var(--accent);
+    .strat-stat-val.green {
+      color: var(--green);
     }
 
     .strat-stat-val.red {
       color: var(--red);
     }
 
-    /* Strategy type header */
-    #strat-type-label {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--text);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
+    .strat-stat-val.accent {
+      color: var(--accent);
     }
 
-    /* Cursor tooltip on chart */
+    .strat-stat-val.unlimited::before {
+      content: "🫠 ";
+    }
+
+    /* Chart + legs body layout */
+    #strat-body {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 0;
+      min-height: 520px;
+    }
+
+    #strat-chart-col {
+      padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    #strat-chart-wrap {
+      position: relative;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 4px 4px 4px;
+      height: 360px;
+    }
+
+    #strat-chart {
+      width: 100%;
+      height: 100%;
+      cursor: crosshair;
+    }
+
     #strat-cursor {
       position: absolute;
       pointer-events: none;
       display: none;
       background: #1a1d28;
       border: 1px solid var(--border2);
-      border-radius: 5px;
-      padding: 6px 10px;
+      border-radius: 6px;
+      padding: 8px 10px;
       font-size: 11px;
       white-space: nowrap;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
       z-index: 10;
     }
 
-    #strat-chart-wrap {
-      position: relative;
+    /* Chain panel + legs panel toggle */
+    #strat-side {
+      display: flex;
+      flex-direction: column;
+      background: var(--panel);
+      min-width: 0;
     }
 
-    .strat-input:focus {
-      outline: none;
-      border-color: var(--accent);
+    .strat-side-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 10px 12px 0 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .strat-side-tab {
+      background: transparent;
+      color: var(--text3);
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 6px 10px 8px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .strat-side-tab.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+    }
+
+    .strat-side-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px;
+    }
+
+    .strat-side-body.hidden {
+      display: none;
+    }
+
+    /* Chain grid table */
+    .strat-chain-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+    }
+
+    .strat-chain-table thead th {
+      position: sticky;
+      top: 0;
+      background: var(--panel);
+      color: var(--text3);
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 5px 4px;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .strat-chain-table thead th.strike-col {
+      text-align: center;
+      background: var(--bg3);
+      color: var(--text);
+    }
+
+    .strat-chain-table td {
+      padding: 4px 4px;
+      text-align: right;
+      color: var(--text2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .strat-chain-table td.strike-cell {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.02);
+      font-weight: 700;
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    .strat-chain-table td.chain-clickable {
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .strat-chain-table td.chain-clickable:hover {
+      background: rgba(220, 255, 30, 0.1);
+    }
+
+    .strat-chain-table td.chain-clickable.put:hover {
+      background: rgba(180, 35, 240, 0.1);
+    }
+
+    .strat-chain-table tr.atm-row td.strike-cell {
+      background: rgba(59, 140, 255, 0.15);
+      color: var(--blue);
+    }
+
+    /* Legs list */
+    .strat-leg-card {
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 7px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+
+    .strat-leg-card.buy {
+      border-left: 3px solid var(--green);
+    }
+
+    .strat-leg-card.sell {
+      border-left: 3px solid var(--red);
+    }
+
+    .strat-leg-row1 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .strat-leg-title {
+      flex: 1;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .strat-leg-type-badge {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.06em;
+    }
+
+    .strat-leg-type-badge.call {
+      background: rgba(220, 255, 30, 0.15);
+      color: var(--accent);
+    }
+
+    .strat-leg-type-badge.put {
+      background: rgba(180, 35, 240, 0.15);
+      color: #B423F0;
+    }
+
+    .strat-side-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 1px;
+    }
+
+    .strat-side-toggle button {
+      background: transparent;
+      color: var(--text3);
+      border: none;
+      padding: 3px 8px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      border-radius: 3px;
+    }
+
+    .strat-side-toggle button.active.buy {
+      background: rgba(34, 221, 136, 0.25);
+      color: var(--green);
+    }
+
+    .strat-side-toggle button.active.sell {
+      background: rgba(255, 59, 92, 0.25);
+      color: var(--red);
+    }
+
+    .strat-leg-close {
+      background: transparent;
+      color: var(--text3);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 4px;
+      line-height: 1;
+    }
+
+    .strat-leg-close:hover {
+      color: var(--red);
+    }
+
+    .strat-leg-row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--text3);
+    }
+
+    .strat-leg-metric {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+    }
+
+    .strat-leg-metric-lbl {
+      font-size: 9px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .strat-leg-metric-val {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text2);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .strat-qty-input {
+      width: 46px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .strat-empty-legs {
+      color: var(--text3);
+      font-size: 11px;
+      text-align: center;
+      padding: 20px 12px;
     }
 
     /* ─────────────────────────────────────────────
@@ -11437,80 +11562,122 @@
            2. STRATEGY TESTER
       ════════════════════════════════════ -->
         <div id="strat-page" class="page" style="display:none;">
-          <!-- STRAT HEADER CONTROLS -->
+          <!-- HEADER CONTROLS -->
           <div id="strat-controls">
             <div class="strat-input-group">
               <span class="strat-label">Symbol</span>
-              <input class="strat-input" id="strat-sym" value="SPY" style="width:70px;" oninput="stratSymbolChange()">
-            </div>
-            <div class="strat-input-group">
-              <span class="strat-label">Strategy</span>
-              <select id="strat-type" class="strat-input" style="width:130px;" onchange="stratTypeChange()">
-                <option value="condor">Iron Condor</option>
-                <option value="straddle">Straddle</option>
-                <option value="strangle">Strangle</option>
-                <option value="call_spread">Call Spread</option>
-                <option value="put_spread">Put Spread</option>
-                <option value="call">Long Call</option>
-                <option value="put">Long Put</option>
-              </select>
+              <input class="strat-input" id="strat-sym" value="SPY" style="width:80px;text-transform:uppercase;"
+                oninput="stratSymbolChange()">
             </div>
             <div class="strat-input-group">
               <span class="strat-label">Expiry</span>
-              <select id="strat-expiry" class="strat-input" style="width:130px;" onchange="stratLoadChain()">
-                <option>Loading...</option>
+              <select id="strat-expiry" class="strat-input" style="width:170px;" onchange="stratLoadChain()">
+                <option>Loading…</option>
               </select>
             </div>
-            <div class="strat-input-group">
-              <span class="strat-label">Qty</span>
-              <input class="strat-input" id="strat-qty" type="number" value="1" min="1" style="width:55px;"
-                oninput="stratRecalc()">
-            </div>
+            <button class="strat-input" id="strat-add-call-btn" onclick="stratQuickAdd('call')"
+              style="background:rgba(220,255,30,0.12);color:var(--accent);border-color:rgba(220,255,30,0.35);cursor:pointer;">
+              + Call
+            </button>
+            <button class="strat-input" id="strat-add-put-btn" onclick="stratQuickAdd('put')"
+              style="background:rgba(180,35,240,0.12);color:#B423F0;border-color:rgba(180,35,240,0.35);cursor:pointer;">
+              + Put
+            </button>
+            <button class="strat-input" id="strat-reset-btn" onclick="stratReset()"
+              style="background:transparent;color:var(--text3);cursor:pointer;">
+              Reset
+            </button>
             <button
-              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;"
+              style="margin-left:auto;background:linear-gradient(180deg, #26d97f 0%, #1fb86b 100%);color:#09111d;border:none;border-radius:5px;padding:6px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;"
               onclick="stratLoadChain(true)">
               ↻ LOAD CHAIN
             </button>
           </div>
 
-          <!-- TWO-COLUMN BUILDER -->
-          <div id="strat-builder">
-            <!-- LEFT: legs + stats -->
-            <div id="strat-left">
-              <div id="strat-type-label">Iron Condor</div>
+          <!-- WARNING BANNER -->
+          <div id="strat-warn" class="strat-warn hidden">
+            <span>⚠</span><span id="strat-warn-text"></span>
+          </div>
 
-              <!-- LEG ROWS (populated by JS) -->
-              <div id="strat-legs"></div>
-
-              <!-- STATS GRID -->
-              <div id="strat-stats-grid">
-                <div class="strat-stat-tile">
-                  <div class="strat-stat-lbl">MAX PROFIT</div>
-                  <div class="strat-stat-val accent" id="ss-maxprofit">—</div>
-                </div>
-                <div class="strat-stat-tile">
-                  <div class="strat-stat-lbl">MAX LOSS</div>
-                  <div class="strat-stat-val red" id="ss-maxloss">—</div>
-                </div>
-                <div class="strat-stat-tile" style="grid-column:1/-1">
-                  <div class="strat-stat-lbl">BREAKEVENS</div>
-                  <div class="strat-stat-val" id="ss-be">—</div>
-                </div>
-                <div class="strat-stat-tile" style="grid-column:1/-1">
-                  <div class="strat-stat-lbl">EST. P(PROFIT)</div>
-                  <div class="strat-stat-val" id="ss-prob">—</div>
-                </div>
-              </div>
+          <!-- STATS STRIP -->
+          <div id="strat-stats-strip">
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Net Cost</div>
+              <div class="strat-stat-val" id="ss-net">—</div>
             </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Max Profit</div>
+              <div class="strat-stat-val green" id="ss-maxprofit">—</div>
+            </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Max Loss</div>
+              <div class="strat-stat-val red" id="ss-maxloss">—</div>
+            </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Breakevens</div>
+              <div class="strat-stat-val" id="ss-be">—</div>
+            </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Total Delta</div>
+              <div class="strat-stat-val" id="ss-delta">—</div>
+            </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Total Theta</div>
+              <div class="strat-stat-val" id="ss-theta">—</div>
+            </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Total Vega</div>
+              <div class="strat-stat-val" id="ss-vega">—</div>
+            </div>
+            <div class="strat-stat">
+              <div class="strat-stat-lbl">Total Gamma</div>
+              <div class="strat-stat-val" id="ss-gamma">—</div>
+            </div>
+          </div>
 
-            <!-- RIGHT: chart + sliders -->
-            <div id="strat-right">
+          <!-- MAIN BODY: chart | chain/legs sidebar -->
+          <div id="strat-body">
+            <div id="strat-chart-col">
               <div id="strat-chart-wrap">
                 <canvas id="strat-chart"></canvas>
                 <div id="strat-cursor"></div>
               </div>
-              <!-- SLIDERS (populated by JS) -->
-              <div id="strat-sliders"></div>
+              <div style="font-size:10px;color:var(--text3);text-align:center;">
+                Hover the chart to see P/L at any price. Payoff shown at expiration.
+              </div>
+            </div>
+
+            <div id="strat-side">
+              <div class="strat-side-tabs">
+                <button class="strat-side-tab active" data-side-tab="chain" onclick="stratSetSideTab('chain')">Chain</button>
+                <button class="strat-side-tab" data-side-tab="legs" onclick="stratSetSideTab('legs')">
+                  Legs <span id="strat-leg-count" style="color:var(--text3);">(0)</span>
+                </button>
+              </div>
+              <div class="strat-side-body" id="strat-chain-body">
+                <table class="strat-chain-table" id="strat-chain-table">
+                  <thead>
+                    <tr>
+                      <th>Call Bid</th>
+                      <th>Call Ask</th>
+                      <th>Call IV</th>
+                      <th>Call OI</th>
+                      <th class="strike-col">Strike</th>
+                      <th>Put OI</th>
+                      <th>Put IV</th>
+                      <th>Put Bid</th>
+                      <th>Put Ask</th>
+                    </tr>
+                  </thead>
+                  <tbody id="strat-chain-tbody">
+                    <tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Load a chain to begin.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="strat-side-body hidden" id="strat-legs-body">
+                <div class="strat-empty-legs" id="strat-empty-legs">Click a Call or Put row in the Chain to add legs.</div>
+                <div id="strat-legs-list"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -22691,205 +22858,379 @@
     //  STRATEGY TESTER
     // ═══════════════════════════════════════════════════════
     // ═══════════════════════════════════════════════════════
-    //  STRATEGY BUILDER — state
+    //  STRATEGY BUILDER — chain-driven multi-leg P/L
     // ═══════════════════════════════════════════════════════
-    let stratChain = null;    // loaded chain data
-    let stratSpot = 0;       // underlying price
-    let stratStrikes = [];    // sorted unique strike list
+    let stratChain = null;
+    let stratSpot = 0;
+    let stratStrikes = [];       // sorted unique strikes for selected expiry
+    let stratLegs = [];          // user-added legs
+    let stratLegSeq = 0;
+    let stratSideTab = 'chain';  // 'chain' | 'legs'
 
-    const STRAT_CONFIGS = {
-      condor: {
-        label: 'Iron Condor',
-        legs: [
-          { id: 'lp_long', dir: 'BUY', type: 'put', label: 'BUY PUT (Long)', color: 'var(--purple)', offsetPct: -0.08 },
-          { id: 'lp_short', dir: 'SELL', type: 'put', label: 'SELL PUT (Short)', color: 'var(--purple)', offsetPct: -0.03 },
-          { id: 'lc_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Short)', color: 'var(--accent)', offsetPct: 0.03 },
-          { id: 'lc_long', dir: 'BUY', type: 'call', label: 'BUY CALL (Long)', color: 'var(--accent)', offsetPct: 0.08 },
-        ]
-      },
-      straddle: {
-        label: 'Straddle',
-        legs: [
-          { id: 'sc_atm', dir: 'BUY', type: 'call', label: 'BUY CALL (ATM)', color: 'var(--accent)', offsetPct: 0 },
-          { id: 'sp_atm', dir: 'BUY', type: 'put', label: 'BUY PUT (ATM)', color: 'var(--purple)', offsetPct: 0 },
-        ]
-      },
-      strangle: {
-        label: 'Strangle',
-        legs: [
-          { id: 'sg_call', dir: 'BUY', type: 'call', label: 'BUY CALL (OTM)', color: 'var(--accent)', offsetPct: 0.05 },
-          { id: 'sg_put', dir: 'BUY', type: 'put', label: 'BUY PUT (OTM)', color: 'var(--purple)', offsetPct: -0.05 },
-        ]
-      },
-      call_spread: {
-        label: 'Call Spread',
-        legs: [
-          { id: 'cs_long', dir: 'BUY', type: 'call', label: 'BUY CALL (Lower)', color: 'var(--accent)', offsetPct: 0.0 },
-          { id: 'cs_short', dir: 'SELL', type: 'call', label: 'SELL CALL (Upper)', color: 'var(--accent)', offsetPct: 0.05 },
-        ]
-      },
-      put_spread: {
-        label: 'Put Spread',
-        legs: [
-          { id: 'ps_long', dir: 'BUY', type: 'put', label: 'BUY PUT (Upper)', color: 'var(--purple)', offsetPct: -0.0 },
-          { id: 'ps_short', dir: 'SELL', type: 'put', label: 'SELL PUT (Lower)', color: 'var(--purple)', offsetPct: -0.05 },
-        ]
-      },
-      call: {
-        label: 'Long Call',
-        legs: [
-          { id: 'lc_only', dir: 'BUY', type: 'call', label: 'BUY CALL', color: 'var(--accent)', offsetPct: 0 },
-        ]
-      },
-      put: {
-        label: 'Long Put',
-        legs: [
-          { id: 'lp_only', dir: 'BUY', type: 'put', label: 'BUY PUT', color: 'var(--purple)', offsetPct: 0 },
-        ]
-      },
-    };
-
-    // Helper: find nearest strike index from slider value
-    function snapStrike(val) {
-      const idx = Math.round(val);
-      return stratStrikes[Math.max(0, Math.min(idx, stratStrikes.length - 1))] ?? val;
-    }
-
-    // Helper: find contract in map for given strike
-    function findContractAtStrike(map, targetStrike) {
+    // Pick the first contract for a given (type, strike) from the loaded chain,
+    // filtered to the currently selected expiration.
+    function stratLookupContract(type, strike) {
+      if (!stratChain) return null;
+      const map = type === 'call' ? stratChain.callExpDateMap : stratChain.putExpDateMap;
       if (!map) return null;
+      const exp = document.getElementById('strat-expiry')?.value;
+      const strikes = exp && map[exp] ? map[exp] : Object.values(map)[0] || {};
       let best = null, bestDist = Infinity;
-      const selectedExp = document.getElementById('strat-expiry')?.value;
-      const mapToSearch = selectedExp && map[selectedExp] ? { [selectedExp]: map[selectedExp] } : map;
-      Object.values(mapToSearch).forEach(strikes => {
-        Object.entries(strikes).forEach(([k, contracts]) => {
-          const dist = Math.abs(parseFloat(k) - targetStrike);
-          if (dist < bestDist && contracts[0]) { bestDist = dist; best = contracts[0]; }
-        });
-      });
+      for (const [k, contracts] of Object.entries(strikes)) {
+        const dist = Math.abs(parseFloat(k) - strike);
+        if (dist < bestDist && contracts[0]) { bestDist = dist; best = contracts[0]; }
+      }
       return best;
     }
 
-    // Compute P/L at expiry for current legs & strikes
-    function stratComputePL(prices) {
-      const type = document.getElementById('strat-type').value;
-      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
-      const config = STRAT_CONFIGS[type];
-      if (!config || !stratChain) return prices.map(() => 0);
-
-      const legs = config.legs.map(leg => {
-        const slider = document.getElementById('sl_' + leg.id);
-        const strike = slider ? snapStrike(parseFloat(slider.value)) : stratSpot;
-        const map = leg.type === 'call' ? stratChain.callExpDateMap : stratChain.putExpDateMap;
-        const contract = findContractAtStrike(map, strike);
-        const price = contract ? (contract.bid + contract.ask) / 2 : 0;
-        return { ...leg, strike, price, contract };
-      });
-
-      return prices.map(p => {
-        let pl = 0;
-        legs.forEach(leg => {
-          const intrinsic = leg.type === 'call'
-            ? Math.max(0, p - leg.strike)
-            : Math.max(0, leg.strike - p);
-          const legPL = (intrinsic - leg.price) * 100 * qty;
-          pl += leg.dir === 'BUY' ? legPL : -legPL;
-        });
-        return pl;
-      });
+    // Mid price with a safe fallback (bid/ask can be 0 on illiquid strikes).
+    function stratMid(contract) {
+      if (!contract) return 0;
+      const b = contract.bid || 0, a = contract.ask || 0;
+      if (b > 0 && a > 0) return (a + b) / 2;
+      return contract.mark || contract.last || Math.max(b, a) || 0;
     }
 
-    function stratGetLegs() {
-      const type = document.getElementById('strat-type').value;
-      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
-      const config = STRAT_CONFIGS[type];
-      if (!config || !stratChain) return [];
-      return config.legs.map(leg => {
-        const slider = document.getElementById('sl_' + leg.id);
-        const strike = slider ? snapStrike(parseFloat(slider.value)) : stratSpot;
-        const map = leg.type === 'call' ? stratChain.callExpDateMap : stratChain.putExpDateMap;
-        const contract = findContractAtStrike(map, strike);
-        const price = contract ? (contract.bid + contract.ask) / 2 : 0;
-        return { ...leg, strike, price, contract, qty };
+    function stratAddLeg(type, strike) {
+      const contract = stratLookupContract(type, strike);
+      if (!contract) return;
+      const actualStrike = parseFloat(contract.strikePrice ?? strike);
+      // Dedupe: if same type + strike already added, bump qty by 1 instead.
+      const existing = stratLegs.find(l => l.type === type && l.strike === actualStrike);
+      if (existing) { existing.qty += 1; stratRecalc(); return; }
+      stratLegs.push({
+        id: ++stratLegSeq,
+        type,
+        side: 'BUY',
+        strike: actualStrike,
+        qty: 1
       });
+      stratRecalc();
     }
 
-    function stratRecalc() {
-      if (!stratChain) return;
-      const legs = stratGetLegs();
-      const qty = parseInt(document.getElementById('strat-qty').value) || 1;
+    function stratRemoveLeg(id) {
+      stratLegs = stratLegs.filter(l => l.id !== id);
+      stratRecalc();
+    }
 
-      // Update leg row prices
-      legs.forEach(leg => {
-        const priceEl = document.getElementById('legprice_' + leg.id);
-        const strikeEl = document.getElementById('legstrike_' + leg.id);
-        if (priceEl) priceEl.textContent = leg.price > 0 ? '$' + leg.price.toFixed(2) : '—';
-        if (strikeEl) strikeEl.textContent = '$' + leg.strike.toFixed(0);
-        // sync slider label
-        const labelEl = document.getElementById('sllabel_' + leg.id);
-        if (labelEl) labelEl.textContent = '$' + leg.strike.toFixed(0);
+    function stratToggleSide(id) {
+      const leg = stratLegs.find(l => l.id === id);
+      if (!leg) return;
+      leg.side = leg.side === 'BUY' ? 'SELL' : 'BUY';
+      stratRecalc();
+    }
+
+    function stratSetQty(id, qty) {
+      const leg = stratLegs.find(l => l.id === id);
+      if (!leg) return;
+      leg.qty = Math.max(1, parseInt(qty) || 1);
+      stratRecalc();
+    }
+
+    function stratReset() {
+      stratLegs = [];
+      stratRecalc();
+    }
+
+    function stratSetSideTab(name) {
+      stratSideTab = name;
+      stratRefreshSideTabs();
+    }
+
+    function stratRefreshSideTabs() {
+      document.querySelectorAll('.strat-side-tab').forEach(b => {
+        b.classList.toggle('active', b.dataset.sideTab === stratSideTab);
       });
+      document.getElementById('strat-chain-body').classList.toggle('hidden', stratSideTab !== 'chain');
+      document.getElementById('strat-legs-body').classList.toggle('hidden', stratSideTab !== 'legs');
+    }
 
-      // Compute max profit / loss
-      const range = stratSpot * 0.2;
-      const points = 200;
-      const prices = Array.from({ length: points }, (_, i) => stratSpot - range + i * (range * 2 / points));
-      const pl = stratComputePL(prices);
-      const maxProfit = Math.max(...pl);
-      const maxLoss = Math.min(...pl);
+    // Quick-add: use nearest strike to spot for the given type.
+    function stratQuickAdd(type) {
+      if (!stratChain || !stratStrikes.length) return;
+      const nearest = stratStrikes.reduce((best, s) =>
+        Math.abs(s - stratSpot) < Math.abs(best - stratSpot) ? s : best, stratStrikes[0]);
+      stratAddLeg(type, nearest);
+    }
 
-      // Breakevens (zero crossings)
+    // Enrich a leg with mid price + greeks pulled fresh from the chain.
+    function stratEnrichLeg(leg) {
+      const c = stratLookupContract(leg.type, leg.strike);
+      return {
+        ...leg,
+        mark: stratMid(c),
+        bid: c?.bid ?? 0,
+        ask: c?.ask ?? 0,
+        iv: c?.volatility ?? null,
+        delta: c?.delta ?? 0,
+        gamma: c?.gamma ?? 0,
+        theta: c?.theta ?? 0,
+        vega: c?.vega ?? 0,
+        oi: c?.openInterest ?? 0,
+        contract: c
+      };
+    }
+
+    // P/L at expiration for a single price point.
+    function stratPLAt(price, legs) {
+      let pl = 0;
+      for (const leg of legs) {
+        const intrinsic = leg.type === 'call'
+          ? Math.max(0, price - leg.strike)
+          : Math.max(0, leg.strike - price);
+        const sign = leg.side === 'BUY' ? 1 : -1;
+        pl += sign * (intrinsic - leg.mark) * 100 * leg.qty;
+      }
+      return pl;
+    }
+
+    // Sample P/L across a price range. Anchor to spot; use widest strike ± 30%
+    // so the tails of far-OTM shorts are visible.
+    function stratPriceRange() {
+      if (!stratLegs.length || !stratSpot) {
+        const anchor = stratSpot || 100;
+        return { lo: anchor * 0.7, hi: anchor * 1.3 };
+      }
+      const strikes = stratLegs.map(l => l.strike);
+      const lo = Math.min(stratSpot, ...strikes) * 0.7;
+      const hi = Math.max(stratSpot, ...strikes) * 1.3;
+      return { lo: Math.max(0.01, lo), hi };
+    }
+
+    function stratComputeStats(legs) {
+      const netCost = legs.reduce((s, l) => {
+        const sign = l.side === 'BUY' ? 1 : -1;
+        return s + sign * l.mark * 100 * l.qty;
+      }, 0);
+      const totalDelta = legs.reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.delta * l.qty, 0);
+      const totalTheta = legs.reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.theta * l.qty, 0);
+      const totalVega = legs.reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.vega * l.qty, 0);
+      const totalGamma = legs.reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.gamma * l.qty, 0);
+
+      // Sample P/L along price range for min/max/breakevens.
+      const { lo, hi } = stratPriceRange();
+      const N = 400;
+      const step = (hi - lo) / (N - 1);
+      const prices = Array.from({ length: N }, (_, i) => lo + i * step);
+      const pls = prices.map(p => stratPLAt(p, legs));
+
+      // Endpoints beyond the widest strike behave linearly — check the sign of
+      // the slope at each tail to detect unbounded upside/downside risk.
+      const leftSlope = (pls[1] - pls[0]) / step;
+      const rightSlope = (pls[N - 1] - pls[N - 2]) / step;
+      const unboundedUp = rightSlope > 0.01;
+      const unboundedDn = leftSlope < -0.01;
+
+      const maxProfit = Math.max(...pls);
+      const maxLoss = Math.min(...pls);
+
+      // Breakevens: zero-crossings between consecutive samples.
       const bes = [];
-      for (let i = 1; i < pl.length; i++) {
-        if ((pl[i - 1] < 0 && pl[i] >= 0) || (pl[i - 1] >= 0 && pl[i] < 0)) {
-          const fraction = -pl[i - 1] / (pl[i] - pl[i - 1]);
-          bes.push(prices[i - 1] + fraction * (prices[i] - prices[i - 1]));
+      for (let i = 1; i < N; i++) {
+        if ((pls[i - 1] < 0 && pls[i] >= 0) || (pls[i - 1] >= 0 && pls[i] < 0)) {
+          const f = -pls[i - 1] / (pls[i] - pls[i - 1]);
+          bes.push(prices[i - 1] + f * step);
         }
       }
 
-      // Est. P(profit) — simple % of price range where PL > 0
-      const profitCount = pl.filter(v => v > 0).length;
-      const probProfit = ((profitCount / points) * 100).toFixed(0);
-
-      document.getElementById('ss-maxprofit').textContent = maxProfit > 0 ? '$' + maxProfit.toFixed(0) : '—';
-      document.getElementById('ss-maxprofit').style.color = maxProfit > 0 ? 'var(--accent)' : 'var(--text3)';
-      document.getElementById('ss-maxloss').textContent = '$' + maxLoss.toFixed(0);
-      document.getElementById('ss-be').textContent = bes.length ? bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—';
-      document.getElementById('ss-prob').textContent = probProfit + '%';
-      document.getElementById('ss-prob').style.color = probProfit >= 50 ? 'var(--green)' : 'var(--red)';
-
-      drawStrategyChart();
+      return {
+        netCost, totalDelta, totalTheta, totalVega, totalGamma,
+        maxProfit, maxLoss, unboundedUp, unboundedDn, bes,
+        prices, pls
+      };
     }
 
-    function drawStrategyChart() {
+    // Not-symmetric heuristic: unequal net call vs put contracts.
+    function stratWarnings(legs, stats) {
+      const warns = [];
+      if (stats.unboundedUp) warns.push('Uncapped loss above the highest strike (naked short call exposure).');
+      else if (stats.unboundedDn) warns.push('Uncapped loss below the lowest strike (naked short put exposure).');
+      const calls = legs.filter(l => l.type === 'call').reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.qty, 0);
+      const puts = legs.filter(l => l.type === 'put').reduce((s, l) => s + (l.side === 'BUY' ? 1 : -1) * l.qty, 0);
+      if (legs.length >= 2 && calls !== -puts && calls !== puts && Math.abs(Math.abs(calls) - Math.abs(puts)) >= 1) {
+        warns.push('Position not symmetric — call and put leg counts differ.');
+      }
+      return warns;
+    }
+
+    function stratFmtMoney(v) {
+      if (!isFinite(v)) return '—';
+      const abs = Math.abs(v);
+      const sign = v < 0 ? '-' : '';
+      if (abs >= 1_000_000) return sign + '$' + (abs / 1_000_000).toFixed(2) + 'M';
+      if (abs >= 1_000) return sign + '$' + (abs / 1_000).toFixed(1) + 'k';
+      return sign + '$' + abs.toFixed(0);
+    }
+
+    function stratRecalc() {
+      stratRenderChain();
+      stratRenderLegs();
+
+      const enriched = stratLegs.map(stratEnrichLeg);
+      const hasLegs = enriched.length > 0;
+
+      // Stats strip
+      const setVal = (id, txt, cls) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = txt;
+        el.classList.remove('green', 'red', 'accent', 'unlimited');
+        if (cls) el.classList.add(cls);
+      };
+
+      if (!hasLegs) {
+        setVal('ss-net', '—');
+        setVal('ss-maxprofit', '—');
+        setVal('ss-maxloss', '—');
+        setVal('ss-be', '—');
+        setVal('ss-delta', '—');
+        setVal('ss-theta', '—');
+        setVal('ss-vega', '—');
+        setVal('ss-gamma', '—');
+        document.getElementById('strat-warn').classList.add('hidden');
+        drawStratChart(null);
+        return;
+      }
+
+      const stats = stratComputeStats(enriched);
+
+      // Net cost: positive = debit (money out), negative = credit (money in).
+      const netLbl = stats.netCost >= 0
+        ? '(Debit) ' + stratFmtMoney(stats.netCost)
+        : '(Credit) ' + stratFmtMoney(-stats.netCost);
+      setVal('ss-net', netLbl, stats.netCost >= 0 ? 'red' : 'green');
+
+      setVal('ss-maxprofit',
+        stats.unboundedUp ? 'unlimited' : stratFmtMoney(stats.maxProfit),
+        stats.unboundedUp ? 'unlimited' : 'green');
+      setVal('ss-maxloss',
+        stats.unboundedDn ? 'unlimited' : stratFmtMoney(stats.maxLoss),
+        stats.unboundedDn ? 'unlimited' : 'red');
+      setVal('ss-be', stats.bes.length ? stats.bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—');
+      setVal('ss-delta', stats.totalDelta.toFixed(2));
+      setVal('ss-theta', stats.totalTheta.toFixed(2));
+      setVal('ss-vega', stats.totalVega.toFixed(2));
+      setVal('ss-gamma', stats.totalGamma.toFixed(3));
+
+      // Warnings
+      const warns = stratWarnings(enriched, stats);
+      const warnEl = document.getElementById('strat-warn');
+      if (warns.length) {
+        warnEl.classList.remove('hidden');
+        document.getElementById('strat-warn-text').textContent = warns.join(' · ');
+      } else {
+        warnEl.classList.add('hidden');
+      }
+
+      drawStratChart({ enriched, stats });
+    }
+
+    function stratRenderLegs() {
+      const list = document.getElementById('strat-legs-list');
+      const empty = document.getElementById('strat-empty-legs');
+      const countEl = document.getElementById('strat-leg-count');
+      if (countEl) countEl.textContent = '(' + stratLegs.length + ')';
+      if (!stratLegs.length) {
+        list.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+      list.innerHTML = stratLegs.map(leg => {
+        const enr = stratEnrichLeg(leg);
+        const sideClass = leg.side === 'BUY' ? 'buy' : 'sell';
+        return `<div class="strat-leg-card ${sideClass}">
+          <div class="strat-leg-row1">
+            <span class="strat-leg-type-badge ${leg.type}">${leg.type === 'call' ? 'CALL' : 'PUT'}</span>
+            <span class="strat-leg-title">$${leg.strike.toFixed(2)}</span>
+            <div class="strat-side-toggle">
+              <button class="${leg.side === 'BUY' ? 'active buy' : ''}" onclick="stratSetSide(${leg.id}, 'BUY')">B</button>
+              <button class="${leg.side === 'SELL' ? 'active sell' : ''}" onclick="stratSetSide(${leg.id}, 'SELL')">S</button>
+            </div>
+            <input type="number" class="strat-qty-input" min="1" value="${leg.qty}"
+              onchange="stratSetQty(${leg.id}, this.value)">
+            <button class="strat-leg-close" onclick="stratRemoveLeg(${leg.id})">×</button>
+          </div>
+          <div class="strat-leg-row2">
+            <div class="strat-leg-metric">
+              <span class="strat-leg-metric-lbl">Mark</span>
+              <span class="strat-leg-metric-val">$${enr.mark.toFixed(2)}</span>
+            </div>
+            <div class="strat-leg-metric">
+              <span class="strat-leg-metric-lbl">Delta</span>
+              <span class="strat-leg-metric-val">${enr.delta.toFixed(3)}</span>
+            </div>
+            <div class="strat-leg-metric">
+              <span class="strat-leg-metric-lbl">IV</span>
+              <span class="strat-leg-metric-val">${enr.iv != null ? (enr.iv).toFixed(1) + '%' : '—'}</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function stratSetSide(id, side) {
+      const leg = stratLegs.find(l => l.id === id);
+      if (!leg || leg.side === side) return;
+      leg.side = side;
+      stratRecalc();
+    }
+
+    function stratRenderChain() {
+      const tbody = document.getElementById('strat-chain-tbody');
+      if (!tbody) return;
+      if (!stratChain || !stratStrikes.length) {
+        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Load a chain to begin.</td></tr>`;
+        return;
+      }
+      // Show strikes within ±20% of spot to keep the table scannable.
+      const lo = stratSpot * 0.8, hi = stratSpot * 1.2;
+      const visible = stratStrikes.filter(s => s >= lo && s <= hi);
+      const atm = visible.reduce((best, s) =>
+        Math.abs(s - stratSpot) < Math.abs(best - stratSpot) ? s : best, visible[0]);
+      const fmt = v => v > 0 ? v.toFixed(2) : '—';
+      const fmtIV = v => v != null ? v.toFixed(1) : '—';
+      const fmtOI = v => v ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v) : '—';
+
+      tbody.innerHTML = visible.map(strike => {
+        const call = stratLookupContract('call', strike);
+        const put = stratLookupContract('put', strike);
+        const atmCls = strike === atm ? 'atm-row' : '';
+        return `<tr class="${atmCls}">
+          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})">${fmt(call?.bid)}</td>
+          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})">${fmt(call?.ask)}</td>
+          <td>${fmtIV(call?.volatility)}</td>
+          <td>${fmtOI(call?.openInterest)}</td>
+          <td class="strike-cell">${strike.toFixed(strike >= 100 ? 0 : 2)}</td>
+          <td>${fmtOI(put?.openInterest)}</td>
+          <td>${fmtIV(put?.volatility)}</td>
+          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})">${fmt(put?.bid)}</td>
+          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})">${fmt(put?.ask)}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function drawStratChart(bundle) {
       const canvas = document.getElementById('strat-chart');
-      if (!canvas || !stratChain) return;
+      if (!canvas) return;
       const wrap = document.getElementById('strat-chart-wrap');
       const W = wrap.offsetWidth || 600;
-      const H = 240;
-      canvas.width = W * window.devicePixelRatio;
-      canvas.height = H * window.devicePixelRatio;
+      const H = wrap.offsetHeight || 340;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
       canvas.style.width = W + 'px';
       canvas.style.height = H + 'px';
       const ctx = canvas.getContext('2d');
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, W, H);
 
-      const PAD_L = 52, PAD_R = 16, PAD_T = 14, PAD_B = 28;
+      const PAD_L = 60, PAD_R = 20, PAD_T = 20, PAD_B = 34;
       const cW = W - PAD_L - PAD_R, cH = H - PAD_T - PAD_B;
 
-      const range = stratSpot * 0.15;
-      const points = 120;
-      const prices = Array.from({ length: points }, (_, i) => stratSpot - range + i * (range * 2 / points));
-      const pl = stratComputePL(prices);
-      const minPL = Math.min(...pl, 0), maxPL = Math.max(...pl, 0);
-      const plRange = maxPL - minPL || 1;
-
-      const toX = i => PAD_L + (i / (points - 1)) * cW;
-      const toY = v => PAD_T + (1 - (v - minPL) / plRange) * cH;
-      const zeroY = toY(0);
-
-      // Grid lines
+      // Baseline grid + zero line, drawn even when there are no legs so the
+      // panel doesn't look broken on first load.
       ctx.strokeStyle = 'rgba(255,255,255,0.05)';
       ctx.lineWidth = 1;
       [0.25, 0.5, 0.75].forEach(f => {
@@ -22897,109 +23238,161 @@
         ctx.beginPath(); ctx.moveTo(PAD_L, y); ctx.lineTo(W - PAD_R, y); ctx.stroke();
       });
 
+      if (!bundle) {
+        ctx.fillStyle = 'rgba(150,160,180,0.5)';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Add a leg to see the payoff diagram.', W / 2, H / 2);
+        return;
+      }
+
+      const { stats } = bundle;
+      const { prices, pls } = stats;
+      const N = prices.length;
+      const minPL = Math.min(...pls, 0), maxPL = Math.max(...pls, 0);
+      const plRange = maxPL - minPL || 1;
+
+      const toX = i => PAD_L + (i / (N - 1)) * cW;
+      const toY = v => PAD_T + (1 - (v - minPL) / plRange) * cH;
+      const zeroY = toY(0);
+
       // Zero line
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
       ctx.setLineDash([4, 4]);
       ctx.beginPath(); ctx.moveTo(PAD_L, zeroY); ctx.lineTo(W - PAD_R, zeroY); ctx.stroke();
       ctx.setLineDash([]);
 
-      // Profit fill (above zero)
-      ctx.beginPath();
-      ctx.moveTo(toX(0), zeroY);
-      pl.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
-      ctx.lineTo(toX(points - 1), zeroY);
-      ctx.closePath();
-      const gradUp = ctx.createLinearGradient(0, PAD_T, 0, zeroY);
-      gradUp.addColorStop(0, 'rgba(220,255,30,0.30)');
-      gradUp.addColorStop(1, 'rgba(220,255,30,0.04)');
-      ctx.fillStyle = gradUp; ctx.fill();
+      // Split fill: profit region above zero (green), loss region below (red).
+      // Clip to positive area then fill the P/L polygon; repeat below.
+      const drawFilledRegion = (fillStyle, above) => {
+        ctx.save();
+        ctx.beginPath();
+        if (above) {
+          ctx.rect(PAD_L, PAD_T, cW, zeroY - PAD_T);
+        } else {
+          ctx.rect(PAD_L, zeroY, cW, (H - PAD_B) - zeroY);
+        }
+        ctx.clip();
+        ctx.beginPath();
+        ctx.moveTo(toX(0), zeroY);
+        for (let i = 0; i < N; i++) ctx.lineTo(toX(i), toY(pls[i]));
+        ctx.lineTo(toX(N - 1), zeroY);
+        ctx.closePath();
+        ctx.fillStyle = fillStyle;
+        ctx.fill();
+        ctx.restore();
+      };
 
-      // Loss fill (below zero)
-      ctx.beginPath();
-      ctx.moveTo(toX(0), zeroY);
-      pl.forEach((v, i) => ctx.lineTo(toX(i), toY(v)));
-      ctx.lineTo(toX(points - 1), zeroY);
-      ctx.closePath();
+      const gradUp = ctx.createLinearGradient(0, PAD_T, 0, zeroY);
+      gradUp.addColorStop(0, 'rgba(38, 217, 127, 0.35)');
+      gradUp.addColorStop(1, 'rgba(38, 217, 127, 0.02)');
+      drawFilledRegion(gradUp, true);
+
       const gradDn = ctx.createLinearGradient(0, zeroY, 0, H - PAD_B);
-      gradDn.addColorStop(0, 'rgba(180,35,240,0.04)');
-      gradDn.addColorStop(1, 'rgba(180,35,240,0.25)');
-      ctx.fillStyle = gradDn; ctx.fill();
+      gradDn.addColorStop(0, 'rgba(255, 59, 92, 0.02)');
+      gradDn.addColorStop(1, 'rgba(255, 59, 92, 0.35)');
+      drawFilledRegion(gradDn, false);
 
       // P/L line
       ctx.beginPath();
-      pl.forEach((v, i) => i === 0 ? ctx.moveTo(toX(i), toY(v)) : ctx.lineTo(toX(i), toY(v)));
+      for (let i = 0; i < N; i++) {
+        const x = toX(i), y = toY(pls[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
       ctx.strokeStyle = '#DCFF1E';
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Spot price vertical dashed line
-      const spotIdx = points / 2;
-      ctx.strokeStyle = 'rgba(59,140,255,0.6)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(toX(spotIdx), PAD_T); ctx.lineTo(toX(spotIdx), H - PAD_B); ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Spot label
-      ctx.fillStyle = 'rgba(59,140,255,0.9)';
-      ctx.font = 'bold 9px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('SPOT ' + stratSpot.toFixed(2), toX(spotIdx), PAD_T - 3);
-
-      // Strike vertical lines
-      const legs = stratGetLegs();
-      legs.forEach(leg => {
-        const legX = toX(prices.findIndex(p => p >= leg.strike));
-        if (legX < PAD_L || legX > W - PAD_R) return;
-        ctx.strokeStyle = leg.color.replace('var(--accent)', '#DCFF1E').replace('var(--purple)', '#B423F0');
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 3]);
-        ctx.beginPath(); ctx.moveTo(legX, PAD_T); ctx.lineTo(legX, H - PAD_B); ctx.stroke();
+      // Spot vertical dashed line
+      const spotIdx = Math.round(((stratSpot - prices[0]) / (prices[N - 1] - prices[0])) * (N - 1));
+      if (spotIdx >= 0 && spotIdx < N) {
+        const sx = toX(spotIdx);
+        ctx.strokeStyle = 'rgba(59,140,255,0.6)';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(sx, PAD_T); ctx.lineTo(sx, H - PAD_B); ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = leg.color.replace('var(--accent)', '#DCFF1E').replace('var(--purple)', '#B423F0');
-        ctx.font = '8px monospace';
+        ctx.fillStyle = 'rgba(59,140,255,0.9)';
+        ctx.font = 'bold 9px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText('$' + leg.strike.toFixed(0), legX, H - PAD_B + 10);
+        ctx.fillText('SPOT $' + stratSpot.toFixed(2), sx, PAD_T - 6);
+      }
+
+      // Strike vertical ticks
+      const uniqStrikes = [...new Set(bundle.enriched.map(l => l.strike))];
+      uniqStrikes.forEach(strike => {
+        const idx = Math.round(((strike - prices[0]) / (prices[N - 1] - prices[0])) * (N - 1));
+        if (idx < 0 || idx >= N) return;
+        const x = toX(idx);
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.setLineDash([2, 4]);
+        ctx.beginPath(); ctx.moveTo(x, PAD_T); ctx.lineTo(x, H - PAD_B); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(150,160,180,0.85)';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('$' + strike.toFixed(strike >= 100 ? 0 : 2), x, H - PAD_B + 14);
       });
 
-      // Y axis labels
-      ctx.fillStyle = 'rgba(120,130,160,0.7)';
+      // Y-axis labels
+      ctx.fillStyle = 'rgba(150,160,180,0.7)';
       ctx.font = '9px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText('$' + maxPL.toFixed(0), PAD_L - 4, PAD_T + 4);
-      ctx.fillText('$0', PAD_L - 4, zeroY + 4);
-      ctx.fillText('$' + minPL.toFixed(0), PAD_L - 4, H - PAD_B);
+      ctx.fillText(stratFmtMoney(maxPL), PAD_L - 6, PAD_T + 8);
+      ctx.fillText('$0', PAD_L - 6, zeroY + 4);
+      ctx.fillText(stratFmtMoney(minPL), PAD_L - 6, H - PAD_B);
 
-      // Hover cursor wiring (once)
+      // X-axis labels (5 evenly spaced prices)
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 4; i++) {
+        const idx = Math.round((i / 4) * (N - 1));
+        ctx.fillText('$' + prices[idx].toFixed(prices[idx] >= 100 ? 0 : 2), toX(idx), H - PAD_B + 24);
+      }
+
+      // Cache for hover handler
+      canvas._pl = { prices, pls, N, PAD_L, PAD_R, PAD_T, PAD_B, cW, cH, W, H, toX, toY, zeroY };
+
       if (!canvas._hoverBound) {
         canvas._hoverBound = true;
-        canvas.addEventListener('mousemove', (e) => {
-          const rect = canvas.getBoundingClientRect();
-          const mx = e.clientX - rect.left;
-          const idx = Math.round(((mx - PAD_L) / cW) * (points - 1));
-          if (idx < 0 || idx >= points) { document.getElementById('strat-cursor').style.display = 'none'; return; }
-          const price = prices[idx];
-          const profit = pl[idx];
+        canvas.addEventListener('mousemove', stratOnHover);
+        canvas.addEventListener('mouseleave', () => {
           const cur = document.getElementById('strat-cursor');
-          cur.style.display = 'block';
-          cur.style.left = (mx + 12) + 'px';
-          cur.style.top = (e.clientY - rect.top - 32) + 'px';
-          cur.innerHTML = `<div style="font-size:10px;color:var(--text3)">Price: $${price.toFixed(2)}</div><div style="font-weight:700;color:${profit >= 0 ? 'var(--accent)' : 'var(--red)'};">${profit >= 0 ? '+' : ''}$${profit.toFixed(0)}</div>`;
+          if (cur) cur.style.display = 'none';
+          stratRedrawOverlay();
         });
-        canvas.addEventListener('mouseleave', () => { document.getElementById('strat-cursor').style.display = 'none'; });
       }
+      stratRedrawOverlay();
     }
 
-    function stratTypeChange() {
-      const type = document.getElementById('strat-type').value;
-      const config = STRAT_CONFIGS[type];
-      document.getElementById('strat-type-label').textContent = config?.label ?? type;
-      stratBuildUI();
-      stratRecalc();
+    // Redraw only the crosshair overlay on top of the cached chart (called on
+    // hover). Avoids recomputing the whole payoff on every mouse move.
+    function stratRedrawOverlay() { /* no-op: overlay lives on cursor tooltip */ }
+
+    function stratOnHover(e) {
+      const canvas = document.getElementById('strat-chart');
+      if (!canvas?._pl) return;
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+      const { prices, pls, N, PAD_L, cW } = canvas._pl;
+      const idx = Math.round(((mx - PAD_L) / cW) * (N - 1));
+      const cur = document.getElementById('strat-cursor');
+      if (idx < 0 || idx >= N) { cur.style.display = 'none'; return; }
+      const price = prices[idx];
+      const profit = pls[idx];
+      const wrapRect = document.getElementById('strat-chart-wrap').getBoundingClientRect();
+      cur.style.display = 'block';
+      cur.style.left = Math.min(wrapRect.width - 140, mx + 14) + 'px';
+      cur.style.top = Math.max(4, my - 46) + 'px';
+      const pct = ((price - stratSpot) / stratSpot * 100);
+      cur.innerHTML =
+        `<div style="font-size:10px;color:var(--text3)">Price</div>` +
+        `<div style="font-weight:800;color:var(--text);margin-bottom:4px">$${price.toFixed(2)} ` +
+        `<span style="color:${pct >= 0 ? 'var(--green)' : 'var(--red)'};font-size:10px">${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%</span></div>` +
+        `<div style="font-size:10px;color:var(--text3)">P/L at expiry</div>` +
+        `<div style="font-weight:800;color:${profit >= 0 ? 'var(--green)' : 'var(--red)'}">${profit >= 0 ? '+' : ''}${stratFmtMoney(Math.abs(profit) * (profit < 0 ? -1 : 1))}</div>`;
     }
 
     function stratSymbolChange() {
-      // debounce load
       clearTimeout(stratSymbolChange._t);
       stratSymbolChange._t = setTimeout(() => stratLoadExpirations(), 700);
     }
@@ -23012,7 +23405,9 @@
         const d = await apiGet(`/api/expirationchain?symbol=${sym}`);
         if (!d.ok) throw new Error(d.error);
         const exps = (d.data?.expirationList ?? []).slice(0, 20);
-        sel.innerHTML = exps.map((e, i) => `<option value="${e.expirationDate}" ${i === 1 ? 'selected' : ''}>${e.expirationDate} (${e.daysToExpiration}d)</option>`).join('');
+        sel.innerHTML = exps.map((e, i) =>
+          `<option value="${e.expirationDate}" ${i === 1 ? 'selected' : ''}>${e.expirationDate} (${e.daysToExpiration}d)</option>`
+        ).join('');
         await stratLoadChain();
       } catch (e) {
         sel.innerHTML = `<option>${e.message}</option>`;
@@ -23026,69 +23421,34 @@
       if (!expiry || expiry === 'Loading…') return;
 
       try {
-        const q = expiry ? `&fromDate=${expiry}&toDate=${expiry}` : '';
-        const d = await apiGet(`/api/chain?symbol=${sym}&contractType=ALL&strikeCount=40&includeUnderlyingQuote=true${q}`);
+        const q = `&fromDate=${expiry}&toDate=${expiry}`;
+        const d = await apiGet(`/api/chain?symbol=${sym}&contractType=ALL&strikeCount=50&includeUnderlyingQuote=true${q}`);
         if (!d.ok) throw new Error(d.error);
 
         stratChain = d.data;
         stratSpot = stratChain.underlyingPrice ?? 0;
 
-        // Build sorted strike list
         const strikeSet = new Set();
-        const addStrikes = map => { if (!map) return; Object.values(map).forEach(s => Object.keys(s).forEach(k => strikeSet.add(parseFloat(k)))); };
+        const addStrikes = map => {
+          if (!map) return;
+          Object.values(map).forEach(s => Object.keys(s).forEach(k => strikeSet.add(parseFloat(k))));
+        };
         addStrikes(stratChain.callExpDateMap);
         addStrikes(stratChain.putExpDateMap);
         stratStrikes = [...strikeSet].sort((a, b) => a - b);
 
-        stratBuildUI();
+        // If any existing legs reference strikes no longer in the chain, keep
+        // them — stratLookupContract will still nearest-match.
         stratRecalc();
       } catch (e) {
         console.error('stratLoadChain:', e);
       }
     }
 
-    function stratBuildUI() {
-      const type = document.getElementById('strat-type').value;
-      const config = STRAT_CONFIGS[type];
-      if (!config) return;
-
-      const n = stratStrikes.length;
-      const atmIdx = stratStrikes.reduce((best, s, i) => Math.abs(s - stratSpot) < Math.abs(stratStrikes[best] - stratSpot) ? i : best, 0);
-
-      // Build leg rows
-      document.getElementById('strat-legs').innerHTML = config.legs.map(leg => {
-        const targetStrike = stratSpot * (1 + leg.offsetPct);
-        const defIdx = stratStrikes.reduce((best, s, i) => Math.abs(s - targetStrike) < Math.abs(stratStrikes[best] - targetStrike) ? i : best, atmIdx);
-        const defStrike = stratStrikes[defIdx] ?? stratSpot;
-        return `<div class="leg-row">
-          <span class="leg-badge ${leg.dir === 'BUY' ? 'buy' : 'sell'}">${leg.dir}</span>
-          <span style="font-size:11px;color:var(--text2);flex:1">${leg.label}</span>
-          <span id="legstrike_${leg.id}" style="font-size:12px;font-weight:700;color:var(--text)">$${defStrike.toFixed(0)}</span>
-          <span id="legprice_${leg.id}" style="font-size:10px;color:var(--text3);min-width:48px;text-align:right">—</span>
-        </div>`;
-      }).join('');
-
-      // Build sliders
-      document.getElementById('strat-sliders').innerHTML = config.legs.map(leg => {
-        const targetStrike = stratSpot * (1 + leg.offsetPct);
-        const defIdx = stratStrikes.reduce((best, s, i) => Math.abs(s - targetStrike) < Math.abs(stratStrikes[best] - targetStrike) ? i : best, atmIdx);
-        const colorCss = leg.color.replace('var(--accent)', '#DCFF1E').replace('var(--purple)', '#B423F0');
-        return `<div class="slider-row">
-          <span class="leg-badge ${leg.dir === 'BUY' ? 'buy' : 'sell'}" style="font-size:9px;padding:2px 6px">${leg.dir.charAt(0)}</span>
-          <span style="font-size:10px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${leg.label}</span>
-          <span id="sllabel_${leg.id}" style="font-size:11px;font-weight:700;color:${colorCss};min-width:40px;text-align:right">$${(stratStrikes[defIdx] ?? stratSpot).toFixed(0)}</span>
-          <input type="range" class="strat-slider" id="sl_${leg.id}"
-            min="0" max="${n - 1}" step="1" value="${defIdx}"
-            style="--thumb-color:${colorCss}"
-            oninput="stratRecalc()">
-        </div>`;
-      }).join('');
-    }
-
-    // Legacy wrapper so navTo still works
+    // Legacy entry point wired to nav.
     async function runStrategyTest() {
       if (!isConnected) { connectSchwab(); return; }
-      if (!stratChain) await stratLoadChain(true);
+      if (!stratChain) await stratLoadExpirations();
     }
 
     // ═══════════════════════════════════════════════════════
