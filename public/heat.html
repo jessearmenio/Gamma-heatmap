@@ -6091,6 +6091,41 @@
       gap: 4px;
       padding: 10px 12px 0 12px;
       border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    /* Strike-count selector, pinned to the right of the Chain/Legs tabs */
+    .strat-chain-count-wrap {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 6px;
+    }
+
+    .strat-chain-count-lbl {
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .strat-chain-count-sel {
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .strat-chain-count-sel:focus {
+      outline: none;
+      border-color: var(--accent);
     }
 
     .strat-side-tab {
@@ -11864,6 +11899,15 @@
                 <button class="strat-side-tab" data-side-tab="legs" onclick="stratSetSideTab('legs')">
                   Legs <span id="strat-leg-count" style="color:var(--text3);">(0)</span>
                 </button>
+                <div class="strat-chain-count-wrap" id="strat-chain-count-wrap">
+                  <span class="strat-chain-count-lbl">Strikes</span>
+                  <select id="strat-chain-count" class="strat-chain-count-sel" onchange="stratChangeChainCount(this.value)">
+                    <option value="25">25</option>
+                    <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                    <option value="all">All</option>
+                  </select>
+                </div>
               </div>
               <div class="strat-side-body" id="strat-chain-body">
                 <table class="strat-chain-table" id="strat-chain-table">
@@ -23082,6 +23126,10 @@
     let stratLegs = [];          // user-added legs
     let stratLegSeq = 0;
     let stratSideTab = 'chain';  // 'chain' | 'legs'
+    let stratChainShow = '50';   // strikes to display: '25' | '50' | '100' | 'all'
+    // Display count → API strikeCount to fetch (a little padding so the band is
+    // centered on ATM). 'all' pulls the full listed chain.
+    const STRAT_CHAIN_FETCH = { '25': 30, '50': 55, '100': 110, 'all': 500 };
     let stratExpiryDate = null;  // Date object for the selected expiry
     // Slider granularity: 30-minute slots. A "slot" = one tick of the slider.
     // stratMaxSlots  = total half-hours from now to expiry
@@ -23188,6 +23236,19 @@
     function stratSetSideTab(name) {
       stratSideTab = name;
       stratRefreshSideTabs();
+    }
+
+    // Change how many strikes the chain shows. Larger counts need more data, so
+    // refetch (the API strikeCount is derived from the selection); smaller ones
+    // could re-render in place but refetching keeps the band ATM-centered.
+    function stratChangeChainCount(val) {
+      stratChainShow = val;
+      if (stratChain && isConnected) {
+        stratLoadChain();
+      } else {
+        stratRenderChain();
+        requestAnimationFrame(stratCenterChainOnSpot);
+      }
     }
 
     function stratRefreshSideTabs() {
@@ -23538,11 +23599,21 @@
         tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text3);">Load a chain to begin.</td></tr>`;
         return;
       }
-      // Show strikes within ±20% of spot to keep the table scannable.
-      const lo = stratSpot * 0.8, hi = stratSpot * 1.2;
-      const visible = stratStrikes.filter(s => s >= lo && s <= hi);
-      const atm = visible.reduce((best, s) =>
-        Math.abs(s - stratSpot) < Math.abs(best - stratSpot) ? s : best, visible[0]);
+      // Show a fixed number of strikes centered on ATM (or all listed).
+      const atm = stratStrikes.reduce((best, s) =>
+        Math.abs(s - stratSpot) < Math.abs(best - stratSpot) ? s : best, stratStrikes[0]);
+      let visible;
+      if (stratChainShow === 'all') {
+        visible = stratStrikes;
+      } else {
+        const count = parseInt(stratChainShow) || 50;
+        const atmIdx = stratStrikes.indexOf(atm);
+        const half = Math.floor(count / 2);
+        let start = Math.max(0, atmIdx - half);
+        let end = Math.min(stratStrikes.length, start + count);
+        start = Math.max(0, end - count);   // backfill if we hit the top edge
+        visible = stratStrikes.slice(start, end);
+      }
       const fmt = v => v > 0 ? v.toFixed(2) : '—';
       const fmtCnt = v => v ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v) : '—';
 
@@ -23926,7 +23997,8 @@
 
       try {
         const q = `&fromDate=${expiry}&toDate=${expiry}`;
-        const d = await apiGet(`/api/chain?symbol=${sym}&contractType=ALL&strikeCount=50&includeUnderlyingQuote=true${q}`);
+        const fetchCount = STRAT_CHAIN_FETCH[stratChainShow] || 55;
+        const d = await apiGet(`/api/chain?symbol=${sym}&contractType=ALL&strikeCount=${fetchCount}&includeUnderlyingQuote=true${q}`);
         if (!d.ok) throw new Error(d.error);
 
         stratChain = d.data;
