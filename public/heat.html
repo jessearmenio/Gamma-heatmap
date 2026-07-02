@@ -16087,7 +16087,10 @@
     let ovState = {
       mode: 'swing',
       sectorTf: '1d',
-      chartTf: '1D',
+      // Match the Heat Seeker chart's default timeframe. '1D' ran the
+      // slice(0,60) branch and never synced to the active "3M" button, so the
+      // overview chart rendered a different (sparser) bar set than Heat Seeker.
+      chartTf: '3M',
       snapshot: null,
       spyCandles: [],
       intraday: {}, // cache: { '5m': [...], '10m': [...], '1H': [...] }
