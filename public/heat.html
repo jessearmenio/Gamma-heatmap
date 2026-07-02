@@ -6170,6 +6170,23 @@
       background: rgba(180, 35, 240, 0.1);
     }
 
+    /* Persistent "selected" accent when a strike is in the position */
+    .strat-chain-table td.chain-clickable.selected {
+      background: rgba(220, 255, 30, 0.22);
+      color: var(--text);
+      font-weight: 700;
+      box-shadow: inset 0 -2px 0 var(--accent);
+    }
+
+    .strat-chain-table td.chain-clickable.put.selected {
+      background: rgba(180, 35, 240, 0.22);
+      box-shadow: inset 0 -2px 0 #B423F0;
+    }
+
+    .strat-chain-table td.chain-clickable.selected.side-sell {
+      box-shadow: inset 0 -2px 0 var(--red);
+    }
+
     .strat-chain-table tr.atm-row td.strike-cell {
       background: rgba(59, 140, 255, 0.15);
       color: var(--blue);
@@ -23375,22 +23392,39 @@
       const fmtIV = v => v != null ? v.toFixed(1) : '—';
       const fmtOI = v => v ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v) : '—';
 
+      // Index existing legs so we can highlight matching call/put cells.
+      // Keyed by "type:strike". Value tracks side (mixed => 'both').
+      const selectedLegs = new Map();
+      for (const leg of stratLegs) {
+        const key = leg.type + ':' + leg.strike;
+        const prev = selectedLegs.get(key);
+        selectedLegs.set(key, prev && prev !== leg.side ? 'both' : leg.side);
+      }
+      const selectionClass = (type, strike) => {
+        const side = selectedLegs.get(type + ':' + strike);
+        if (!side) return '';
+        // side-sell recolors the underline red; BUY / both keep the type's accent.
+        return side === 'SELL' ? ' selected side-sell' : ' selected';
+      };
+
       tbody.innerHTML = visible.map(strike => {
         const call = stratLookupContract('call', strike);
         const put = stratLookupContract('put', strike);
         const atmCls = strike === atm ? 'atm-row' : '';
+        const callSel = selectionClass('call', strike);
+        const putSel = selectionClass('put', strike);
         // Whole call-side row adds a CALL leg; whole put-side adds a PUT.
         // Only the center Strike cell is inert (visually separates the two sides).
         return `<tr class="${atmCls}">
-          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.bid)}</td>
-          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.ask)}</td>
-          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtIV(call?.volatility)}</td>
-          <td class="chain-clickable" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtOI(call?.openInterest)}</td>
+          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.bid)}</td>
+          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.ask)}</td>
+          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtIV(call?.volatility)}</td>
+          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtOI(call?.openInterest)}</td>
           <td class="strike-cell">${strike.toFixed(strike >= 100 ? 0 : 2)}</td>
-          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtOI(put?.openInterest)}</td>
-          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtIV(put?.volatility)}</td>
-          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.bid)}</td>
-          <td class="chain-clickable put" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.ask)}</td>
+          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtOI(put?.openInterest)}</td>
+          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtIV(put?.volatility)}</td>
+          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.bid)}</td>
+          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.ask)}</td>
         </tr>`;
       }).join('');
     }
