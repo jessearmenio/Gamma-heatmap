@@ -16008,11 +16008,17 @@
       if (price == null || !isFinite(price)) { valEl.textContent = '—'; if (chgEl) chgEl.textContent = ''; return; }
       valEl.textContent = Number(price).toFixed(2);
       if (chgEl) {
+        const dol = q.netChange;
         const pct = q.netPercentChange;
-        if (pct == null || !isFinite(pct)) { chgEl.textContent = ''; chgEl.className = 'ov-cor1m-chg'; }
-        else {
-          chgEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
-          chgEl.className = 'ov-cor1m-chg ' + (pct >= 0 ? 'pos' : 'neg');
+        if ((dol == null || !isFinite(dol)) && (pct == null || !isFinite(pct))) {
+          chgEl.textContent = ''; chgEl.className = 'ov-cor1m-chg';
+        } else {
+          // Dollar change first, percent in parentheses: "-0.70 (-11.74%)"
+          const up = (dol ?? pct) >= 0;
+          const dolStr = (dol != null && isFinite(dol)) ? (up ? '+' : '') + dol.toFixed(2) : '';
+          const pctStr = (pct != null && isFinite(pct)) ? '(' + (up ? '+' : '') + pct.toFixed(2) + '%)' : '';
+          chgEl.textContent = [dolStr, pctStr].filter(Boolean).join(' ');
+          chgEl.className = 'ov-cor1m-chg ' + (up ? 'pos' : 'neg');
         }
       }
     }
