@@ -3875,6 +3875,50 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
+    }
+
+    /* COR1M realtime price shown right of the SPY chart title */
+    .ov-cor1m-price {
+      margin-right: auto;
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .ov-cor1m-sep {
+      color: var(--text3);
+      font-weight: 400;
+      opacity: 0.6;
+    }
+
+    .ov-cor1m-tag {
+      color: var(--text3);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .ov-cor1m-val {
+      color: #FFEB3C;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ov-cor1m-chg {
+      font-size: 10px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ov-cor1m-chg.pos {
+      color: var(--green);
+    }
+
+    .ov-cor1m-chg.neg {
+      color: var(--red);
     }
 
     #ov-spy-chart {
@@ -6368,6 +6412,9 @@
       font-size: 11px;
       font-weight: 700;
       text-align: center;
+      /* Render the native up/down spinner in the light (white) dark-mode style
+         so it matches the number instead of the dim default gray. */
+      color-scheme: dark;
     }
 
     /* Editable premium / cost-basis field on each leg card */
@@ -10753,6 +10800,12 @@
             <div id="ov-chart-card">
               <div id="ov-chart-header">
                 <span class="card-title">SPY &#8212; S&amp;P 500 ETF</span>
+                <span id="ov-cor1m-price" class="ov-cor1m-price" title="CBOE 1-Month Implied Correlation Index (real-time)">
+                  <span class="ov-cor1m-sep">|</span>
+                  <span class="ov-cor1m-tag">COR1M</span>
+                  <span class="ov-cor1m-val" id="ov-cor1m-val">—</span>
+                  <span class="ov-cor1m-chg" id="ov-cor1m-chg"></span>
+                </span>
                 <div id="ov-spy-chart-tf">
                   <!--<button class="ov-chart-tf-btn" data-ovctf="5m"  onclick="ovSetChartTf('5m',this)">5m</button>
                   <button class="ov-chart-tf-btn" data-ovctf="10m" onclick="ovSetChartTf('10m',this)">10m</button>
@@ -15271,6 +15324,7 @@
         lbl.textContent = 'Connected';
 
         loadTickerBar();
+        startCor1mPoll();
 
         // Keep Market Overview as the visible landing page
         loadOverview();
@@ -15922,6 +15976,47 @@
       if (window.syncTickerCompact) window.syncTickerCompact();
     }
 
+    // Dedicated realtime COR1M poller — lighter and faster than the 90s ticker
+    // batch so the index price by the SPY title stays live during market hours.
+    let cor1mPollTimer = null;
+    async function fetchCor1mQuote() {
+      if (!isConnected) return;
+      try {
+        const d = await apiGet('/api/quotes?symbols=' + encodeURIComponent('$COR1M'));
+        const data = d.data || {};
+        updateCor1mLabel(data['$COR1M'] || data['COR1M'] || Object.values(data)[0]);
+      } catch (e) { /* keep last value on transient failure */ }
+    }
+    function startCor1mPoll() {
+      if (cor1mPollTimer) clearInterval(cor1mPollTimer);
+      fetchCor1mQuote();
+      cor1mPollTimer = setInterval(() => {
+        if (!isConnected || isPaused) return;
+        if (getMarketSession() !== 'open') return;   // no new prints when closed
+        fetchCor1mQuote();
+      }, 15000);
+    }
+
+    // Update the COR1M price shown right of the SPY chart title. `item` is the
+    // Schwab quote wrapper for $COR1M ({ quote: { lastPrice, ... } }).
+    function updateCor1mLabel(item) {
+      const valEl = document.getElementById('ov-cor1m-val');
+      const chgEl = document.getElementById('ov-cor1m-chg');
+      if (!valEl) return;
+      const q = item?.quote || item || {};
+      const price = q.lastPrice ?? q.mark ?? q.closePrice;
+      if (price == null || !isFinite(price)) { valEl.textContent = '—'; if (chgEl) chgEl.textContent = ''; return; }
+      valEl.textContent = Number(price).toFixed(2);
+      if (chgEl) {
+        const pct = q.netPercentChange;
+        if (pct == null || !isFinite(pct)) { chgEl.textContent = ''; chgEl.className = 'ov-cor1m-chg'; }
+        else {
+          chgEl.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+          chgEl.className = 'ov-cor1m-chg ' + (pct >= 0 ? 'pos' : 'neg');
+        }
+      }
+    }
+
     // ═══════════════════════════════════════════════════════
     //  TICKER BAR
     // ═══════════════════════════════════════════════════════
@@ -15933,7 +16028,7 @@
         const futureIds = ['ES', 'NQ', 'CL', 'GC', 'BTC'];
 
         const [dEq, ...futureResps] = await Promise.all([
-          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,$DJI,IWM,VIX,$NYICDX'),
+          apiGet('/api/quotes?symbols=SPY,SPX,QQQ,$DJI,IWM,VIX,$NYICDX,$COR1M'),
           ...futureSyms.map(s => apiGet(`/api/quotes?symbols=${encodeURIComponent(s)}`))
         ]);
 
@@ -15956,6 +16051,9 @@
             const pct = quote.netPercentChange ?? 0;
             updateTickerItem('tick-' + id, price, pct);
           });
+
+        // COR1M realtime price shown next to the SPY chart title.
+        updateCor1mLabel(eq['$COR1M'] || eq['COR1M']);
 
         // Update futures — fall back to first value in response
         futureIds.forEach((id, i) => {
