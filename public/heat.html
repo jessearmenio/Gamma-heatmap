@@ -6002,8 +6002,12 @@
       color: var(--accent);
     }
 
-    .strat-stat-val.unlimited::before {
-      content: "🫠 ";
+    .strat-stat-val.unlimited-profit::before {
+      content: "🤑 ";
+    }
+
+    .strat-stat-val.unlimited-loss::before {
+      content: "💥 ";
     }
 
     /* Chart + legs body layout — chart full-width on top, chain/legs below */
@@ -23004,8 +23008,12 @@
     let stratLegSeq = 0;
     let stratSideTab = 'chain';  // 'chain' | 'legs'
     let stratExpiryDate = null;  // Date object for the selected expiry
-    let stratMaxDTE = 0;         // total days from today to expiry (int)
-    let stratDaysFromNow = 0;    // slider position (0 = today, stratMaxDTE = expiry)
+    // Slider granularity: 30-minute slots. A "slot" = one tick of the slider.
+    // stratMaxSlots  = total half-hours from now to expiry
+    // stratSlotsFrom = current slider position (0 = now, stratMaxSlots = expiry)
+    const STRAT_SLOTS_PER_DAY = 48;
+    let stratMaxSlots = 0;
+    let stratSlotsFrom = 0;
     const STRAT_RFR = 0.045;     // risk-free rate for BSM (approx 3M T-bill)
 
     // ── Black-Scholes helpers ────────────────────────────────
@@ -23248,7 +23256,7 @@
         const el = document.getElementById(id);
         if (!el) return;
         el.textContent = txt;
-        el.classList.remove('green', 'red', 'accent', 'unlimited');
+        el.classList.remove('green', 'red', 'accent', 'unlimited-profit', 'unlimited-loss');
         if (cls) el.classList.add(cls);
       };
 
@@ -23266,7 +23274,7 @@
         return;
       }
 
-      const daysUntilExpiry = Math.max(0, stratMaxDTE - stratDaysFromNow);
+      const daysUntilExpiry = Math.max(0, (stratMaxSlots - stratSlotsFrom) / STRAT_SLOTS_PER_DAY);
       const stats = stratComputeStats(enriched, daysUntilExpiry);
 
       // Net cost: positive = debit (money out), negative = credit (money in).
@@ -23277,10 +23285,10 @@
 
       setVal('ss-maxprofit',
         stats.unboundedUp ? 'unlimited' : stratFmtMoney(stats.maxProfit),
-        stats.unboundedUp ? 'unlimited' : 'green');
+        stats.unboundedUp ? 'unlimited-profit' : 'green');
       setVal('ss-maxloss',
         stats.unboundedDn ? 'unlimited' : stratFmtMoney(stats.maxLoss),
-        stats.unboundedDn ? 'unlimited' : 'red');
+        stats.unboundedDn ? 'unlimited-loss' : 'red');
       setVal('ss-be', stats.bes.length ? stats.bes.map(v => '$' + v.toFixed(2)).join(' / ') : '—');
       setVal('ss-delta', stats.totalDelta.toFixed(2));
       setVal('ss-theta', stats.totalTheta.toFixed(2));
@@ -23575,8 +23583,8 @@
       cur.style.left = Math.min(wrapRect.width - 140, mx + 14) + 'px';
       cur.style.top = Math.max(4, my - 46) + 'px';
       const pct = ((price - stratSpot) / stratSpot * 100);
-      const dte = Math.max(0, stratMaxDTE - stratDaysFromNow);
-      const plLbl = dte <= 0 ? 'P/L at expiry' : `P/L at T-minus ${dte}d`;
+      const slotsLeft = Math.max(0, stratMaxSlots - stratSlotsFrom);
+      const plLbl = slotsLeft <= 0 ? 'P/L at expiry' : `P/L at T-minus ${stratFmtDTE(slotsLeft)}`;
       cur.innerHTML =
         `<div style="font-size:10px;color:var(--text3)">Price</div>` +
         `<div style="font-weight:800;color:var(--text);margin-bottom:4px">$${price.toFixed(2)} ` +
@@ -23585,38 +23593,55 @@
         `<div style="font-weight:800;color:${profit >= 0 ? 'var(--green)' : 'var(--red)'}">${profit >= 0 ? '+' : ''}${stratFmtMoney(Math.abs(profit) * (profit < 0 ? -1 : 1))}</div>`;
     }
 
-    // ── Date slider handlers ─────────────────────────────────
+    // ── Date slider handlers (units: half-hour slots) ────────
     function stratOnDateSlider(v) {
-      stratDaysFromNow = parseInt(v) || 0;
+      stratSlotsFrom = parseInt(v) || 0;
       stratUpdateDateLabels();
       stratRecalc();
     }
 
     function stratResetDate() {
-      stratDaysFromNow = stratMaxDTE;
+      stratSlotsFrom = stratMaxSlots;
       const el = document.getElementById('strat-date-slider');
-      if (el) el.value = String(stratMaxDTE);
+      if (el) el.value = String(stratMaxSlots);
       stratUpdateDateLabels();
       stratRecalc();
     }
 
+    // Format a slot count (30-min units) as "Nd Hh 30m" style, best-fit.
+    function stratFmtDTE(slots) {
+      if (slots <= 0) return '0h';
+      const totalMin = slots * 30;
+      const days = Math.floor(totalMin / (60 * 24));
+      const hours = Math.floor((totalMin - days * 60 * 24) / 60);
+      const mins = totalMin - days * 60 * 24 - hours * 60;
+      const parts = [];
+      if (days) parts.push(days + 'd');
+      if (hours) parts.push(hours + 'h');
+      if (mins) parts.push(mins + 'm');
+      return parts.join(' ');
+    }
+
     function stratUpdateDateLabels() {
-      const dte = Math.max(0, stratMaxDTE - stratDaysFromNow);
+      const slotsLeft = Math.max(0, stratMaxSlots - stratSlotsFrom);
       const dteEl = document.getElementById('strat-date-dte');
       const selEl = document.getElementById('strat-date-sel');
       const subEl = document.getElementById('strat-date-fromnow');
       const hintEl = document.getElementById('strat-chart-hint');
-      if (dteEl) dteEl.textContent = dte + ' day' + (dte === 1 ? '' : 's');
+      if (dteEl) dteEl.textContent = stratFmtDTE(slotsLeft);
       if (selEl) {
-        const target = new Date();
-        target.setDate(target.getDate() + stratDaysFromNow);
-        selEl.textContent = target.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+        // Half-hour slots forward from now.
+        const target = new Date(Date.now() + stratSlotsFrom * 30 * 60 * 1000);
+        selEl.textContent = target.toLocaleString('en-US', {
+          month: 'short', day: 'numeric', year: '2-digit',
+          hour: 'numeric', minute: '2-digit'
+        });
       }
-      if (subEl) subEl.textContent = '+ ' + stratDaysFromNow + ' day' + (stratDaysFromNow === 1 ? '' : 's') + ' from now';
+      if (subEl) subEl.textContent = '+ ' + stratFmtDTE(stratSlotsFrom) + ' from now';
       if (hintEl) {
-        hintEl.textContent = dte <= 0
+        hintEl.textContent = slotsLeft <= 0
           ? 'Hover the chart to see P/L at any price. Payoff shown at expiration.'
-          : `Hover the chart to see P/L at any price. Repriced with Black-Scholes at ${dte} day${dte === 1 ? '' : 's'} to expiry.`;
+          : `Hover the chart to see P/L at any price. Repriced with Black-Scholes at ${stratFmtDTE(slotsLeft)} to expiry.`;
       }
     }
 
@@ -23624,24 +23649,30 @@
     function stratSeedDateSlider() {
       // Prefer parsing DTE from the selected expiry option text: "2026-08-21 (52d)"
       const sel = document.getElementById('strat-expiry');
-      let dte = 0;
+      let dteDays = 0;
       const opt = sel?.selectedOptions?.[0];
       if (opt) {
         const m = /\((\d+)d\)/.exec(opt.textContent || '');
-        if (m) dte = parseInt(m[1]);
+        if (m) dteDays = parseInt(m[1]);
         stratExpiryDate = new Date(opt.value + 'T16:00:00');
       }
-      if (!dte && stratExpiryDate) {
-        dte = Math.max(0, Math.round((stratExpiryDate - new Date()) / 86400000));
+      let slots;
+      if (stratExpiryDate) {
+        // Use the actual expiry timestamp so intraday drags are accurate.
+        const msLeft = stratExpiryDate.getTime() - Date.now();
+        slots = Math.max(0, Math.round(msLeft / (30 * 60 * 1000)));
+      } else {
+        slots = Math.max(0, dteDays * STRAT_SLOTS_PER_DAY);
       }
-      stratMaxDTE = dte;
-      stratDaysFromNow = dte;    // default = expiration
+      stratMaxSlots = slots;
+      stratSlotsFrom = slots;    // default = expiration
       const slider = document.getElementById('strat-date-slider');
       if (slider) {
         slider.min = '0';
-        slider.max = String(Math.max(0, dte));
-        slider.value = String(dte);
-        slider.disabled = dte <= 0;
+        slider.max = String(slots);
+        slider.step = '1';       // each step = 30 minutes
+        slider.value = String(slots);
+        slider.disabled = slots <= 0;
       }
       stratUpdateDateLabels();
     }
