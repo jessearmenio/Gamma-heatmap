@@ -11811,15 +11811,15 @@
                 <table class="strat-chain-table" id="strat-chain-table">
                   <thead>
                     <tr>
+                      <th>Call OI</th>
+                      <th>Call Vol</th>
                       <th>Call Bid</th>
                       <th>Call Ask</th>
-                      <th>Call IV</th>
-                      <th>Call OI</th>
                       <th class="strike-col">Strike</th>
-                      <th>Put OI</th>
-                      <th>Put IV</th>
                       <th>Put Bid</th>
                       <th>Put Ask</th>
+                      <th>Put Vol</th>
+                      <th>Put OI</th>
                     </tr>
                   </thead>
                   <tbody id="strat-chain-tbody">
@@ -23083,17 +23083,19 @@
       return contract.mark || contract.last || Math.max(b, a) || 0;
     }
 
-    function stratAddLeg(type, strike) {
+    function stratAddLeg(type, strike, side) {
       const contract = stratLookupContract(type, strike);
       if (!contract) return;
       const actualStrike = parseFloat(contract.strikePrice ?? strike);
-      // Dedupe: if same type + strike already added, bump qty by 1 instead.
-      const existing = stratLegs.find(l => l.type === type && l.strike === actualStrike);
+      const legSide = side === 'SELL' ? 'SELL' : 'BUY';
+      // Dedupe on (type + strike + side): repeat clicks on the same corner bump
+      // qty, but clicking Bid vs Ask on the same strike opens two separate legs.
+      const existing = stratLegs.find(l => l.type === type && l.strike === actualStrike && l.side === legSide);
       if (existing) { existing.qty += 1; stratRecalc(); return; }
       stratLegs.push({
         id: ++stratLegSeq,
         type,
-        side: 'BUY',
+        side: legSide,
         strike: actualStrike,
         qty: 1
       });
@@ -23389,8 +23391,7 @@
       const atm = visible.reduce((best, s) =>
         Math.abs(s - stratSpot) < Math.abs(best - stratSpot) ? s : best, visible[0]);
       const fmt = v => v > 0 ? v.toFixed(2) : '—';
-      const fmtIV = v => v != null ? v.toFixed(1) : '—';
-      const fmtOI = v => v ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v) : '—';
+      const fmtCnt = v => v ? (v >= 1000 ? (v / 1000).toFixed(1) + 'k' : v) : '—';
 
       // Index existing legs so we can highlight matching call/put cells.
       // Keyed by "type:strike". Value tracks side (mixed => 'both').
@@ -23413,18 +23414,18 @@
         const atmCls = strike === atm ? 'atm-row' : '';
         const callSel = selectionClass('call', strike);
         const putSel = selectionClass('put', strike);
-        // Whole call-side row adds a CALL leg; whole put-side adds a PUT.
-        // Only the center Strike cell is inert (visually separates the two sides).
+        // Only bid/ask cells add legs; OI + Vol are read-only stats.
+        // Column order: call OI · call Vol · call Bid · call Ask · STRIKE · put Bid · put Ask · put Vol · put OI
         return `<tr class="${atmCls}">
-          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.bid)}</td>
-          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmt(call?.ask)}</td>
-          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtIV(call?.volatility)}</td>
-          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike})" title="Add CALL @ ${strike}">${fmtOI(call?.openInterest)}</td>
+          <td>${fmtCnt(call?.openInterest)}</td>
+          <td>${fmtCnt(call?.totalVolume)}</td>
+          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike}, 'SELL')" title="Sell to open CALL @ ${strike}">${fmt(call?.bid)}</td>
+          <td class="chain-clickable${callSel}" onclick="stratAddLeg('call', ${strike}, 'BUY')" title="Buy to open CALL @ ${strike}">${fmt(call?.ask)}</td>
           <td class="strike-cell">${strike.toFixed(strike >= 100 ? 0 : 2)}</td>
-          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtOI(put?.openInterest)}</td>
-          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmtIV(put?.volatility)}</td>
-          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.bid)}</td>
-          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike})" title="Add PUT @ ${strike}">${fmt(put?.ask)}</td>
+          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike}, 'SELL')" title="Sell to open PUT @ ${strike}">${fmt(put?.bid)}</td>
+          <td class="chain-clickable put${putSel}" onclick="stratAddLeg('put', ${strike}, 'BUY')" title="Buy to open PUT @ ${strike}">${fmt(put?.ask)}</td>
+          <td>${fmtCnt(put?.totalVolume)}</td>
+          <td>${fmtCnt(put?.openInterest)}</td>
         </tr>`;
       }).join('');
     }
